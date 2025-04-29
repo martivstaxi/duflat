@@ -2,10 +2,44 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>duflat.com</title>
+  <title>duflat.com – Ülke Seçimi</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; }
+    h1 { font-size: 32px; }
+    .country-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 40px; }
+    .country-box {
+      width: 160px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #000;
+      transition: all 0.2s ease-in-out;
+    }
+    .country-box:hover {
+      background-color: #f5f5f5;
+      transform: scale(1.03);
+    }
+    .flag {
+      font-size: 48px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hoş geldiniz! 👋</h1>
-  <p>Bu site artık GitHub Pages + Cloudflare ile yayında.</p>
+  <h1>Bir ülke seçin</h1>
+  <div class="country-grid">
+    <a href="turkiye.html" class="country-box">
+      <div class="flag">🇹🇷</div>
+      <strong>Türkiye</strong>
+    </a>
+    <a href="japan.html" class="country-box">
+      <div class="flag">🇯🇵</div>
+      <strong>Japonya</strong>
+    </a>
+    <a href="france.html" class="country-box">
+      <div class="flag">🇫🇷</div>
+      <strong>Fransa</strong>
+    </a>
+  </div>
 </body>
 </html>
