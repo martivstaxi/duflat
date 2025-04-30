@@ -2,131 +2,14 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>duflat.com – Ülke Seçimi</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; }
-    h1 { font-size: 28px; }
-    input[type="text"] {
-      padding: 12px;
-      width: 80%;
-      max-width: 400px;
-      margin: 20px 0 40px 0;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .card {
-      width: 120px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      text-align: center;
-      text-decoration: none;
-      color: #000;
-      transition: 0.2s;
-    }
-    .card:hover {
-      background-color: #f0f0f0;
-      transform: scale(1.03);
-    }
-    .code {
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .name {
-      margin-top: 5px;
-      font-size: 16px;
-    }
-  </style>
-
-  <!-- 🌐 Tarayıcı dili Türkçe değilse en.html sayfasına yönlendir -->
+  <meta http-equiv="refresh" content="0; url=login.html">
+  <title>Yönlendiriliyor...</title>
   <script>
-    const lang = navigator.language || navigator.userLanguage;
-    if (!lang.startsWith('tr')) {
-      window.location.href = 'en.html';
-    }
+    // Ekstra güvenlik için JS yönlendirme de ekliyoruz
+    window.location.href = 'login.html';
   </script>
-
 </head>
 <body>
-
-  <h1>Bir ülke seçin</h1>
-  <input type="text" id="searchInput" placeholder="Ülke ara...">
-
-  <div class="grid" id="countryGrid">
-    <a href="turkiye.html" class="card">
-      <div class="code">TR</div>
-      <div class="name">Türkiye</div>
-    </a>
-    <a href="japan.html" class="card">
-      <div class="code">JP</div>
-      <div class="name">Japonya</div>
-    </a>
-    <a href="france.html" class="card">
-      <div class="code">FR</div>
-      <div class="name">Fransa</div>
-    </a>
-    <a href="germany.html" class="card">
-      <div class="code">DE</div>
-      <div class="name">Almanya</div>
-    </a>
-    <a href="italy.html" class="card">
-      <div class="code">IT</div>
-      <div class="name">İtalya</div>
-    </a>
-    <a href="spain.html" class="card">
-      <div class="code">ES</div>
-      <div class="name">İspanya</div>
-    </a>
-    <a href="canada.html" class="card">
-      <div class="code">CA</div>
-      <div class="name">Kanada</div>
-    </a>
-    <a href="usa.html" class="card">
-      <div class="code">US</div>
-      <div class="name">Amerika</div>
-    </a>
-    <a href="brazil.html" class="card">
-      <div class="code">BR</div>
-      <div class="name">Brezilya</div>
-    </a>
-    <a href="southkorea.html" class="card">
-      <div class="code">KR</div>
-      <div class="name">Güney Kore</div>
-    </a>
-    <a href="uk.html" class="card">
-      <div class="code">GB</div>
-      <div class="name">İngiltere</div>
-    </a>
-    <a href="egypt.html" class="card">
-      <div class="code">EG</div>
-      <div class="name">Mısır</div>
-    </a>
-    <a href="australia.html" class="card">
-      <div class="code">AU</div>
-      <div class="name">Avustralya</div>
-    </a>
-  </div>
-
-  <script>
-    const searchInput = document.getElementById('searchInput');
-    const cards = document.querySelectorAll('.card');
-
-    searchInput.addEventListener('input', () => {
-      const value = searchInput.value.toLowerCase();
-      cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(value) ? 'inline-block' : 'none';
-      });
-    });
-  </script>
-
+  <p>Yönlendiriliyorsunuz... Eğer otomatik yönlendirme olmazsa <a href="login.html">buraya tıklayın</a>.</p>
 </body>
 </html>
