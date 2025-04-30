@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Türkiye – İl Seçimi</title>
   <style>
-      body {
-    font-family: sans-serif;
-    text-align: center;
-    padding: 30px;
-    overflow-y: auto;
-  }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+      overflow-y: auto;
+    }
     h1 { font-size: 26px; }
     input[type="text"] {
       padding: 10px;
@@ -58,43 +58,41 @@
   <h1>🇹🇷 Türkiye – İl Seçimi</h1>
   <input type="text" id="searchInput" placeholder="İl ara...">
 
-  <div class="grid" id="cityGrid">
-
-    <!-- ÖRNEKLER (tamamını aynı formatta yapabilirim) -->
-    <a href="adana.html" class="card">
-      <div class="code">01</div>
-      <div class="name">Adana</div>
-    </a>
-    <a href="rize.html" class="card">
-      <div class="code">53</div>
-      <div class="name">Rize</div>
-    </a>
-    <a href="istanbul.html" class="card">
-      <div class="code">34</div>
-      <div class="name">İstanbul</div>
-    </a>
-    <a href="ankara.html" class="card">
-      <div class="code">06</div>
-      <div class="name">Ankara</div>
-    </a>
-    <a href="mardin.html" class="card">
-      <div class="code">47</div>
-      <div class="name">Mardin</div>
-    </a>
-
-    <!-- Devamı... (tüm illeri böyle istersen oluşturabilirim) -->
-
-  </div>
+  <div class="grid" id="cityGrid"></div>
 
   <p><a href="index.html">← Ülkelere dön</a></p>
 
   <script>
-    const searchInput = document.getElementById('searchInput');
-    const cards = document.querySelectorAll('.card');
+    const cities = [
+      "Adana","Adıyaman","Afyonkarahisar","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir",
+      "Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli",
+      "Diyarbakır","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkari",
+      "Hatay","Isparta","Mersin","İstanbul","İzmir","Kars","Kastamonu","Kayseri","Kırklareli","Kırşehir",
+      "Kocaeli","Konya","Kütahya","Malatya","Manisa","Kahramanmaraş","Mardin","Muğla","Muş","Nevşehir",
+      "Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop","Sivas","Tekirdağ","Tokat",
+      "Trabzon","Tunceli","Şanlıurfa","Uşak","Van","Yozgat","Zonguldak","Aksaray","Bayburt","Karaman",
+      "Kırıkkale","Batman","Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye",
+      "Düzce"
+    ];
 
+    const grid = document.getElementById('cityGrid');
+
+    cities.forEach((city, index) => {
+      const plate = (index + 1).toString().padStart(2, '0');
+      const href = city.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o');
+
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = `${href}.html`;
+      a.innerHTML = `<div class="code">${plate}</div><div class="name">${city}</div>`;
+
+      grid.appendChild(a);
+    });
+
+    const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', () => {
       const value = searchInput.value.toLowerCase();
-      cards.forEach(card => {
+      document.querySelectorAll('.card').forEach(card => {
         const text = card.textContent.toLowerCase();
         card.style.display = text.includes(value) ? 'inline-block' : 'none';
       });
