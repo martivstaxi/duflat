@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>duflat.com – Country Selection</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; }
+    h1 { font-size: 28px; }
+    input[type="text"] {
+      padding: 12px;
+      width: 80%;
+      max-width: 400px;
+      margin: 20px 0 40px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      width: 120px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      text-align: center;
+      text-decoration: none;
+      color: #000;
+      transition: 0.2s;
+    }
+    .card:hover {
+      background-color: #f0f0f0;
+      transform: scale(1.03);
+    }
+    .code {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .name {
+      margin-top: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Select a Country</h1>
+  <input type="text" id="searchInput" placeholder="Search country...">
+
+  <div class="grid" id="countryGrid">
+    <a href="turkiye.html" class="card"><div class="code">TR</div><div class="name">Turkey</div></a>
+    <a href="japan.html" class="card"><div class="code">JP</div><div class="name">Japan</div></a>
+    <a href="france.html" class="card"><div class="code">FR</div><div class="name">France</div></a>
+    <a href="germany.html" class="card"><div class="code">DE</div><div class="name">Germany</div></a>
+    <a href="italy.html" class="card"><div class="code">IT</div><div class="name">Italy</div></a>
+    <a href="spain.html" class="card"><div class="code">ES</div><div class="name">Spain</div></a>
+    <a href="canada.html" class="card"><div class="code">CA</div><div class="name">Canada</div></a>
+    <a href="usa.html" class="card"><div class="code">US</div><div class="name">United States</div></a>
+    <a href="brazil.html" class="card"><div class="code">BR</div><div class="name">Brazil</div></a>
+    <a href="southkorea.html" class="card"><div class="code">KR</div><div class="name">South Korea</div></a>
+    <a href="uk.html" class="card"><div class="code">GB</div><div class="name">United Kingdom</div></a>
+    <a href="egypt.html" class="card"><div class="code">EG</div><div class="name">Egypt</div></a>
+    <a href="australia.html" class="card"><div class="code">AU</div><div class="name">Australia</div></a>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const cards = document.querySelectorAll('.card');
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value.toLowerCase();
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(value) ? 'inline-block' : 'none';
+      });
+    });
+  </script>
+
+</body>
+</html>
