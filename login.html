@@ -2,36 +2,67 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>duflat.com – Giriş</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 80px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
     input {
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       margin: 10px;
-      width: 250px;
+      width: 80%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 16px;
       cursor: pointer;
+      background-color: #222;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
     }
-    p { font-size: 14px; color: #777; margin-top: 40px; }
+    p {
+      font-size: 14px;
+      color: #555;
+      margin-top: 30px;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
-  <h1>duflat.com’a Giriş</h1>
-  <p>Kullanıcı adı ve şifrenizi girin:</p>
+  <h1 id="title">duflat.com’a Giriş</h1>
+  <p id="subtitle">Kullanıcı adı ve şifrenizi girin:</p>
 
   <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
   <br>
   <input type="password" id="passwordInput" placeholder="Şifre">
   <br>
-  <button onclick="login()">Giriş Yap</button>
+  <button onclick="login()" id="loginButton">Giriş Yap</button>
 
-  <p>Giriş bilgilerini bilmiyor musunuz? <br>
-  <a href="https://senin-ödeme-sayfan.com" target="_blank">1$ karşılığında erişim satın alın</a></p>
+  <p id="note">
+    Giriş bilgilerini bilmiyor musunuz? <br>
+    <a href="https://senin-ödeme-sayfan.com" target="_blank">1$ karşılığında erişim satın alın</a>
+  </p>
 
   <script>
     function login() {
@@ -41,8 +72,24 @@
       if (username === 'duflat' && password === '2024') {
         window.location.href = 'main.html';
       } else {
-        alert('Kullanıcı adı veya şifre yanlış.');
+        alert(lang.startsWith('tr') ? 'Kullanıcı adı veya şifre yanlış.' : 'Incorrect username or password.');
       }
+    }
+
+    // 🌐 Tarayıcı dili algılama
+    const lang = navigator.language || navigator.userLanguage;
+
+    if (!lang.startsWith('tr')) {
+      // İngilizce çevir
+      document.getElementById('title').textContent = 'Login to duflat.com';
+      document.getElementById('subtitle').textContent = 'Enter your username and password:';
+      document.getElementById('usernameInput').placeholder = 'Username';
+      document.getElementById('passwordInput').placeholder = 'Password';
+      document.getElementById('loginButton').textContent = 'Login';
+      document.getElementById('note').innerHTML = `
+        Don't have access yet? <br>
+        <a href="https://senin-ödeme-sayfan.com" target="_blank">Buy access for $1</a>
+      `;
     }
   </script>
 
