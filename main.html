@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>duflat.com – Ülke Seçimi</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; }
-    h1 { font-size: 28px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
     input[type="text"] {
       padding: 12px;
       width: 80%;
@@ -31,6 +40,7 @@
       text-decoration: none;
       color: #000;
       transition: 0.2s;
+      background-color: #fff;
     }
     .card:hover {
       background-color: #f0f0f0;
@@ -46,14 +56,18 @@
     }
   </style>
 
-  <!-- 🌐 Tarayıcı dili Türkçe değilse en.html sayfasına yönlendir -->
+  <!-- 🛡️ Yetkisiz kullanıcıları engelle -->
   <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+
+    // 🌐 Dil kontrolü: Türkçe değilse en.html'e yönlendir
     const lang = navigator.language || navigator.userLanguage;
     if (!lang.startsWith('tr')) {
       window.location.href = 'en.html';
     }
   </script>
-
 </head>
 <body>
 
@@ -61,58 +75,19 @@
   <input type="text" id="searchInput" placeholder="Ülke ara...">
 
   <div class="grid" id="countryGrid">
-    <a href="turkiye.html" class="card">
-      <div class="code">TR</div>
-      <div class="name">Türkiye</div>
-    </a>
-    <a href="japan.html" class="card">
-      <div class="code">JP</div>
-      <div class="name">Japonya</div>
-    </a>
-    <a href="france.html" class="card">
-      <div class="code">FR</div>
-      <div class="name">Fransa</div>
-    </a>
-    <a href="germany.html" class="card">
-      <div class="code">DE</div>
-      <div class="name">Almanya</div>
-    </a>
-    <a href="italy.html" class="card">
-      <div class="code">IT</div>
-      <div class="name">İtalya</div>
-    </a>
-    <a href="spain.html" class="card">
-      <div class="code">ES</div>
-      <div class="name">İspanya</div>
-    </a>
-    <a href="canada.html" class="card">
-      <div class="code">CA</div>
-      <div class="name">Kanada</div>
-    </a>
-    <a href="usa.html" class="card">
-      <div class="code">US</div>
-      <div class="name">Amerika</div>
-    </a>
-    <a href="brazil.html" class="card">
-      <div class="code">BR</div>
-      <div class="name">Brezilya</div>
-    </a>
-    <a href="southkorea.html" class="card">
-      <div class="code">KR</div>
-      <div class="name">Güney Kore</div>
-    </a>
-    <a href="uk.html" class="card">
-      <div class="code">GB</div>
-      <div class="name">İngiltere</div>
-    </a>
-    <a href="egypt.html" class="card">
-      <div class="code">EG</div>
-      <div class="name">Mısır</div>
-    </a>
-    <a href="australia.html" class="card">
-      <div class="code">AU</div>
-      <div class="name">Avustralya</div>
-    </a>
+    <a href="turkiye.html" class="card"><div class="code">TR</div><div class="name">Türkiye</div></a>
+    <a href="japan.html" class="card"><div class="code">JP</div><div class="name">Japonya</div></a>
+    <a href="france.html" class="card"><div class="code">FR</div><div class="name">Fransa</div></a>
+    <a href="germany.html" class="card"><div class="code">DE</div><div class="name">Almanya</div></a>
+    <a href="italy.html" class="card"><div class="code">IT</div><div class="name">İtalya</div></a>
+    <a href="spain.html" class="card"><div class="code">ES</div><div class="name">İspanya</div></a>
+    <a href="canada.html" class="card"><div class="code">CA</div><div class="name">Kanada</div></a>
+    <a href="usa.html" class="card"><div class="code">US</div><div class="name">Amerika</div></a>
+    <a href="brazil.html" class="card"><div class="code">BR</div><div class="name">Brezilya</div></a>
+    <a href="southkorea.html" class="card"><div class="code">KR</div><div class="name">Güney Kore</div></a>
+    <a href="uk.html" class="card"><div class="code">GB</div><div class="name">İngiltere</div></a>
+    <a href="egypt.html" class="card"><div class="code">EG</div><div class="name">Mısır</div></a>
+    <a href="australia.html" class="card"><div class="code">AU</div><div class="name">Avustralya</div></a>
   </div>
 
   <script>
