@@ -2,37 +2,65 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Türkiye'nin Gizli Fotoğraf Noktaları</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Türkiye – İl Seçimi</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    body { font-family: sans-serif; text-align: center; padding: 30px; }
     h1 { font-size: 26px; }
-    .spot {
-      border-bottom: 1px solid #ccc;
-      padding: 20px 0;
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      margin: 20px 0 40px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
-    .spot:last-child { border-bottom: none; }
-    .spot h2 { margin-bottom: 6px; }
-    .spot p { margin: 5px 0; }
-    .spot a { color: #007bff; text-decoration: none; }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      width: 140px;
+      padding: 16px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #000;
+      transition: 0.2s;
+    }
+    .card:hover {
+      background-color: #f9f9f9;
+      transform: scale(1.03);
+    }
   </style>
 </head>
 <body>
 
-  <h1>🇹🇷 Türkiye – Az Bilinen Instagram Noktaları</h1>
+  <h1>🇹🇷 Türkiye – İl Seçimi</h1>
+  <input type="text" id="searchInput" placeholder="İl ara...">
 
-  <div class="spot">
-    <h2>Salda Gölü (Burdur)</h2>
-    <p>“Türkiye’nin Maldivleri” olarak bilinir, turkuaz suyu ve beyaz kumsalıyla nefes keser.</p>
-    <p><a href="https://maps.google.com/?q=Salda+Lake" target="_blank">Google Maps'te Aç</a></p>
+  <div class="grid" id="cityGrid">
+    <!-- 81 il kutusu burada -->
+    <!-- (bir sonraki mesajda tam listeyi ekleyeceğim çünkü karakter sınırı var) -->
   </div>
 
-  <div class="spot">
-    <h2>Saklıkent Kanyonu (Muğla)</h2>
-    <p>Yaz sıcağında buz gibi suda yürüyüş yapılabilen eşsiz bir doğa harikası.</p>
-    <p><a href="https://maps.google.com/?q=Saklıkent+Kanyonu" target="_blank">Google Maps'te Aç</a></p>
-  </div>
+  <p><a href="index.html">← Ülkelere dön</a></p>
 
-  <p><a href="index.html">← Tüm ülkelere dön</a></p>
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const cards = document.querySelectorAll('.card');
+
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value.toLowerCase();
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(value) ? 'inline-block' : 'none';
+      });
+    });
+  </script>
 
 </body>
 </html>
