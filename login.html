@@ -50,6 +50,13 @@
 </head>
 <body>
 
+  <script>
+    // Eğer zaten giriş yapılmışsa main.html'e yönlendir
+    if (localStorage.getItem("duflat-access") === "granted") {
+      window.location.href = "main.html";
+    }
+  </script>
+
   <h1 id="title">duflat.com’a Giriş</h1>
   <p id="subtitle">Kullanıcı adı ve şifrenizi girin:</p>
 
@@ -65,22 +72,10 @@
   </p>
 
   <script>
-    function login() {
-      const username = document.getElementById('usernameInput').value;
-      const password = document.getElementById('passwordInput').value;
-
-      if (username === 'duflat' && password === '2024') {
-        window.location.href = 'main.html';
-      } else {
-        alert(lang.startsWith('tr') ? 'Kullanıcı adı veya şifre yanlış.' : 'Incorrect username or password.');
-      }
-    }
-
-    // 🌐 Tarayıcı dili algılama
     const lang = navigator.language || navigator.userLanguage;
 
+    // Dile göre metinleri değiştir
     if (!lang.startsWith('tr')) {
-      // İngilizce çevir
       document.getElementById('title').textContent = 'Login to duflat.com';
       document.getElementById('subtitle').textContent = 'Enter your username and password:';
       document.getElementById('usernameInput').placeholder = 'Username';
@@ -90,6 +85,19 @@
         Don't have access yet? <br>
         <a href="https://senin-ödeme-sayfan.com" target="_blank">Buy access for $1</a>
       `;
+    }
+
+    // Giriş fonksiyonu
+    function login() {
+      const username = document.getElementById('usernameInput').value;
+      const password = document.getElementById('passwordInput').value;
+
+      if (username === 'duflat' && password === '2024') {
+        localStorage.setItem("duflat-access", "granted");
+        window.location.href = "main.html";
+      } else {
+        alert(lang.startsWith('tr') ? 'Kullanıcı adı veya şifre yanlış.' : 'Incorrect username or password.');
+      }
     }
   </script>
 
