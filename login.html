@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Giriş – duflat.com</title>
+  <title>duflat.com – Giriş</title>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 80px; }
     input {
@@ -22,21 +22,26 @@
 <body>
 
   <h1>duflat.com’a Giriş</h1>
-  <p>Lütfen kullanıcı şifrenizi girin:</p>
+  <p>Kullanıcı adı ve şifrenizi girin:</p>
 
-  <input type="password" id="passwordInput" placeholder="Şifreyi girin">
+  <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
+  <br>
+  <input type="password" id="passwordInput" placeholder="Şifre">
   <br>
   <button onclick="login()">Giriş Yap</button>
 
-  <p>Şifreniz yok mu? <a href="https://senin-shopier-linkin.com">1$ karşılığında satın alın</a></p>
+  <p>Giriş bilgilerini bilmiyor musunuz? <br>
+  <a href="https://senin-ödeme-sayfan.com" target="_blank">1$ karşılığında erişim satın alın</a></p>
 
   <script>
     function login() {
+      const username = document.getElementById('usernameInput').value;
       const password = document.getElementById('passwordInput').value;
-      if (password === 'duflat2024') {
+
+      if (username === 'duflat' && password === '2024') {
         window.location.href = 'index.html';
       } else {
-        alert('Şifre yanlış. Lütfen tekrar deneyin.');
+        alert('Kullanıcı adı veya şifre yanlış.');
       }
     }
   </script>
