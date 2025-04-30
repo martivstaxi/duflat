@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Giriş – duflat.com</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 80px; }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 250px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    p { font-size: 14px; color: #777; margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+  <h1>duflat.com’a Giriş</h1>
+  <p>Lütfen kullanıcı şifrenizi girin:</p>
+
+  <input type="password" id="passwordInput" placeholder="Şifreyi girin">
+  <br>
+  <button onclick="login()">Giriş Yap</button>
+
+  <p>Şifreniz yok mu? <a href="https://senin-shopier-linkin.com">1$ karşılığında satın alın</a></p>
+
+  <script>
+    function login() {
+      const password = document.getElementById('passwordInput').value;
+      if (password === 'duflat2024') {
+        window.location.href = 'index.html';
+      } else {
+        alert('Şifre yanlış. Lütfen tekrar deneyin.');
+      }
+    }
+  </script>
+
+</body>
+</html>
