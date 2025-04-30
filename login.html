@@ -13,8 +13,9 @@
       background-color: #f9f9f9;
     }
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       margin-bottom: 20px;
+      padding: 0 20px;
     }
     input {
       padding: 12px;
@@ -39,9 +40,15 @@
       color: #555;
       margin-top: 30px;
     }
+    #note {
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
     a {
       color: #0066cc;
       text-decoration: none;
+      font-weight: bold;
     }
     a:hover {
       text-decoration: underline;
@@ -51,13 +58,12 @@
 <body>
 
   <script>
-    // Eğer zaten giriş yapılmışsa main.html'e yönlendir
     if (localStorage.getItem("duflat-access") === "granted") {
       window.location.href = "main.html";
     }
   </script>
 
-  <h1 id="title">duflat.com’a Giriş</h1>
+  <h1 id="title">Bir sonraki Instagram karelerin için gizli konumları keşfet.</h1>
   <p id="subtitle">Kullanıcı adı ve şifrenizi girin:</p>
 
   <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
@@ -67,27 +73,25 @@
   <button onclick="login()" id="loginButton">Giriş Yap</button>
 
   <p id="note">
-    Giriş bilgilerini bilmiyor musunuz? <br>
-    <a href="https://senin-ödeme-sayfan.com" target="_blank">1$ karşılığında erişim satın alın</a>
+    Giriş bilgilerin yok mu? <br>
+    <a href="https://senin-ödeme-sayfan.com" target="_blank">1$ karşılığında erişim satın al</a>
   </p>
 
   <script>
     const lang = navigator.language || navigator.userLanguage;
 
-    // Dile göre metinleri değiştir
     if (!lang.startsWith('tr')) {
-      document.getElementById('title').textContent = 'Login to duflat.com';
+      document.getElementById('title').textContent = 'Discover secret locations for your next viral Instagram shot.';
       document.getElementById('subtitle').textContent = 'Enter your username and password:';
       document.getElementById('usernameInput').placeholder = 'Username';
       document.getElementById('passwordInput').placeholder = 'Password';
       document.getElementById('loginButton').textContent = 'Login';
       document.getElementById('note').innerHTML = `
-        Don't have access yet? <br>
+        Don’t have access yet? <br>
         <a href="https://senin-ödeme-sayfan.com" target="_blank">Buy access for $1</a>
       `;
     }
 
-    // Giriş fonksiyonu
     function login() {
       const username = document.getElementById('usernameInput').value;
       const password = document.getElementById('passwordInput').value;
