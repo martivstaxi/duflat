@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaziantep Fotoğraf Noktaları</title>
+  <title>Gaziantep</title>
   <style>
     body {
       font-family: sans-serif;
@@ -25,24 +25,31 @@
       background-color: white;
       border: 1px solid #ddd;
       border-radius: 12px;
-      padding: 20px;
+      padding: 0;
       width: 280px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
       transition: transform 0.2s;
     }
     .card:hover {
       transform: scale(1.03);
     }
-    .card h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
     }
-    .card p {
-      font-size: 15px;
-      line-height: 1.4;
+    .card-content {
+      padding: 16px;
+      text-align: center;
+    }
+    .card h2 {
+      font-size: 18px;
       margin-bottom: 10px;
     }
     .card a {
+      display: inline-block;
+      margin-top: 8px;
       font-weight: bold;
       color: #0077cc;
       text-decoration: none;
@@ -56,44 +63,60 @@
   <h1>📸 Gaziantep'te Instagramlık Fotoğraf Noktaları</h1>
   <div class="grid">
     <div class="card">
-      <h2>🏛️ Zeugma Mozaik Müzesi</h2>
-      <p>Antik mozaikler önünde sanat dolu pozlar.</p>
-      <a href="https://maps.app.goo.gl/SPSrK39xttRUCUrZ6" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/03/Zeugma_Mozaik_M%C3%BCzesi.jpg" alt="Zeugma Mozaik Müzesi">
+      <div class="card-content">
+        <h2>Zeugma Mozaik Müzesi</h2>
+        <a href="https://maps.app.goo.gl/SPSrK39xttRUCUrZ6" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🌇 Gaziantep Kalesi</h2>
-      <p>Şehir manzarasına karşı silüet pozları için eşsiz bir nokta.</p>
-      <a href="https://maps.app.goo.gl/MD3msH28vEvCpv7N8" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Gaziantep_Kalesi_3.jpg" alt="Gaziantep Kalesi">
+      <div class="card-content">
+        <h2>Gaziantep Kalesi</h2>
+        <a href="https://maps.app.goo.gl/MD3msH28vEvCpv7N8" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>☕ Tahmis Kahvesi</h2>
-      <p>Geleneksel kahve sunumu ve taş avlulu nostalji.</p>
-      <a href="https://maps.app.goo.gl/N4bc6nmZJbB39R3z5" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Tahmis_Kahvesi_Gaziantep.jpg" alt="Tahmis Kahvesi">
+      <div class="card-content">
+        <h2>Tahmis Kahvesi</h2>
+        <a href="https://maps.app.goo.gl/N4bc6nmZJbB39R3z5" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🌶️ Zincirli Bedesten & Almacı Pazarı</h2>
-      <p>Renkli baharat tezgahları ve geleneksel atmosfer.</p>
-      <a href="https://maps.app.goo.gl/3h6z6bPpQQvF7uVu8" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Zincirli_Bedesten_Gaziantep.jpg" alt="Zincirli Bedesten">
+      <div class="card-content">
+        <h2>Zincirli Bedesten</h2>
+        <a href="https://maps.app.goo.gl/3h6z6bPpQQvF7uVu8" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🔨 Bakırcılar Çarşısı</h2>
-      <p>Bakır ustalarının el emeği ve otantik dükkanlar.</p>
-      <a href="https://maps.app.goo.gl/dU3mC6n7Z7tJZALU7" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Bakircilar_Carsisi_Gaziantep.jpg" alt="Bakırcılar Çarşısı">
+      <div class="card-content">
+        <h2>Bakırcılar Çarşısı</h2>
+        <a href="https://maps.app.goo.gl/dU3mC6n7Z7tJZALU7" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🕌 Şirvani Camii</h2>
-      <p>Kemerli taş duvarlar ve tarihi camii avlusu.</p>
-      <a href="https://maps.app.goo.gl/R8MmR1KbL3pEAH5Q8" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/d/df/Sirvani_Camii_Gaziantep.jpg" alt="Şirvani Camii">
+      <div class="card-content">
+        <h2>Şirvani Camii</h2>
+        <a href="https://maps.app.goo.gl/R8MmR1KbL3pEAH5Q8" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🏘️ Bey Mahallesi</h2>
-      <p>Taş sokaklar ve renkli Gaziantep evleri ile nostaljik kareler.</p>
-      <a href="https://maps.app.goo.gl/TzBaL2j4ohbnHqNg7" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/Bey_Mahallesi_Gaziantep.jpg" alt="Bey Mahallesi">
+      <div class="card-content">
+        <h2>Bey Mahallesi</h2>
+        <a href="https://maps.app.goo.gl/TzBaL2j4ohbnHqNg7" target="_blank">📍 Konumu</a>
+      </div>
     </div>
     <div class="card">
-      <h2>🌳 Gümrük Hanı</h2>
-      <p>Yeşil avlusu ve taş yapısıyla fotoğrafa huzur katar.</p>
-      <a href="https://maps.app.goo.gl/FjuuWWDU8KPv3UqL6" target="_blank">📍 Haritada Gör</a>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Gumruk_Hani_Gaziantep.jpg" alt="Gümrük Hanı">
+      <div class="card-content">
+        <h2>Gümrük Hanı</h2>
+        <a href="https://maps.app.goo.gl/FjuuWWDU8KPv3UqL6" target="_blank">📍 Konumu</a>
+      </div>
     </div>
   </div>
 </body>
