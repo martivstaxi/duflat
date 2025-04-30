@@ -49,14 +49,8 @@
   <!-- 🌐 Tarayıcı diline göre yönlendirme -->
   <script>
     const lang = navigator.language || navigator.userLanguage;
-    if (lang.startsWith('en')) window.location.href = 'usa.html';
-    else if (lang.startsWith('fr')) window.location.href = 'france.html';
-    else if (lang.startsWith('de')) window.location.href = 'germany.html';
-    else if (lang.startsWith('it')) window.location.href = 'italy.html';
-    else if (lang.startsWith('es')) window.location.href = 'spain.html';
-    else if (lang.startsWith('ja')) window.location.href = 'japan.html';
-    else if (lang.startsWith('ko')) window.location.href = 'southkorea.html';
-    else if (lang.startsWith('ar')) window.location.href = 'egypt.html';
+    if (!lang.startsWith('tr')) {
+    window.location.href = 'en.html';
     // Türkçe ise ya da bilinmeyen dilse sayfada kal
   </script>
 
