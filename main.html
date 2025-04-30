@@ -61,17 +61,11 @@
     if (localStorage.getItem("duflat-access") !== "granted") {
       window.location.href = "login.html";
     }
-
-    // 🌐 Dil kontrolü: Türkçe değilse en.html'e yönlendir
-    const lang = navigator.language || navigator.userLanguage;
-    if (!lang.startsWith('tr')) {
-      window.location.href = 'en.html';
-    }
   </script>
 </head>
 <body>
 
-  <h1>Bir ülke seçin</h1>
+  <h1 id="title">Bir ülke seçin</h1>
   <input type="text" id="searchInput" placeholder="Ülke ara...">
 
   <div class="grid" id="countryGrid">
@@ -91,6 +85,38 @@
   </div>
 
   <script>
+    const lang = navigator.language || navigator.userLanguage;
+
+    // Türkçe dışındaki tarayıcılar için İngilizce metinler
+    if (!lang.startsWith('tr')) {
+      document.getElementById('title').textContent = 'Select a Country';
+      document.getElementById('searchInput').placeholder = 'Search country...';
+
+      const translations = {
+        "Türkiye": "Turkey",
+        "Japonya": "Japan",
+        "Fransa": "France",
+        "Almanya": "Germany",
+        "İtalya": "Italy",
+        "İspanya": "Spain",
+        "Kanada": "Canada",
+        "Amerika": "United States",
+        "Brezilya": "Brazil",
+        "Güney Kore": "South Korea",
+        "İngiltere": "United Kingdom",
+        "Mısır": "Egypt",
+        "Avustralya": "Australia"
+      };
+
+      document.querySelectorAll(".name").forEach(el => {
+        const original = el.textContent.trim();
+        if (translations[original]) {
+          el.textContent = translations[original];
+        }
+      });
+    }
+
+    // Arama filtresi
     const searchInput = document.getElementById('searchInput');
     const cards = document.querySelectorAll('.card');
 
