@@ -46,12 +46,12 @@
     }
   </style>
 
-  <!-- 🌐 Tarayıcı diline göre yönlendirme -->
+  <!-- 🌐 Tarayıcı dili Türkçe değilse en.html sayfasına yönlendir -->
   <script>
     const lang = navigator.language || navigator.userLanguage;
     if (!lang.startsWith('tr')) {
-    window.location.href = 'en.html';
-    // Türkçe ise ya da bilinmeyen dilse sayfada kal
+      window.location.href = 'en.html';
+    }
   </script>
 
 </head>
