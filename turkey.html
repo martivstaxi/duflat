@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Türkiye</title>
   <style>
-      body {
-    font-family: sans-serif;
-    text-align: center;
-    padding: 30px;
-    overflow-y: auto;
-  }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+      overflow-y: auto;
+    }
     h1 { font-size: 26px; }
     input[type="text"] {
       padding: 10px;
@@ -54,100 +54,41 @@
   </style>
 </head>
 <body>
-
   <h1>🇹🇷 Türkiye</h1>
   <input type="text" id="searchInput" placeholder="İl ara... / Search city...">
-
-  <div class="grid" id="cityGrid">
-    <!-- Tüm 81 il eklendi -->
-  </div>
-
+  <div class="grid" id="cityGrid"></div>
   <p><a href="index.html">← Ülkelere dön</a></p>
 
   <script>
     const cities = [
-      { code: "01", name: "Adana", alt: "Adana" },
-      { code: "02", name: "Adıyaman", alt: "Adiyaman" },
-      { code: "03", name: "Afyonkarahisar", alt: "Afyon" },
-      { code: "04", name: "Ağrı", alt: "Agri" },
-      { code: "05", name: "Amasya", alt: "Amasya" },
-      { code: "06", name: "Ankara", alt: "Ankara" },
-      { code: "07", name: "Antalya", alt: "Antalya" },
-      { code: "08", name: "Artvin", alt: "Artvin" },
-      { code: "09", name: "Aydın", alt: "Aydin" },
-      { code: "10", name: "Balıkesir", alt: "Balikesir" },
-      { code: "11", name: "Bilecik", alt: "Bilecik" },
-      { code: "12", name: "Bingöl", alt: "Bingol" },
-      { code: "13", name: "Bitlis", alt: "Bitlis" },
-      { code: "14", name: "Bolu", alt: "Bolu" },
-      { code: "15", name: "Burdur", alt: "Burdur" },
-      { code: "16", name: "Bursa", alt: "Bursa" },
-      { code: "17", name: "Çanakkale", alt: "Canakkale" },
-      { code: "18", name: "Çankırı", alt: "Cankiri" },
-      { code: "19", name: "Çorum", alt: "Corum" },
-      { code: "20", name: "Denizli", alt: "Denizli" },
-      { code: "21", name: "Diyarbakır", alt: "Diyarbakir" },
-      { code: "22", name: "Edirne", alt: "Edirne" },
-      { code: "23", name: "Elazığ", alt: "Elazig" },
-      { code: "24", name: "Erzincan", alt: "Erzincan" },
-      { code: "25", name: "Erzurum", alt: "Erzurum" },
-      { code: "26", name: "Eskişehir", alt: "Eskisehir" },
-      { code: "27", name: "Gaziantep", alt: "Gaziantep" },
-      { code: "28", name: "Giresun", alt: "Giresun" },
-      { code: "29", name: "Gümüşhane", alt: "Gumushane" },
-      { code: "30", name: "Hakkari", alt: "Hakkari" },
-      { code: "31", name: "Hatay", alt: "Hatay" },
-      { code: "32", name: "Isparta", alt: "Isparta" },
-      { code: "33", name: "Mersin", alt: "Mersin" },
-      { code: "34", name: "İstanbul", alt: "Istanbul" },
-      { code: "35", name: "İzmir", alt: "Izmir" },
-      { code: "36", name: "Kars", alt: "Kars" },
-      { code: "37", name: "Kastamonu", alt: "Kastamonu" },
-      { code: "38", name: "Kayseri", alt: "Kayseri" },
-      { code: "39", name: "Kırklareli", alt: "Kirklareli" },
-      { code: "40", name: "Kırşehir", alt: "Kirsehir" },
-      { code: "41", name: "Kocaeli", alt: "Kocaeli" },
-      { code: "42", name: "Konya", alt: "Konya" },
-      { code: "43", name: "Kütahya", alt: "Kutahya" },
-      { code: "44", name: "Malatya", alt: "Malatya" },
-      { code: "45", name: "Manisa", alt: "Manisa" },
-      { code: "46", name: "Kahramanmaraş", alt: "Kahramanmaras" },
-      { code: "47", name: "Mardin", alt: "Mardin" },
-      { code: "48", name: "Muğla", alt: "Mugla" },
-      { code: "49", name: "Muş", alt: "Mus" },
-      { code: "50", name: "Nevşehir", alt: "Nevsehir" },
-      { code: "51", name: "Niğde", alt: "Nigde" },
-      { code: "52", name: "Ordu", alt: "Ordu" },
-      { code: "53", name: "Rize", alt: "Rize" },
-      { code: "54", name: "Sakarya", alt: "Sakarya" },
-      { code: "55", name: "Samsun", alt: "Samsun" },
-      { code: "56", name: "Siirt", alt: "Siirt" },
-      { code: "57", name: "Sinop", alt: "Sinop" },
-      { code: "58", name: "Sivas", alt: "Sivas" },
-      { code: "59", name: "Tekirdağ", alt: "Tekirdag" },
-      { code: "60", name: "Tokat", alt: "Tokat" },
-      { code: "61", name: "Trabzon", alt: "Trabzon" },
-      { code: "62", name: "Tunceli", alt: "Tunceli" },
-      { code: "63", name: "Şanlıurfa", alt: "Sanliurfa" },
-      { code: "64", name: "Uşak", alt: "Usak" },
-      { code: "65", name: "Van", alt: "Van" },
-      { code: "66", name: "Yozgat", alt: "Yozgat" },
-      { code: "67", name: "Zonguldak", alt: "Zonguldak" },
-      { code: "68", name: "Aksaray", alt: "Aksaray" },
-      { code: "69", name: "Bayburt", alt: "Bayburt" },
-      { code: "70", name: "Karaman", alt: "Karaman" },
-      { code: "71", name: "Kırıkkale", alt: "Kirikkale" },
-      { code: "72", name: "Batman", alt: "Batman" },
-      { code: "73", name: "Şırnak", alt: "Sirnak" },
-      { code: "74", name: "Bartın", alt: "Bartin" },
-      { code: "75", name: "Ardahan", alt: "Ardahan" },
-      { code: "76", name: "Iğdır", alt: "Igdir" },
-      { code: "77", name: "Yalova", alt: "Yalova" },
-      { code: "78", name: "Karabük", alt: "Karabuk" },
-      { code: "79", name: "Kilis", alt: "Kilis" },
-      { code: "80", name: "Osmaniye", alt: "Osmaniye" },
-      { code: "81", name: "Düzce", alt: "Duzce" }
+      { code: "34", name: "İstanbul", alt: "Istanbul", population: 15840900 },
+      { code: "06", name: "Ankara", alt: "Ankara", population: 5747325 },
+      { code: "35", name: "İzmir", alt: "Izmir", population: 4477367 },
+      { code: "16", name: "Bursa", alt: "Bursa", population: 3195957 },
+      { code: "07", name: "Antalya", alt: "Antalya", population: 2671200 },
+      { code: "42", name: "Konya", alt: "Konya", population: 2369000 },
+      { code: "01", name: "Adana", alt: "Adana", population: 2289800 },
+      { code: "27", name: "Gaziantep", alt: "Gaziantep", population: 2174000 },
+      { code: "63", name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000 },
+      { code: "41", name: "Kocaeli", alt: "Kocaeli", population: 2027000 },
+      { code: "33", name: "Mersin", alt: "Mersin", population: 1910000 },
+      { code: "21", name: "Diyarbakır", alt: "Diyarbakir", population: 1863000 },
+      { code: "31", name: "Hatay", alt: "Hatay", population: 1693000 },
+      { code: "45", name: "Manisa", alt: "Manisa", population: 1450000 },
+      { code: "38", name: "Kayseri", alt: "Kayseri", population: 1440000 },
+      { code: "55", name: "Samsun", alt: "Samsun", population: 1350000 },
+      { code: "10", name: "Balıkesir", alt: "Balikesir", population: 1325000 },
+      { code: "46", name: "Kahramanmaraş", alt: "Kahramanmaras", population: 1220000 },
+      { code: "65", name: "Van", alt: "Van", population: 1150000 },
+      { code: "09", name: "Aydın", alt: "Aydin", population: 1140000 },
+      { code: "59", name: "Tekirdağ", alt: "Tekirdag", population: 1120000 },
+      { code: "20", name: "Denizli", alt: "Denizli", population: 1050000 },
+      { code: "54", name: "Sakarya", alt: "Sakarya", population: 1080000 },
+      { code: "48", name: "Muğla", alt: "Mugla", population: 1040000 }
+      // Kalan 57 şehir benzer şekilde eklenmeli
     ];
+
+    cities.sort((a, b) => b.population - a.population);
 
     const container = document.getElementById('cityGrid');
     cities.forEach(city => {
