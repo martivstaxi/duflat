@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,48 +10,34 @@
       padding: 40px;
       background-color: #f9f9f9;
       color: #333;
+      text-align: center;
     }
     h1 {
-      text-align: center;
+      font-size: 28px;
       margin-bottom: 40px;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
     }
     .card {
       background-color: white;
       border: 1px solid #ddd;
       border-radius: 12px;
-      padding: 0;
-      width: 280px;
+      max-width: 360px;
+      margin: 0 auto;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       overflow: hidden;
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: scale(1.03);
     }
     .card img {
       width: 100%;
-      height: 220px;
+      height: auto;
       object-fit: cover;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
     }
     .card-content {
-      padding: 10px 8px;
-      text-align: center;
+      padding: 16px;
     }
     .card h2 {
-      font-size: 16px;
-      margin-bottom: 4px;
+      font-size: 18px;
+      margin-bottom: 8px;
     }
     .card a {
-      display: inline-block;
-      margin-top: 2px;
       font-size: 14px;
       font-weight: bold;
       color: #0077cc;
@@ -64,73 +50,12 @@
 </head>
 <body>
   <h1>📸 Gaziantep</h1>
-  <div class="grid">
-    <div class="card">
-      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg" alt="Zeugma Mozaik Müzesi">
-      <div class="card-content">
-        <h2>Zeugma Mozaik Müzesi</h2>
-        <a class="map-link" href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1609760420892-23f70d574ff2" alt="Gaziantep Kalesi">
-      <div class="card-content">
-        <h2>Gaziantep Kalesi</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0663,37.3793" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1639050539311-5f5f743eaf8d" alt="Tahmis Kahvesi">
-      <div class="card-content">
-        <h2>Tahmis Kahvesi</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0681,37.3796" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1620310408932-42e930e19141" alt="Zincirli Bedesten">
-      <div class="card-content">
-        <h2>Zincirli Bedesten</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0701,37.3799" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1600616307012-7e3145a7dc12" alt="Bakırcılar Çarşısı">
-      <div class="card-content">
-        <h2>Bakırcılar Çarşısı</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0707,37.3798" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1608652688803-37d16b9ac9a0" alt="Şirvani Camii">
-      <div class="card-content">
-        <h2>Şirvani Camii</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0689,37.3811" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1578575437134-29f64cfb6ec9" alt="Bey Mahallesi">
-      <div class="card-content">
-        <h2>Bey Mahallesi</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0666,37.3852" target="_blank">📍 Konumu</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://images.unsplash.com/photo-1631908624232-942b3fc21077" alt="Gümrük Hanı">
-      <div class="card-content">
-        <h2>Gümrük Hanı</h2>
-        <a class="map-link" href="https://www.google.com/maps?q=37.0699,37.3802" target="_blank">📍 Konumu</a>
-      </div>
+  <div class="card">
+    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg" alt="Zeugma Mosaic Museum">
+    <div class="card-content">
+      <h2>Zeugma Mosaic Museum</h2>
+      <a href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">📍Zeugma Mozaik Müzesi</a>
     </div>
   </div>
-
-  <script>
-    const userLang = navigator.language || navigator.userLanguage;
-    if (!userLang.startsWith('tr')) {
-      document.querySelector('h1').textContent = '📸 Gaziantep';
-      document.querySelectorAll('.map-link').forEach(link => {
-        link.innerHTML = '📍 Location';
-      });
-    }
-  </script>
 </body>
 </html>
