@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
