@@ -1,3 +1,9 @@
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,9 +17,19 @@
       background-color: #f9f9f9;
       color: #333;
       text-align: center;
+      position: relative;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
     }
     h1 {
       font-size: 28px;
+      margin-top: 80px;
       margin-bottom: 40px;
     }
     .card {
@@ -45,36 +61,40 @@
   </style>
 </head>
 <body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+
   <h1>📸 Gaziantep</h1>
+
   <div class="card">
     <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg" alt="Zeugma Mosaic Museum">
     <div class="card-content">
       <a href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">📍 Zeugma Mozaik Müzesi</a>
     </div>
   </div>
-<!-- 2. Görsel Örneği -->
-<div class="card" style="margin-top: 40px;">
-  <img src="gorsel_linki">
-  <div class="card-content">
-    <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
-  </div>
-</div>
 
-<!-- 3. Görsel Örneği -->
-<div class="card" style="margin-top: 40px;">
-  <img src="gorsel_linki">
-  <div class="card-content">
-    <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+  <!-- 2. Görsel Örneği -->
+  <div class="card" style="margin-top: 40px;">
+    <img src="gorsel_linki">
+    <div class="card-content">
+      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+    </div>
   </div>
-</div>
 
-<!-- 4. Görsel Örneği -->
-<div class="card" style="margin-top: 40px;">
-  <img src="gorsel_linki">
-  <div class="card-content">
-    <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+  <!-- 3. Görsel Örneği -->
+  <div class="card" style="margin-top: 40px;">
+    <img src="gorsel_linki">
+    <div class="card-content">
+      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+    </div>
   </div>
-</div>
-  
+
+  <!-- 4. Görsel Örneği -->
+  <div class="card" style="margin-top: 40px;">
+    <img src="gorsel_linki">
+    <div class="card-content">
+      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+    </div>
+  </div>
 </body>
 </html>
