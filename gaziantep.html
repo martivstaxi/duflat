@@ -1,15 +1,14 @@
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaziantep</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -19,19 +18,26 @@
       text-align: center;
       position: relative;
     }
+
+    /* Ortalanmış logo */
     .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
+      display: block;
       font-size: 28px;
       text-decoration: none;
       color: black;
+      margin: 0 auto;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
     }
+
     h1 {
       font-size: 28px;
-      margin-top: 80px;
+      margin-top: 100px; /* Logo ile çakışmaması için */
       margin-bottom: 40px;
     }
+
     .card {
       background-color: white;
       border: 1px solid #ddd;
@@ -41,20 +47,24 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       overflow: hidden;
     }
+
     .card img {
       width: 100%;
       height: auto;
       object-fit: cover;
     }
+
     .card-content {
       padding: 16px;
     }
+
     .card a {
       font-size: 18px;
       font-weight: bold;
       color: #0077cc;
       text-decoration: none;
     }
+
     .card a:hover {
       text-decoration: underline;
     }
@@ -69,7 +79,7 @@
   <div class="card">
     <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg" alt="Zeugma Mosaic Museum">
     <div class="card-content">
-      <a href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">📍 Zeugma Mozaik Müzesi</a>
+      <a href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu" target="_blank">📍 Zeugma Mozaik Müzesi</a>
     </div>
   </div>
 
