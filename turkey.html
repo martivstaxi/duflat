@@ -46,15 +46,13 @@
     .city-title {
       margin: 0;
       font-size: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      cursor: pointer;
+      color: #0077cc;
+      transition: color 0.2s;
     }
-    .city-title .code {
-      font-weight: bold;
-      background-color: #f0f0f0;
-      padding: 2px 6px;
-      border-radius: 4px;
+    .city-title:hover {
+      color: #005599;
+      text-decoration: underline;
     }
     .city-photos {
       display: flex;
@@ -69,40 +67,20 @@
     }
     .photo-card {
       flex: 0 0 auto;
-      width: 30%;
-      min-width: 200px;
+      width: 200px;
+      height: 200px;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
       scroll-snap-align: start;
       background-color: white;
+      position: relative;
     }
     .photo-card img {
       width: 100%;
-      height: 150px;
+      height: 100%;
       object-fit: cover;
       display: block;
-    }
-    .photo-info {
-      padding: 10px;
-      text-align: center;
-      font-size: 14px;
-    }
-    .view-more {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: #0077cc;
-      font-weight: bold;
-      transition: transform 0.2s;
-    }
-    .view-more:hover {
-      transform: translateX(3px);
-    }
-    .arrow-icon {
-      margin-left: 5px;
-      font-size: 20px;
     }
     .back-link {
       margin-top: 30px;
@@ -121,12 +99,30 @@
     .placeholder-img {
       background-color: #e0e0e0;
       width: 100%;
-      height: 150px;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       color: #666;
       font-size: 14px;
+    }
+    
+    /* Arrow card */
+    .arrow-card {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #0077cc;
+      font-size: 24px;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .arrow-card:hover {
+      background-color: #f0f0f0;
+    }
+    .arrow {
+      font-size: 36px;
     }
   </style>
 </head>
@@ -142,42 +138,42 @@
 
   <script>
     const cities = [
-      { code: "34", name: "İstanbul", alt: "Istanbul", population: 15840900, 
+      { name: "İstanbul", alt: "Istanbul", population: 15840900, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ayasofya" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Sultanahmet Camii" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Galata Kulesi" }
         ]
       },
-      { code: "06", name: "Ankara", alt: "Ankara", population: 5747325, 
+      { name: "Ankara", alt: "Ankara", population: 5747325, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Anıtkabir" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ankara Kalesi" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kocatepe Camii" }
         ]
       },
-      { code: "35", name: "İzmir", alt: "Izmir", population: 4477367, 
+      { name: "İzmir", alt: "Izmir", population: 4477367, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Saat Kulesi" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kordon" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Efes Antik Kenti" }
         ]
       },
-      { code: "16", name: "Bursa", alt: "Bursa", population: 3195957, 
+      { name: "Bursa", alt: "Bursa", population: 3195957, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ulu Cami" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Uludağ" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Koza Han" }
         ]
       },
-      { code: "07", name: "Antalya", alt: "Antalya", population: 2671200, 
+      { name: "Antalya", alt: "Antalya", population: 2671200, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kaleiçi" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Düden Şelalesi" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Aspendos" }
         ]
       },
-      { code: "27", name: "Gaziantep", alt: "Gaziantep", population: 2174000, 
+      { name: "Gaziantep", alt: "Gaziantep", population: 2174000, 
         photos: [
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg", name: "Zeugma Mozaik Müzesi" },
           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Gaziantep Kalesi" },
@@ -188,87 +184,87 @@
 
     // Add other cities from the original list - without photos for now
     const allCities = [
-      { code: "42", name: "Konya", alt: "Konya", population: 2369000 },
-      { code: "01", name: "Adana", alt: "Adana", population: 2289800 },
-      { code: "63", name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000 },
-      { code: "41", name: "Kocaeli", alt: "Kocaeli", population: 2027000 },
-      { code: "33", name: "Mersin", alt: "Mersin", population: 1910000 },
-      { code: "21", name: "Diyarbakır", alt: "Diyarbakir", population: 1863000 },
-      { code: "31", name: "Hatay", alt: "Hatay", population: 1693000 },
-      { code: "45", name: "Manisa", alt: "Manisa", population: 1450000 },
-      { code: "38", name: "Kayseri", alt: "Kayseri", population: 1440000 },
-      { code: "55", name: "Samsun", alt: "Samsun", population: 1350000 },
-      { code: "10", name: "Balıkesir", alt: "Balikesir", population: 1325000 },
-      { code: "46", name: "Kahramanmaraş", alt: "Kahramanmaras", population: 1220000 },
-      { code: "65", name: "Van", alt: "Van", population: 1150000 },
-      { code: "09", name: "Aydın", alt: "Aydin", population: 1140000 },
-      { code: "59", name: "Tekirdağ", alt: "Tekirdag", population: 1120000 },
-      { code: "20", name: "Denizli", alt: "Denizli", population: 1050000 },
-      { code: "54", name: "Sakarya", alt: "Sakarya", population: 1080000 },
-      { code: "48", name: "Muğla", alt: "Mugla", population: 1040000 },
-      { code: "26", name: "Eskişehir", alt: "Eskisehir", population: 920000 },
-      { code: "47", name: "Mardin", alt: "Mardin", population: 880000 },
-      { code: "44", name: "Malatya", alt: "Malatya", population: 810000 },
-      { code: "61", name: "Trabzon", alt: "Trabzon", population: 820000 },
-      { code: "52", name: "Ordu", alt: "Ordu", population: 760000 },
-      { code: "25", name: "Erzurum", alt: "Erzurum", population: 760000 },
-      { code: "03", name: "Afyonkarahisar", alt: "Afyon", population: 740000 },
-      { code: "72", name: "Batman", alt: "Batman", population: 630000 },
-      { code: "02", name: "Adıyaman", alt: "Adiyaman", population: 620000 },
-      { code: "60", name: "Tokat", alt: "Tokat", population: 600000 },
-      { code: "67", name: "Zonguldak", alt: "Zonguldak", population: 590000 },
-      { code: "23", name: "Elazığ", alt: "Elazig", population: 580000 },
-      { code: "43", name: "Kütahya", alt: "Kutahya", population: 580000 },
-      { code: "73", name: "Şırnak", alt: "Sirnak", population: 550000 },
-      { code: "04", name: "Ağrı", alt: "Agri", population: 530000 },
-      { code: "19", name: "Çorum", alt: "Corum", population: 530000 },
-      { code: "17", name: "Çanakkale", alt: "Canakkale", population: 560000 },
-      { code: "80", name: "Osmaniye", alt: "Osmaniye", population: 560000 },
-      { code: "32", name: "Isparta", alt: "Isparta", population: 460000 },
-      { code: "28", name: "Giresun", alt: "Giresun", population: 450000 },
-      { code: "68", name: "Aksaray", alt: "Aksaray", population: 430000 },
-      { code: "66", name: "Yozgat", alt: "Yozgat", population: 420000 },
-      { code: "22", name: "Edirne", alt: "Edirne", population: 410000 },
-      { code: "81", name: "Düzce", alt: "Duzce", population: 400000 },
-      { code: "37", name: "Kastamonu", alt: "Kastamonu", population: 380000 },
-      { code: "51", name: "Niğde", alt: "Nigde", population: 370000 },
-      { code: "64", name: "Uşak", alt: "Usak", population: 370000 },
-      { code: "39", name: "Kırklareli", alt: "Kirklareli", population: 360000 },
-      { code: "13", name: "Bitlis", alt: "Bitlis", population: 350000 },
-      { code: "53", name: "Rize", alt: "Rize", population: 350000 },
-      { code: "05", name: "Amasya", alt: "Amasya", population: 330000 },
-      { code: "56", name: "Siirt", alt: "Siirt", population: 330000 },
-      { code: "14", name: "Bolu", alt: "Bolu", population: 320000 },
-      { code: "50", name: "Nevşehir", alt: "Nevsehir", population: 310000 },
-      { code: "77", name: "Yalova", alt: "Yalova", population: 300000 },
-      { code: "36", name: "Kars", alt: "Kars", population: 280000 },
-      { code: "30", name: "Hakkari", alt: "Hakkari", population: 280000 },
-      { code: "12", name: "Bingöl", alt: "Bingol", population: 280000 },
-      { code: "49", name: "Muş", alt: "Mus", population: 270000 },
-      { code: "71", name: "Kırıkkale", alt: "Kirikkale", population: 270000 },
-      { code: "70", name: "Karaman", alt: "Karaman", population: 260000 },
-      { code: "40", name: "Kırşehir", alt: "Kirsehir", population: 250000 },
-      { code: "78", name: "Karabük", alt: "Karabuk", population: 250000 },
-      { code: "24", name: "Erzincan", alt: "Erzincan", population: 240000 },
-      { code: "11", name: "Bilecik", alt: "Bilecik", population: 230000 },
-      { code: "57", name: "Sinop", alt: "Sinop", population: 220000 },
-      { code: "74", name: "Bartın", alt: "Bartin", population: 200000 },
-      { code: "76", name: "Iğdır", alt: "Igdir", population: 200000 },
-      { code: "08", name: "Artvin", alt: "Artvin", population: 170000 },
-      { code: "79", name: "Kilis", alt: "Kilis", population: 150000 },
-      { code: "75", name: "Ardahan", alt: "Ardahan", population: 94000 },
-      { code: "69", name: "Bayburt", alt: "Bayburt", population: 87000 },
-      { code: "62", name: "Tunceli", alt: "Tunceli", population: 85000 },
-      { code: "15", name: "Burdur", alt: "Burdur", population: 273000 },
-      { code: "18", name: "Çankırı", alt: "Cankiri", population: 195000 },
-      { code: "29", name: "Gümüşhane", alt: "Gumushane", population: 145000 },
-      { code: "58", name: "Sivas", alt: "Sivas", population: 635000 }  
+      { name: "Konya", alt: "Konya", population: 2369000 },
+      { name: "Adana", alt: "Adana", population: 2289800 },
+      { name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000 },
+      { name: "Kocaeli", alt: "Kocaeli", population: 2027000 },
+      { name: "Mersin", alt: "Mersin", population: 1910000 },
+      { name: "Diyarbakır", alt: "Diyarbakir", population: 1863000 },
+      { name: "Hatay", alt: "Hatay", population: 1693000 },
+      { name: "Manisa", alt: "Manisa", population: 1450000 },
+      { name: "Kayseri", alt: "Kayseri", population: 1440000 },
+      { name: "Samsun", alt: "Samsun", population: 1350000 },
+      { name: "Balıkesir", alt: "Balikesir", population: 1325000 },
+      { name: "Kahramanmaraş", alt: "Kahramanmaras", population: 1220000 },
+      { name: "Van", alt: "Van", population: 1150000 },
+      { name: "Aydın", alt: "Aydin", population: 1140000 },
+      { name: "Tekirdağ", alt: "Tekirdag", population: 1120000 },
+      { name: "Denizli", alt: "Denizli", population: 1050000 },
+      { name: "Sakarya", alt: "Sakarya", population: 1080000 },
+      { name: "Muğla", alt: "Mugla", population: 1040000 },
+      { name: "Eskişehir", alt: "Eskisehir", population: 920000 },
+      { name: "Mardin", alt: "Mardin", population: 880000 },
+      { name: "Malatya", alt: "Malatya", population: 810000 },
+      { name: "Trabzon", alt: "Trabzon", population: 820000 },
+      { name: "Ordu", alt: "Ordu", population: 760000 },
+      { name: "Erzurum", alt: "Erzurum", population: 760000 },
+      { name: "Afyonkarahisar", alt: "Afyon", population: 740000 },
+      { name: "Batman", alt: "Batman", population: 630000 },
+      { name: "Adıyaman", alt: "Adiyaman", population: 620000 },
+      { name: "Tokat", alt: "Tokat", population: 600000 },
+      { name: "Zonguldak", alt: "Zonguldak", population: 590000 },
+      { name: "Elazığ", alt: "Elazig", population: 580000 },
+      { name: "Kütahya", alt: "Kutahya", population: 580000 },
+      { name: "Şırnak", alt: "Sirnak", population: 550000 },
+      { name: "Ağrı", alt: "Agri", population: 530000 },
+      { name: "Çorum", alt: "Corum", population: 530000 },
+      { name: "Çanakkale", alt: "Canakkale", population: 560000 },
+      { name: "Osmaniye", alt: "Osmaniye", population: 560000 },
+      { name: "Isparta", alt: "Isparta", population: 460000 },
+      { name: "Giresun", alt: "Giresun", population: 450000 },
+      { name: "Aksaray", alt: "Aksaray", population: 430000 },
+      { name: "Yozgat", alt: "Yozgat", population: 420000 },
+      { name: "Edirne", alt: "Edirne", population: 410000 },
+      { name: "Düzce", alt: "Duzce", population: 400000 },
+      { name: "Kastamonu", alt: "Kastamonu", population: 380000 },
+      { name: "Niğde", alt: "Nigde", population: 370000 },
+      { name: "Uşak", alt: "Usak", population: 370000 },
+      { name: "Kırklareli", alt: "Kirklareli", population: 360000 },
+      { name: "Bitlis", alt: "Bitlis", population: 350000 },
+      { name: "Rize", alt: "Rize", population: 350000 },
+      { name: "Amasya", alt: "Amasya", population: 330000 },
+      { name: "Siirt", alt: "Siirt", population: 330000 },
+      { name: "Bolu", alt: "Bolu", population: 320000 },
+      { name: "Nevşehir", alt: "Nevsehir", population: 310000 },
+      { name: "Yalova", alt: "Yalova", population: 300000 },
+      { name: "Kars", alt: "Kars", population: 280000 },
+      { name: "Hakkari", alt: "Hakkari", population: 280000 },
+      { name: "Bingöl", alt: "Bingol", population: 280000 },
+      { name: "Muş", alt: "Mus", population: 270000 },
+      { name: "Kırıkkale", alt: "Kirikkale", population: 270000 },
+      { name: "Karaman", alt: "Karaman", population: 260000 },
+      { name: "Kırşehir", alt: "Kirsehir", population: 250000 },
+      { name: "Karabük", alt: "Karabuk", population: 250000 },
+      { name: "Erzincan", alt: "Erzincan", population: 240000 },
+      { name: "Bilecik", alt: "Bilecik", population: 230000 },
+      { name: "Sinop", alt: "Sinop", population: 220000 },
+      { name: "Bartın", alt: "Bartin", population: 200000 },
+      { name: "Iğdır", alt: "Igdir", population: 200000 },
+      { name: "Artvin", alt: "Artvin", population: 170000 },
+      { name: "Kilis", alt: "Kilis", population: 150000 },
+      { name: "Ardahan", alt: "Ardahan", population: 94000 },
+      { name: "Bayburt", alt: "Bayburt", population: 87000 },
+      { name: "Tunceli", alt: "Tunceli", population: 85000 },
+      { name: "Burdur", alt: "Burdur", population: 273000 },
+      { name: "Çankırı", alt: "Cankiri", population: 195000 },
+      { name: "Gümüşhane", alt: "Gumushane", population: 145000 },
+      { name: "Sivas", alt: "Sivas", population: 635000 }  
     ];
 
     // Create placeholder photos for cities without photos
     allCities.forEach(city => {
       // Check if city already exists in cities array
-      const existingCity = cities.find(c => c.code === city.code);
+      const existingCity = cities.find(c => c.name === city.name);
       if (!existingCity) {
         cities.push({
           ...city,
@@ -298,22 +294,19 @@
       
       const cityTitle = document.createElement('h2');
       cityTitle.className = 'city-title';
-      cityTitle.innerHTML = `<span class="code">${city.code}</span>${city.name}`;
-      
-      const viewMore = document.createElement('a');
-      viewMore.className = 'view-more';
-      viewMore.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
-      viewMore.innerHTML = '》》》》';
+      cityTitle.textContent = city.name;
+      cityTitle.onclick = function() {
+        window.location.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
+      };
       
       cityHeader.appendChild(cityTitle);
-      cityHeader.appendChild(viewMore);
       
       // Create photos container
       const photosContainer = document.createElement('div');
       photosContainer.className = 'city-photos';
       
-      // Add photos
-      city.photos.forEach(photo => {
+      // Add photos (only 3)
+      city.photos.slice(0, 3).forEach(photo => {
         const photoCard = document.createElement('div');
         photoCard.className = 'photo-card';
         
@@ -321,7 +314,6 @@
           // Create placeholder div
           const placeholder = document.createElement('div');
           placeholder.className = 'placeholder-img';
-          placeholder.textContent = photo.name;
           photoCard.appendChild(placeholder);
         } else {
           // Create actual image
@@ -331,13 +323,20 @@
           photoCard.appendChild(img);
         }
         
-        const photoInfo = document.createElement('div');
-        photoInfo.className = 'photo-info';
-        photoInfo.textContent = photo.name;
-        
-        photoCard.appendChild(photoInfo);
         photosContainer.appendChild(photoCard);
       });
+      
+      // Add arrow card as 4th element
+      const arrowCard = document.createElement('a');
+      arrowCard.className = 'photo-card arrow-card';
+      arrowCard.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
+      
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow';
+      arrow.innerHTML = '→';
+      arrowCard.appendChild(arrow);
+      
+      photosContainer.appendChild(arrowCard);
       
       citySection.appendChild(cityHeader);
       citySection.appendChild(photosContainer);
