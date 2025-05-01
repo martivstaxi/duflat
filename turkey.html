@@ -8,67 +8,188 @@
     body {
       font-family: sans-serif;
       text-align: center;
-      padding: 30px;
+      padding: 20px;
       overflow-y: auto;
+      background-color: #f5f5f5;
     }
-    h1 { font-size: 26px; }
+    h1 { 
+      font-size: 26px; 
+      margin-bottom: 20px;
+    }
     input[type="text"] {
       padding: 10px;
       width: 80%;
       max-width: 400px;
-      margin: 20px 0 40px 0;
+      margin: 20px 0 30px 0;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
     }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .card {
-      width: 120px;
-      padding: 16px;
-      border: 1px solid #ddd;
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
       border-radius: 10px;
-      text-decoration: none;
-      color: #000;
-      transition: 0.2s;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .city-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
     }
-    .card:hover {
-      background-color: #f9f9f9;
-      transform: scale(1.03);
-    }
-    .code {
+    .city-title {
+      margin: 0;
       font-size: 20px;
-      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .name {
-      margin-top: 6px;
-      font-size: 16px;
+    .city-title .code {
+      font-weight: bold;
+      background-color: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    .photo-card {
+      flex: 0 0 auto;
+      width: 30%;
+      min-width: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+    }
+    .photo-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+    }
+    .photo-info {
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .view-more {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #0077cc;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    .view-more:hover {
+      transform: translateX(3px);
+    }
+    .arrow-icon {
+      margin-left: 5px;
+      font-size: 20px;
+    }
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Placeholder images */
+    .placeholder-img {
+      background-color: #e0e0e0;
+      width: 100%;
+      height: 150px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #666;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <h1>🇹🇷 Türkiye</h1>
   <input type="text" id="searchInput" placeholder="İl ara... / Search city...">
-  <div class="grid" id="cityGrid"></div>
-  <p><a href="index.html">← Ülkelere dön</a></p>
+  
+  <div id="citiesContainer">
+    <!-- Cities will be dynamically added here -->
+  </div>
+  
+  <p><a href="index.html" class="back-link">← Ülkelere dön</a></p>
 
   <script>
     const cities = [
-      { code: "34", name: "İstanbul", alt: "Istanbul", population: 15840900 },
-      { code: "06", name: "Ankara", alt: "Ankara", population: 5747325 },
-      { code: "35", name: "İzmir", alt: "Izmir", population: 4477367 },
-      { code: "16", name: "Bursa", alt: "Bursa", population: 3195957 },
-      { code: "07", name: "Antalya", alt: "Antalya", population: 2671200 },
+      { code: "34", name: "İstanbul", alt: "Istanbul", population: 15840900, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ayasofya" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Sultanahmet Camii" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Galata Kulesi" }
+        ]
+      },
+      { code: "06", name: "Ankara", alt: "Ankara", population: 5747325, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Anıtkabir" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ankara Kalesi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kocatepe Camii" }
+        ]
+      },
+      { code: "35", name: "İzmir", alt: "Izmir", population: 4477367, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Saat Kulesi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kordon" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Efes Antik Kenti" }
+        ]
+      },
+      { code: "16", name: "Bursa", alt: "Bursa", population: 3195957, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Ulu Cami" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Uludağ" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Koza Han" }
+        ]
+      },
+      { code: "07", name: "Antalya", alt: "Antalya", population: 2671200, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kaleiçi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Düden Şelalesi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Aspendos" }
+        ]
+      },
+      { code: "27", name: "Gaziantep", alt: "Gaziantep", population: 2174000, 
+        photos: [
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg", name: "Zeugma Mozaik Müzesi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Gaziantep Kalesi" },
+          { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Bakırcılar Çarşısı" }
+        ]
+      }
+    ];
+
+    // Add other cities from the original list - without photos for now
+    const allCities = [
       { code: "42", name: "Konya", alt: "Konya", population: 2369000 },
       { code: "01", name: "Adana", alt: "Adana", population: 2289800 },
-      { code: "27", name: "Gaziantep", alt: "Gaziantep", population: 2174000 },
       { code: "63", name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000 },
       { code: "41", name: "Kocaeli", alt: "Kocaeli", population: 2027000 },
       { code: "33", name: "Mersin", alt: "Mersin", population: 1910000 },
@@ -138,30 +259,99 @@
       { code: "75", name: "Ardahan", alt: "Ardahan", population: 94000 },
       { code: "69", name: "Bayburt", alt: "Bayburt", population: 87000 },
       { code: "62", name: "Tunceli", alt: "Tunceli", population: 85000 },
-      { code: "79", name: "Burdur", alt: "burdur", population: 273000 },
-      { code: "75", name: "Çankırı", alt: "Cankiri", population: 195000 },
-      { code: "69", name: "Gümüşhane", alt: "Gumushane", population: 145000 },
-      { code: "62", name: "Sivas", alt: "Sivas", population: 635000 },  
+      { code: "15", name: "Burdur", alt: "Burdur", population: 273000 },
+      { code: "18", name: "Çankırı", alt: "Cankiri", population: 195000 },
+      { code: "29", name: "Gümüşhane", alt: "Gumushane", population: 145000 },
+      { code: "58", name: "Sivas", alt: "Sivas", population: 635000 }  
     ];
 
-    cities.sort((a, b) => b.population - a.population);
-
-    const container = document.getElementById('cityGrid');
-    cities.forEach(city => {
-      const link = document.createElement('a');
-      link.className = 'card';
-      link.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
-      link.setAttribute('data-search', (city.name + ' ' + city.alt).toLowerCase());
-      link.innerHTML = `<div class="code">${city.code}</div><div class="name">${city.name}</div>`;
-      container.appendChild(link);
+    // Create placeholder photos for cities without photos
+    allCities.forEach(city => {
+      // Check if city already exists in cities array
+      const existingCity = cities.find(c => c.code === city.code);
+      if (!existingCity) {
+        cities.push({
+          ...city,
+          photos: [
+            { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 1" },
+            { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 2" },
+            { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 3" }
+          ]
+        });
+      }
     });
 
+    // Sort cities by population
+    cities.sort((a, b) => b.population - a.population);
+
+    const container = document.getElementById('citiesContainer');
+    
+    // Create city sections with photos
+    cities.forEach(city => {
+      const citySection = document.createElement('div');
+      citySection.className = 'city-section';
+      citySection.setAttribute('data-search', `${city.name.toLowerCase()} ${city.alt.toLowerCase()}`);
+      
+      // Create city header
+      const cityHeader = document.createElement('div');
+      cityHeader.className = 'city-header';
+      
+      const cityTitle = document.createElement('h2');
+      cityTitle.className = 'city-title';
+      cityTitle.innerHTML = `<span class="code">${city.code}</span>${city.name}`;
+      
+      const viewMore = document.createElement('a');
+      viewMore.className = 'view-more';
+      viewMore.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
+      viewMore.innerHTML = 'Daha fazla göster <span class="arrow-icon">→</span>';
+      
+      cityHeader.appendChild(cityTitle);
+      cityHeader.appendChild(viewMore);
+      
+      // Create photos container
+      const photosContainer = document.createElement('div');
+      photosContainer.className = 'city-photos';
+      
+      // Add photos
+      city.photos.forEach(photo => {
+        const photoCard = document.createElement('div');
+        photoCard.className = 'photo-card';
+        
+        if (photo.url === "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg") {
+          // Create placeholder div
+          const placeholder = document.createElement('div');
+          placeholder.className = 'placeholder-img';
+          placeholder.textContent = photo.name;
+          photoCard.appendChild(placeholder);
+        } else {
+          // Create actual image
+          const img = document.createElement('img');
+          img.src = photo.url;
+          img.alt = photo.name;
+          photoCard.appendChild(img);
+        }
+        
+        const photoInfo = document.createElement('div');
+        photoInfo.className = 'photo-info';
+        photoInfo.textContent = photo.name;
+        
+        photoCard.appendChild(photoInfo);
+        photosContainer.appendChild(photoCard);
+      });
+      
+      citySection.appendChild(cityHeader);
+      citySection.appendChild(photosContainer);
+      
+      container.appendChild(citySection);
+    });
+
+    // Search functionality
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', () => {
       const value = searchInput.value.toLowerCase();
-      document.querySelectorAll('.card').forEach(card => {
-        const searchText = card.getAttribute('data-search') || card.textContent.toLowerCase();
-        card.style.display = searchText.includes(value) ? 'inline-block' : 'none';
+      document.querySelectorAll('.city-section').forEach(section => {
+        const searchText = section.getAttribute('data-search');
+        section.classList.toggle('hidden', !searchText.includes(value));
       });
     });
   </script>
