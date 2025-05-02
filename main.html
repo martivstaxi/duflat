@@ -72,40 +72,40 @@
   </script>
 </head>
 <body>
-
   <h1 id="title">🌐 Bir ülke seçin</h1>
   <input type="text" id="searchInput" placeholder="Ülke ara...">
-
   <div class="grid" id="countryGrid"></div>
-
   <script>
     const lang = navigator.language || navigator.userLanguage;
     if (!lang.startsWith('tr')) {
       document.getElementById('title').textContent = '🌐 Select a Country';
       document.getElementById('searchInput').placeholder = 'Search country...';
     }
-
     async function loadCountries() {
       const response = await fetch('https://restcountries.com/v3.1/all');
       let data = await response.json();
-
       // Türkiye en başta olacak şekilde sırala
       data.sort((a, b) => {
         if (a.cca2 === 'TR') return -1;
         if (b.cca2 === 'TR') return 1;
         return a.name.common.localeCompare(b.name.common);
       });
-
       const container = document.getElementById('countryGrid');
-
       data.forEach(country => {
         const code = country.cca2;
         let nameTR = country.translations?.tur?.common || country.name.common;
         const nameEN = country.name.common;
         if (code === 'TR') nameTR = 'Türkiye';
-        const href = `${nameEN.toLowerCase().replace(/ /g, '')}.html`;
+        
+        // Türkiye için özel yönlendirme
+        let href;
+        if (code === 'TR') {
+          href = 'turkiye.html';
+        } else {
+          href = `${nameEN.toLowerCase().replace(/ /g, '')}.html`;
+        }
+        
         const flag = country.flags?.png || '';
-
         const link = document.createElement('a');
         link.className = 'card';
         link.href = href;
@@ -116,13 +116,10 @@
             ${lang.startsWith('tr') ? nameTR : (code === 'TR' ? 'Türkiye' : nameEN)}
           </div>
         `;
-
         container.appendChild(link);
       });
     }
-
     loadCountries();
-
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', () => {
       const value = searchInput.value.toLowerCase();
