@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İstanbul</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      background-color: #f9f9f9;
+      color: #333;
+      text-align: center;
+      position: relative;
+    }
+    /* Ortalanmış logo */
+    .logo {
+      display: block;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+      margin: 0 auto;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    h1 {
+      font-size: 28px;
+      margin-top: 100px; /* Logo ile çakışmaması için */
+      margin-bottom: 40px;
+    }
+    .card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      max-width: 360px;
+      margin: 0 auto;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+    .card-content {
+      padding: 16px;
+    }
+    .card a {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    .card a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 İstanbul</h1>
+  <!-- 1. Görsel - Aydos Tepesi -->
+  <div class="card">
+    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Tepesi">
+    <div class="card-content">
+      <a href="https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul)" target="_blank">📍 Aydos Tepesi</a>
+    </div>
+  </div>
+  <!-- 2. Görsel - Ayasofya -->
+  <div class="card" style="margin-top: 40px;">
+    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Tepesi">
+    </div>
+  </div>
+  <!-- 3. Görsel - Galata Kulesi -->
+  <div class="card" style="margin-top: 40px;">
+    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/2_uywskn.jpg" alt="Aydos Tepesi">
+    <div class="card-content">
+    </div>
+  </div>
+</body>
+</html>
