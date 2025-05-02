@@ -12,53 +12,83 @@
   <style>
     body {
       font-family: sans-serif;
-      padding: 40px;
-      background-color: #f9f9f9;
-      color: #333;
       text-align: center;
-      position: relative;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
     }
-    /* Ortalanmış logo */
+
     .logo {
-      display: block;
+      position: absolute;
+      top: 20px;
+      left: 20px;
       font-size: 28px;
       text-decoration: none;
       color: black;
-      margin: 0 auto;
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
     }
-    h1 {
-      font-size: 28px;
-      margin-top: 100px; /* Logo ile çakışmaması için */
-      margin-bottom: 40px;
+    
+    h1 { 
+      font-size: 26px; 
+      margin-top: 80px;
+      margin-bottom: 30px;
     }
-    .card {
-      background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      max-width: 360px;
+
+    .photos-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      max-width: 1000px;
       margin: 0 auto;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    
+    .photo-card {
+      flex: 0 0 300px;
+      height: 300px;
+      border-radius: 8px;
       overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      background-color: white;
+      position: relative;
+      margin-bottom: 20px;
     }
-    .card img {
+    
+    .photo-card img {
       width: 100%;
-      height: auto;
+      height: 100%;
       object-fit: cover;
+      display: block;
     }
-    .card-content {
-      padding: 16px;
+    
+    .photo-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px;
+      text-align: center;
     }
-    .card a {
-      font-size: 18px;
+    
+    .photo-info a {
+      font-size: 16px;
       font-weight: bold;
       color: #0077cc;
       text-decoration: none;
     }
-    .card a:hover {
+    
+    .photo-info a:hover {
+      text-decoration: underline;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
       text-decoration: underline;
     }
   </style>
@@ -67,23 +97,33 @@
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 İstanbul</h1>
-  <!-- 1. Görsel - Aydos Tepesi -->
-  <div class="card">
-    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Tepesi">
-    <div class="card-content">
-      <a href="https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul)" target="_blank">📍 Aydos Tepesi</a>
+  
+  <div class="photos-container">
+    <!-- 1. Görsel - Aydos Yaylası -->
+    <div class="photo-card">
+      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Yaylası">
+      <div class="photo-info">
+        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
+      </div>
+    </div>
+    
+    <!-- 2. Görsel - Aydos Yaylası -->
+    <div class="photo-card">
+      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Yaylası">
+      <div class="photo-info">
+        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
+      </div>
+    </div>
+    
+    <!-- 3. Görsel - Aydos Yaylası -->
+    <div class="photo-card">
+      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/2_uywskn.jpg" alt="Aydos Yaylası">
+      <div class="photo-info">
+        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
+      </div>
     </div>
   </div>
-  <!-- 2. Görsel - Ayasofya -->
-  <div class="card" style="margin-top: 40px;">
-    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Tepesi">
-    </div>
-  </div>
-  <!-- 3. Görsel - Galata Kulesi -->
-  <div class="card" style="margin-top: 40px;">
-    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/2_uywskn.jpg" alt="Aydos Tepesi">
-    <div class="card-content">
-    </div>
-  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
 </html>
