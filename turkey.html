@@ -314,8 +314,10 @@
       const cityTitle = document.createElement('h2');
       cityTitle.className = 'city-title';
       cityTitle.textContent = city.name;
+      
+      // Use alt property for file name instead of transforming the Turkish name
       cityTitle.onclick = function() {
-        window.location.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
+        window.location.href = `${city.alt.toLowerCase()}.html`;
       };
       
       cityHeader.appendChild(cityTitle);
@@ -348,7 +350,8 @@
       // Add arrow card as 4th element
       const arrowCard = document.createElement('a');
       arrowCard.className = 'photo-card arrow-card';
-      arrowCard.href = `${city.name.toLowerCase().replace(/ğ/g,'g').replace(/ş/g,'s').replace(/ü/g,'u').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')}.html`;
+      // Use alt property for file name
+      arrowCard.href = `${city.alt.toLowerCase()}.html`;
       
       const arrow = document.createElement('div');
       arrow.className = 'arrow';
