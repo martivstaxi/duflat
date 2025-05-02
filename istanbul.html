@@ -17,7 +17,6 @@
       overflow-y: auto;
       background-color: #f5f5f5;
     }
-
     .logo {
       position: absolute;
       top: 20px;
@@ -32,25 +31,56 @@
       margin-top: 80px;
       margin-bottom: 30px;
     }
-
-    .photos-container {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       max-width: 1000px;
-      margin: 0 auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
     }
     
     .photo-card {
-      flex: 0 0 300px;
-      height: 300px;
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
       background-color: white;
       position: relative;
-      margin-bottom: 20px;
     }
     
     .photo-card img {
@@ -58,27 +88,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-    }
-    
-    .photo-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 12px;
-      text-align: center;
-    }
-    
-    .photo-info a {
-      font-size: 16px;
-      font-weight: bold;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    
-    .photo-info a:hover {
-      text-decoration: underline;
     }
     
     .back-link {
@@ -91,6 +100,19 @@
     .back-link:hover {
       text-decoration: underline;
     }
+    
+    .location-link {
+      text-decoration: none;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -98,28 +120,26 @@
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 İstanbul</h1>
   
-  <div class="photos-container">
-    <!-- 1. Görsel - Aydos Yaylası -->
-    <div class="photo-card">
-      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Yaylası">
-      <div class="photo-info">
-        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
-      </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">Aydos Tepesi</h2>
+      <a href="https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul" target="_blank" class="location-link">📍 Konum</a>
     </div>
     
-    <!-- 2. Görsel - Aydos Yaylası -->
-    <div class="photo-card">
-      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Yaylası">
-      <div class="photo-info">
-        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
+    <div class="city-photos">
+      <!-- 1. Görsel - Aydos Tepesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Tepesi">
       </div>
-    </div>
-    
-    <!-- 3. Görsel - Aydos Yaylası -->
-    <div class="photo-card">
-      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/2_uywskn.jpg" alt="Aydos Yaylası">
-      <div class="photo-info">
-        <a href="https://maps.google.com/?q=Aydos+Yaylası%2C+Istanbul" target="_blank">📍 Aydos Yaylası</a>
+      
+      <!-- 2. Görsel - Aydos Tepesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Tepesi">
+      </div>
+      
+      <!-- 3. Görsel - Aydos Tepesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/2_uywskn.jpg" alt="Aydos Tepesi">
       </div>
     </div>
   </div>
