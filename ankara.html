@@ -1,0 +1,251 @@
+<!DOCTYPE html>  
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ankara</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 { 
+      font-size: 26px; 
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: none;
+      color: #0077cc;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Ankara</h1>
+  
+  <!-- Nallıhan Kuş Cenneti Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Nallıhan+Kuş+Cenneti+Ankara" target="_blank" class="location-link">Nallıhan Kuş Cenneti 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Nallıhan Kuş Cenneti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746226003/1_jwodo4.jpg" alt="Nallıhan Kuş Cenneti">
+      </div>
+      
+      <!-- 2. Görsel - Nallıhan Kuş Cenneti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746226003/2_ronmfx.jpg" alt="Nallıhan Kuş Cenneti">
+      </div>
+      
+      <!-- 3. Görsel - Nallıhan Kuş Cenneti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746226002/3_imcvxz.jpg" alt="Nallıhan Kuş Cenneti">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tuz Gölü (Şereflikoçhisar) Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Tuz+Gölü+Ankara" target="_blank" class="location-link">Tuz Gölü (Şereflikoçhisar) 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Tuz Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746221601/1_nriye3.jpg" alt="Tuz Gölü">
+      </div>
+      
+      <!-- 2. Görsel - Tuz Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746221601/3_z1scln.jpg" alt="Tuz Gölü">
+      </div>
+      
+      <!-- 3. Görsel - Tuz Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746221601/2_atsik6.jpg" alt="Tuz Gölü">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mogan Gölü Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Mogan+Gölü+Ankara" target="_blank" class="location-link">Mogan Gölü 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Mogan Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746225242/1_kts9bj.jpg" alt="Mogan Gölü">
+      </div>
+      
+      <!-- 2. Görsel - Mogan Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746225241/2_meahfp.jpg" alt="Mogan Gölü">
+      </div>
+      
+      <!-- 3. Görsel - Mogan Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746225242/3_bqble6.jpg" alt="Mogan Gölü">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Eymir Gölü Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Eymir+Gölü+Ankara" target="_blank" class="location-link">Eymir Gölü 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Eymir Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746222590/1_opd2vk.jpg" alt="Eymir Gölü">
+      </div>
+      
+      <!-- 2. Görsel - Eymir Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746222590/2_cwnk6l.jpg" alt="Eymir Gölü">
+      </div>
+      
+      <!-- 3. Görsel - Eymir Gölü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746222590/3_xgk6q3.jpg" alt="Eymir Gölü">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Hamamönü Tarihi Evleri Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Hamamonu+Historical+Ankara+Houses/@39.9320883,32.8661837,18.58z/data=!4m6!3m5!1s0x14d34e437b54184b:0x2fc41aae5bc2045f!8m2!3d39.9317783!4d32.866988!16s%2Fg%2F11g7335p0w?entry=ttu&g_ep=EgoyMDI1MDQyOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">Hamamönü Tarihi Evleri 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Hamamönü Tarihi Evleri -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746224069/1_dzilql.jpg" alt="Hamamönü Tarihi Evleri">
+      </div>
+      
+      <!-- 2. Görsel - Hamamönü Tarihi Evleri -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746224068/2_dc59lh.jpg" alt="Hamamönü Tarihi Evleri">
+      </div>
+      
+      <!-- 3. Görsel - Hamamönü Tarihi Evleri -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746224069/3_oz658u.jpg" alt="Hamamönü Tarihi Evleri">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
