@@ -136,8 +136,9 @@
      .arrow-card:hover {
        background-color: #f0f0f0;
      }
-     .arrow {
-       font-size: 36px;
+     .mouse-click {
+       width: 40px;
+       height: 40px;
      }
    </style>
  </head>
@@ -203,11 +204,41 @@
  
      // Add other cities from the original list - without photos for now
      const allCities = [
-       { name: "Konya", alt: "Konya", population: 2369000 },
-       { name: "Adana", alt: "Adana", population: 2289800 },
-       { name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000 },
-       { name: "Kocaeli", alt: "Kocaeli", population: 2027000 },
-       { name: "Mersin", alt: "Mersin", population: 1910000 },
+       { name: "Konya", alt: "Konya", population: 2369000,
+         photos: [
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Mevlana Müzesi" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Konya Merkez" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Selimiye Camii" }
+         ]
+       },
+       { name: "Adana", alt: "Adana", population: 2289800,
+         photos: [
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Taş Köprü" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Sabancı Merkez Camii" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Adana Merkez" }
+         ]
+       },
+       { name: "Şanlıurfa", alt: "Sanliurfa", population: 2155000,
+         photos: [
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Balıklı Göl" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Göbeklitepe" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Şanlıurfa Kalesi" }
+         ]
+       },
+       { name: "Kocaeli", alt: "Kocaeli", population: 2027000,
+         photos: [
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "İzmit Saat Kulesi" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kocaeli Körfezi" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kartepe" }
+         ]
+       },
+       { name: "Mersin", alt: "Mersin", population: 1910000,
+         photos: [
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Mersin Limanı" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Kızkalesi" },
+           { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: "Cennet Cehennem Mağaraları" }
+         ]
+       },
        { name: "Diyarbakır", alt: "Diyarbakir", population: 1863000 },
        { name: "Hatay", alt: "Hatay", population: 1693000 },
        { name: "Manisa", alt: "Manisa", population: 1450000 },
@@ -285,14 +316,15 @@
        // Check if city already exists in cities array
        const existingCity = cities.find(c => c.name === city.name);
        if (!existingCity) {
-         cities.push({
-           ...city,
-           photos: [
+         // If city doesn't have photos already
+         if (!city.photos) {
+           city.photos = [
              { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 1" },
              { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 2" },
              { url: "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg", name: city.name + " - Görsel 3" }
-           ]
-         });
+           ];
+         }
+         cities.push(city);
        }
      });
  
@@ -347,16 +379,18 @@
          photosContainer.appendChild(photoCard);
        });
        
-       // Add arrow card as 4th element
+       // Add arrow card as 4th element with mouse click image
        const arrowCard = document.createElement('a');
        arrowCard.className = 'photo-card arrow-card';
        // Use alt property for file name
        arrowCard.href = `${city.alt.toLowerCase()}.html`;
        
-       const arrow = document.createElement('div');
-       arrow.className = 'arrow';
-       arrow.innerHTML = '>>>';
-       arrowCard.appendChild(arrow);
+       // Mouse click image instead of arrow text
+       const mouseClick = document.createElement('img');
+       mouseClick.className = 'mouse-click';
+       mouseClick.src = "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746294357/mouse_click_nzlacc.png";
+       mouseClick.alt = "Daha fazla görmek için tıklayın";
+       arrowCard.appendChild(mouseClick);
        
        photosContainer.appendChild(arrowCard);
        
