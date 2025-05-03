@@ -1,0 +1,251 @@
+<!DOCTYPE html>  
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İzmir</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 { 
+      font-size: 26px; 
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: none;
+      color: #0077cc;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 İzmir</h1>
+  
+  <!-- Pergamon Antik Kenti Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Pergamon+Antik+Kenti+%C4%B0zmir" target="_blank" class="location-link">Pergamon Antik Kenti 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Pergamon Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746292304/1_euzifa.jpg" alt="Pergamon Antik Kenti">
+      </div>
+      
+      <!-- 2. Görsel - Pergamon Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746292304/2_ebeetn.jpg" alt="Pergamon Antik Kenti">
+      </div>
+      
+      <!-- 3. Görsel - Pergamon Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746292305/3_etphno.jpg" alt="Pergamon Antik Kenti">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Efes Antik Kenti Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Efes+Antik+Kenti+%C4%B0zmir" target="_blank" class="location-link">Efes Antik Kenti 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Efes Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746288138/1_sm5gwj.jpg" alt="Efes Antik Kenti">
+      </div>
+      
+      <!-- 2. Görsel - Efes Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746288138/2_p0xg8n.jpg" alt="Efes Antik Kenti">
+      </div>
+      
+      <!-- 3. Görsel - Efes Antik Kenti -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746288138/3_cjcbxz.jpg" alt="Efes Antik Kenti">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tarihi Asansör Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Tarihi+Asans%C3%B6r+%C4%B0zmir" target="_blank" class="location-link">Tarihi Asansör 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Tarihi Asansör -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746291728/1_h5l79l.jpg" alt="Tarihi Asansör">
+      </div>
+      
+      <!-- 2. Görsel - Tarihi Asansör -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746291728/2_wagfaw.jpg" alt="Tarihi Asansör">
+      </div>
+      
+      <!-- 3. Görsel - Tarihi Asansör -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746291728/3_z6or49.jpg" alt="Tarihi Asansör">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Şirince Köyü Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C5%9Eirince+K%C3%B6y%C3%BC+%C4%B0zmir" target="_blank" class="location-link">Şirince Köyü 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Şirince Köyü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746289292/1_ma4c0e.jpg" alt="Şirince Köyü">
+      </div>
+      
+      <!-- 2. Görsel - Şirince Köyü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746289292/3_tnkyex.jpg" alt="Şirince Köyü">
+      </div>
+      
+      <!-- 3. Görsel - Şirince Köyü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746289292/4_xdzvqs.jpg" alt="Şirince Köyü">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Kadifekale Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Kadifekale+%C4%B0zmir" target="_blank" class="location-link">Kadifekale 📍</a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Kadifekale -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746290593/1_l0hxi3.jpg" alt="Kadifekale">
+      </div>
+      
+      <!-- 2. Görsel - Kadifekale -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746290593/2_t1ceja.jpg" alt="Kadifekale">
+      </div>
+      
+      <!-- 3. Görsel - Kadifekale -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746290594/3_kbrcif.jpg" alt="Kadifekale">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
