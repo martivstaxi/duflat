@@ -69,6 +69,13 @@
        color: #005599;
        text-decoration: underline;
      }
+     .city-title img {
+       vertical-align: middle;
+       transition: transform 0.2s;
+     }
+     .city-title:hover img {
+       transform: scale(1.1);
+     }
      .city-photos {
        display: flex;
        gap: 15px;
@@ -321,9 +328,28 @@
        
        const cityTitle = document.createElement('h2');
        cityTitle.className = 'city-title';
-       cityTitle.textContent = city.name;
        
-       // Use alt property for file name instead of transforming the Turkish name
+       // Create a container for text and mouse click icon
+       const titleContainer = document.createElement('div');
+       titleContainer.style.display = 'flex';
+       titleContainer.style.alignItems = 'center';
+       titleContainer.style.gap = '5px';
+       
+       // Add city name text
+       const cityText = document.createTextNode(city.name);
+       titleContainer.appendChild(cityText);
+       
+       // Add mouse click icon next to city name
+       const mouseClickIcon = document.createElement('img');
+       mouseClickIcon.src = "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746295198/mouse_click_qqb2nb.png";
+       mouseClickIcon.alt = "Tıkla";
+       mouseClickIcon.style.height = "20px"; // Match text height
+       mouseClickIcon.style.width = "20px";
+       titleContainer.appendChild(mouseClickIcon);
+       
+       cityTitle.appendChild(titleContainer);
+       
+       // Use alt property for file name
        cityTitle.onclick = function() {
          window.location.href = `${city.alt.toLowerCase()}.html`;
        };
@@ -334,42 +360,28 @@
        const photosContainer = document.createElement('div');
        photosContainer.className = 'city-photos';
        
-       // Add only 1 photo
+       // Add only 1 photo and make it clickable
        if (city.photos && city.photos.length > 0) {
          const photo = city.photos[0];
-         const photoCard = document.createElement('div');
-         photoCard.className = 'photo-card';
+         const photoLink = document.createElement('a');
+         photoLink.href = `${city.alt.toLowerCase()}.html`;
+         photoLink.className = 'photo-card';
          
          if (photo.url === "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/placeholder.jpg") {
            // Create placeholder div
            const placeholder = document.createElement('div');
            placeholder.className = 'placeholder-img';
-           photoCard.appendChild(placeholder);
+           photoLink.appendChild(placeholder);
          } else {
            // Create actual image
            const img = document.createElement('img');
            img.src = photo.url;
            img.alt = photo.name;
-           photoCard.appendChild(img);
+           photoLink.appendChild(img);
          }
          
-         photosContainer.appendChild(photoCard);
+         photosContainer.appendChild(photoLink);
        }
-       
-       // Add mouse click card as 2nd element
-       const arrowCard = document.createElement('a');
-       arrowCard.className = 'photo-card arrow-card';
-       // Use alt property for file name
-       arrowCard.href = `${city.alt.toLowerCase()}.html`;
-       
-       // Mouse click image
-       const mouseClick = document.createElement('img');
-       mouseClick.className = 'mouse-click';
-       mouseClick.src = "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746295198/mouse_click_qqb2nb.png";
-       mouseClick.alt = "Daha fazla görmek için tıklayın";
-       arrowCard.appendChild(mouseClick);
-       
-       photosContainer.appendChild(arrowCard);
        
        citySection.appendChild(cityHeader);
        citySection.appendChild(photosContainer);
