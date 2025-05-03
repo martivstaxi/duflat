@@ -1,0 +1,274 @@
+<!DOCTYPE html>  
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bursa</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 { 
+      font-size: 26px; 
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: none;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+    }
+    
+    .click-icon {
+      height: 20px;
+      margin-right: 5px;
+      content: url("https://res.cloudinary.com/dnkrwesdr/image/upload/v1746300215/left_click_3_qltk7s.png");
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Bursa</h1>
+  
+  <!-- Suuçtu Şelalesi Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Suuçtu Şelalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Suuçtu Şelalesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg" alt="Suuçtu Şelalesi">
+      </div>
+      
+      <!-- 2. Görsel - Suuçtu Şelalesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg" alt="Suuçtu Şelalesi">
+      </div>
+      
+      <!-- 3. Görsel - Suuçtu Şelalesi -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg" alt="Suuçtu Şelalesi">
+      </div>
+    </div>
+  </div>
+  
+  <!-- İnkaya Çınarı Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/%C4%B0nkaya+Historical+Plane+Tree/@40.1823483,29.0141456,17z/data=!3m1!4b1!4m6!3m5!1s0x14ca16698a4b3169:0x17129c940cfc5f91!8m2!3d40.1823442!4d29.0167205!16s%2Fg%2F1ptwq9m42?entry=ttu&g_ep=EgoyMDI1MDQzMC4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          İnkaya Çınarı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - İnkaya Çınarı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg" alt="İnkaya Çınarı">
+      </div>
+      
+      <!-- 2. Görsel - İnkaya Çınarı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg" alt="İnkaya Çınarı">
+      </div>
+      
+      <!-- 3. Görsel - İnkaya Çınarı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg" alt="İnkaya Çınarı">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Irgandı Köprüsü Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Irgand%C4%B1+K%C3%B6pr%C3%BCs%C3%BC%2C+Bursa" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Irgandı Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Irgandı Köprüsü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/1_c2ar7m.jpg" alt="Irgandı Köprüsü">
+      </div>
+      
+      <!-- 2. Görsel - Irgandı Köprüsü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/2_sbnu8i.jpg" alt="Irgandı Köprüsü">
+      </div>
+      
+      <!-- 3. Görsel - Irgandı Köprüsü -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306422/3_dski91.jpg" alt="Irgandı Köprüsü">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Gölyazı Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=G%C3%B6lyaz%C4%B1%2C+Bursa" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Gölyazı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Gölyazı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/1_lfmzfo.jpg" alt="Gölyazı">
+      </div>
+      
+      <!-- 2. Görsel - Gölyazı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/2_gv5693.jpg" alt="Gölyazı">
+      </div>
+      
+      <!-- 3. Görsel - Gölyazı -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306468/3_s2t7qa.jpg" alt="Gölyazı">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Cumalıkızık Bölümü -->
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Cumal%C4%B1k%C4%B1z%C4%B1k%2C+Bursa" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Cumalıkızık 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <!-- 1. Görsel - Cumalıkızık -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/1_bzy5xw.jpg" alt="Cumalıkızık">
+      </div>
+      
+      <!-- 2. Görsel - Cumalıkızık -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/2_ysngnz.jpg" alt="Cumalıkızık">
+      </div>
+      
+      <!-- 3. Görsel - Cumalıkızık -->
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/3_ke8d5h.jpg" alt="Cumalıkızık">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
