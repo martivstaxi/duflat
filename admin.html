@@ -597,18 +597,45 @@
         
         // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
         cleanedLine = cleanedLine.replace(/\s*@\s*/g, '@');
-        const parts = cleanedLine.split('@');
-        if (parts.length < 2) {
-          return;
+        
+        // Google Maps linkinin içinde @ karakteri olabileceği için özel işlem yap
+        const firstAtIndex = cleanedLine.indexOf('@');
+        if (firstAtIndex === -1) return;
+        
+        const name = cleanedLine.substring(0, firstAtIndex).trim();
+        const restOfLine = cleanedLine.substring(firstAtIndex + 1);
+        
+        // Google Maps linki bulma (https://maps.google veya https://www.google.com/maps ile başlayan)
+        const parts = [];
+        let currentPart = '';
+        let inUrl = false;
+        
+        for (let i = 0; i < restOfLine.length; i++) {
+          if (restOfLine[i] === '@' && !inUrl) {
+            parts.push(currentPart.trim());
+            currentPart = '';
+          } else {
+            currentPart += restOfLine[i];
+            if (currentPart.startsWith('https://maps.google') || currentPart.startsWith('https://www.google.com/maps')) {
+              inUrl = true;
+            }
+            if (inUrl && restOfLine[i] === ' ' && i < restOfLine.length - 1 && !restOfLine.substring(i+1).startsWith('https://')) {
+              inUrl = false;
+            }
+          }
+        }
+        if (currentPart.trim()) {
+          parts.push(currentPart.trim());
         }
         
-        const name = parts[0].trim();
-        const link = parts[1].trim();
+        if (parts.length < 1) return;
+        
+        const link = parts[0].trim();
         const photos = [];
         
         // Fotoğrafları topla
-        for (let i = 2; i < parts.length && i < 5; i++) {
-          if (parts[i].trim()) {
+        for (let i = 1; i < parts.length && i < 4; i++) {
+          if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
             photos.push(parts[i].trim());
           }
         }
