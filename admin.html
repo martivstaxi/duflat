@@ -214,6 +214,7 @@
     <h3>⚙️ Şehir Ayarları</h3>
     <input type="text" id="cityName" placeholder="Şehir Adı">
     <button onclick="updateCityName()">Şehir Adını Güncelle</button>
+    <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
     
     <h3>📝 Yeni Konum Ekle</h3>
     <input type="text" id="locationName" placeholder="Konum Adı">
@@ -286,6 +287,22 @@
     function saveCityName(cityName) {
       const storageKey = getCityNameStorageKey();
       localStorage.setItem(storageKey, cityName);
+    }
+
+    // localStorage'ı tamamen sıfırla
+    function resetLocalStorage() {
+      if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
+        // Şu anki şehirle ilgili verileri sil
+        const city = getCityFromUrl();
+        localStorage.removeItem(`locations_${city}`);
+        localStorage.removeItem(`cityName_${city}`);
+        
+        // Tüm şehirlerle ilgili verileri sil (opsiyonel)
+        // localStorage.clear();
+        
+        // Sayfayı yenile
+        location.reload();
+      }
     }
 
     // Şehir adını güncelle
