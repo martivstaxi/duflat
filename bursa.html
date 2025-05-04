@@ -102,7 +102,7 @@
     }
     
     .location-link {
-      text-decoration: none;
+      text-decoration: underline;
       color: #0077cc;
       display: flex;
       align-items: center;
@@ -110,164 +110,127 @@
     
     .location-link:hover {
       text-decoration: underline;
+      text-decoration-thickness: 2px;
     }
     
     .click-icon {
-      height: 20px;
       margin-right: 5px;
-      content: url("https://res.cloudinary.com/dnkrwesdr/image/upload/v1746300215/left_click_3_qltk7s.png");
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
     }
   </style>
 </head>
 <body>
+  <script>
+    // 🔧 YENİ KONUM EKLEMEK İÇİN SADECE BU ARRAY'İ GÜNCELLEYİN! 
+    const locations = [
+      {
+        name: "Suuçtu Şelalesi",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg"
+        ],
+        link: "https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa"
+      },
+      {
+        name: "İnkaya Çınarı",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg"
+        ],
+        link: "https://www.google.com/maps/place/%C4%B0nkaya+Historical+Plane+Tree/@40.1823483,29.0141456,17z/data=!3m1!4b1!4m6!3m5!1s0x14ca16698a4b3169:0x17129c940cfc5f91!8m2!3d40.1823442!4d29.0167205!16s%2Fg%2F1ptwq9m42?entry=ttu&g_ep=EgoyMDI1MDQzMC4xIKXMDSoASAFQAw%3D%3D"
+      },
+      {
+        name: "Irgandı Köprüsü",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/1_c2ar7m.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/2_sbnu8i.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306422/3_dski91.jpg"
+        ],
+        link: "https://maps.google.com/?q=Irgand%C4%B1+K%C3%B6pr%C3%BCs%C3%BC%2C+Bursa"
+      },
+      {
+        name: "Gölyazı",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/1_lfmzfo.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/2_gv5693.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306468/3_s2t7qa.jpg"
+        ],
+        link: "https://maps.google.com/?q=G%C3%B6lyaz%C4%B1%2C+Bursa"
+      },
+      {
+        name: "Cumalıkızık",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/1_bzy5xw.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/2_ysngnz.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/3_ke8d5h.jpg"
+        ],
+        link: "https://maps.google.com/?q=Cumal%C4%B1k%C4%B1z%C4%B1k%2C+Bursa"
+      }
+      // YENİ KONUM EKLEMEK İÇİN BURAYA KOYUN:
+      /*
+      {
+        name: "YENİ KONUM ADI",
+        photos: [
+          "FOTO_LINK_1",
+          "FOTO_LINK_2", 
+          "FOTO_LINK_3"
+        ],
+        link: "GOOGLE_MAPS_LINK"
+      }
+      */
+    ];
+
+    // Sayfa yüklendikinde konumları oluştur
+    window.onload = function() {
+      const container = document.getElementById('locations-container');
+      
+      locations.forEach((location, index) => {
+        // Her konum için HTML oluştur
+        const section = document.createElement('div');
+        section.className = 'city-section';
+        
+        let photosHTML = '';
+        location.photos.forEach(photoUrl => {
+          photosHTML += `
+            <div class="photo-card">
+              <img src="${photoUrl}" alt="${location.name}">
+            </div>
+          `;
+        });
+        
+        section.innerHTML = `
+          <div class="city-header">
+            <h2 class="city-title">
+              <a href="${location.link}" target="_blank" class="location-link">
+                <span class="click-icon"></span>
+                ${location.name} 📍
+              </a>
+            </h2>
+          </div>
+          
+          <div class="city-photos">
+            ${photosHTML}
+          </div>
+        `;
+        
+        container.appendChild(section);
+      });
+    }
+  </script>
+
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 Bursa</h1>
   
-  <!-- Suuçtu Şelalesi Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Suuçtu Şelalesi 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Suuçtu Şelalesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg" alt="Suuçtu Şelalesi">
-      </div>
-      
-      <!-- 2. Görsel - Suuçtu Şelalesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg" alt="Suuçtu Şelalesi">
-      </div>
-      
-      <!-- 3. Görsel - Suuçtu Şelalesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg" alt="Suuçtu Şelalesi">
-      </div>
-    </div>
-  </div>
-  
-  <!-- İnkaya Çınarı Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://www.google.com/maps/place/%C4%B0nkaya+Historical+Plane+Tree/@40.1823483,29.0141456,17z/data=!3m1!4b1!4m6!3m5!1s0x14ca16698a4b3169:0x17129c940cfc5f91!8m2!3d40.1823442!4d29.0167205!16s%2Fg%2F1ptwq9m42?entry=ttu&g_ep=EgoyMDI1MDQzMC4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          İnkaya Çınarı 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - İnkaya Çınarı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg" alt="İnkaya Çınarı">
-      </div>
-      
-      <!-- 2. Görsel - İnkaya Çınarı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg" alt="İnkaya Çınarı">
-      </div>
-      
-      <!-- 3. Görsel - İnkaya Çınarı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg" alt="İnkaya Çınarı">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Irgandı Köprüsü Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Irgand%C4%B1+K%C3%B6pr%C3%BCs%C3%BC%2C+Bursa" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Irgandı Köprüsü 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Irgandı Köprüsü -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/1_c2ar7m.jpg" alt="Irgandı Köprüsü">
-      </div>
-      
-      <!-- 2. Görsel - Irgandı Köprüsü -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306423/2_sbnu8i.jpg" alt="Irgandı Köprüsü">
-      </div>
-      
-      <!-- 3. Görsel - Irgandı Köprüsü -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306422/3_dski91.jpg" alt="Irgandı Köprüsü">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Gölyazı Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=G%C3%B6lyaz%C4%B1%2C+Bursa" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Gölyazı 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Gölyazı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/1_lfmzfo.jpg" alt="Gölyazı">
-      </div>
-      
-      <!-- 2. Görsel - Gölyazı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306469/2_gv5693.jpg" alt="Gölyazı">
-      </div>
-      
-      <!-- 3. Görsel - Gölyazı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306468/3_s2t7qa.jpg" alt="Gölyazı">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Cumalıkızık Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Cumal%C4%B1k%C4%B1z%C4%B1k%2C+Bursa" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Cumalıkızık 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Cumalıkızık -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/1_bzy5xw.jpg" alt="Cumalıkızık">
-      </div>
-      
-      <!-- 2. Görsel - Cumalıkızık -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/2_ysngnz.jpg" alt="Cumalıkızık">
-      </div>
-      
-      <!-- 3. Görsel - Cumalıkızık -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306542/3_ke8d5h.jpg" alt="Cumalıkızık">
-      </div>
-    </div>
-  </div>
+  <!-- Konumlar dinamik olarak burada görünecek -->
+  <div id="locations-container"></div>
   
   <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
