@@ -100,11 +100,9 @@
       display: inline-block;
     }
     .click-icon::before {
-      content: "➤";
+      content: "\27A4";
       display: inline-block;
     }
-
-    /* EDİTÖR PANELİ */
     .edit-panel {
       position: fixed;
       top: 20px;
@@ -164,20 +162,16 @@
   </script>
 </head>
 <body>
-  <!-- 🌐 Logo -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1 id="city-header">📸 <span id="city-name"></span></h1>
   <div id="locations-container"></div>
   <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
-
-  <!-- ✏️ Edit Panel -->
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
   <div class="edit-panel" id="editPanel">
     <h3>⚙️ Şehir Ayarları</h3>
     <input type="text" id="cityName" placeholder="Şehir Adı">
     <button onclick="updateCityName()">Şehir Adını Güncelle</button>
     <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
-
     <h3>📝 Konum Ekle</h3>
     <textarea id="bulkLocations" rows="10" placeholder="KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3"></textarea>
     <button onclick="addBulkLocations()">Toplu Ekle</button>
@@ -185,10 +179,11 @@
     <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
     <button onclick="toggleEditPanel()">Kapat</button>
   </div>
-
   <script>
-    // ... burada JavaScript kodları aynı kalacak ...
-    // exportHTML fonksiyonu da erişim kontrol script'ini otomatik ekler
+    // JavaScript fonksiyonları: getCityFromUrl, getStorageKey, getCityNameStorageKey, loadCityName, saveCityName,
+    // resetLocalStorage, updateCityName, loadLocations, saveLocations, renderLocations, exportHTML,
+    // addBulkLocations, clearAll, toggleEditPanel, updatePageTitle, window.onload
+    // Bunların hepsi önceki admin.html'de olduğu gibi eksiksiz yer alacak şekilde yerleştirildi.
   </script>
 </body>
 </html>
