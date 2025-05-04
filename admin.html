@@ -590,6 +590,7 @@
       
       const lines = bulkText.split('\n').filter(line => line.trim());
       let successCount = 0;
+      const locations = loadLocations(); // Mevcut konumları yükle
       
       lines.forEach((line, index) => {
         // Satır başındaki numaraları temizle (1. 2. 3. vb.)
@@ -599,6 +600,7 @@
         const parts = cleanedLine.split('@@');
         
         if (parts.length < 2) {
+          console.log(`Satır ${index + 1}: Eksik veri - "${cleanedLine}"`);
           return;
         }
         
@@ -614,11 +616,11 @@
         }
         
         if (!name || !link) {
+          console.log(`Satır ${index + 1}: Ad veya link eksik - "${cleanedLine}"`);
           return;
         }
         
         // Konumu ekle
-        const locations = loadLocations();
         const newLocation = {
           name: name,
           photos: photos,
@@ -626,12 +628,16 @@
         };
         
         locations.push(newLocation);
-        saveLocations(locations);
         successCount++;
+        console.log(`Satır ${index + 1}: Başarıyla eklendi - "${name}"`);
       });
       
+      saveLocations(locations);
       renderLocations();
       document.getElementById('bulkLocations').value = '';
+      
+      console.log(`Toplam ${successCount} konum eklendi.`);
+      alert(`${successCount} konum başarıyla eklendi.`);
     }
 
     // Formu temizle
@@ -668,9 +674,6 @@
 
     // Sayfa yüklendikinde çalıştır
     window.onload = function() {
-      // Admin sayfasına girildiğinde tüm verileri sil
-      localStorage.clear();
-      
       updatePageTitle();
       renderLocations();
     }
