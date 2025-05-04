@@ -304,9 +304,8 @@
       
       if (savedLocations) {
         return JSON.parse(savedLocations);
-      } else if (getCityFromUrl() === 'Bursa') {
-        return defaultLocations;
       } else {
+        // Her zaman boş array döndür
         return [];
       }
     }
