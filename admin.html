@@ -595,30 +595,28 @@
         // Satır başındaki numaraları temizle (1. 2. 3. vb.)
         let cleanedLine = line.replace(/^\d+\.\s*/, '');
         
-        // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
-        cleanedLine = cleanedLine.replace(/\s*@\s*/g, '@');
+        // Konum adını ayır
+        const nameMatch = cleanedLine.match(/^(.+?)@/);
+        if (!nameMatch) return;
         
-        // Google Maps linkini tespit et ve içindeki @ karakterlerini geçici olarak değiştir
-        cleanedLine = cleanedLine.replace(/(https:\/\/(?:maps\.google|www\.google\.com\/maps)[^@]*?)@([^@]*?)(@|$)/g, '$1__TEMP__$2$3');
+        const name = nameMatch[1].trim();
+        const remaining = cleanedLine.slice(nameMatch[0].length);
         
-        const parts = cleanedLine.split('@');
-        if (parts.length < 2) {
-          return;
-        }
+        // Link ve fotoğrafları ayır - ilk https:// bulduğumuz yerden başlayarak
+        const linkMatch = remaining.match(/https:\/\/(?:maps\.google|www\.google\.com\/maps)[^@]+/);
+        if (!linkMatch) return;
         
-        const name = parts[0].trim();
-        let link = parts[1].trim();
+        const link = linkMatch[0].trim();
+        const afterLink = remaining.slice(linkMatch.index + linkMatch[0].length);
+        
+        // Fotoğraf linklerini topla - @ ile ayrılmış https:// ile başlayan linkler
         const photos = [];
-        
-        // Google Maps linkindeki geçici değiştirmeleri geri al
-        link = link.replace(/__TEMP__/g, '@');
-        
-        // Fotoğrafları topla
-        for (let i = 2; i < parts.length && i < 5; i++) {
-          if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
-            photos.push(parts[i].trim());
+        const photoLinks = afterLink.split('@').filter(part => part.trim().startsWith('https://'));
+        photoLinks.forEach(photoUrl => {
+          if (photoUrl && photos.length < 3) {
+            photos.push(photoUrl.trim());
           }
-        }
+        });
         
         if (!name || !link) {
           return;
