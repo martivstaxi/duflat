@@ -592,8 +592,11 @@
       let successCount = 0;
       
       lines.forEach((line, index) => {
+        // Satır başındaki numaraları temizle (1. 2. 3. vb.)
+        let cleanedLine = line.replace(/^\d+\.\s*/, '');
+        
         // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
-        const cleanedLine = line.replace(/\s*@\s*/g, '@');
+        cleanedLine = cleanedLine.replace(/\s*@\s*/g, '@');
         const parts = cleanedLine.split('@');
         if (parts.length < 2) {
           return;
