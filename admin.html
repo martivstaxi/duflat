@@ -195,6 +195,11 @@
       border-radius: 5px;
       overflow-x: auto;
     }
+    
+    #bulkLocations {
+      font-family: monospace;
+      resize: vertical;
+    }
   </style>
 </head>
 <body>
@@ -223,6 +228,10 @@
     <input type="text" id="photo2" placeholder="Fotoğraf 2 Link">
     <input type="text" id="photo3" placeholder="Fotoğraf 3 Link">
     <button onclick="addLocation()">Konum Ekle</button>
+    
+    <h3>📝 Toplu Konum Ekle</h3>
+    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
+    <button onclick="addBulkLocations()">Toplu Ekle</button>
     <button onclick="clearAll()">Tümünü Temizle</button>
     <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
     <button onclick="toggleEditPanel()">Kapat</button>
@@ -577,6 +586,68 @@
       
       // Formu temizle
       clearForm();
+    }
+    
+    // Toplu konum ekle
+    function addBulkLocations() {
+      const bulkText = document.getElementById('bulkLocations').value;
+      if (!bulkText.trim()) {
+        alert('Lütfen konum bilgilerini girin!');
+        return;
+      }
+      
+      const lines = bulkText.split('\n').filter(line => line.trim());
+      let successCount = 0;
+      let errorCount = 0;
+      
+      lines.forEach((line, index) => {
+        const parts = line.split('@');
+        if (parts.length < 2) {
+          errorCount++;
+          console.log(`Satır ${index + 1}: Format hatası - En az konum adı ve link olmalı`);
+          return;
+        }
+        
+        const name = parts[0].trim();
+        const link = parts[1].trim();
+        const photos = [];
+        
+        // Fotoğrafları topla
+        for (let i = 2; i < parts.length && i < 5; i++) {
+          if (parts[i].trim()) {
+            photos.push(parts[i].trim());
+          }
+        }
+        
+        if (!name || !link) {
+          errorCount++;
+          console.log(`Satır ${index + 1}: Konum adı veya link boş`);
+          return;
+        }
+        
+        // Konumu ekle
+        const locations = loadLocations();
+        const newLocation = {
+          name: name,
+          photos: photos,
+          link: link
+        };
+        
+        locations.push(newLocation);
+        saveLocations(locations);
+        successCount++;
+      });
+      
+      // Sonuç mesajı göster
+      let message = `Toplam ${lines.length} satır işlendi.\n`;
+      message += `${successCount} konum başarıyla eklendi.`;
+      if (errorCount > 0) {
+        message += `\n${errorCount} satırda hata oluştu.`;
+      }
+      alert(message);
+      
+      renderLocations();
+      document.getElementById('bulkLocations').value = '';
     }
 
     // Formu temizle
