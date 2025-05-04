@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Şehir</title>
+  <title id="page-title">Admin Panel</title>
   <style>
     body {
       font-family: sans-serif;
@@ -201,24 +201,13 @@
       resize: vertical;
     }
     
-    .login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    
     .login-form {
       background: white;
       padding: 30px;
       border-radius: 8px;
       text-align: center;
+      max-width: 400px;
+      margin: 50px auto;
     }
     
     .login-form input {
@@ -238,6 +227,19 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    
+    .city-selector {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .city-selector select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -251,7 +253,20 @@
 
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
-  <h1 id="city-header">📸 <span id="city-name"></span></h1>
+  <h1 id="city-header">📸 Admin Panel</h1>
+  
+  <!-- ŞEHİR SEÇİM DROPDOWN -->
+  <div class="city-selector">
+    <label for="citySelector">Şehir Seçin:</label>
+    <select id="citySelector" onchange="changeCity()">
+      <option value="">-- Şehir Seçin --</option>
+      <option value="Istanbul">İstanbul</option>
+      <option value="Bursa">Bursa</option>
+      <option value="Ankara">Ankara</option>
+      <option value="Antalya">Antalya</option>
+      <option value="Izmir">İzmir</option>
+    </select>
+  </div>
   
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
@@ -284,50 +299,54 @@
   </div>
 
   <script>
-    // URL'den şehir ismi al
-    function getCityFromUrl() {
+    let currentCity = '';
+    
+    // Sayfa yüklendiğinde şehri ayarla
+    function initializePage() {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('city') || 'Şehir';
+      const cityFromUrl = urlParams.get('city');
+      
+      if (cityFromUrl) {
+        currentCity = cityFromUrl;
+        document.getElementById('citySelector').value = cityFromUrl;
+      } else {
+        // İlk şehri varsayılan olarak seç
+        currentCity = 'Istanbul';
+        document.getElementById('citySelector').value = 'Istanbul';
+      }
+      
+      updatePageTitle();
+      renderLocations();
+    }
+    
+    // Şehir değiştiğinde
+    function changeCity() {
+      currentCity = document.getElementById('citySelector').value;
+      if (currentCity) {
+        updatePageTitle();
+        renderLocations();
+        
+        // URL'yi güncelle
+        const url = new URL(window.location.href);
+        url.searchParams.set('city', currentCity);
+        window.history.pushState({}, '', url);
+      }
     }
 
     // LocalStorage key
     function getStorageKey() {
-      const city = getCityFromUrl();
-      return `locations_${city}`;
+      return `locations_${currentCity}`;
     }
 
     function getCityNameStorageKey() {
-      const city = getCityFromUrl();
-      return `cityName_${city}`;
+      return `cityName_${currentCity}`;
     }
-
-    // Varsayılan konumlar (Bursa örneği)
-    const defaultLocations = [
-      {
-        name: "Suuçtu Şelalesi",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg"
-        ],
-        link: "https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa"
-      },
-      {
-        name: "İnkaya Çınarı",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg"
-        ],
-        link: "https://maps.google.com/?q=%C4%B0nkaya+%C3%87%C4%B1nar%C4%B1%2C+Bursa"
-      }
-    ];
 
     // Şehir adını yükle
     function loadCityName() {
       const storageKey = getCityNameStorageKey();
       const savedName = localStorage.getItem(storageKey);
-      return savedName || getCityFromUrl();
+      return savedName || currentCity;
     }
 
     // Şehir adını kaydet
@@ -340,12 +359,8 @@
     function resetLocalStorage() {
       if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
         // Şu anki şehirle ilgili verileri sil
-        const city = getCityFromUrl();
-        localStorage.removeItem(`locations_${city}`);
-        localStorage.removeItem(`cityName_${city}`);
-        
-        // Tüm şehirlerle ilgili verileri sil (opsiyonel)
-        // localStorage.clear();
+        localStorage.removeItem(`locations_${currentCity}`);
+        localStorage.removeItem(`cityName_${currentCity}`);
         
         // Sayfayı yenile
         location.reload();
@@ -369,7 +384,6 @@
       if (savedLocations) {
         return JSON.parse(savedLocations);
       } else {
-        // Her zaman boş array döndür
         return [];
       }
     }
@@ -386,6 +400,11 @@
       const locations = loadLocations();
       
       container.innerHTML = '';
+      
+      if (locations.length === 0) {
+        container.innerHTML = '<p>Henüz konum eklenmemiş.</p>';
+        return;
+      }
       
       locations.forEach((location, index) => {
         const section = document.createElement('div');
@@ -602,34 +621,6 @@
     function hideExportedCode() {
       document.getElementById('exportedCode').style.display = 'none';
     }
-
-    // Yeni konum ekle
-    function addLocation() {
-      const name = document.getElementById('locationName').value;
-      const link = document.getElementById('locationLink').value;
-      const photo1 = document.getElementById('photo1').value;
-      const photo2 = document.getElementById('photo2').value;
-      const photo3 = document.getElementById('photo3').value;
-      
-      if (!name || !link || !photo1) {
-        alert('En az konum adı, link ve bir fotoğraf zorunludur!');
-        return;
-      }
-      
-      const locations = loadLocations();
-      const newLocation = {
-        name: name,
-        photos: [photo1, photo2, photo3].filter(p => p),
-        link: link
-      };
-      
-      locations.push(newLocation);
-      saveLocations(locations);
-      renderLocations();
-      
-      // Formu temizle
-      clearForm();
-    }
     
     // Toplu konum ekle
     function addBulkLocations() {
@@ -692,11 +683,6 @@
       document.getElementById('bulkLocations').value = '';
     }
 
-    // Formu temizle
-    function clearForm() {
-      // Bu fonksiyon artık gerekmiyor
-    }
-
     // Tümünü temizle
     function clearAll() {
       if (confirm('Tüm konumları silmek istediğinizden emin misiniz?')) {
@@ -720,14 +706,13 @@
     // Sayfa başlığını güncelle
     function updatePageTitle() {
       const cityName = loadCityName();
-      document.getElementById('city-name').textContent = cityName;
+      document.getElementById('city-header').textContent = `📸 ${cityName}`;
       document.getElementById('page-title').textContent = cityName;
     }
 
     // Sayfa yüklendikinde çalıştır
     window.onload = function() {
-      updatePageTitle();
-      renderLocations();
+      initializePage();
     }
   </script>
 </body>
