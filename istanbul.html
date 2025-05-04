@@ -125,153 +125,112 @@
   </style>
 </head>
 <body>
+  <script>
+    // 🔧 YENİ KONUM EKLEMEK İÇİN SADECE BU ARRAY'İ GÜNCELLEYİN! 
+    const locations = [
+      {
+        name: "Beylerbeyi Sarayı",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217063/1_u8ar2e.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/2_gyzdeh.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/3_chrb2l.jpg"
+        ],
+        link: "https://maps.google.com/?q=Beylerbeyi+Saray%C4%B1%2C+Istanbul"
+      },
+      {
+        name: "Ulus 29 Restaurant",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/1_bsnaxy.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/2_shhiti.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215670/3_zioqis.jpg"
+        ],
+        link: "https://maps.google.com/?q=Ulus+29%2C+Istanbul"
+      },
+      {
+        name: "Riva",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202310/1_bpkw7e.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202310/2_vaqmhx.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202311/3_wwhzmn.jpg"
+        ],
+        link: "https://maps.google.com/?q=Riva%2C+Beykoz%2C+Istanbul"
+      },
+      {
+        name: "Balat Renkli Evler",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/1_qyuqia.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/3_zcgxyu.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/2_p7fcjz.jpg"
+        ],
+        link: "https://www.google.com/maps/place/Coloured+Houses+of+Balat/@41.0295534,28.9429536,17z/data=!3m1!4b1!4m6!3m5!1s0x14cabb7e926929b5:0xc62a0bca54b6f7b0!8m2!3d41.0295496!4d28.9476405!16s%2Fg%2F11rn4nm45j?entry=ttu"
+      },
+      {
+        name: "Aydos Tepesi",
+        photos: [
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746194198/2_mtmfwc.jpg",
+          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg"
+        ],
+        link: "https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul"
+      }
+      // YENİ KONUM EKLEMEK İÇİN BURAYA KOYUN:
+      /*
+      {
+        name: "YENİ KONUM ADI",
+        photos: [
+          "FOTO_LINK_1",
+          "FOTO_LINK_2", 
+          "FOTO_LINK_3"
+        ],
+        link: "GOOGLE_MAPS_LINK"
+      }
+      */
+    ];
+
+    // Sayfa yüklendikinde konumları oluştur
+    window.onload = function() {
+      const container = document.getElementById('locations-container');
+      
+      locations.forEach((location, index) => {
+        // Her konum için HTML oluştur
+        const section = document.createElement('div');
+        section.className = 'city-section';
+        
+        let photosHTML = '';
+        location.photos.forEach(photoUrl => {
+          photosHTML += `
+            <div class="photo-card">
+              <img src="${photoUrl}" alt="${location.name}">
+            </div>
+          `;
+        });
+        
+        section.innerHTML = `
+          <div class="city-header">
+            <h2 class="city-title">
+              <a href="${location.link}" target="_blank" class="location-link">
+                <span class="click-icon"></span>
+                ${location.name} 📍
+              </a>
+            </h2>
+          </div>
+          
+          <div class="city-photos">
+            ${photosHTML}
+          </div>
+        `;
+        
+        container.appendChild(section);
+      });
+    }
+  </script>
+
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 İstanbul</h1>
   
-  <!-- Beylerbeyi Sarayı Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Beylerbeyi+Saray%C4%B1%2C+Istanbul" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Beylerbeyi Sarayı 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Beylerbeyi Sarayı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217063/1_u8ar2e.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-      
-      <!-- 2. Görsel - Beylerbeyi Sarayı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/2_gyzdeh.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-      
-      <!-- 3. Görsel - Beylerbeyi Sarayı -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/3_chrb2l.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Ulus 29 Restaurant Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Ulus+29%2C+Istanbul" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Ulus 29 Restaurant 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Ulus 29 Restaurant -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/1_bsnaxy.jpg" alt="Ulus 29 Restaurant">
-      </div>
-      
-      <!-- 2. Görsel - Ulus 29 Restaurant -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/2_shhiti.jpg" alt="Ulus 29 Restaurant">
-      </div>
-      
-      <!-- 3. Görsel - Ulus 29 Restaurant -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215670/3_zioqis.jpg" alt="Ulus 29 Restaurant">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Riva Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Riva%2C+Beykoz%2C+Istanbul" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Riva 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Riva -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202310/1_bpkw7e.jpg" alt="Riva">
-      </div>
-      
-      <!-- 2. Görsel - Riva -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202310/2_vaqmhx.jpg" alt="Riva">
-      </div>
-      
-      <!-- 3. Görsel - Riva -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746202311/3_wwhzmn.jpg" alt="Riva">
-      </div>
-    </div>
-  </div>
-  
-  <!-- Balat Renkli Evler Bölümü -->
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://www.google.com/maps/place/Coloured+Houses+of+Balat/@41.0295534,28.9429536,17z/data=!3m1!4b1!4m6!3m5!1s0x14cabb7e926929b5:0xc62a0bca54b6f7b0!8m2!3d41.0295496!4d28.9476405!16s%2Fg%2F11rn4nm45j?entry=ttu" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Balat Renkli Evler 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Balat Renkli Evler -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/1_qyuqia.jpg" alt="Balat Renkli Evler">
-      </div>
-      
-      <!-- 2. Görsel - Balat Renkli Evler -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/3_zcgxyu.jpg" alt="Balat Renkli Evler">
-      </div>
-      
-      <!-- 3. Görsel - Balat Renkli Evler -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746214095/2_p7fcjz.jpg" alt="Balat Renkli Evler">
-      </div>
-    </div>
-  </div>
-  
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Aydos Tepesi 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <!-- 1. Görsel - Aydos Tepesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Tepesi">
-      </div>
-      
-      <!-- 2. Görsel - Aydos Tepesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746194198/2_mtmfwc.jpg" alt="Aydos Tepesi">
-      </div>
-      
-      <!-- 3. Görsel - Aydos Tepesi -->
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Tepesi">
-      </div>
-    </div>
-  </div>
+  <!-- Konumlar dinamik olarak burada görünecek -->
+  <div id="locations-container"></div>
   
   <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
