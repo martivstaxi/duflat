@@ -222,7 +222,7 @@
     <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
     
     <h3>📝 Konum Ekle</h3>
-    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
+    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
     <button onclick="addBulkLocations()">Toplu Ekle</button>
     <button onclick="clearAll()">Tümünü Temizle</button>
     <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
@@ -595,23 +595,16 @@
         // Satır başındaki numaraları temizle (1. 2. 3. vb.)
         let cleanedLine = line.replace(/^\d+\.\s*/, '');
         
-        // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
-        cleanedLine = cleanedLine.replace(/\s*@\s*/g, '@');
+        // @@ ayırıcısıyla parçaları al
+        const parts = cleanedLine.split('@@');
         
-        // Google Maps linkini tespit et ve içindeki @ karakterlerini geçici olarak değiştir
-        cleanedLine = cleanedLine.replace(/(https:\/\/(?:maps\.google|www\.google\.com\/maps)[^@]*?)@([^@]*?)(@|$)/g, '$1__TEMP__$2$3');
-        
-        const parts = cleanedLine.split('@');
         if (parts.length < 2) {
           return;
         }
         
         const name = parts[0].trim();
-        let link = parts[1].trim();
+        const link = parts[1].trim();
         const photos = [];
-        
-        // Google Maps linkindeki geçici değiştirmeleri geri al
-        link = link.replace(/__TEMP__/g, '@');
         
         // Fotoğrafları topla
         for (let i = 2; i < parts.length && i < 5; i++) {
@@ -675,6 +668,9 @@
 
     // Sayfa yüklendikinde çalıştır
     window.onload = function() {
+      // Admin sayfasına girildiğinde tüm verileri sil
+      localStorage.clear();
+      
       updatePageTitle();
       renderLocations();
     }
