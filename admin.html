@@ -378,20 +378,31 @@
       const cityName = loadCityName();
       const locations = loadLocations();
       
-      // Lokasyonları JavaScript array formatına dönüştür
-      let locationsArray = '[\n';
-      locations.forEach((location, index) => {
-        locationsArray += `      {\n        name: "${location.name}",\n        photos: [\n`;
-        location.photos.forEach((photo, photoIndex) => {
-          locationsArray += `          "${photo}"`;
-          if (photoIndex < location.photos.length - 1) locationsArray += ',';
-          locationsArray += '\n';
+      let locationsHTML = '';
+      locations.forEach(location => {
+        let photosHTML = '';
+        location.photos.forEach(photoUrl => {
+          photosHTML += `
+      <div class="photo-card">
+        <img src="${photoUrl}" alt="${location.name}">
+      </div>`;
         });
-        locationsArray += `        ],\n        link: "${location.link}"\n      }`;
-        if (index < locations.length - 1) locationsArray += ',';
-        locationsArray += '\n';
+        
+        locationsHTML += `
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="${location.link}" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          ${location.name} 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">${photosHTML}
+    </div>
+  </div>`;
       });
-      locationsArray += '    ];';
 
       const fullHTML = `<!DOCTYPE html>  
 <html lang="tr">
@@ -399,11 +410,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${cityName}</title>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -520,54 +526,10 @@
   </style>
 </head>
 <body>
-  <script>
-    // 🔧 YENİ KONUM EKLEMEK İÇİN SADECE BU ARRAY'İ GÜNCELLEYİN! 
-    const locations = ${locationsArray}
-
-    // Sayfa yüklendikinde konumları oluştur
-    window.onload = function() {
-      const container = document.getElementById('locations-container');
-      
-      locations.forEach((location, index) => {
-        // Her konum için HTML oluştur
-        const section = document.createElement('div');
-        section.className = 'city-section';
-        
-        let photosHTML = '';
-        location.photos.forEach(photoUrl => {
-          photosHTML += \`
-            <div class="photo-card">
-              <img src="\${photoUrl}" alt="\${location.name}">
-            </div>
-          \`;
-        });
-        
-        section.innerHTML = \`
-          <div class="city-header">
-            <h2 class="city-title">
-              <a href="\${location.link}" target="_blank" class="location-link">
-                <span class="click-icon"></span>
-                \${location.name} 📍
-              </a>
-            </h2>
-          </div>
-          
-          <div class="city-photos">
-            \${photosHTML}
-          </div>
-        \`;
-        
-        container.appendChild(section);
-      });
-    }
-  </script>
-
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 ${cityName}</h1>
-  
-  <!-- Konumlar dinamik olarak burada görünecek -->
-  <div id="locations-container"></div>
+  ${locationsHTML}
   
   <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
