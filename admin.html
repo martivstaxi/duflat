@@ -1,16 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE html>  
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Şehir</title>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
   <style>
-    /* CSS stilleri */
     body {
       font-family: sans-serif;
       text-align: center;
@@ -26,8 +20,8 @@
       text-decoration: none;
       color: black;
     }
-    h1 {
-      font-size: 26px;
+    h1 { 
+      font-size: 26px; 
       margin-top: 80px;
       margin-bottom: 30px;
     }
@@ -40,74 +34,6 @@
       max-width: 1000px;
       margin-left: auto;
       margin-right: auto;
-    }
-    .city-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    .city-title {
-      margin: 0;
-      font-size: 20px;
-      color: #0077cc;
-    }
-    .city-photos {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 5px 0;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    .city-photos::-webkit-scrollbar {
-      display: none;
-    }
-    .photo-card {
-      flex: 0 0 auto;
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      scroll-snap-align: start;
-      background-color: white;
-      position: relative;
-    }
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .back-link {
-      margin-top: 30px;
-      display: inline-block;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    .location-link {
-      text-decoration: underline;
-      color: #0077cc;
-      display: flex;
-      align-items: center;
-    }
-    .location-link:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-    }
-    .click-icon {
-      margin-right: 5px;
-      display: inline-block;
-    }
-    .click-icon::before {
-      content: "➤";
-      display: inline-block;
     }
     .edit-panel {
       position: fixed;
@@ -123,159 +49,85 @@
       overflow-y: auto;
       display: none;
     }
-    .edit-panel h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    .edit-panel input, .edit-panel button {
-      margin: 5px 0;
-      padding: 5px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .edit-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0077cc;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      font-size: 24px;
-      z-index: 1000;
-    }
-    .export-btn {
-      background: #28a745;
-      margin-top: 10px;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px;
-      cursor: pointer;
-    }
-    #bulkLocations {
-      font-family: monospace;
-      resize: vertical;
-    }
   </style>
 </head>
 <body>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1 id="city-header">📸 <span id="city-name"></span></h1>
   <div id="locations-container"></div>
   <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
+
   <div class="edit-panel" id="editPanel">
     <h3>⚙️ Şehir Ayarları</h3>
     <input type="text" id="cityName" placeholder="Şehir Adı">
     <button onclick="updateCityName()">Şehir Adını Güncelle</button>
     <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
+
     <h3>📝 Konum Ekle</h3>
-    <textarea id="bulkLocations" rows="10" placeholder="KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3"></textarea>
+    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3"></textarea>
     <button onclick="addBulkLocations()">Toplu Ekle</button>
     <button onclick="clearAll()">Tümünü Temizle</button>
-    <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
+    <button onclick="exportHTML()">HTML Kodunu Kopyala</button>
     <button onclick="toggleEditPanel()">Kapat</button>
   </div>
+
   <script>
-    function getCityFromUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('city') || 'Şehir';
-    }
-    function getStorageKey() {
-      return 'locations_' + getCityFromUrl();
-    }
-    function getCityNameStorageKey() {
-      return 'cityName_' + getCityFromUrl();
-    }
-    function loadCityName() {
-      const name = localStorage.getItem(getCityNameStorageKey());
-      return name || getCityFromUrl();
-    }
-    function saveCityName(name) {
-      localStorage.setItem(getCityNameStorageKey(), name);
-    }
-    function resetLocalStorage() {
-      if (confirm('Tüm veriler silinsin mi?')) {
-        localStorage.removeItem(getStorageKey());
-        localStorage.removeItem(getCityNameStorageKey());
-        location.reload();
-      }
-    }
-    function updateCityName() {
-      const name = document.getElementById('cityName').value;
-      if (name) {
-        saveCityName(name);
-        updatePageTitle();
-      }
-    }
-    function loadLocations() {
-      const data = localStorage.getItem(getStorageKey());
-      return data ? JSON.parse(data) : [];
-    }
-    function saveLocations(data) {
-      localStorage.setItem(getStorageKey(), JSON.stringify(data));
-    }
-    function renderLocations() {
-      const container = document.getElementById('locations-container');
-      const locations = loadLocations();
-      container.innerHTML = '';
-      locations.forEach(loc => {
-        const photos = loc.photos.map(p => `<div class='photo-card'><img src='${p}' alt='${loc.name}'></div>`).join('');
-        const html = `<div class='city-section'><div class='city-header'><h2 class='city-title'><a href='${loc.link}' target='_blank' class='location-link'><span class='click-icon'></span>${loc.name} 📍</a></h2></div><div class='city-photos'>${photos}</div></div>`;
-        container.innerHTML += html;
-      });
-    }
     function exportHTML() {
       const cityName = loadCityName();
       const locations = loadLocations();
-      let locationsHTML = '';
-      locations.forEach(loc => {
-        let photosHTML = loc.photos.map(photo => `<div class='photo-card'><img src='${photo}' alt='${loc.name}'></div>`).join('');
-        locationsHTML += `<div class='city-section'><div class='city-header'><h2 class='city-title'><a href='${loc.link}' target='_blank' class='location-link'><span class='click-icon'></span>${loc.name} 📍</a></h2></div><div class='city-photos'>${photosHTML}</div></div>`;
-      });
-      const html = `<!DOCTYPE html><html lang='tr'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>${cityName}</title><script>if (localStorage.getItem('duflat-access') !== 'granted'){window.location.href='login.html';}</script><style>${document.querySelector('style').innerHTML}</style></head><body><a href='https://duflat.com/main.html' class='logo'>🌐 duflat.com</a><h1>📸 ${cityName}</h1>${locationsHTML}<p><a href='turkiye.html' class='back-link'>← Türkiye'ye dön</a></p></body></html>`;
-      navigator.clipboard.writeText(html).then(() => alert('HTML kopyalandı')).catch(() => alert('Kopyalama başarısız'));
+
+      let locationsHTML = locations.map(location => `
+      <div class="city-section">
+        <h2>${location.name}</h2>
+        <a href="${location.link}" target="_blank">${location.link}</a>
+        ${location.photos.map(photo => `<img src="${photo}" alt="${location.name}" style="width:200px;height:200px;">`).join('')}
+      </div>`).join('');
+
+      const fullHTML = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>${cityName}</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
     }
+  <\/script>
+</head>
+<body>
+  <h1>${cityName}</h1>
+  ${locationsHTML}
+</body>
+</html>`;
+
+      navigator.clipboard.writeText(fullHTML).then(() => alert('Kod kopyalandı!'));
+    }
+
     function addBulkLocations() {
-      const text = document.getElementById('bulkLocations').value;
-      const lines = text.split('\n');
-      const locations = loadLocations();
-      lines.forEach(line => {
-        const [name, link, ...photos] = line.split('@@').map(e => e.trim());
-        if (name && link) {
-          locations.push({ name, link, photos });
-        }
+      const bulkText = document.getElementById('bulkLocations').value;
+      const locations = bulkText.split('\n').map(line => {
+        const [name, link, ...photos] = line.split('@@');
+        return { name, link, photos };
       });
       saveLocations(locations);
       renderLocations();
-      document.getElementById('bulkLocations').value = '';
     }
-    function clearAll() {
-      if (confirm('Tüm konumlar silinsin mi?')) {
-        localStorage.removeItem(getStorageKey());
-        renderLocations();
-      }
-    }
+
     function toggleEditPanel() {
       const panel = document.getElementById('editPanel');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-      if (panel.style.display === 'block') {
-        document.getElementById('cityName').value = loadCityName();
-      }
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
     }
-    function updatePageTitle() {
-      const name = loadCityName();
-      document.getElementById('city-name').textContent = name;
-      document.getElementById('page-title').textContent = name;
-    }
-    window.onload = function() {
-      updatePageTitle();
-      renderLocations();
-    }
-  </script>
+
+    document.getElementById('city-name').textContent = loadCityName();
+    renderLocations();
+  <\/script>
 </body>
 </html>
