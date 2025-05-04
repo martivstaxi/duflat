@@ -221,15 +221,7 @@
     <button onclick="updateCityName()">Şehir Adını Güncelle</button>
     <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
     
-    <h3>📝 Yeni Konum Ekle</h3>
-    <input type="text" id="locationName" placeholder="Konum Adı">
-    <input type="text" id="locationLink" placeholder="Google Maps Link">
-    <input type="text" id="photo1" placeholder="Fotoğraf 1 Link">
-    <input type="text" id="photo2" placeholder="Fotoğraf 2 Link">
-    <input type="text" id="photo3" placeholder="Fotoğraf 3 Link">
-    <button onclick="addLocation()">Konum Ekle</button>
-    
-    <h3>📝 Toplu Konum Ekle</h3>
+    <h3>📝 Konum Ekle</h3>
     <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
     <button onclick="addBulkLocations()">Toplu Ekle</button>
     <button onclick="clearAll()">Tümünü Temizle</button>
@@ -598,13 +590,12 @@
       
       const lines = bulkText.split('\n').filter(line => line.trim());
       let successCount = 0;
-      let errorCount = 0;
       
       lines.forEach((line, index) => {
-        const parts = line.split('@');
+        // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
+        const cleanedLine = line.replace(/\s*@\s*/g, '@');
+        const parts = cleanedLine.split('@');
         if (parts.length < 2) {
-          errorCount++;
-          console.log(`Satır ${index + 1}: Format hatası - En az konum adı ve link olmalı`);
           return;
         }
         
@@ -620,8 +611,6 @@
         }
         
         if (!name || !link) {
-          errorCount++;
-          console.log(`Satır ${index + 1}: Konum adı veya link boş`);
           return;
         }
         
@@ -638,25 +627,13 @@
         successCount++;
       });
       
-      // Sonuç mesajı göster
-      let message = `Toplam ${lines.length} satır işlendi.\n`;
-      message += `${successCount} konum başarıyla eklendi.`;
-      if (errorCount > 0) {
-        message += `\n${errorCount} satırda hata oluştu.`;
-      }
-      alert(message);
-      
       renderLocations();
       document.getElementById('bulkLocations').value = '';
     }
 
     // Formu temizle
     function clearForm() {
-      document.getElementById('locationName').value = '';
-      document.getElementById('locationLink').value = '';
-      document.getElementById('photo1').value = '';
-      document.getElementById('photo2').value = '';
-      document.getElementById('photo3').value = '';
+      // Bu fonksiyon artık gerekmiyor
     }
 
     // Tümünü temizle
