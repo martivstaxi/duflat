@@ -1,719 +1,681 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Şehir</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-      overflow-y: auto;
-      background-color: #f5f5f5;
-    }
-    .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 28px;
-      text-decoration: none;
-      color: black;
-    }
-    
-    h1 { 
-      font-size: 26px; 
-      margin-top: 80px;
-      margin-bottom: 30px;
-    }
-    
-    .city-section {
-      margin-bottom: 30px;
-      background-color: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    .city-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .city-title {
-      margin: 0;
-      font-size: 20px;
-      color: #0077cc;
-    }
-    
-    .city-photos {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 5px 0;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    
-    .city-photos::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .photo-card {
-      flex: 0 0 auto;
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      scroll-snap-align: start;
-      background-color: white;
-      position: relative;
-    }
-    
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .back-link {
-      margin-top: 30px;
-      display: inline-block;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    
-    .location-link {
-      text-decoration: underline;
-      color: #0077cc;
-      display: flex;
-      align-items: center;
-    }
-    
-    .location-link:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-    }
-    
-    .click-icon {
-      margin-right: 5px;
-      display: inline-block;
-    }
-    
-    .click-icon::before {
-      content: "➤";
-      display: inline-block;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Şehir</title>
+<style>
+body {
+font-family: sans-serif;
+text-align: center;
+padding: 20px;
+overflow-y: auto;
+background-color: #f5f5f5;
+}
+.logo {
+position: absolute;
+top: 20px;
+left: 20px;
+font-size: 28px;
+text-decoration: none;
+color: black;
+}
 
-    /* EDİTOR PANEL */
-    .edit-panel {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 1000;
-      max-height: 80vh;
-      overflow-y: auto;
-      display: none;
-    }
-    
-    .edit-panel h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    
-    .edit-panel input, .edit-panel button {
-      margin: 5px 0;
-      padding: 5px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    .edit-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0077cc;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      font-size: 24px;
-      z-index: 1000;
-    }
+h1 {
+font-size: 26px;
+margin-top: 80px;
+margin-bottom: 30px;
+}
 
-    .export-btn {
-      background: #28a745;
-      margin-top: 10px;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px;
-      cursor: pointer;
-    }
+.city-section {
+margin-bottom: 30px;
+background-color: white;
+border-radius: 10px;
+padding: 15px;
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+max-width: 1000px;
+margin-left: auto;
+margin-right: auto;
+}
 
-    #exportedCode {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 1px solid #ddd;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 2000;
-      width: 80%;
-      max-width: 800px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
+.city-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 15px;
+padding-bottom: 10px;
+border-bottom: 1px solid #eee;
+}
 
-    #exportedCode pre {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    
-    #bulkLocations {
-      font-family: monospace;
-      resize: vertical;
-    }
-  </style>
+.city-title {
+margin: 0;
+font-size: 20px;
+color: #0077cc;
+}
+
+.city-photos {
+display: flex;
+gap: 15px;
+overflow-x: auto;
+padding: 5px 0;
+scroll-snap-type: x mandatory;
+scrollbar-width: none;
+}
+
+.city-photos::-webkit-scrollbar {
+display: none;
+}
+
+.photo-card {
+flex: 0 0 auto;
+width: 200px;
+height: 200px;
+border-radius: 8px;
+overflow: hidden;
+box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+scroll-snap-align: start;
+background-color: white;
+position: relative;
+}
+
+.photo-card img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+
+.back-link {
+margin-top: 30px;
+display: inline-block;
+color: #0077cc;
+text-decoration: none;
+}
+
+.back-link:hover {
+text-decoration: underline;
+}
+
+.location-link {
+text-decoration: underline;
+color: #0077cc;
+display: flex;
+align-items: center;
+}
+
+.location-link:hover {
+text-decoration: underline;
+text-decoration-thickness: 2px;
+}
+
+.click-icon {
+margin-right: 5px;
+display: inline-block;
+}
+
+.click-icon::before {
+content: "➤";
+display: inline-block;
+}
+
+/* EDİTOR PANEL */
+.edit-panel {
+position: fixed;
+top: 20px;
+right: 20px;
+background: white;
+border: 1px solid #ddd;
+border-radius: 8px;
+padding: 15px;
+box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+z-index: 1000;
+max-height: 80vh;
+overflow-y: auto;
+display: none;
+}
+
+.edit-panel h3 {
+margin-top: 0;
+color: #333;
+}
+
+.edit-panel input, .edit-panel button {
+margin: 5px 0;
+padding: 5px;
+width: 100%;
+box-sizing: border-box;
+}
+
+.edit-btn {
+position: fixed;
+bottom: 20px;
+right: 20px;
+background: #0077cc;
+color: white;
+border: none;
+border-radius: 50%;
+width: 50px;
+height: 50px;
+cursor: pointer;
+font-size: 24px;
+z-index: 1000;
+}
+
+.export-btn {
+background: #28a745;
+margin-top: 10px;
+color: white;
+border: none;
+border-radius: 5px;
+padding: 8px;
+cursor: pointer;
+}
+
+#exportedCode {
+display: none;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: white;
+border: 1px solid #ddd;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+z-index: 2000;
+width: 80%;
+max-width: 800px;
+max-height: 80vh;
+overflow-y: auto;
+}
+
+#exportedCode pre {
+background: #f5f5f5;
+padding: 10px;
+border-radius: 5px;
+overflow-x: auto;
+}
+
+#bulkLocations {
+font-family: monospace;
+resize: vertical;
+}
+</style>
 </head>
 <body>
-  <!-- 🌐 Logo bağlantısı -->
-  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
-  <h1 id="city-header">📸 <span id="city-name"></span></h1>
-  
-  <!-- Konumlar dinamik olarak burada görünecek -->
-  <div id="locations-container"></div>
-  
-  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+<!-- 🌐 Logo bağlantısı -->
+<a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+<h1 id="city-header">📸 <span id="city-name"></span></h1>
 
-  <!-- EDİTOR PANEL -->
-  <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
-  
-  <div class="edit-panel" id="editPanel">
-    <h3>⚙️ Şehir Ayarları</h3>
-    <input type="text" id="cityName" placeholder="Şehir Adı">
-    <button onclick="updateCityName()">Şehir Adını Güncelle</button>
-    <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
-    
-    <h3>📝 Konum Ekle</h3>
-    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
-    <button onclick="addBulkLocations()">Toplu Ekle</button>
-    <button onclick="clearAll()">Tümünü Temizle</button>
-    <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
-    <button onclick="toggleEditPanel()">Kapat</button>
-  </div>
+<!-- Konumlar dinamik olarak burada görünecek -->
+<div id="locations-container"></div>
 
-  <!-- HTML KOD ÇIKTI -->
-  <div id="exportedCode">
-    <h3>HTML Kodunuz:</h3>
-    <pre id="codeOutput"></pre>
-    <button onclick="copyCode()">Kopyala</button>
-    <button onclick="hideExportedCode()">Kapat</button>
-  </div>
+<p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 
-  <script>
-    // URL'den şehir ismi al
-    function getCityFromUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('city') || 'Şehir';
-    }
+<!-- EDİTOR PANEL -->
+<button class="edit-btn" onclick="toggleEditPanel()">✎</button>
 
-    // LocalStorage key
-    function getStorageKey() {
-      const city = getCityFromUrl();
-      return `locations_${city}`;
-    }
+<div class="edit-panel" id="editPanel">
+<h3>⚙️ Şehir Ayarları</h3>
+<input type="text" id="cityName" placeholder="Şehir Adı">
+<button onclick="updateCityName()">Şehir Adını Güncelle</button>
+<button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
 
-    function getCityNameStorageKey() {
-      const city = getCityFromUrl();
-      return `cityName_${city}`;
-    }
+<h3>📝 Konum Ekle</h3>
+<textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
+<button onclick="addBulkLocations()">Toplu Ekle</button>
+<button onclick="clearAll()">Tümünü Temizle</button>
+<button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
+<button onclick="toggleEditPanel()">Kapat</button>
+</div>
 
-    // Varsayılan konumlar (Bursa örneği)
-    const defaultLocations = [
-      {
-        name: "Suuçtu Şelalesi",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg"
-        ],
-        link: "https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa"
-      },
-      {
-        name: "İnkaya Çınarı",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg"
-        ],
-        link: "https://maps.google.com/?q=%C4%B0nkaya+%C3%87%C4%B1nar%C4%B1%2C+Bursa"
-      }
-    ];
+<!-- HTML KOD ÇIKTI -->
+<div id="exportedCode">
+<h3>HTML Kodunuz:</h3>
+<pre id="codeOutput"></pre>
+<button onclick="copyCode()">Kopyala</button>
+<button onclick="hideExportedCode()">Kapat</button>
+</div>
 
-    // Şehir adını yükle
-    function loadCityName() {
-      const storageKey = getCityNameStorageKey();
-      const savedName = localStorage.getItem(storageKey);
-      return savedName || getCityFromUrl();
-    }
+<script>
+// URL'den şehir ismi al
+function getCityFromUrl() {
+const urlParams = new URLSearchParams(window.location.search);
+return urlParams.get('city') || 'Şehir';
+}
 
-    // Şehir adını kaydet
-    function saveCityName(cityName) {
-      const storageKey = getCityNameStorageKey();
-      localStorage.setItem(storageKey, cityName);
-    }
+// LocalStorage key
+function getStorageKey() {
+const city = getCityFromUrl();
+return `locations_${city}`;
+}
 
-    // localStorage'ı tamamen sıfırla
-    function resetLocalStorage() {
-      if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
-        // Şu anki şehirle ilgili verileri sil
-        const city = getCityFromUrl();
-        localStorage.removeItem(`locations_${city}`);
-        localStorage.removeItem(`cityName_${city}`);
-        
-        // Tüm şehirlerle ilgili verileri sil (opsiyonel)
-        // localStorage.clear();
-        
-        // Sayfayı yenile
-        location.reload();
-      }
-    }
+function getCityNameStorageKey() {
+const city = getCityFromUrl();
+return `cityName_${city}`;
+}
 
-    // Şehir adını güncelle
-    function updateCityName() {
-      const newName = document.getElementById('cityName').value;
-      if (newName) {
-        saveCityName(newName);
-        updatePageTitle();
-      }
-    }
+// Varsayılan konumlar (Bursa örneği)
+const defaultLocations = [
+{
+name: "Suuçtu Şelalesi",
+photos: [
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg,
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg,
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg
+],
+link: "https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa"
+},
+{
+name: "İnkaya Çınarı",
+photos: [
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg,
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg,
+https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg
+],
+link: "https://maps.google.com/?q=%C4%B0nkaya+%C3%87%C4%B1nar%C4%B1%2C+Bursa"
+}
+];
 
-    // Konumları yükle
-    function loadLocations() {
-      const storageKey = getStorageKey();
-      const savedLocations = localStorage.getItem(storageKey);
-      
-      if (savedLocations) {
-        return JSON.parse(savedLocations);
-      } else {
-        // Her zaman boş array döndür
-        return [];
-      }
-    }
+// Şehir adını yükle
+function loadCityName() {
+const storageKey = getCityNameStorageKey();
+const savedName = localStorage.getItem(storageKey);
+return savedName || getCityFromUrl();
+}
 
-    // Konumları kaydet
-    function saveLocations(locations) {
-      const storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(locations));
-    }
+// Şehir adını kaydet
+function saveCityName(cityName) {
+const storageKey = getCityNameStorageKey();
+localStorage.setItem(storageKey, cityName);
+}
 
-    // Konumları render et
-    function renderLocations() {
-      const container = document.getElementById('locations-container');
-      const locations = loadLocations();
-      
-      container.innerHTML = '';
-      
-      locations.forEach((location, index) => {
-        const section = document.createElement('div');
-        section.className = 'city-section';
-        
-        let photosHTML = '';
-        location.photos.forEach(photoUrl => {
-          photosHTML += `
-            <div class="photo-card">
-              <img src="${photoUrl}" alt="${location.name}">
-            </div>
-          `;
-        });
-        
-        section.innerHTML = `
-          <div class="city-header">
-            <h2 class="city-title">
-              <a href="${location.link}" target="_blank" class="location-link">
-                <span class="click-icon"></span>
-                ${location.name} 📍
-              </a>
-            </h2>
-          </div>
-          
-          <div class="city-photos">
-            ${photosHTML}
-          </div>
-        `;
-        
-        container.appendChild(section);
-      });
-    }
+// localStorage'ı tamamen sıfırla
+function resetLocalStorage() {
+if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
+// Şu anki şehirle ilgili verileri sil
+const city = getCityFromUrl();
+localStorage.removeItem(`locations_${city}`);
+localStorage.removeItem(`cityName_${city}`);
 
-    // HTML kodunu dışa aktar
-    function exportHTML() {
-      const cityName = loadCityName();
-      const locations = loadLocations();
-      
-      // Lokasyonları JavaScript array formatına dönüştür
-      let locationsArray = '[\n';
-      locations.forEach((location, index) => {
-        locationsArray += `      {\n        name: "${location.name}",\n        photos: [\n`;
-        location.photos.forEach((photo, photoIndex) => {
-          locationsArray += `          "${photo}"`;
-          if (photoIndex < location.photos.length - 1) locationsArray += ',';
-          locationsArray += '\n';
-        });
-        locationsArray += `        ],\n        link: "${location.link}"\n      }`;
-        if (index < locations.length - 1) locationsArray += ',';
-        locationsArray += '\n';
-      });
-      locationsArray += '    ];';
+// Tüm şehirlerle ilgili verileri sil (opsiyonel)
+// localStorage.clear();
 
-      const fullHTML = `<!DOCTYPE html>  
+// Sayfayı yenile
+location.reload();
+}
+}
+
+// Şehir adını güncelle
+function updateCityName() {
+const newName = document.getElementById('cityName').value;
+if (newName) {
+saveCityName(newName);
+updatePageTitle();
+}
+}
+
+// Konumları yükle
+function loadLocations() {
+const storageKey = getStorageKey();
+const savedLocations = localStorage.getItem(storageKey);
+
+if (savedLocations) {
+return JSON.parse(savedLocations);
+} else {
+// Her zaman boş array döndür
+return [];
+}
+}
+
+// Konumları kaydet
+function saveLocations(locations) {
+const storageKey = getStorageKey();
+localStorage.setItem(storageKey, JSON.stringify(locations));
+}
+
+// Konumları render et
+function renderLocations() {
+const container = document.getElementById('locations-container');
+const locations = loadLocations();
+
+container.innerHTML = '';
+
+locations.forEach((location, index) => {
+const section = document.createElement('div');
+section.className = 'city-section';
+
+let photosHTML = '';
+location.photos.forEach(photoUrl => {
+photosHTML += `
+<div class="photo-card">
+<img src="${photoUrl}" alt="${location.name}">
+</div>
+`;
+});
+
+section.innerHTML = `
+<div class="city-header">
+<h2 class="city-title">
+<a href="${location.link}" target="_blank" class="location-link">
+<span class="click-icon"></span>
+${location.name} 📍
+</a>
+</h2>
+</div>
+
+<div class="city-photos">
+${photosHTML}
+</div>
+`;
+
+container.appendChild(section);
+});
+}
+
+// HTML kodunu dışa aktar
+function exportHTML() {
+const cityName = loadCityName();
+const locations = loadLocations();
+
+let locationsHTML = '';
+locations.forEach(location => {
+let photosHTML = '';
+location.photos.forEach(photoUrl => {
+photosHTML += `
+<div class="photo-card">
+<img src="${photoUrl}" alt="${location.name}">
+</div>`;
+});
+
+locationsHTML += `
+<div class="city-section">
+<div class="city-header">
+<h2 class="city-title">
+<a href="${location.link}" target="_blank" class="location-link">
+<span class="click-icon"></span>
+${location.name} 📍
+</a>
+</h2>
+</div>
+
+<div class="city-photos">${photosHTML}
+</div>
+</div>`;
+});
+
+const fullHTML = `<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${cityName}</title>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-      overflow-y: auto;
-      background-color: #f5f5f5;
-    }
-    .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 28px;
-      text-decoration: none;
-      color: black;
-    }
-    
-    h1 { 
-      font-size: 26px; 
-      margin-top: 80px;
-      margin-bottom: 30px;
-    }
-    
-    .city-section {
-      margin-bottom: 30px;
-      background-color: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    .city-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .city-title {
-      margin: 0;
-      font-size: 20px;
-      color: #0077cc;
-    }
-    
-    .city-photos {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 5px 0;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    
-    .city-photos::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .photo-card {
-      flex: 0 0 auto;
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      scroll-snap-align: start;
-      background-color: white;
-      position: relative;
-    }
-    
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .back-link {
-      margin-top: 30px;
-      display: inline-block;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    
-    .location-link {
-      text-decoration: underline;
-      color: #0077cc;
-      display: flex;
-      align-items: center;
-    }
-    
-    .location-link:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-    }
-    
-    .click-icon {
-      margin-right: 5px;
-      display: inline-block;
-    }
-    
-    .click-icon::before {
-      content: "➤";
-      display: inline-block;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${cityName}</title>
+<style>
+body {
+font-family: sans-serif;
+text-align: center;
+padding: 20px;
+overflow-y: auto;
+background-color: #f5f5f5;
+}
+.logo {
+position: absolute;
+top: 20px;
+left: 20px;
+font-size: 28px;
+text-decoration: none;
+color: black;
+}
+
+h1 {
+font-size: 26px;
+margin-top: 80px;
+margin-bottom: 30px;
+}
+
+.city-section {
+margin-bottom: 30px;
+background-color: white;
+border-radius: 10px;
+padding: 15px;
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+max-width: 1000px;
+margin-left: auto;
+margin-right: auto;
+}
+
+.city-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 15px;
+padding-bottom: 10px;
+border-bottom: 1px solid #eee;
+}
+
+.city-title {
+margin: 0;
+font-size: 20px;
+color: #0077cc;
+}
+
+.city-photos {
+display: flex;
+gap: 15px;
+overflow-x: auto;
+padding: 5px 0;
+scroll-snap-type: x mandatory;
+scrollbar-width: none;
+}
+
+.city-photos::-webkit-scrollbar {
+display: none;
+}
+
+.photo-card {
+flex: 0 0 auto;
+width: 200px;
+height: 200px;
+border-radius: 8px;
+overflow: hidden;
+box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+scroll-snap-align: start;
+background-color: white;
+position: relative;
+}
+
+.photo-card img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+
+.back-link {
+margin-top: 30px;
+display: inline-block;
+color: #0077cc;
+text-decoration: none;
+}
+
+.back-link:hover {
+text-decoration: underline;
+}
+
+.location-link {
+text-decoration: underline;
+color: #0077cc;
+display: flex;
+align-items: center;
+}
+
+.location-link:hover {
+text-decoration: underline;
+text-decoration-thickness: 2px;
+}
+
+.click-icon {
+margin-right: 5px;
+display: inline-block;
+}
+
+.click-icon::before {
+content: "➤";
+display: inline-block;
+}
+</style>
 </head>
 <body>
-  <script>
-    // 🔧 YENİ KONUM EKLEMEK İÇİN SADECE BU ARRAY'İ GÜNCELLEYİN! 
-    const locations = ${locationsArray}
+<!-- 🌐 Logo bağlantısı -->
+<a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+<h1>📸 ${cityName}</h1>
+${locationsHTML}
 
-    // Sayfa yüklendikinde konumları oluştur
-    window.onload = function() {
-      const container = document.getElementById('locations-container');
-      
-      locations.forEach((location, index) => {
-        // Her konum için HTML oluştur
-        const section = document.createElement('div');
-        section.className = 'city-section';
-        
-        let photosHTML = '';
-        location.photos.forEach(photoUrl => {
-          photosHTML += \`
-            <div class="photo-card">
-              <img src="\${photoUrl}" alt="\${location.name}">
-            </div>
-          \`;
-        });
-        
-        section.innerHTML = \`
-          <div class="city-header">
-            <h2 class="city-title">
-              <a href="\${location.link}" target="_blank" class="location-link">
-                <span class="click-icon"></span>
-                \${location.name} 📍
-              </a>
-            </h2>
-          </div>
-          
-          <div class="city-photos">
-            \${photosHTML}
-          </div>
-        \`;
-        
-        container.appendChild(section);
-      });
-    }
-  </script>
-
-  <!-- 🌐 Logo bağlantısı -->
-  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
-  <h1>📸 ${cityName}</h1>
-  
-  <!-- Konumlar dinamik olarak burada görünecek -->
-  <div id="locations-container"></div>
-  
-  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+<p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
 </html>`;
 
-      document.getElementById('codeOutput').textContent = fullHTML;
-      document.getElementById('exportedCode').style.display = 'block';
-    }
+document.getElementById('codeOutput').textContent = fullHTML;
+document.getElementById('exportedCode').style.display = 'block';
+}
 
-    // Kodu kopyala
-    function copyCode() {
-      const code = document.getElementById('codeOutput').textContent;
-      navigator.clipboard.writeText(code).then(function() {
-        alert('Kod kopyalandı!');
-      });
-    }
+// Kodu kopyala
+function copyCode() {
+const code = document.getElementById('codeOutput').textContent;
+navigator.clipboard.writeText(code).then(function() {
+alert('Kod kopyalandı!');
+});
+}
 
-    // Dışa aktar penceresini kapat
-    function hideExportedCode() {
-      document.getElementById('exportedCode').style.display = 'none';
-    }
+// Dışa aktar penceresini kapat
+function hideExportedCode() {
+document.getElementById('exportedCode').style.display = 'none';
+}
 
-    // Yeni konum ekle
-    function addLocation() {
-      const name = document.getElementById('locationName').value;
-      const link = document.getElementById('locationLink').value;
-      const photo1 = document.getElementById('photo1').value;
-      const photo2 = document.getElementById('photo2').value;
-      const photo3 = document.getElementById('photo3').value;
-      
-      if (!name || !link || !photo1) {
-        alert('En az konum adı, link ve bir fotoğraf zorunludur!');
-        return;
-      }
-      
-      const locations = loadLocations();
-      const newLocation = {
-        name: name,
-        photos: [photo1, photo2, photo3].filter(p => p),
-        link: link
-      };
-      
-      locations.push(newLocation);
-      saveLocations(locations);
-      renderLocations();
-      
-      // Formu temizle
-      clearForm();
-    }
-    
-    // Toplu konum ekle
-    function addBulkLocations() {
-      const bulkText = document.getElementById('bulkLocations').value;
-      if (!bulkText.trim()) {
-        alert('Lütfen konum bilgilerini girin!');
-        return;
-      }
-      
-      const lines = bulkText.split('\n').filter(line => line.trim());
-      let successCount = 0;
-      const locations = loadLocations(); // Mevcut konumları yükle
-      
-      lines.forEach((line, index) => {
-        // Satır başındaki numaraları temizle (1. 2. 3. vb.)
-        let cleanedLine = line.replace(/^\d+\.\s*/, '');
-        
-        // @@ ayırıcısıyla parçaları al
-        const parts = cleanedLine.split('@@');
-        
-        if (parts.length < 2) {
-          console.log(`Satır ${index + 1}: Eksik veri - "${cleanedLine}"`);
-          return;
-        }
-        
-        const name = parts[0].trim();
-        const link = parts[1].trim();
-        const photos = [];
-        
-        // Fotoğrafları topla
-        for (let i = 2; i < parts.length && i < 5; i++) {
-          if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
-            photos.push(parts[i].trim());
-          }
-        }
-        
-        if (!name || !link) {
-          console.log(`Satır ${index + 1}: Ad veya link eksik - "${cleanedLine}"`);
-          return;
-        }
-        
-        // Konumu ekle
-        const newLocation = {
-          name: name,
-          photos: photos,
-          link: link
-        };
-        
-        locations.push(newLocation);
-        successCount++;
-        console.log(`Satır ${index + 1}: Başarıyla eklendi - "${name}"`);
-      });
-      
-      saveLocations(locations);
-      renderLocations();
-      document.getElementById('bulkLocations').value = '';
-      
-      console.log(`Toplam ${successCount} konum eklendi.`);
-    }
+// Yeni konum ekle
+function addLocation() {
+const name = document.getElementById('locationName').value;
+const link = document.getElementById('locationLink').value;
+const photo1 = document.getElementById('photo1').value;
+const photo2 = document.getElementById('photo2').value;
+const photo3 = document.getElementById('photo3').value;
 
-    // Formu temizle
-    function clearForm() {
-      // Bu fonksiyon artık gerekmiyor
-    }
+if (!name || !link || !photo1) {
+alert('En az konum adı, link ve bir fotoğraf zorunludur!');
+return;
+}
 
-    // Tümünü temizle
-    function clearAll() {
-      if (confirm('Tüm konumları silmek istediğinizden emin misiniz?')) {
-        const storageKey = getStorageKey();
-        localStorage.removeItem(storageKey);
-        renderLocations();
-      }
-    }
+const locations = loadLocations();
+const newLocation = {
+name: name,
+photos: [photo1, photo2, photo3].filter(p => p),
+link: link
+};
 
-    // Edit panelini aç/kapat
-    function toggleEditPanel() {
-      const panel = document.getElementById('editPanel');
-      const isHidden = panel.style.display === 'none';
-      panel.style.display = isHidden ? 'block' : 'none';
-      
-      if (isHidden) {
-        document.getElementById('cityName').value = loadCityName();
-      }
-    }
+locations.push(newLocation);
+saveLocations(locations);
+renderLocations();
 
-    // Sayfa başlığını güncelle
-    function updatePageTitle() {
-      const cityName = loadCityName();
-      document.getElementById('city-name').textContent = cityName;
-      document.getElementById('page-title').textContent = cityName;
-    }
+// Formu temizle
+clearForm();
+}
 
-    // Sayfa yüklendikinde çalıştır
-    window.onload = function() {
-      updatePageTitle();
-      renderLocations();
-    }
-  </script>
+// Toplu konum ekle
+function addBulkLocations() {
+const bulkText = document.getElementById('bulkLocations').value;
+if (!bulkText.trim()) {
+alert('Lütfen konum bilgilerini girin!');
+return;
+}
+
+const lines = bulkText.split('\n').filter(line => line.trim());
+let successCount = 0;
+const locations = loadLocations(); // Mevcut konumları yükle
+
+lines.forEach((line, index) => {
+// Satır başındaki numaraları temizle (1. 2. 3. vb.)
+let cleanedLine = line.replace(/^\d+\.\s*/, '');
+
+// @@ ayırıcısıyla parçaları al
+const parts = cleanedLine.split('@@');
+
+if (parts.length < 2) {
+console.log(`Satır ${index + 1}: Eksik veri - "${cleanedLine}"`);
+return;
+}
+
+const name = parts[0].trim();
+const link = parts[1].trim();
+const photos = [];
+
+// Fotoğrafları topla
+for (let i = 2; i < parts.length && i < 5; i++) {
+if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
+photos.push(parts[i].trim());
+}
+}
+
+if (!name || !link) {
+console.log(`Satır ${index + 1}: Ad veya link eksik - "${cleanedLine}"`);
+return;
+}
+
+// Konumu ekle
+const newLocation = {
+name: name,
+photos: photos,
+link: link
+};
+
+locations.push(newLocation);
+successCount++;
+console.log(`Satır ${index + 1}: Başarıyla eklendi - "${name}"`);
+});
+
+saveLocations(locations);
+renderLocations();
+document.getElementById('bulkLocations').value = '';
+
+console.log(`Toplam ${successCount} konum eklendi.`);
+}
+
+// Formu temizle
+function clearForm() {
+// Bu fonksiyon artık gerekmiyor
+}
+
+// Tümünü temizle
+function clearAll() {
+if (confirm('Tüm konumları silmek istediğinizden emin misiniz?')) {
+const storageKey = getStorageKey();
+localStorage.removeItem(storageKey);
+renderLocations();
+}
+}
+
+// Edit panelini aç/kapat
+function toggleEditPanel() {
+const panel = document.getElementById('editPanel');
+const isHidden = panel.style.display === 'none';
+panel.style.display = isHidden ? 'block' : 'none';
+
+if (isHidden) {
+document.getElementById('cityName').value = loadCityName();
+}
+}
+
+// Sayfa başlığını güncelle
+function updatePageTitle() {
+const cityName = loadCityName();
+document.getElementById('city-name').textContent = cityName;
+document.getElementById('page-title').textContent = cityName;
+}
+
+// Sayfa yüklendikinde çalıştır
+window.onload = function() {
+updatePageTitle();
+renderLocations();
+}
+</script>
 </body>
 </html>
