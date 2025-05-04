@@ -1,28 +1,154 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel Test</title>
-  <script>
-    function testClick() {
-      alert('Buton çalışıyor!');
-    }
-  </script>
+  <title>Admin Panel</title>
 </head>
 <body>
-  <h1>Test</h1>
-  <button onclick="testClick()">TEST BUTONU</button>
+  <h1>Admin Panel</h1>
   
-  <hr>
+  <div>
+    <h3>Şehir Adı</h3>
+    <input type="text" id="cityNameInput" value="Şehir">
+    <button onclick="updateCityName()">Güncelle</button>
+  </div>
   
-  <h2>LocalStorage Test</h2>
-  <button onclick="localStorage.setItem('test', 'çalışıyor')">Kaydet</button>
-  <button onclick="alert(localStorage.getItem('test'))">Oku</button>
+  <div>
+    <h3>Konum Ekle</h3>
+    <textarea id="locationInput" rows="5" style="width: 100%;" placeholder="KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3"></textarea>
+    <button onclick="addLocation()">Ekle</button>
+  </div>
   
-  <hr>
+  <div>
+    <h3>Kaydedilmiş Konumlar</h3>
+    <div id="locationsList"></div>
+  </div>
   
-  <h2>URL Test</h2>
-  <button onclick="alert(window.location.search)">URL Parametrelerini Göster</button>
+  <div>
+    <button onclick="exportHTML()">HTML Kodunu Al</button>
+    <textarea id="htmlOutput" style="width: 100%; height: 200px;"></textarea>
+  </div>
+
+  <script>
+    // URL'den şehri al
+    function getCity() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('city') || 'default';
+    }
+    
+    // Şehir adını güncelle
+    function updateCityName() {
+      const cityName = document.getElementById('cityNameInput').value;
+      const city = getCity();
+      localStorage.setItem('cityName_' + city, cityName);
+      alert('Şehir adı güncellendi: ' + cityName);
+      showLocations(); // Listeyi güncelle
+    }
+    
+    // Konum ekle
+    function addLocation() {
+      const input = document.getElementById('locationInput').value;
+      const city = getCity();
+      
+      // Mevcut konumları al
+      let locations = localStorage.getItem('locations_' + city);
+      locations = locations ? JSON.parse(locations) : [];
+      
+      // Yeni konumu çözümle
+      const parts = input.split('@');
+      if (parts.length >= 3) {
+        const newLocation = {
+          name: parts[0].trim(),
+          link: parts[1].trim(),
+          photos: parts.slice(2).map(p => p.trim())
+        };
+        
+        locations.push(newLocation);
+        localStorage.setItem('locations_' + city, JSON.stringify(locations));
+        alert('Konum eklendi!');
+        document.getElementById('locationInput').value = '';
+        showLocations(); // Listeyi güncelle
+      } else {
+        alert('Hata: Konum formatı hatalı. Format: Ad@Link@Foto1@Foto2@Foto3');
+      }
+    }
+    
+    // Konumları göster
+    function showLocations() {
+      const city = getCity();
+      const locations = localStorage.getItem('locations_' + city);
+      const list = document.getElementById('locationsList');
+      
+      if (locations) {
+        const parsed = JSON.parse(locations);
+        list.innerHTML = '<ul>';
+        parsed.forEach((loc, index) => {
+          list.innerHTML += `<li>${index + 1}. ${loc.name} (${loc.photos.length} fotoğraf)</li>`;
+        });
+        list.innerHTML += '</ul>';
+      } else {
+        list.innerHTML = 'Henüz konum yok';
+      }
+    }
+    
+    // HTML kodu çıkart
+    function exportHTML() {
+      const city = getCity();
+      const cityName = localStorage.getItem('cityName_' + city) || city;
+      const locations = localStorage.getItem('locations_' + city);
+      
+      let html = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${cityName}</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .location { border: 1px solid #ddd; margin: 10px; padding: 10px; }
+    .photos { display: flex; gap: 10px; flex-wrap: wrap; }
+    .photo { width: 200px; height: 200px; }
+    .photo img { width: 100%; height: 100%; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <h1>${cityName}</h1>`;
+  
+      if (locations) {
+        const parsed = JSON.parse(locations);
+        parsed.forEach(location => {
+          html += `
+  <div class="location">
+    <h2><a href="${location.link}" target="_blank">${location.name}</a></h2>
+    <div class="photos">`;
+          
+          location.photos.forEach(photo => {
+            html += `
+      <div class="photo">
+        <img src="${photo}" alt="${location.name}">
+      </div>`;
+          });
+          
+          html += `
+    </div>
+  </div>`;
+        });
+      }
+      
+      html += `
+</body>
+</html>`;
+      
+      document.getElementById('htmlOutput').value = html;
+    }
+    
+    // Sayfa yüklendiğinde çalıştır
+    window.onload = function() {
+      const city = getCity();
+      document.getElementById('cityNameInput').value = localStorage.getItem('cityName_' + city) || city;
+      showLocations();
+    }
+  </script>
 </body>
 </html>
