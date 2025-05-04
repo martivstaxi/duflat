@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Şehir</title>
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
   <style>
+    /* CSS stilleri */
     body {
       font-family: sans-serif;
       text-align: center;
@@ -100,7 +106,7 @@
       display: inline-block;
     }
     .click-icon::before {
-      content: "\27A4";
+      content: "➤";
       display: inline-block;
     }
     .edit-panel {
@@ -155,11 +161,6 @@
       resize: vertical;
     }
   </style>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
 </head>
 <body>
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
@@ -180,10 +181,101 @@
     <button onclick="toggleEditPanel()">Kapat</button>
   </div>
   <script>
-    // JavaScript fonksiyonları: getCityFromUrl, getStorageKey, getCityNameStorageKey, loadCityName, saveCityName,
-    // resetLocalStorage, updateCityName, loadLocations, saveLocations, renderLocations, exportHTML,
-    // addBulkLocations, clearAll, toggleEditPanel, updatePageTitle, window.onload
-    // Bunların hepsi önceki admin.html'de olduğu gibi eksiksiz yer alacak şekilde yerleştirildi.
+    function getCityFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('city') || 'Şehir';
+    }
+    function getStorageKey() {
+      return 'locations_' + getCityFromUrl();
+    }
+    function getCityNameStorageKey() {
+      return 'cityName_' + getCityFromUrl();
+    }
+    function loadCityName() {
+      const name = localStorage.getItem(getCityNameStorageKey());
+      return name || getCityFromUrl();
+    }
+    function saveCityName(name) {
+      localStorage.setItem(getCityNameStorageKey(), name);
+    }
+    function resetLocalStorage() {
+      if (confirm('Tüm veriler silinsin mi?')) {
+        localStorage.removeItem(getStorageKey());
+        localStorage.removeItem(getCityNameStorageKey());
+        location.reload();
+      }
+    }
+    function updateCityName() {
+      const name = document.getElementById('cityName').value;
+      if (name) {
+        saveCityName(name);
+        updatePageTitle();
+      }
+    }
+    function loadLocations() {
+      const data = localStorage.getItem(getStorageKey());
+      return data ? JSON.parse(data) : [];
+    }
+    function saveLocations(data) {
+      localStorage.setItem(getStorageKey(), JSON.stringify(data));
+    }
+    function renderLocations() {
+      const container = document.getElementById('locations-container');
+      const locations = loadLocations();
+      container.innerHTML = '';
+      locations.forEach(loc => {
+        const photos = loc.photos.map(p => `<div class='photo-card'><img src='${p}' alt='${loc.name}'></div>`).join('');
+        const html = `<div class='city-section'><div class='city-header'><h2 class='city-title'><a href='${loc.link}' target='_blank' class='location-link'><span class='click-icon'></span>${loc.name} 📍</a></h2></div><div class='city-photos'>${photos}</div></div>`;
+        container.innerHTML += html;
+      });
+    }
+    function exportHTML() {
+      const cityName = loadCityName();
+      const locations = loadLocations();
+      let locationsHTML = '';
+      locations.forEach(loc => {
+        let photosHTML = loc.photos.map(photo => `<div class='photo-card'><img src='${photo}' alt='${loc.name}'></div>`).join('');
+        locationsHTML += `<div class='city-section'><div class='city-header'><h2 class='city-title'><a href='${loc.link}' target='_blank' class='location-link'><span class='click-icon'></span>${loc.name} 📍</a></h2></div><div class='city-photos'>${photosHTML}</div></div>`;
+      });
+      const html = `<!DOCTYPE html><html lang='tr'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>${cityName}</title><script>if (localStorage.getItem('duflat-access') !== 'granted'){window.location.href='login.html';}</script><style>${document.querySelector('style').innerHTML}</style></head><body><a href='https://duflat.com/main.html' class='logo'>🌐 duflat.com</a><h1>📸 ${cityName}</h1>${locationsHTML}<p><a href='turkiye.html' class='back-link'>← Türkiye'ye dön</a></p></body></html>`;
+      navigator.clipboard.writeText(html).then(() => alert('HTML kopyalandı')).catch(() => alert('Kopyalama başarısız'));
+    }
+    function addBulkLocations() {
+      const text = document.getElementById('bulkLocations').value;
+      const lines = text.split('\n');
+      const locations = loadLocations();
+      lines.forEach(line => {
+        const [name, link, ...photos] = line.split('@@').map(e => e.trim());
+        if (name && link) {
+          locations.push({ name, link, photos });
+        }
+      });
+      saveLocations(locations);
+      renderLocations();
+      document.getElementById('bulkLocations').value = '';
+    }
+    function clearAll() {
+      if (confirm('Tüm konumlar silinsin mi?')) {
+        localStorage.removeItem(getStorageKey());
+        renderLocations();
+      }
+    }
+    function toggleEditPanel() {
+      const panel = document.getElementById('editPanel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      if (panel.style.display === 'block') {
+        document.getElementById('cityName').value = loadCityName();
+      }
+    }
+    function updatePageTitle() {
+      const name = loadCityName();
+      document.getElementById('city-name').textContent = name;
+      document.getElementById('page-title').textContent = name;
+    }
+    window.onload = function() {
+      updatePageTitle();
+      renderLocations();
+    }
   </script>
 </body>
 </html>
