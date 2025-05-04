@@ -171,31 +171,6 @@
       cursor: pointer;
     }
 
-    #exportedCode {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 1px solid #ddd;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 2000;
-      width: 80%;
-      max-width: 800px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    #exportedCode pre {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    
     #bulkLocations {
       font-family: monospace;
       resize: vertical;
@@ -203,6 +178,13 @@
   </style>
 </head>
 <body>
+  <!-- Erişim kontrolü -->
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1 id="city-header">📸 <span id="city-name"></span></h1>
@@ -229,14 +211,6 @@
     <button onclick="toggleEditPanel()">Kapat</button>
   </div>
 
-  <!-- HTML KOD ÇIKTI -->
-  <div id="exportedCode">
-    <h3>HTML Kodunuz:</h3>
-    <pre id="codeOutput"></pre>
-    <button onclick="copyCode()">Kopyala</button>
-    <button onclick="hideExportedCode()">Kapat</button>
-  </div>
-
   <script>
     // URL'den şehir ismi al
     function getCityFromUrl() {
@@ -255,28 +229,6 @@
       return `cityName_${city}`;
     }
 
-    // Varsayılan konumlar (Bursa örneği)
-    const defaultLocations = [
-      {
-        name: "Suuçtu Şelalesi",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/1_sdfqg4.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/2_egwcm7.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306305/3_efqv3x.jpg"
-        ],
-        link: "https://maps.google.com/?q=Suu%C3%A7tu+%C5%9eelalesi%2C+Bursa"
-      },
-      {
-        name: "İnkaya Çınarı",
-        photos: [
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/1_okm9an.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/2_rrdfju.jpg",
-          "https://res.cloudinary.com/dnkrwesdr/image/upload/v1746306365/3_uwdw4d.jpg"
-        ],
-        link: "https://maps.google.com/?q=%C4%B0nkaya+%C3%87%C4%B1nar%C4%B1%2C+Bursa"
-      }
-    ];
-
     // Şehir adını yükle
     function loadCityName() {
       const storageKey = getCityNameStorageKey();
@@ -293,15 +245,9 @@
     // localStorage'ı tamamen sıfırla
     function resetLocalStorage() {
       if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
-        // Şu anki şehirle ilgili verileri sil
         const city = getCityFromUrl();
         localStorage.removeItem(`locations_${city}`);
         localStorage.removeItem(`cityName_${city}`);
-        
-        // Tüm şehirlerle ilgili verileri sil (opsiyonel)
-        // localStorage.clear();
-        
-        // Sayfayı yenile
         location.reload();
       }
     }
@@ -323,7 +269,6 @@
       if (savedLocations) {
         return JSON.parse(savedLocations);
       } else {
-        // Her zaman boş array döndür
         return [];
       }
     }
@@ -373,7 +318,7 @@
       });
     }
 
-    // HTML kodunu dışa aktar
+    // HTML kodunu dışa aktar ve kopyala
     function exportHTML() {
       const cityName = loadCityName();
       const locations = loadLocations();
@@ -526,6 +471,13 @@
   </style>
 </head>
 <body>
+  <!-- Erişim kontrolü -->
+  <script>
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "login.html";
+    }
+  </script>
+  
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
   <h1>📸 ${cityName}</h1>
@@ -535,49 +487,15 @@
 </body>
 </html>`;
 
-      document.getElementById('codeOutput').textContent = fullHTML;
-      document.getElementById('exportedCode').style.display = 'block';
-    }
-
-    // Kodu kopyala
-    function copyCode() {
-      const code = document.getElementById('codeOutput').textContent;
-      navigator.clipboard.writeText(code).then(function() {
-        alert('Kod kopyalandı!');
+      // HTML kodunu direkt kopyala
+      navigator.clipboard.writeText(fullHTML).then(function() {
+        // Başarılı bildirim
+        alert('HTML kodu kopyalandı!');
+      }).catch(function(err) {
+        // Hata durumunda
+        console.error('Kopyalama hatası:', err);
+        alert('Kod kopyalanırken bir hata oluştu!');
       });
-    }
-
-    // Dışa aktar penceresini kapat
-    function hideExportedCode() {
-      document.getElementById('exportedCode').style.display = 'none';
-    }
-
-    // Yeni konum ekle
-    function addLocation() {
-      const name = document.getElementById('locationName').value;
-      const link = document.getElementById('locationLink').value;
-      const photo1 = document.getElementById('photo1').value;
-      const photo2 = document.getElementById('photo2').value;
-      const photo3 = document.getElementById('photo3').value;
-      
-      if (!name || !link || !photo1) {
-        alert('En az konum adı, link ve bir fotoğraf zorunludur!');
-        return;
-      }
-      
-      const locations = loadLocations();
-      const newLocation = {
-        name: name,
-        photos: [photo1, photo2, photo3].filter(p => p),
-        link: link
-      };
-      
-      locations.push(newLocation);
-      saveLocations(locations);
-      renderLocations();
-      
-      // Formu temizle
-      clearForm();
     }
     
     // Toplu konum ekle
@@ -590,13 +508,10 @@
       
       const lines = bulkText.split('\n').filter(line => line.trim());
       let successCount = 0;
-      const locations = loadLocations(); // Mevcut konumları yükle
+      const locations = loadLocations();
       
       lines.forEach((line, index) => {
-        // Satır başındaki numaraları temizle (1. 2. 3. vb.)
         let cleanedLine = line.replace(/^\d+\.\s*/, '');
-        
-        // @@ ayırıcısıyla parçaları al
         const parts = cleanedLine.split('@@');
         
         if (parts.length < 2) {
@@ -608,7 +523,6 @@
         const link = parts[1].trim();
         const photos = [];
         
-        // Fotoğrafları topla
         for (let i = 2; i < parts.length && i < 5; i++) {
           if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
             photos.push(parts[i].trim());
@@ -620,7 +534,6 @@
           return;
         }
         
-        // Konumu ekle
         const newLocation = {
           name: name,
           photos: photos,
@@ -637,11 +550,6 @@
       document.getElementById('bulkLocations').value = '';
       
       console.log(`Toplam ${successCount} konum eklendi.`);
-    }
-
-    // Formu temizle
-    function clearForm() {
-      // Bu fonksiyon artık gerekmiyor
     }
 
     // Tümünü temizle
