@@ -80,34 +80,76 @@
   </div>
 
   <script>
+    function getCityFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('city') || 'Şehir';
+    }
+
+    function getStorageKey() {
+      const city = getCityFromUrl();
+      return 'locations_' + city;
+    }
+
+    function getCityNameStorageKey() {
+      const city = getCityFromUrl();
+      return 'cityName_' + city;
+    }
+
+    function loadCityName() {
+      const storageKey = getCityNameStorageKey();
+      return localStorage.getItem(storageKey) || getCityFromUrl();
+    }
+
+    function saveCityName(cityName) {
+      const storageKey = getCityNameStorageKey();
+      localStorage.setItem(storageKey, cityName);
+    }
+
+    function resetLocalStorage() {
+      if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
+        localStorage.removeItem(getStorageKey());
+        localStorage.removeItem(getCityNameStorageKey());
+        location.reload();
+      }
+    }
+
+    function updateCityName() {
+      const newName = document.getElementById('cityName').value;
+      if (newName) {
+        saveCityName(newName);
+        updatePageTitle();
+      }
+    }
+
+    function loadLocations() {
+      return JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+    }
+
+    function saveLocations(locations) {
+      localStorage.setItem(getStorageKey(), JSON.stringify(locations));
+    }
+
+    function renderLocations() {
+      const container = document.getElementById('locations-container');
+      container.innerHTML = loadLocations().map(location => `
+        <div class="city-section">
+          <h2>${location.name}</h2>
+          <a href="${location.link}" target="_blank">${location.link}</a>
+          ${location.photos.map(photo => `<img src="${photo}" alt="${location.name}" style="width:200px;height:200px;">`).join('')}
+        </div>`).join('');
+    }
+
     function exportHTML() {
       const cityName = loadCityName();
       const locations = loadLocations();
-
       let locationsHTML = locations.map(location => `
-      <div class="city-section">
-        <h2>${location.name}</h2>
-        <a href="${location.link}" target="_blank">${location.link}</a>
-        ${location.photos.map(photo => `<img src="${photo}" alt="${location.name}" style="width:200px;height:200px;">`).join('')}
-      </div>`).join('');
+        <div class="city-section">
+          <h2>${location.name}</h2>
+          <a href="${location.link}" target="_blank">${location.link}</a>
+          ${location.photos.map(photo => `<img src="${photo}" alt="${location.name}" style="width:200px;height:200px;">`).join('')}
+        </div>`).join('');
 
-      const fullHTML = `<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>${cityName}</title>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  <\/script>
-</head>
-<body>
-  <h1>${cityName}</h1>
-  ${locationsHTML}
-</body>
-</html>`;
-
+      const fullHTML = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><script>if(localStorage.getItem("duflat-access")!=="granted"){window.location.href="login.html";}</script><title>${cityName}</title></head><body><h1>${cityName}</h1>${locationsHTML}</body></html>`;
       navigator.clipboard.writeText(fullHTML).then(() => alert('Kod kopyalandı!'));
     }
 
@@ -126,8 +168,12 @@
       panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
     }
 
-    document.getElementById('city-name').textContent = loadCityName();
-    renderLocations();
-  <\/script>
+    function updatePageTitle() {
+      document.getElementById('city-name').textContent = loadCityName();
+      document.getElementById('page-title').textContent = loadCityName();
+    }
+
+    window.onload = () => { updatePageTitle(); renderLocations(); };
+  </script>
 </body>
 </html>
