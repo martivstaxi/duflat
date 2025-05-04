@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Admin Panel</title>
+  <title>Admin Panel</title>
   <style>
     body {
       font-family: sans-serif;
@@ -85,17 +85,6 @@
       display: block;
     }
     
-    .back-link {
-      margin-top: 30px;
-      display: inline-block;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    
     .location-link {
       text-decoration: underline;
       color: #0077cc;
@@ -120,18 +109,14 @@
 
     /* EDİTOR PANEL */
     .edit-panel {
-      position: fixed;
-      top: 20px;
-      right: 20px;
+      display: block;
+      max-width: 1000px;
+      margin: 30px auto;
       background: white;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 15px;
+      padding: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 1000;
-      max-height: 80vh;
-      overflow-y: auto;
-      display: none;
     }
     
     .edit-panel h3 {
@@ -141,245 +126,89 @@
     
     .edit-panel input, .edit-panel button {
       margin: 5px 0;
-      padding: 5px;
+      padding: 8px;
+      border-radius: 4px;
       width: 100%;
       box-sizing: border-box;
     }
     
-    .edit-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
+    .edit-panel button {
       background: #0077cc;
       color: white;
       border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      font-size: 24px;
-      z-index: 1000;
-    }
-
-    .export-btn {
-      background: #28a745;
-      margin-top: 10px;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px;
       cursor: pointer;
     }
-
-    #exportedCode {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 1px solid #ddd;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 2000;
-      width: 80%;
-      max-width: 800px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    #exportedCode pre {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
+    
+    .edit-panel button:hover {
+      background: #005fa3;
     }
     
     #bulkLocations {
       font-family: monospace;
       resize: vertical;
-    }
-    
-    .login-form {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      text-align: center;
-      max-width: 400px;
-      margin: 50px auto;
-    }
-    
-    .login-form input {
-      display: block;
-      margin: 10px auto;
+      min-height: 100px;
       padding: 8px;
-      width: 200px;
       border: 1px solid #ddd;
       border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
     }
     
-    .login-form button {
-      background: #0077cc;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 4px;
-      cursor: pointer;
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
     }
     
-    .city-selector {
-      margin-bottom: 30px;
-      text-align: center;
+    .back-link:hover {
+      text-decoration: underline;
     }
     
-    .city-selector select {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-      margin-left: 10px;
+    .warning {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <!-- GÜVENLİK KONTROLÜ -->
-  <script>
-    // Sayfa yüklendiğinde güvenlik kontrolü yap
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
-
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
-  <h1 id="city-header">📸 Admin Panel</h1>
-  
-  <!-- ŞEHİR SEÇİM DROPDOWN -->
-  <div class="city-selector">
-    <label for="citySelector">Şehir Seçin:</label>
-    <select id="citySelector" onchange="changeCity()">
-      <option value="">-- Şehir Seçin --</option>
-      <option value="Istanbul">İstanbul</option>
-      <option value="Bursa">Bursa</option>
-      <option value="Ankara">Ankara</option>
-      <option value="Antalya">Antalya</option>
-      <option value="Izmir">İzmir</option>
-    </select>
-  </div>
+  <h1>📸 <span id="city-name">Şehir Adı</span></h1>
   
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
   
-  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
-
   <!-- EDİTOR PANEL -->
-  <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
-  
-  <div class="edit-panel" id="editPanel">
+  <div class="edit-panel">
     <h3>⚙️ Şehir Ayarları</h3>
     <input type="text" id="cityName" placeholder="Şehir Adı">
     <button onclick="updateCityName()">Şehir Adını Güncelle</button>
-    <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
     
     <h3>📝 Konum Ekle</h3>
-    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
-    <button onclick="addBulkLocations()">Toplu Ekle</button>
-    <button onclick="clearAll()">Tümünü Temizle</button>
-    <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
-    <button onclick="toggleEditPanel()">Kapat</button>
+    <p>Format: KonumAdı@GoogleMapsLink@Foto1@Foto2@Foto3</p>
+    <textarea id="bulkLocations" placeholder="Her satıra bir konum girin"></textarea>
+    <button onclick="addBulkLocations()">Ekle</button>
+    <button onclick="exportHTML()">HTML Kodunu Çıkar</button>
+    <p class="warning">⚠️ Değişiklikleri yaptıktan sonra sayfanızı güncelleyip "HTML Kodunu Çıkar" butonuna tıklayın!</p>
   </div>
-
-  <!-- HTML KOD ÇIKTI -->
-  <div id="exportedCode">
-    <h3>HTML Kodunuz:</h3>
-    <pre id="codeOutput"></pre>
-    <button onclick="copyCode()">Kopyala</button>
-    <button onclick="hideExportedCode()">Kapat</button>
-  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 
   <script>
-    let currentCity = '';
+    let currentCity = 'Sehir';
     
-    // Sayfa yüklendiğinde şehri ayarla
-    function initializePage() {
+    // URL'den şehir ismi al
+    function getCityFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
-      const cityFromUrl = urlParams.get('city');
-      
-      if (cityFromUrl) {
-        currentCity = cityFromUrl;
-        document.getElementById('citySelector').value = cityFromUrl;
-      } else {
-        // İlk şehri varsayılan olarak seç
-        currentCity = 'Istanbul';
-        document.getElementById('citySelector').value = 'Istanbul';
-      }
-      
-      updatePageTitle();
-      renderLocations();
-    }
-    
-    // Şehir değiştiğinde
-    function changeCity() {
-      currentCity = document.getElementById('citySelector').value;
-      if (currentCity) {
-        updatePageTitle();
-        renderLocations();
-        
-        // URL'yi güncelle
-        const url = new URL(window.location.href);
-        url.searchParams.set('city', currentCity);
-        window.history.pushState({}, '', url);
-      }
-    }
-
-    // LocalStorage key
-    function getStorageKey() {
-      return `locations_${currentCity}`;
-    }
-
-    function getCityNameStorageKey() {
-      return `cityName_${currentCity}`;
-    }
-
-    // Şehir adını yükle
-    function loadCityName() {
-      const storageKey = getCityNameStorageKey();
-      const savedName = localStorage.getItem(storageKey);
-      return savedName || currentCity;
-    }
-
-    // Şehir adını kaydet
-    function saveCityName(cityName) {
-      const storageKey = getCityNameStorageKey();
-      localStorage.setItem(storageKey, cityName);
-    }
-
-    // localStorage'ı tamamen sıfırla
-    function resetLocalStorage() {
-      if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
-        // Şu anki şehirle ilgili verileri sil
-        localStorage.removeItem(`locations_${currentCity}`);
-        localStorage.removeItem(`cityName_${currentCity}`);
-        
-        // Sayfayı yenile
-        location.reload();
-      }
-    }
-
-    // Şehir adını güncelle
-    function updateCityName() {
-      const newName = document.getElementById('cityName').value;
-      if (newName) {
-        saveCityName(newName);
-        updatePageTitle();
-      }
+      return urlParams.get('city') || currentCity;
     }
 
     // Konumları yükle
     function loadLocations() {
-      const storageKey = getStorageKey();
-      const savedLocations = localStorage.getItem(storageKey);
+      const city = getCityFromUrl();
+      const savedLocations = localStorage.getItem(`locations_${city}`);
       
       if (savedLocations) {
         return JSON.parse(savedLocations);
@@ -390,8 +219,31 @@
 
     // Konumları kaydet
     function saveLocations(locations) {
-      const storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(locations));
+      const city = getCityFromUrl();
+      localStorage.setItem(`locations_${city}`, JSON.stringify(locations));
+    }
+
+    // Şehir adını yükle
+    function loadCityName() {
+      const city = getCityFromUrl();
+      const savedName = localStorage.getItem(`cityName_${city}`);
+      return savedName || city;
+    }
+
+    // Şehir adını kaydet
+    function saveCityName(cityName) {
+      const city = getCityFromUrl();
+      localStorage.setItem(`cityName_${city}`, cityName);
+    }
+
+    // Şehir adını güncelle
+    function updateCityName() {
+      const newName = document.getElementById('cityName').value;
+      if (newName) {
+        saveCityName(newName);
+        currentCity = newName;
+        document.getElementById('city-name').textContent = newName;
+      }
     }
 
     // Konumları render et
@@ -402,7 +254,7 @@
       container.innerHTML = '';
       
       if (locations.length === 0) {
-        container.innerHTML = '<p>Henüz konum eklenmemiş.</p>';
+        container.innerHTML = '<p>Henüz konum eklenmemiş. Aşağıdaki formu kullanarak ekleyebilirsiniz.</p>';
         return;
       }
       
@@ -436,6 +288,52 @@
         
         container.appendChild(section);
       });
+    }
+
+    // Toplu konum ekle
+    function addBulkLocations() {
+      const bulkText = document.getElementById('bulkLocations').value;
+      if (!bulkText.trim()) {
+        alert('Lütfen konum bilgilerini girin!');
+        return;
+      }
+      
+      const lines = bulkText.split('\n').filter(line => line.trim());
+      const locations = loadLocations();
+      
+      lines.forEach(line => {
+        // Google Maps linkini tespit et ve içindeki @ karakterlerini geçici olarak değiştir
+        line = line.replace(/(https:\/\/(?:maps\.google|www\.google\.com\/maps)[^@]*?)@([^@]*?)(@|$)/g, '$1__TEMP__$2$3');
+        
+        const parts = line.split('@');
+        if (parts.length < 2) return;
+        
+        const name = parts[0].trim();
+        let link = parts[1].trim();
+        const photos = [];
+        
+        // Google Maps linkindeki geçici değiştirmeleri geri al
+        link = link.replace(/__TEMP__/g, '@');
+        
+        // Fotoğrafları topla
+        for (let i = 2; i < parts.length && i < 5; i++) {
+          if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
+            photos.push(parts[i].trim());
+          }
+        }
+        
+        if (name && link) {
+          locations.push({
+            name: name,
+            photos: photos,
+            link: link
+          });
+        }
+      });
+      
+      saveLocations(locations);
+      renderLocations();
+      document.getElementById('bulkLocations').value = '';
     }
 
     // HTML kodunu dışa aktar
@@ -605,114 +503,22 @@
 </body>
 </html>`;
 
-      document.getElementById('codeOutput').textContent = fullHTML;
-      document.getElementById('exportedCode').style.display = 'block';
-    }
-
-    // Kodu kopyala
-    function copyCode() {
-      const code = document.getElementById('codeOutput').textContent;
-      navigator.clipboard.writeText(code).then(function() {
-        alert('Kod kopyalandı!');
+      // Kodu panoya kopyala
+      navigator.clipboard.writeText(fullHTML).then(function() {
+        alert('HTML kodu panoya kopyalandı! Artık yapıştırabilirsiniz.');
+      }).catch(function(err) {
+        // Kopyalama başarısızsa, kodu bir popup'ta göster
+        const popup = window.open('', '_blank', 'width=800,height=600');
+        popup.document.body.innerHTML = '<pre style="white-space: pre-wrap; font-family: monospace;">' + fullHTML + '</pre>';
       });
-    }
-
-    // Dışa aktar penceresini kapat
-    function hideExportedCode() {
-      document.getElementById('exportedCode').style.display = 'none';
-    }
-    
-    // Toplu konum ekle
-    function addBulkLocations() {
-      const bulkText = document.getElementById('bulkLocations').value;
-      if (!bulkText.trim()) {
-        alert('Lütfen konum bilgilerini girin!');
-        return;
-      }
-      
-      const lines = bulkText.split('\n').filter(line => line.trim());
-      let successCount = 0;
-      
-      lines.forEach((line, index) => {
-        // Satır başındaki numaraları temizle (1. 2. 3. vb.)
-        let cleanedLine = line.replace(/^\d+\.\s*/, '');
-        
-        // @ karakterinin etrafındaki boşlukları temizle ama konum adının içindeki boşluklara dokunma
-        cleanedLine = cleanedLine.replace(/\s*@\s*/g, '@');
-        
-        // Google Maps linkini tespit et ve içindeki @ karakterlerini geçici olarak değiştir
-        cleanedLine = cleanedLine.replace(/(https:\/\/(?:maps\.google|www\.google\.com\/maps)[^@]*?)@([^@]*?)(@|$)/g, '$1__TEMP__$2$3');
-        
-        const parts = cleanedLine.split('@');
-        if (parts.length < 2) {
-          return;
-        }
-        
-        const name = parts[0].trim();
-        let link = parts[1].trim();
-        const photos = [];
-        
-        // Google Maps linkindeki geçici değiştirmeleri geri al
-        link = link.replace(/__TEMP__/g, '@');
-        
-        // Fotoğrafları topla
-        for (let i = 2; i < parts.length && i < 5; i++) {
-          if (parts[i].trim() && parts[i].trim().startsWith('https://')) {
-            photos.push(parts[i].trim());
-          }
-        }
-        
-        if (!name || !link) {
-          return;
-        }
-        
-        // Konumu ekle
-        const locations = loadLocations();
-        const newLocation = {
-          name: name,
-          photos: photos,
-          link: link
-        };
-        
-        locations.push(newLocation);
-        saveLocations(locations);
-        successCount++;
-      });
-      
-      renderLocations();
-      document.getElementById('bulkLocations').value = '';
-    }
-
-    // Tümünü temizle
-    function clearAll() {
-      if (confirm('Tüm konumları silmek istediğinizden emin misiniz?')) {
-        const storageKey = getStorageKey();
-        localStorage.removeItem(storageKey);
-        renderLocations();
-      }
-    }
-
-    // Edit panelini aç/kapat
-    function toggleEditPanel() {
-      const panel = document.getElementById('editPanel');
-      const isHidden = panel.style.display === 'none';
-      panel.style.display = isHidden ? 'block' : 'none';
-      
-      if (isHidden) {
-        document.getElementById('cityName').value = loadCityName();
-      }
-    }
-
-    // Sayfa başlığını güncelle
-    function updatePageTitle() {
-      const cityName = loadCityName();
-      document.getElementById('city-header').textContent = `📸 ${cityName}`;
-      document.getElementById('page-title').textContent = cityName;
     }
 
     // Sayfa yüklendikinde çalıştır
     window.onload = function() {
-      initializePage();
+      const cityName = loadCityName();
+      document.getElementById('city-name').textContent = cityName;
+      document.getElementById('cityName').value = cityName;
+      renderLocations();
     }
   </script>
 </body>
