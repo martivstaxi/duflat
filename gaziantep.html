@@ -1,110 +1,239 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gaziantep</title>
-  <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "login.html";
-    }
-  </script>
   <style>
     body {
       font-family: sans-serif;
-      padding: 40px;
-      background-color: #f9f9f9;
-      color: #333;
       text-align: center;
-      position: relative;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
     }
-
-    /* Ortalanmış logo */
     .logo {
-      display: block;
+      position: absolute;
+      top: 20px;
+      left: 20px;
       font-size: 28px;
       text-decoration: none;
       color: black;
-      margin: 0 auto;
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
     }
-
+    
     h1 {
-      font-size: 28px;
-      margin-top: 100px; /* Logo ile çakışmaması için */
-      margin-bottom: 40px;
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
     }
-
-    .card {
+    
+    .city-section {
+      margin-bottom: 30px;
       background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      max-width: 360px;
-      margin: 0 auto;
+      border-radius: 10px;
+      padding: 15px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
     }
-
-    .card img {
+    
+    .photo-card img {
       width: 100%;
-      height: auto;
+      height: 100%;
       object-fit: cover;
+      display: block;
     }
-
-    .card-content {
-      padding: 16px;
-    }
-
-    .card a {
-      font-size: 18px;
-      font-weight: bold;
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
       color: #0077cc;
       text-decoration: none;
     }
-
-    .card a:hover {
+    
+    .back-link:hover {
       text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
     }
   </style>
 </head>
 <body>
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
-
   <h1>📸 Gaziantep</h1>
-
-  <div class="card">
-    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746049621/downloadgram.org_14473927_1122503017843847_4382307165361143808_n_xtzjqa.jpg" alt="Zeugma Mosaic Museum">
-    <div class="card-content">
-      <a href="https://www.google.com/maps/place/Zeugma+Mosaics+Museum/@37.0752201,37.3852467,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e6aa7739a5c9:0xb12794a759648b56!8m2!3d37.0752201!4d37.3852467!16s%2Fm%2F0h976rl?entry=ttu" target="_blank">📍 Zeugma Mozaik Müzesi</a>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Rumkale+Gaziantep" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Rumkale 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746445779/1_ibezgn.jpg" alt="Rumkale">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746445779/2_qjvzc3.jpg" alt="Rumkale">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746445779/3_huipsc.jpg" alt="Rumkale">
+      </div>
     </div>
   </div>
-
-  <!-- 2. Görsel Örneği -->
-  <div class="card" style="margin-top: 40px;">
-    <img src="gorsel_linki">
-    <div class="card-content">
-      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Mount+Sof/@37.1666829,37.1230336,15z/data=!3m1!4b1!4m6!3m5!1s0x152e19f88da0d141:0x27aa1c247e7dbaa3!8m2!3d37.1666667!4d37.1333333!16s%2Fg%2F1vn4k9tg?entry=ttu&g_ep=EgoyMDI1MDQzMC4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Sof Dağı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746449098/2_kzxdxb.png" alt="Sof Dağı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746448657/photo_2025-05-05_15-35-35_nje3pu.jpg" alt="Sof Dağı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746448657/photo_2025-05-05_15-35-28_rjc5nw.jpg" alt="Sof Dağı">
+      </div>
     </div>
   </div>
-
-  <!-- 3. Görsel Örneği -->
-  <div class="card" style="margin-top: 40px;">
-    <img src="gorsel_linki">
-    <div class="card-content">
-      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Zeugma+Mozaik+M%C3%BCzesi+Gaziantep" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Zeugma Mozaik Müzesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746447231/1_hmswou.jpg" alt="Zeugma Mozaik Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746447231/2_qzpjk6.jpg" alt="Zeugma Mozaik Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746447231/3_kqaovo.jpg" alt="Zeugma Mozaik Müzesi">
+      </div>
     </div>
   </div>
-
-  <!-- 4. Görsel Örneği -->
-  <div class="card" style="margin-top: 40px;">
-    <img src="gorsel_linki">
-    <div class="card-content">
-      <a href="gorsel_konumu" target="_blank">📍 gorsel_ismi</a>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/D%C3%BCl%C3%BCkbaba+Picnic+Area/@37.1163772,37.322053,17z/data=!3m1!4b1!4m6!3m5!1s0x1531e247582b8187:0x6e43b4c4f3ec4283!8m2!3d37.116373!4d37.3246279!16s%2Fg%2F1v387lgr?entry=ttu&g_ep=EgoyMDI1MDQzMC4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Dülükbaba Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746448085/1_bn93dc.jpg" alt="Dülükbaba Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746448085/2_tc3obi.jpg" alt="Dülükbaba Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746448086/3_gyrvaq.jpg" alt="Dülükbaba Tabiat Parkı">
+      </div>
     </div>
   </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Yesemek+A%C3%A7%C4%B1k+Hava+M%C3%BCzesi+Gaziantep" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Yesemek Açık Hava Müzesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746446625/2_udhfxj.jpg" alt="Yesemek Açık Hava Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746446625/1_d8htoj.jpg" alt="Yesemek Açık Hava Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746446625/3_k0jrfq.jpg" alt="Yesemek Açık Hava Müzesi">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
 </body>
 </html>
