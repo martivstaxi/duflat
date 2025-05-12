@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eskişehir</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Eskişehir</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Sakarya+Ba%C5%9F%C4%B1+Piknik+Alan%C4%B1/@39.3523152,31.0580542,15z/data=!4m15!1m8!3m7!1s0x14ce79ca3d01e18f:0x8bf96a227ecdff66!2zU2FrYXJ5YSBCYcWfxLEgUGlrbmlrIEFsYW7EsQ!8m2!3d39.3523152!4d31.0580542!10e5!16s%2Fg%2F11c1pv1pg7!3m5!1s0x14ce79ca3d01e18f:0x8bf96a227ecdff66!8m2!3d39.3523152!4d31.0580542!16s%2Fg%2F11c1pv1pg7?entry=ttu&g_ep=EgoyMDI1MDUwNy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Sakarya Başı Piknik Alanı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747043543/photo_2025-05-12_12-50-56_vmttdb.jpg" alt="Sakarya Başı Piknik Alanı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747043543/4_odsbmr.jpg" alt="Sakarya Başı Piknik Alanı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747043542/photo_2025-05-12_12-51-01_fqfc9h.jpg" alt="Sakarya Başı Piknik Alanı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Do%C4%9Fanl%C4%B1+Kale+Eski%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Doğanlı Kale (Frig Vadisi) 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747041368/2_q08nj3.jpg" alt="Doğanlı Kale (Frig Vadisi)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747041368/1_wshweb.jpg" alt="Doğanlı Kale (Frig Vadisi)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747041368/3_ychfug.jpg" alt="Doğanlı Kale (Frig Vadisi)">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Sazova+Park%C4%B1+Eski%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Masal Şatosu 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747051523/2_ugp1ad.jpg" alt="Masal Şatosu">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747051523/1_ib8zdu.jpg" alt="Masal Şatosu">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747051527/3_ioiska.jpg" alt="Masal Şatosu">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Porsuk+%C3%87ay%C4%B1/@39.7717945,30.4952081,14.72z/data=!4m10!1m2!2m1!1sadalar+b%C3%B6lgesi+eski%C5%9Fehir!3m6!1s0x14cc3f4a84fecb05:0x714e02c2a801144d!8m2!3d39.776892!4d30.517747!15sChphZGFsYXIgYsO2bGdlc2kgZXNracWfZWhpclocIhphZGFsYXIgYsO2bGdlc2kgZXNracWfZWhpcpIBEnRvdXJpc3RfYXR0cmFjdGlvbpoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VOWU9HTmxTV2gzUlJBQqoBWBABKhMiD2FkYWxhciBiw7ZsZ2VzaSghMh8QASIbu1e87ejw0bVtPJDEejfpZVnU3KyO8_HX6jVbMh4QAiIaYWRhbGFyIGLDtmxnZXNpIGVza2nFn2VoaXLgAQD6AQUIgAIQRw!16s%2Fg%2F11s9xptnzh?entry=ttu&g_ep=EgoyMDI1MDUwNy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Porsuk Çayı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042825/1_xnpk6v.jpg" alt="Porsuk Çayı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042825/3_dhpqzq.jpg" alt="Porsuk Çayı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042826/2_vp9p4x.jpg" alt="Porsuk Çayı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C5%9Eelale+Park+Eski%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Şelale Park 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747029544/3_esprlf.jpg" alt="Şelale Park">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747029544/2_xncob1.jpg" alt="Şelale Park">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747029544/1_pc8tnt.jpg" alt="Şelale Park">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Odunpazar%C4%B1+Evleri+Eski%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Odunpazarı Tarihi Evleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042091/1_qt7tku.jpg" alt="Odunpazarı Tarihi Evleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042091/2_jhvbv0.jpg" alt="Odunpazarı Tarihi Evleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747042091/3_nhxnpj.jpg" alt="Odunpazarı Tarihi Evleri">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
