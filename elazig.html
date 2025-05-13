@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elazığ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Elazığ</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Hazar+G%C3%B6l%C3%BC+Elaz%C4%B1%C4%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Hazar Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163244/1_auccua.jpg" alt="Hazar Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163245/2_aipxzd.jpg" alt="Hazar Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163245/3_pyxfof.jpg" alt="Hazar Gölü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Mastar+K%C3%B6pr%C3%BCs%C3%BC+Elaz%C4%B1%C4%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Tarihi Palu Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163864/photo_2025-05-13_22-11-26_ohtf8f.jpg" alt="Tarihi Palu Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163862/photo_2025-05-13_22-11-19_diwoe0.jpg" alt="Tarihi Palu Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747163861/1_luyumr.jpg" alt="Tarihi Palu Köprüsü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Mount+Hazar/@38.4166825,39.3230336,15z/data=!3m1!4b1!4m6!3m5!1s0x4076828ad62e961b:0x196fcae3630ccedd!8m2!3d38.4166667!4d39.3333333!16s%2Fg%2F1tj7zg68?entry=ttu&g_ep=EgoyMDI1MDUxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Hazar Dağı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747164367/3_oppvi4.jpg" alt="Hazar Dağı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747164363/2_rcbtzb.jpg" alt="Hazar Dağı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747164362/1_moigem.jpg" alt="Hazar Dağı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Harput+Kalesi+Elaz%C4%B1%C4%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Harput Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747162113/1_qnvhia.jpg" alt="Harput Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747162114/2_p9f5dx.jpg" alt="Harput Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747162115/3_qfrngm.jpg" alt="Harput Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Buzluk+Ma%C4%9Faras%C4%B1+Elaz%C4%B1%C4%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Buzluk Mağarası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747161606/photo_2025-05-13_21-39-26_od3kk2.jpg" alt="Buzluk Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747161607/photo_2025-05-13_21-39-32_ymu02g.jpg" alt="Buzluk Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747161605/photo_2025-05-13_21-38-07_wh8h1o.jpg" alt="Buzluk Mağarası">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
