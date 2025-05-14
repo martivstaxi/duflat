@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isparta</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Isparta</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Ispartamdan+(Kuyucak+Isparta+Lavanta+K%C3%B6y%C3%BC)/@37.844934,30.254479,15z/data=!4m6!3m5!1s0x14c5d38fa9c3d92d:0x65b2d12840212b74!8m2!3d37.8458802!4d30.2625695!16s%2Fg%2F11dxbwhtdd?entry=ttu&g_ep=EgoyMDI1MDUxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kuyucak Köyü (Lavanta Tarlaları) 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747234854/photo_2025-05-14_17-58-18_xueaav.jpg" alt="Kuyucak Köyü (Lavanta Tarlaları)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747234853/1_amsulz.jpg" alt="Kuyucak Köyü (Lavanta Tarlaları)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747234853/2_nfedpo.jpg" alt="Kuyucak Köyü (Lavanta Tarlaları)">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Ard%C4%B1%C3%A7l%C4%B1+k%C3%B6y%C3%BC+g%C3%BCl+bah%C3%A7eleri/@37.8044257,30.2056061,17z/data=!4m6!3m5!1s0x14c42bc819f92089:0x789746ad3544c204!8m2!3d37.8044257!4d30.2056061!16s%2Fg%2F11g0fvp_kt?entry=ttu&g_ep=EgoyMDI1MDUxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Ardıçlı Köyü Gül Bahçeleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747236519/photo_2025-05-14_18-25-18_ozuove.jpg" alt="Ardıçlı Köyü Gül Bahçeleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747236519/photo_2025-05-14_18-23-25_bixgxh.jpg" alt="Ardıçlı Köyü Gül Bahçeleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747236518/photo_2025-05-14_18-22-09_jqtddc.jpg" alt="Ardıçlı Köyü Gül Bahçeleri">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Yazili+Canyon+National+Park/@37.4634186,30.9051914,17z/data=!3m1!4b1!4m6!3m5!1s0x14c4f81a7d9eabb1:0x8f957d2e771a7600!8m2!3d37.4634144!4d30.9100623!16s%2Fg%2F1n36gl_w_?entry=ttu&g_ep=EgoyMDI1MDUxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Yazılı Kanyon Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235497/photo_2025-05-14_18-04-32_oribhm.jpg" alt="Yazılı Kanyon Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235497/photo_2025-05-14_18-09-15_f2ptuu.jpg" alt="Yazılı Kanyon Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235508/photo_2025-05-14_18-09-26_p73ypv.jpg" alt="Yazılı Kanyon Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Lake+Kovada+National+Park/@37.6290283,30.8721621,19z/data=!4m7!3m6!1s0x14c455353adecb5b:0xd16f30b17d5a8dc9!8m2!3d37.6287896!4d30.8743411!15sChprb3ZhZGEgZ8O2bMO8IG1pbGxpIHBhcmvEsZIBD25hdHVyZV9wcmVzZXJ2ZaoBQxABMh8QASIbP0sprGmqTEivyMIAfC8-zZ1eboXKwdYdc_8oMh4QAiIaa292YWRhIGfDtmzDvCBtaWxsaSBwYXJrxLHgAQA!16s%2Fg%2F121r6zdc?entry=tts&g_ep=EgoyMDI1MDUxMS4wIPu8ASoASAFQAw%3D%3D&skid=be8ff1af-e330-4281-bd69-5690d2fdf5f1" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kovada Gölü Milli Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235844/photo_2025-05-14_18-14-57_yhgfgo.jpg" alt="Kovada Gölü Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235846/photo_2025-05-14_18-15-12_s8jniu.jpg" alt="Kovada Gölü Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747235845/photo_2025-05-14_18-15-53_ui5gwh.jpg" alt="Kovada Gölü Milli Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Lake+E%C4%9Firdir/@38.0611178,30.6914902,11z/data=!3m1!4b1!4m6!3m5!1s0x14c5809f080df02f:0x997626b9f0354618!8m2!3d38.0237567!4d30.8728615!16zL20vMDZtc3hj?entry=ttu&g_ep=EgoyMDI1MDUxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Eğirdir Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747233929/photo_2025-05-14_17-41-11_pvdofo.jpg" alt="Eğirdir Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747233929/photo_2025-05-14_17-41-17_rkrmqj.jpg" alt="Eğirdir Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747233928/3_qxqi8n.jpg" alt="Eğirdir Gölü">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
