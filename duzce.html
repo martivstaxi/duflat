@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Düzce</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Düzce</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=P%C3%BCrenli+Yaylas%C4%B1+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Pürenli Yaylası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319838/photo_2025-05-15_17-35-03_fknmi3.jpg" alt="Pürenli Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319841/photo_2025-05-15_17-35-48_wxxowk.jpg" alt="Pürenli Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319837/photo_2025-05-15_17-34-17_rnesjm.jpg" alt="Pürenli Yaylası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Odayeri+Yaylas%C4%B1+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Odayeri Yaylası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319423/photo_2025-05-15_17-22-58_acxfei.jpg" alt="Odayeri Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319424/photo_2025-05-15_17-23-05_wzcuox.jpg" alt="Odayeri Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747319428/photo_2025-05-15_17-27-05_aqhz9l.jpg" alt="Odayeri Yaylası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Ak%C3%A7akoca+Ceneviz+Kalesi+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Akçakoca Ceneviz Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747316827/photo_2025-05-15_16-38-05_uywr4f.jpg" alt="Akçakoca Ceneviz Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747316827/photo_2025-05-15_16-43-38_ljjjbx.jpg" alt="Akçakoca Ceneviz Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747316827/photo_2025-05-15_16-43-29_zhudlz.jpg" alt="Akçakoca Ceneviz Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Samandere+%C5%9Eelalesi+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Samandere Şelalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747317898/photo_2025-05-15_16-59-59_vhfd2b.jpg" alt="Samandere Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747317896/photo_2025-05-15_16-59-55_ydrp5w.jpg" alt="Samandere Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747317896/2_d2kr3f.jpg" alt="Samandere Şelalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Ayd%C4%B1np%C4%B1nar+%C5%9Eelalesi+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Aydınpınar Şelalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318408/1_xfrsxp.jpg" alt="Aydınpınar Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318411/photo_2025-05-15_17-09-57_s0egr9.jpg" alt="Aydınpınar Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318411/photo_2025-05-15_17-12-20_njychv.jpg" alt="Aydınpınar Şelalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Efteni+G%C3%B6l%C3%BC+D%C3%BCzce" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Efteni Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318607/photo_2025-05-15_17-15-56_xtncso.jpg" alt="Efteni Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318610/photo_2025-05-15_17-15-59_akb0ff.jpg" alt="Efteni Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747318612/photo_2025-05-15_17-16-06_tpzssn.jpg" alt="Efteni Gölü">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
