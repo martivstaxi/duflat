@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kırklareli</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Kırklareli</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Longoz+Orman%C4%B1+Giri%C5%9F/@41.8584031,27.8609202,12z/data=!4m6!3m5!1s0x40a0e8545966072d:0x960e6aaf9f41f9e!8m2!3d41.8720293!4d27.9345591!16s%2Fg%2F11fxxt1jz5?entry=ttu&g_ep=EgoyMDI1MDUxMi4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          İğneada Longoz Ormanları Milli Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339114/photo_2025-05-15_22-49-16_yxutqj.jpg" alt="İğneada Longoz Ormanları Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339344/photo_2025-05-15_23-01-52_oetakt.jpg" alt="İğneada Longoz Ormanları Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339115/photo_2025-05-15_22-53-07_pqvip1.jpg" alt="İğneada Longoz Ormanları Milli Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/%C4%B0%C4%9Fneada+ku%C5%9F+g%C3%B6zlem+kulesi/@41.8576433,27.9580238,12z/data=!4m6!3m5!1s0x40a0e920b5de8fb5:0x18c69651cad3b7b9!8m2!3d41.8576433!4d27.9580238!16s%2Fg%2F11vf2j7txl?entry=tts&g_ep=EgoyMDI1MDUxMi4wIPu8ASoASAFQAw%3D%3D&skid=60daa20d-822f-4022-b433-522f35f35bb5" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          İğneada Kuş Gözlem Kulesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339558/6_svdzwh.jpg" alt="İğneada Kuş Gözlem Kulesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339559/photo_2025-05-15_23-05-24_z6taaz.jpg" alt="İğneada Kuş Gözlem Kulesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747339557/5_m2eslz.jpg" alt="İğneada Kuş Gözlem Kulesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Dupnisa+Ma%C4%9Faras%C4%B1+K%C4%B1rklareli" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Dupnisa Mağarası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340678/photo_2025-05-15_23-23-25_q8jelw.jpg" alt="Dupnisa Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340678/photo_2025-05-15_23-23-36_pirzsh.jpg" alt="Dupnisa Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340678/photo_2025-05-15_23-23-41_ypo1zs.jpg" alt="Dupnisa Mağarası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Cehennem+%C5%9Eelaleleri+K%C4%B1rklareli" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Cehennem Şelaleleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340245/1_bmzjur.jpg" alt="Cehennem Şelaleleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340246/2_nmcibu.jpg" alt="Cehennem Şelaleleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747340245/photo_2025-05-15_23-14-47_b5xe4z.jpg" alt="Cehennem Şelaleleri">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Vize+K%C3%BC%C3%A7%C3%BCk+Ayasofya+Camii+K%C4%B1rklareli" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Küçük Ayasofya Cami 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747342287/photo_2025-05-15_23-50-28_vdf2xr.jpg" alt="Küçük Ayasofya Cami">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747342286/photo_2025-05-15_23-47-04_fxnzhb.jpg" alt="Küçük Ayasofya Cami">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747342286/photo_2025-05-15_23-49-08_pyi5nz.jpg" alt="Küçük Ayasofya Cami">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Aya+Nikola+Manast%C4%B1r%C4%B1+K%C4%B1y%C4%B1k%C3%B6y+K%C4%B1rklareli" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Aya Nikola Manastırı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747341892/photo_2025-05-15_23-44-16_evimit.jpg" alt="Aya Nikola Manastırı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747341892/photo_2025-05-15_23-36-49_yxqcq1.jpg" alt="Aya Nikola Manastırı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747341892/photo_2025-05-15_23-37-19_bpaqpj.jpg" alt="Aya Nikola Manastırı">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
