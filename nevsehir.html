@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nevşehir</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Nevşehir</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=A%C5%9Fk+Vadisi%2C+Nev%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Aşk Vadisi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418109/photo_2025-05-16_20-54-04_bcdrvp.jpg" alt="Aşk Vadisi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418109/reklamde%C4%9Fil_1_xb5aq3.jpg" alt="Aşk Vadisi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418108/1_kgp5g4.jpg" alt="Aşk Vadisi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Ortahisar+Castle/@38.6199972,34.8261247,14z/data=!4m7!3m6!1s0x152a42a7236f82f9:0x14484c418323abe7!8m2!3d38.6199972!4d34.8642335!15sChBvcnRhaGlzYXIga2FsZXNpWhIiEG9ydGFoaXNhciBrYWxlc2mSARNoaXN0b3JpY2FsX2xhbmRtYXJrqgE4EAEyHhABIhqe1hMRRxa3nzlSbxpk3TR3cAsDAoCPruFjvTIUEAIiEG9ydGFoaXNhciBrYWxlc2ngAQA!16s%2Fg%2F11b7p_yyfm?entry=tts&g_ep=EgoyMDI1MDUxMy4xIPu8ASoASAFQAw%3D%3D&skid=14e3089f-aac8-4d7a-a5c6-2c006afe0390" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Ortahisar  Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747422409/1_a5pfqt.jpg" alt="Ortahisar  Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747422410/2_ygce5d.jpg" alt="Ortahisar  Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747422410/photo_2025-05-16_22-03-46_uk2dzt.jpg" alt="Ortahisar  Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=G%C3%B6reme+A%C3%A7%C4%B1k+Hava+M%C3%BCzesi%2C+Nev%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Göreme Açık Hava Müzesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747419504/4_sv2hxm.jpg" alt="Göreme Açık Hava Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747419494/photo_2025-05-16_21-13-12_nzpy0b.jpg" alt="Göreme Açık Hava Müzesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747419448/photo_2025-05-16_21-12-59_cvarmw.jpg" alt="Göreme Açık Hava Müzesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=K%C4%B1z%C4%B1l%C3%A7ukur+Vadisi%2C+Nev%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kızılçukur Vadisi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747421798/4_tzqi5m.jpg" alt="Kızılçukur Vadisi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747421797/2_nthyd8.jpg" alt="Kızılçukur Vadisi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747421791/1_emy2pg.jpg" alt="Kızılçukur Vadisi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/G%C3%B6reme+Panorama+View/@38.6452064,34.8184781,17z/data=!3m1!4b1!4m6!3m5!1s0x152a6928c2f4b98b:0xc4372fe72eb25ecb!8m2!3d38.6452022!4d34.821053!16s%2Fg%2F11swyyfjxv?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Göreme Panorama 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418917/photo_2025-05-16_21-03-48_yxbr6a.jpg" alt="Göreme Panorama">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418917/photo_2025-05-16_21-03-54_ps2oka.jpg" alt="Göreme Panorama">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747418918/photo_2025-05-16_21-07-28_v2lf8b.jpg" alt="Göreme Panorama">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C3%9C%C3%A7+G%C3%BCzeller%2C+Nev%C5%9Fehir" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Üç Güzeller 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747417404/1_apbngm.jpg" alt="Üç Güzeller">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747417409/photo_2025-05-16_20-42-04_gwpvyg.jpg" alt="Üç Güzeller">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747417409/photo_2025-05-16_20-42-29_qz8fcn.jpg" alt="Üç Güzeller">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
