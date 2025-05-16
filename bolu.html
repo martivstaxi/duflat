@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bolu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Bolu</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=G%C3%B6lc%C3%BCk+Tabiat+Park%C4%B1%2C+Bolu" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Gölcük Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747396864/photo_2025-05-16_14-58-51_cfsmot.jpg" alt="Gölcük Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747397400/photo_2025-05-16_15-08-44_vvpwlj.jpg" alt="Gölcük Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747397401/photo_2025-05-16_15-09-34_xc0v2d.jpg" alt="Gölcük Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Abant+G%C3%B6l%C3%BC%2C+Bolu" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Abant Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747396865/photo_2025-05-16_14-58-55_qymo2q.jpg" alt="Abant Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747397616/photo_2025-05-16_15-12-11_vdaz1u.jpg" alt="Abant Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747396860/photo_2025-05-16_14-58-48_xnkqmv.jpg" alt="Abant Gölü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Yedig%C3%B6ller+National+Park/@40.9316643,31.7152337,14z/data=!4m6!3m5!1s0x409d3f1a5817d7f1:0xf6f21dfa4d0fa933!8m2!3d40.9373071!4d31.7407502!16zL20vMGdzMGQy?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Yedigöller 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398074/photo_2025-05-16_15-20-14_wy2z8l.jpg" alt="Yedigöller">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398074/photo_2025-05-16_15-20-15_npyzyu.jpg" alt="Yedigöller">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398075/photo_2025-05-16_15-20-18_kdzrgb.jpg" alt="Yedigöller">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=S%C3%BCnnet+G%C3%B6l%C3%BC%2C+Bolu" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Sünnet Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747399056/photo_2025-05-16_15-36-41_h2sdtz.jpg" alt="Sünnet Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747399053/photo_2025-05-16_15-36-38_aw1cmb.jpg" alt="Sünnet Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747399050/photo_2025-05-16_15-36-36_u2cifh.jpg" alt="Sünnet Gölü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Kartalkaya%2C+Bolu" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kartalkaya 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398354/photo_2025-05-16_15-25-30_blrcns.jpg" alt="Kartalkaya">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398353/photo_2025-05-16_15-25-13_cmozsy.jpg" alt="Kartalkaya">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398354/photo_2025-05-16_15-25-17_f8tnig.jpg" alt="Kartalkaya">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Burj+Al+Babas/@40.4444011,31.2029726,14z/data=!4m6!3m5!1s0x14cd36ee7b9820ab:0x33aaad8a5d159abf!8m2!3d40.4444011!4d31.2029726!16s%2Fg%2F1yfj43hpk?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Mudurnu Şato Evleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398894/photo_2025-05-16_15-33-58_advf1k.jpg" alt="Mudurnu Şato Evleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398891/photo_2025-05-16_15-33-47_o8ncmf.jpg" alt="Mudurnu Şato Evleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747398886/photo_2025-05-16_15-33-40_vba55s.jpg" alt="Mudurnu Şato Evleri">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
