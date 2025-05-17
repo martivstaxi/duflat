@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muş</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Muş</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C3%87engilli+Kilisesi+Mu%C5%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Çengilli Kilisesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492599/image_ps8knv.jpg" alt="Çengilli Kilisesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492600/photo_2025-05-17_17-35-10_zlbgfq.jpg" alt="Çengilli Kilisesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492599/photo_2025-05-17_17-34-03_pd8mxw.jpg" alt="Çengilli Kilisesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Haspet+Kalesi+Mu%C5%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Haspet Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493412/2_przxnf.jpg" alt="Haspet Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493412/3_qtqnit.jpg" alt="Haspet Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493411/1_kazhor.jpg" alt="Haspet Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Murat+K%C3%B6pr%C3%BCs%C3%BC+Mu%C5%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Tarihi Murat Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747494162/image_2_a1ajah.jpg" alt="Tarihi Murat Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747494162/image_pjm6fc.jpg" alt="Tarihi Murat Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747494164/photo_2025-05-17_18-01-10_es89gq.jpg" alt="Tarihi Murat Köprüsü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Hamurpet+G%C3%B6l%C3%BC+Mu%C5%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Akdoğan Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492871/image_3_bifcg2.jpg" alt="Akdoğan Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492872/image_2_uhsoac.jpg" alt="Akdoğan Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747492872/photo_2025-05-17_17-40-19_bt7aa8.jpg" alt="Akdoğan Gölü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Malazgirt+Kalesi+Mu%C5%9F" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Malazgirt Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493892/photo_2025-05-17_17-52-31_pqugsf.jpg" alt="Malazgirt Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493891/image_odaq2q.jpg" alt="Malazgirt Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747493867/3_bnbxma.jpg" alt="Malazgirt Kalesi">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
