@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kırıkkale</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Kırıkkale</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Karaahmetli+lavanta+bah%C3%A7esi/@39.7093751,33.3990366,13z/data=!4m6!3m5!1s0x14d4b9aae4e66811:0xc6d81192598894e!8m2!3d39.6808604!4d33.4360479!16s%2Fg%2F11q84r574x?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Karaahmetli Lavanta Bahçesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505001/photo_2025-05-17_21-00-03_vsbixl.jpg" alt="Karaahmetli Lavanta Bahçesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505000/photo_2025-05-17_21-02-16_zpulra.jpg" alt="Karaahmetli Lavanta Bahçesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505001/photo_2025-05-17_20-59-58_rubbss.jpg" alt="Karaahmetli Lavanta Bahçesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C3%87e%C5%9Fnigir+K%C3%B6pr%C3%BCs%C3%BC+K%C4%B1r%C4%B1kkale" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Çeşnigir Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747504383/photo_2025-05-17_20-49-48_pn7p6d.jpg" alt="Çeşnigir Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747504382/photo_2025-05-17_20-49-43_z28y5n.jpg" alt="Çeşnigir Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747504382/photo_2025-05-17_20-51-58_cebq2a.jpg" alt="Çeşnigir Köprüsü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Karaahmetli+Tabiat+Park%C4%B1+K%C4%B1r%C4%B1kkale" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Karaahmetli Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747506097/photo_2025-05-17_21-14-59_ewdfqk.jpg" alt="Karaahmetli Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747506098/4_mg9p0k.jpg" alt="Karaahmetli Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747506098/photo_2025-05-17_21-15-03_mpizwg.jpg" alt="Karaahmetli Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Sulu+Ma%C4%9Fara+Keskin+K%C4%B1r%C4%B1kkale" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Sulu Mağara (Keskin) 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505387/photo_2025-05-17_21-08-28_up9gls.jpg" alt="Sulu Mağara (Keskin)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505376/image_cfoh0l.jpg" alt="Sulu Mağara (Keskin)">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1747505365/image_2_o1owba.jpg" alt="Sulu Mağara (Keskin)">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
