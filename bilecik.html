@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bilecik</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Bilecik</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=K%C3%BC%C3%A7%C3%BCkelmal%C4%B1+Tabiat+Park%C4%B1%2C+Bilecik" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Küçükelmalı Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565579/2_kjdj8u.jpg" alt="Küçükelmalı Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565578/1_bd6ez0.jpg" alt="Küçükelmalı Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565579/photo_2025-05-18_13-49-42_tvpdma.jpg" alt="Küçükelmalı Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Bilecik+Clock+Tower/@40.1377985,29.980907,17z/data=!3m1!4b1!4m6!3m5!1s0x14cb8fe7a349214b:0x4d6e732c3dcd3dc4!8m2!3d40.1377944!4d29.9834819!16s%2Fg%2F121lbdk6?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Bilecik Saat Kulesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566056/photo_2025-05-18_13-57-02_odofhg.jpg" alt="Bilecik Saat Kulesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566056/1_ycfdvm.jpg" alt="Bilecik Saat Kulesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566057/photo_2025-05-18_13-57-07_mwp8s9.jpg" alt="Bilecik Saat Kulesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Harmankaya+Kanyonu%2C+Bilecik" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Harmankaya Kanyonu 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565240/photo_2025-05-18_13-42-15_taflyu.jpg" alt="Harmankaya Kanyonu">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565240/photo_2025-05-18_13-43-12_isfhfs.jpg" alt="Harmankaya Kanyonu">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565240/photo_2025-05-18_13-43-17_fdegvc.jpg" alt="Harmankaya Kanyonu">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Bozcaarmut+Pond/@39.959116,29.7860895,17z/data=!3m1!4b1!4m6!3m5!1s0x14cbe9d87f167d9f:0x6d43d27fa55c5cb4!8m2!3d39.9594627!4d29.788563!16s%2Fg%2F1v_hw837?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Bozcaarmut Göleti 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565195/1_pajyd8.jpg" alt="Bozcaarmut Göleti">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565196/image_2_yjfqjy.jpg" alt="Bozcaarmut Göleti">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747565195/photo_2025-05-18_13-27-16_w9tbyt.jpg" alt="Bozcaarmut Göleti">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
