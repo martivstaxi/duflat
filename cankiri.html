@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Çankırı</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Çankırı</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C3%87ank%C4%B1r%C4%B1+Kalesi%2C+%C3%87ank%C4%B1r%C4%B1" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Çankırı Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747582819/1_hycdwq.jpg" alt="Çankırı Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747582825/2_tn5jl9.jpg" alt="Çankırı Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747582828/3_adwjio.jpg" alt="Çankırı Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Ilgaz+Da%C4%9F%C4%B1+Milli+Park%C4%B1%2C+%C3%87ank%C4%B1r%C4%B1" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Ilgaz Dağı Milli Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584061/image_2_sf8bvw.jpg" alt="Ilgaz Dağı Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584057/1_pemoka.jpg" alt="Ilgaz Dağı Milli Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584056/0_rdhdn1.jpg" alt="Ilgaz Dağı Milli Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Kirkpinar+Yaylasi/@41.0166667,33.65,15z/data=!4m6!3m5!1s0x408479a586047307:0x747ba175b8856a5b!8m2!3d41.0166667!4d33.65!16s%2Fg%2F12lvvd6w_?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kırkpınar Yaylası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584542/4_g5cuqy.jpg" alt="Kırkpınar Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584531/3_zrb5k5.jpg" alt="Kırkpınar Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584530/1_im05jr.jpg" alt="Kırkpınar Yaylası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://www.google.com/maps/place/Haz%C4%B1m+Da%C4%9Fl%C4%B1+Glamping/@40.8227541,33.7652329,17z/data=!3m1!4b1!4m9!3m8!1s0x4083f306bda83ebd:0xc17fc1ba6153eaf0!5m2!4m1!1i2!8m2!3d40.8227501!4d33.7678078!16s%2Fg%2F113gs9g93?entry=ttu&g_ep=EgoyMDI1MDUxMy4xIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Hazım Dağlı Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584702/photo_2025-05-18_19-10-43_lj2pam.jpg" alt="Hazım Dağlı Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584706/photo_2025-05-18_19-10-46_roskpi.jpg" alt="Hazım Dağlı Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747584710/photo_2025-05-18_19-10-54_o7wucq.jpg" alt="Hazım Dağlı Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C3%87ank%C4%B1r%C4%B1+Tuz+Ma%C4%9Faras%C4%B1%2C+%C3%87ank%C4%B1r%C4%B1" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Çankırı Tuz Mağarası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583120/image_ielmra.jpg" alt="Çankırı Tuz Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583123/photo_2025-05-18_18-43-38_yiobuh.jpg" alt="Çankırı Tuz Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583127/photo_2025-05-18_18-44-07_dsxw9v.jpg" alt="Çankırı Tuz Mağarası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Bayram%C3%B6ren+K%C3%B6pr%C3%BCs%C3%BC%2C+%C3%87ank%C4%B1r%C4%B1" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Bayramören Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583342/photo_2025-05-18_18-48-03_glyard.jpg" alt="Bayramören Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583339/photo_2025-05-18_18-46-44_pquj6z.jpg" alt="Bayramören Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747583335/image_cpqz3s.jpg" alt="Bayramören Köprüsü">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
