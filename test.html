@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ankara</title>
+  <title>Çankırı</title>
   <style>
     body {
       font-family: sans-serif;
@@ -124,31 +124,73 @@
       display: inline-block;
     }
   </style>
+  <script>
+    window.onload = function() {
+      // Dil kontrolü ve bilgi mesajını ayarla
+      const messages = {
+        'tr': 'Şu anda web sitemizin deneme sürümünü görüntülüyorsunuz. Tam sürüme ulaşmak için <a href="https://www.duflat.com">www.duflat.com</a> adresine gidebilirsiniz.',
+        'en': 'You are currently viewing the demo version of our website. To access the full version, please visit <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'zh': '您当前正在浏览我们网站的演示版本。要访问完整版本，请访问 <a href="https://www.duflat.com">www.duflat.com</a>。',
+        'hi': 'आप वर्तमान में हमारी वेबसाइट का डेमो संस्करण देख रहे हैं। पूर्ण संस्करण तक पहुंचने के लिए कृपया <a href="https://www.duflat.com">www.duflat.com</a> पर जाएं।',
+        'es': 'Actualmente estás viendo la versión de demostración de nuestro sitio web. Para acceder a la versión completa, visita <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'fr': 'Vous consultez actuellement la version de démonstration de notre site web. Pour accéder à la version complète, veuillez visiter <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'ar': 'أنت تشاهد حالياً النسخة التجريبية من موقعنا الإلكتروني. للوصول إلى النسخة الكاملة، يرجى زيارة <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'de': 'Sie sehen derzeit die Demoversion unserer Website. Um die Vollversion zu nutzen, besuchen Sie bitte <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'ru': 'Вы просматриваете демонстрационную версию нашего сайта. Чтобы получить доступ к полной версии, посетите <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'pt': 'Você está visualizando a versão de demonstração do nosso site. Para acessar a versão completa, visite <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'id': 'Anda sedang melihat versi demo dari situs web kami. Untuk mengakses versi lengkapnya, silakan kunjungi <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'ja': '現在、当社ウェブサイトのデモ版をご覧いただいています。完全版にアクセスするには、<a href="https://www.duflat.com">www.duflat.com</a> にアクセスしてください。',
+        'ko': '현재 당사 웹사이트의 데모 버전을 보고 계십니다. 전체 버전에 접속하려면 <a href="https://www.duflat.com">www.duflat.com</a>을 방문해 주세요.',
+        'fa': 'شما در حال مشاهده نسخه نمایشی وب‌سایت ما هستید. برای دسترسی به نسخه کامل، لطفاً به <a href="https://www.duflat.com">www.duflat.com</a> مراجعه کنید.',
+        'it': 'Stai visualizzando la versione demo del nostro sito web. Per accedere alla versione completa, visita <a href="https://www.duflat.com">www.duflat.com</a>.',
+        'pl': 'Obecnie przeglądasz wersję demonstracyjną naszej strony internetowej. Aby uzyskać dostęp do pełnej wersji, odwiedź <a href="https://www.duflat.com">www.duflat.com</a>.'
+      };
+
+      // Tarayıcı dilini al
+      let browserLang = navigator.language || navigator.userLanguage;
+      browserLang = browserLang.split('-')[0]; // Örn: 'en-US' -> 'en'
+
+      // Mesajı belirle
+      let messageToShow = messages[browserLang];
+      if (!messageToShow) {
+        messageToShow = messages['en'];
+      }
+      
+      // Sağdan sola yazılan diller için ayar
+      const rtlLangs = ['ar', 'fa'];
+      if (rtlLangs.includes(browserLang)) {
+        document.getElementById('info-banner').setAttribute('dir', 'rtl');
+      }
+      
+      // Mesajı göster
+      document.getElementById('info-banner').innerHTML = messageToShow;
+    };
+  </script>
 </head>
 <body>
   <!-- Bilgi mesajı -->
   <div class="info-banner" id="info-banner" dir="auto"></div>
   
-  <h1>📸 Ankara</h1>
+  <h1>📸 Çankırı</h1>
   <div class="city-section">
     <div class="city-header">
       <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Yerk%C3%B6pr%C3%BC+%C5%9Eelalesi+Konya" target="_blank" class="location-link">
+        <a href="https://maps.google.com/?q=%C4%B0nceburun+Feneri%2C+Sinop" target="_blank" class="location-link">
           <span class="click-icon"></span>
-          Yerköprü Şelalesi 📍
+          İnceburun Feneri 📍
         </a>
       </h2>
     </div>
     
     <div class="city-photos">
       <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746389680/1_s760mk.jpg" alt="Yerköprü Şelalesi">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566620/image_oxedbp.jpg" alt="İnceburun Feneri">
       </div>
       <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746389679/3_m3o9dk.jpg" alt="Yerköprü Şelalesi">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566623/photo_2025-05-18_14-07-26_avmpzu.jpg" alt="İnceburun Feneri">
       </div>
       <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746389679/2_b3j3k8.jpg" alt="Yerköprü Şelalesi">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747566620/image_2_mbnqqs.jpg" alt="İnceburun Feneri">
       </div>
     </div>
   </div>
