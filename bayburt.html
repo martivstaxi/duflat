@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bayburt</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Bayburt</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Korgan+K%C3%B6pr%C3%BCs%C3%BC+Bayburt" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Korgan Köprüsü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644122/image_luoz5q.jpg" alt="Korgan Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644123/photo_2025-05-19_11-40-15_xqnrki.jpg" alt="Korgan Köprüsü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644126/photo_2025-05-19_11-40-38_gz6xgj.jpg" alt="Korgan Köprüsü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Sirakayalar+%C5%9Eelalesi+Bayburt" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Sirakayalar Şelaleleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645779/2_gyfryh.jpg" alt="Sirakayalar Şelaleleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645780/image_ndeihn.jpg" alt="Sirakayalar Şelaleleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645782/photo_2025-05-19_12-07-03_qsuepm.jpg" alt="Sirakayalar Şelaleleri">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Loruhan+Bayburt" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Loru Han 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645333/image_pduxbd.jpg" alt="Loru Han">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645308/2_jhhuhk.jpg" alt="Loru Han">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747645309/image_2_adbn3m.jpg" alt="Loru Han">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Bayburt+Kalesi+Bayburt" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Bayburt Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644697/photo_2025-05-19_11-49-13_nyhbqj.jpg" alt="Bayburt Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644700/photo_2025-05-19_11-50-16_erpp1e.jpg" alt="Bayburt Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644703/photo_2025-05-19_11-50-18_ihvqjk.jpg" alt="Bayburt Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Ayd%C4%B1ntepe+Yeralt%C4%B1+%C5%9Eehri+Bayburt" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Aydıntepe Yeraltı Şehri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644413/photo_2025-05-19_11-44-29_djbv1q.jpg" alt="Aydıntepe Yeraltı Şehri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644410/photo_2025-05-19_11-44-14_osnhrf.jpg" alt="Aydıntepe Yeraltı Şehri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747644405/image_dkzfif.jpg" alt="Aydıntepe Yeraltı Şehri">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
