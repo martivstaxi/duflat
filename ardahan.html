@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ardahan</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Ardahan</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Damal+Atat%C3%BCrk+Silueti+Ardahan" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Damal Atatürk Silueti 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643505/photo_2025-05-19_11-29-04_dz5twd.jpg" alt="Damal Atatürk Silueti">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643466/image_giin0t.jpg" alt="Damal Atatürk Silueti">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643465/image_2_erdjlx.jpg" alt="Damal Atatürk Silueti">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=B%C3%BClb%C3%BClan+Yaylas%C4%B1+Ardahan" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Bülbülan Yaylası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747642760/1_v8t5bu.jpg" alt="Bülbülan Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747642774/photo_2025-05-19_11-17-52_p1veq1.jpg" alt="Bülbülan Yaylası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747642761/photo_2025-05-19_11-17-49_cmdfsc.jpg" alt="Bülbülan Yaylası">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Akta%C5%9F+G%C3%B6l%C3%BC+Ardahan" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Aktaş Gölü 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747640245/image_4_qvsu2k.jpg" alt="Aktaş Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747640245/image_2_jsfjpa.jpg" alt="Aktaş Gölü">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747640516/3_exjd99.jpg" alt="Aktaş Gölü">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Yaln%C4%B1z%C3%A7am+Kayak+Merkezi+Ardahan" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Yalnızçam Kayak Merkezi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643143/image_urpmvp.jpg" alt="Yalnızçam Kayak Merkezi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643141/image_3_sddoyu.jpg" alt="Yalnızçam Kayak Merkezi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747643137/image_2_slcl2a.jpg" alt="Yalnızçam Kayak Merkezi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C5%9Eeytan+Kalesi+Ardahan" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Şeytan Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639882/image_onpm0o.jpg" alt="Şeytan Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639496/photo_2025-05-19_10-24-23_rncutl.jpg" alt="Şeytan Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639492/image_3_dteruj.jpg" alt="Şeytan Kalesi">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
