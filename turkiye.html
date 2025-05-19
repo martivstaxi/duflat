@@ -42,12 +42,18 @@
         border-radius: 8px;
       }
       
+      #citiesContainer {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      
       .city-button {
-        display: block;
-        width: 100%;
-        max-width: 600px;
-        margin: 15px auto;
-        padding: 15px 20px;
+        display: inline-block;
+        width: auto;
+        min-width: 200px;
+        margin: 10px;
+        padding: 12px 20px;
         background-color: white;
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -65,14 +71,18 @@
       
       .city-name {
         margin: 0;
-        font-size: 20px;
+        font-size: 18px;
         color: #0077cc;
         font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       
-      .city-population {
-        margin: 5px 0 0 0;
-        font-size: 14px;
+      .city-name::after {
+        content: " →";
+        margin-left: 5px;
+        font-size: 18px;
         color: #666;
       }
       
@@ -198,9 +208,6 @@
  
       // Create city buttons for all cities
       cities.forEach(city => {
-        // Format population number with dots as thousand separators
-        const formattedPopulation = city.population.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        
         // Create city button
         const cityButton = document.createElement('div');
         cityButton.className = 'city-button';
@@ -211,14 +218,8 @@
         cityName.className = 'city-name';
         cityName.textContent = city.name;
         
-        // Create population element
-        const cityPop = document.createElement('p');
-        cityPop.className = 'city-population';
-        cityPop.textContent = `Nüfus: ${formattedPopulation}`;
-        
         // Add elements to button
         cityButton.appendChild(cityName);
-        cityButton.appendChild(cityPop);
         
         // Add click event
         cityButton.onclick = function() {
