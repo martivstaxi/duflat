@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gümüşhane</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 {
+      font-size: 26px;
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://duflat.com/main.html" class="logo">🌐 duflat.com</a>
+  <h1>📸 Gümüşhane</h1>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Tomara+%C5%9Eelalesi+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Tomara Şelalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638761/photo_2025-05-19_10-11-34_bmf92a.jpg" alt="Tomara Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638762/photo_2025-05-19_10-11-39_u3gej1.jpg" alt="Tomara Şelalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638761/image_kh4dcx.jpg" alt="Tomara Şelalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Artabel+G%C3%B6lleri+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Artabel Gölleri Tabiat Parkı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638044/photo_2025-05-19_09-59-29_jph67g.jpg" alt="Artabel Gölleri Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638043/photo_2025-05-19_09-59-24_ng99is.jpg" alt="Artabel Gölleri Tabiat Parkı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638043/photo_2025-05-19_09-59-20_fr4rmd.jpg" alt="Artabel Gölleri Tabiat Parkı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Santa+Harabeleri+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Santa Harabeleri 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639018/image_urdwey.jpg" alt="Santa Harabeleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639018/photo_2025-05-19_10-14-44_zeb6lm.jpg" alt="Santa Harabeleri">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747639019/photo_2025-05-19_10-14-48_vd8nru.jpg" alt="Santa Harabeleri">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Kov+Kalesi+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Kov Kalesi 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638536/1_sjgjue.jpg" alt="Kov Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638536/photo_2025-05-19_10-05-17_abrz7k.jpg" alt="Kov Kalesi">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638536/photo_2025-05-19_10-07-45_eeflga.jpg" alt="Kov Kalesi">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=%C4%B0mera+Manast%C4%B1r%C4%B1+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          İmera Manastırı 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747637814/image_jxaelk.jpg" alt="İmera Manastırı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747637802/image_2_opkttz.jpg" alt="İmera Manastırı">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747637801/image_3_n5ab0m.jpg" alt="İmera Manastırı">
+      </div>
+    </div>
+  </div>
+  <div class="city-section">
+    <div class="city-header">
+      <h2 class="city-title">
+        <a href="https://maps.google.com/?q=Karaca+Ma%C4%9Faras%C4%B1+G%C3%BCm%C3%BC%C5%9Fhane" target="_blank" class="location-link">
+          <span class="click-icon"></span>
+          Karaca Mağarası 📍
+        </a>
+      </h2>
+    </div>
+    
+    <div class="city-photos">
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638231/photo_2025-05-19_10-02-41_c7qdny.jpg" alt="Karaca Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638231/photo_2025-05-19_10-02-48_prwqsx.jpg" alt="Karaca Mağarası">
+      </div>
+      <div class="photo-card">
+        <img src="https://res.cloudinary.com/din1xe7cr/image/upload/v1747638232/photo_2025-05-19_10-02-53_m0if77.jpg" alt="Karaca Mağarası">
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="turkiye.html" class="back-link">← Türkiye'ye dön</a></p>
+</body>
+</html>
