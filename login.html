@@ -41,9 +41,14 @@
       color: #fff;
       border: none;
       border-radius: 6px;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: #444;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
     }
     .access-button {
       background-color: #ff6b35;
@@ -55,6 +60,7 @@
       border-radius: 8px;
       display: inline-block;
       text-decoration: none;
+      transition: background-color 0.3s;
     }
     .access-button:hover {
       background-color: #ff5722;
@@ -124,6 +130,20 @@
       margin-top: 20px;
       display: none;
     }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -160,16 +180,16 @@
   </div>
 
   <a href="https://www.shopier.com/35589307" target="_blank" class="access-button" id="accessButton">
-    ➤ Giriş bilgilerini satın al
+    ➤ Giriş bilgilerini buradan satın alın
   </a>
 
   <div class="login-section">
     <p id="subtitle">Giriş bilgilerinizi girin:</p>
 
     <form id="loginForm">
-      <input type="text" id="usernameInput" placeholder="Kullanıcı adı" required>
+      <input type="text" id="usernameInput" placeholder="Kullanıcı adı" required autocomplete="username">
       <br>
-      <input type="password" id="passwordInput" placeholder="Şifre" required>
+      <input type="password" id="passwordInput" placeholder="Şifre" required autocomplete="current-password">
       <br>
       <button type="submit" id="loginButton">➤ Giriş Yap</button>
       <div class="error-message" id="errorMessage">Kullanıcı adı veya şifre yanlış.</div>
@@ -182,14 +202,11 @@
     </p>
 
     <p class="free-trial" id="freeTrial">
-      Platform nasıl çalıştığını merak edenler için ve ücretsiz denemek isteyenler için: <a href="https://tr81.tr" target="_blank">➤ tr81.tr</a>
+      Platformu ücretsiz denemek isteyenler için: <a href="https://tr81.tr" target="_blank">➤ tr81.tr</a>
     </p>
   </div>
 
   <script>
-    // Kullanıcı giriş yaptı mı kontrolü (localStorage yerine)
-    let isLoggedIn = false;
-
     // Dil kontrolü ve çeviri
     const lang = navigator.language || navigator.userLanguage;
 
@@ -216,30 +233,84 @@
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault(); // Sayfanın yenilenmesini engelle
       
-      const username = document.getElementById('usernameInput').value;
-      const password = document.getElementById('passwordInput').value;
+      const username = document.getElementById('usernameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
       const errorMsg = document.getElementById('errorMessage');
       const successMsg = document.getElementById('successMessage');
+      const loginBtn = document.getElementById('loginButton');
+      const originalBtnText = loginBtn.innerHTML;
 
-      // Hata mesajını gizle
+      // Hata mesajlarını gizle
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      if (username.toLowerCase() === 'global' && password === 'global2025') {
-        // Başarılı giriş - direkt yönlendir
+      // Butonu devre dışı bırak ve loading göster
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = originalBtnText + '<span class="loading"></span>';
+
+      // Giriş kontrolü için küçük bir gecikme ekle (daha gerçekçi görünmesi için)
+      setTimeout(function() {
+        if (username.toLowerCase() === 'global' && password === 'global2025') {
+          // Başarılı giriş
+          successMsg.style.display = 'block';
+          
+          // Session storage'a giriş bilgisini kaydet (sayfa yenilense bile hatırlasın)
+          sessionStorage.setItem('isLoggedIn', 'true');
+          
+          // 1 saniye bekleyip yönlendir
+          setTimeout(function() {
+            // Farklı yönlendirme yöntemlerini dene
+            try {
+              // Önce window.location.href dene
+              window.location.href = 'main.html';
+              
+              // Eğer hala aynı sayfadaysak window.location.replace dene
+              setTimeout(function() {
+                window.location.replace('main.html');
+              }, 100);
+              
+              // Son çare olarak window.location.assign
+              setTimeout(function() {
+                window.location.assign('main.html');
+              }, 200);
+              
+            } catch (error) {
+              console.error('Yönlendirme hatası:', error);
+              // Manuel yönlendirme linki göster
+              successMsg.innerHTML = 'Giriş başarılı! <a href="main.html">Buraya tıklayarak devam edin</a>';
+            }
+          }, 1000);
+          
+        } else {
+          // Hatalı giriş
+          errorMsg.style.display = 'block';
+          
+          // Butonu tekrar aktif et
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = originalBtnText;
+          
+          // Input alanlarını temizle
+          document.getElementById('passwordInput').value = '';
+          document.getElementById('passwordInput').focus();
+          
+          // 3 saniye sonra hata mesajını gizle
+          setTimeout(function() {
+            errorMsg.style.display = 'none';
+          }, 3000);
+        }
+      }, 500);
+    });
+
+    // Sayfa yüklendiğinde session kontrolü yap
+    window.addEventListener('load', function() {
+      // Eğer daha önce giriş yapıldıysa direkt yönlendir
+      if (sessionStorage.getItem('isLoggedIn') === 'true') {
         window.location.href = 'main.html';
-      } else {
-        // Hatalı giriş
-        errorMsg.style.display = 'block';
-        
-        // 3 saniye sonra hata mesajını gizle
-        setTimeout(function() {
-          errorMsg.style.display = 'none';
-        }, 3000);
       }
     });
 
-    // Enter tuşu ile form gönderimini destekle (form elementi sayesinde otomatik çalışır)
+    // Debug için console log ekle
+    console.log('Login sayfası yüklendi. main.html sayfasının aynı dizinde olduğundan emin olun.');
   </script>
 
 </body>
