@@ -238,67 +238,48 @@
       const errorMsg = document.getElementById('errorMessage');
       const successMsg = document.getElementById('successMessage');
       const loginBtn = document.getElementById('loginButton');
-      const originalBtnText = loginBtn.innerHTML;
+      
+      console.log('Giriş denemesi:', username); // Debug log
 
       // Hata mesajlarını gizle
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      // Butonu devre dışı bırak ve loading göster
-      loginBtn.disabled = true;
-      loginBtn.innerHTML = originalBtnText + '<span class="loading"></span>';
-
-      // Giriş kontrolü için küçük bir gecikme ekle (daha gerçekçi görünmesi için)
-      setTimeout(function() {
-        if (username.toLowerCase() === 'global' && password === 'global2025') {
-          // Başarılı giriş
-          successMsg.style.display = 'block';
-          
-          // Session storage'a giriş bilgisini kaydet (sayfa yenilense bile hatırlasın)
-          sessionStorage.setItem('isLoggedIn', 'true');
-          
-          // 1 saniye bekleyip yönlendir
-          setTimeout(function() {
-            // Farklı yönlendirme yöntemlerini dene
-            try {
-              // Önce window.location.href dene
-              window.location.href = 'main.html';
-              
-              // Eğer hala aynı sayfadaysak window.location.replace dene
-              setTimeout(function() {
-                window.location.replace('main.html');
-              }, 100);
-              
-              // Son çare olarak window.location.assign
-              setTimeout(function() {
-                window.location.assign('main.html');
-              }, 200);
-              
-            } catch (error) {
-              console.error('Yönlendirme hatası:', error);
-              // Manuel yönlendirme linki göster
-              successMsg.innerHTML = 'Giriş başarılı! <a href="main.html">Buraya tıklayarak devam edin</a>';
-            }
-          }, 1000);
-          
-        } else {
-          // Hatalı giriş
-          errorMsg.style.display = 'block';
-          
-          // Butonu tekrar aktif et
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalBtnText;
-          
-          // Input alanlarını temizle
-          document.getElementById('passwordInput').value = '';
-          document.getElementById('passwordInput').focus();
-          
-          // 3 saniye sonra hata mesajını gizle
-          setTimeout(function() {
-            errorMsg.style.display = 'none';
-          }, 3000);
-        }
-      }, 500);
+      // Giriş kontrolü
+      if (username.toLowerCase() === 'global' && password === 'global2025') {
+        console.log('Giriş başarılı, yönlendiriliyor...'); // Debug log
+        
+        // Başarılı giriş
+        successMsg.style.display = 'block';
+        
+        // Hemen yönlendir - gecikme olmadan
+        window.location.href = './main.html';
+        
+        // Alternatif yönlendirme yöntemleri
+        // Eğer yukarıdaki çalışmazsa bunları dene
+        window.location = './main.html';
+        window.location.replace('./main.html');
+        
+        // Manuel link göster (yönlendirme çalışmazsa)
+        setTimeout(function() {
+          successMsg.innerHTML = 'Giriş başarılı! <a href="main.html" style="color: #388e3c; text-decoration: underline;">Buraya tıklayarak devam edin</a>';
+        }, 500);
+        
+      } else {
+        console.log('Hatalı giriş'); // Debug log
+        
+        // Hatalı giriş
+        errorMsg.style.display = 'block';
+        
+        // Şifre alanını temizle
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+        
+        // 3 saniye sonra hata mesajını gizle
+        setTimeout(function() {
+          errorMsg.style.display = 'none';
+        }, 3000);
+      }
     });
 
     // Sayfa yüklendiğinde session kontrolü yap
@@ -311,6 +292,9 @@
 
     // Debug için console log ekle
     console.log('Login sayfası yüklendi. main.html sayfasının aynı dizinde olduğundan emin olun.');
+    
+    // Test butonu ekle (sadece geliştirme için)
+    console.log('Not: Eğer main.html açılmıyorsa, tarayıcı konsolunda şu komutu deneyin: window.location.href = "main.html"');
   </script>
 
 </body>
