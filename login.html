@@ -56,6 +56,19 @@
       display: inline-block;
       margin-top: 12px;
     }
+    .free-link {
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #f0f8ff;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .free-link a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 17px;
+    }
     a {
       color: #0066cc;
       text-decoration: none;
@@ -76,6 +89,12 @@
       width: 100%;
       border-radius: 12px;
       margin: 20px 0;
+    }
+    .login-info {
+      font-size: 15px;
+      color: #666;
+      margin-top: 20px;
+      font-style: italic;
     }
   </style>
 </head>
@@ -115,10 +134,17 @@
   <br>
   <button onclick="login()" id="loginButton">Giriş Yap</button>
 
+  <p class="login-info" id="loginInfo">*Giriş için size özel verilen kullanıcı adı ve şifre gereklidir</p>
+
   <p id="note">
     Giriş bilgileriniz yok mu? <br>
     <a href="https://www.shopier.com/35589307" target="_blank">Platforma erişim hakkı satın alın<br>👆</a>
   </p>
+
+  <div class="free-link" id="freeLink">
+    <p style="margin: 0;">Ücretsiz sürümü denemek için:<br>
+    <a href="https://tr81.tr" target="_blank">tr81.tr</a></p>
+  </div>
 
   <div id="about">
     <div id="about-tr">
@@ -137,17 +163,17 @@
     </div>
 
     <div id="about-en" style="display: none;">
-      Love to travel? Simply select the country and city you're planning to visit, and we’ll show you the most scenic photo spots.<br><br>
+      Love to travel? Simply select the country and city you're planning to visit, and we'll show you the most scenic photo spots.<br><br>
       <h2>Who are we?</h2>
       🌍 Tuğçe & Anuar<br>
        We travel the world and discover the most scenic spots<br>
       <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Our Instagram Page">
       <br>
-       <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank"> CVK Park Bosphorus📍</a>
+       <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI5MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank"> CVK Park Bosphorus📍</a>
       <br><br>
       We share our favorite photo locations right here on this site.<br><br>
       You can explore hand-picked photo spots — stunning views and hidden locations!<br><br>
-      Once you purchase access, you’ll be able to discover the best photo locations near you.<br>
+      Once you purchase access, you'll be able to discover the best photo locations near you.<br>
       
 
       <br><br>
@@ -163,9 +189,14 @@
       document.getElementById('usernameInput').placeholder = 'Username';
       document.getElementById('passwordInput').placeholder = 'Password';
       document.getElementById('loginButton').textContent = 'Login';
+      document.getElementById('loginInfo').textContent = '*Login requires a special username and password provided to you';
       document.getElementById('note').innerHTML = `
-        Don’t have access yet? <br>
+        Don't have access yet? <br>
         <a href="https://www.shopier.com/35589307" target="_blank">Buy access for 2.5$</a>
+      `;
+      document.getElementById('freeLink').innerHTML = `
+        <p style="margin: 0;">Try free version:<br>
+        <a href="https://tr81.tr" target="_blank">tr81.tr</a></p>
       `;
 
       // Show English about section and hide Turkish
