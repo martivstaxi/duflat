@@ -19,11 +19,6 @@
       padding: 0 20px;
       line-height: 1.6;
     }
-    svg.instagram-logo {
-      width: 1.2em;
-      height: 1.2em;
-      vertical-align: middle;
-    }
     input {
       padding: 14px;
       font-size: 18px;
@@ -130,23 +125,28 @@
       margin-top: 20px;
       display: none;
     }
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-      vertical-align: middle;
-      margin-left: 10px;
+    .manual-link {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border-radius: 8px;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .manual-link a {
+      color: #388e3c;
+      font-size: 18px;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
+
+  <script>
+    // Otomatik giriş kontrolü (eski koddan)
+    if (localStorage.getItem("duflat-access") === "granted") {
+      window.location.href = "main.html";
+    }
+  </script>
 
   <div id="about">
     <div id="about-tr">
@@ -186,15 +186,20 @@
   <div class="login-section">
     <p id="subtitle">Giriş bilgilerinizi girin:</p>
 
-    <form id="loginForm">
-      <input type="text" id="usernameInput" placeholder="Kullanıcı adı" required autocomplete="username">
-      <br>
-      <input type="password" id="passwordInput" placeholder="Şifre" required autocomplete="current-password">
-      <br>
-      <button type="submit" id="loginButton">➤ Giriş Yap</button>
-      <div class="error-message" id="errorMessage">Kullanıcı adı veya şifre yanlış.</div>
-      <div class="success-message" id="successMessage">Giriş başarılı! Yönlendiriliyorsunuz...</div>
-    </form>
+    <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
+    <br>
+    <input type="password" id="passwordInput" placeholder="Şifre">
+    <br>
+    <button onclick="login()" id="loginButton">➤ Giriş Yap</button>
+    
+    <div class="error-message" id="errorMessage">Kullanıcı adı veya şifre yanlış.</div>
+    <div class="success-message" id="successMessage">Giriş başarılı! Yönlendiriliyorsunuz...</div>
+    
+    <!-- Manuel link (yedek) -->
+    <div class="manual-link" id="manualLink">
+      <strong>Otomatik yönlendirme çalışmıyorsa:</strong><br>
+      <a href="main.html">➤ Buraya tıklayarak devam edin</a>
+    </div>
 
     <p id="note">
       Giriş bilgileriniz yok mu? <br>
@@ -229,45 +234,58 @@
       document.getElementById('about-en').style.display = 'block';
     }
 
-    // Form gönderimini dinle
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault(); // Sayfanın yenilenmesini engelle
-      
+    // Enter tuşu ile giriş
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
+
+    document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('passwordInput').focus();
+      }
+    });
+
+    // Giriş fonksiyonu (eski koddan alındı ve güncellendi)
+    function login() {
       const username = document.getElementById('usernameInput').value.trim();
       const password = document.getElementById('passwordInput').value.trim();
       const errorMsg = document.getElementById('errorMessage');
       const successMsg = document.getElementById('successMessage');
-      const loginBtn = document.getElementById('loginButton');
+      const manualLink = document.getElementById('manualLink');
       
-      console.log('Giriş denemesi:', username); // Debug log
-
       // Hata mesajlarını gizle
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
+      manualLink.style.display = 'none';
 
       // Giriş kontrolü
       if (username.toLowerCase() === 'global' && password === 'global2025') {
-        console.log('Giriş başarılı, yönlendiriliyor...'); // Debug log
-        
         // Başarılı giriş
         successMsg.style.display = 'block';
         
-        // Hemen yönlendir - gecikme olmadan
-        window.location.href = './main.html';
+        // localStorage'a kaydet (eski koddan)
+        localStorage.setItem("duflat-access", "granted");
         
-        // Alternatif yönlendirme yöntemleri
-        // Eğer yukarıdaki çalışmazsa bunları dene
-        window.location = './main.html';
-        window.location.replace('./main.html');
-        
-        // Manuel link göster (yönlendirme çalışmazsa)
+        // Farklı yönlendirme yöntemlerini dene
         setTimeout(function() {
-          successMsg.innerHTML = 'Giriş başarılı! <a href="main.html" style="color: #388e3c; text-decoration: underline;">Buraya tıklayarak devam edin</a>';
-        }, 500);
+          // Yöntem 1: window.location.href
+          window.location.href = "main.html";
+          
+          // Yöntem 2: window.location
+          window.location = "main.html";
+          
+          // Yöntem 3: window.location.replace
+          window.location.replace("main.html");
+          
+          // Eğer hiçbiri çalışmazsa manuel linki göster
+          setTimeout(function() {
+            manualLink.style.display = 'block';
+          }, 1000);
+        }, 100);
         
       } else {
-        console.log('Hatalı giriş'); // Debug log
-        
         // Hatalı giriş
         errorMsg.style.display = 'block';
         
@@ -280,21 +298,10 @@
           errorMsg.style.display = 'none';
         }, 3000);
       }
-    });
+    }
 
-    // Sayfa yüklendiğinde session kontrolü yap
-    window.addEventListener('load', function() {
-      // Eğer daha önce giriş yapıldıysa direkt yönlendir
-      if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        window.location.href = 'main.html';
-      }
-    });
-
-    // Debug için console log ekle
-    console.log('Login sayfası yüklendi. main.html sayfasının aynı dizinde olduğundan emin olun.');
-    
-    // Test butonu ekle (sadece geliştirme için)
-    console.log('Not: Eğer main.html açılmıyorsa, tarayıcı konsolunda şu komutu deneyin: window.location.href = "main.html"');
+    // Debug bilgisi
+    console.log('Login sayfası hazır. Kullanıcı adı: global, Şifre: global2025');
   </script>
 
 </body>
