@@ -6,95 +6,169 @@
   <title>duflat.com – Giriş</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       text-align: center;
-      padding: 40px;
+      padding: 40px 20px;
       margin: 0;
-      background-color: #f9f9f9;
+      background-color: #f5f5f5;
+      color: #333;
     }
+    
+    .main-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
     h1 {
-      font-size: 28px;
+      font-size: 26px;
       margin-bottom: 30px;
-      padding: 0 20px;
-      line-height: 1.6;
+      color: #222;
+      font-weight: 600;
     }
+    
     svg.instagram-logo {
-      width: 1.2em;
-      height: 1.2em;
+      width: 1.3em;
+      height: 1.3em;
       vertical-align: middle;
+      margin-right: 8px;
     }
+    
     input {
       padding: 14px;
-      font-size: 18px;
-      margin: 12px;
-      width: 80%;
-      max-width: 320px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: border-color 0.3s;
     }
+    
+    input:focus {
+      outline: none;
+      border-color: #5865F2;
+    }
+    
     button {
-      padding: 14px 28px;
-      font-size: 18px;
+      padding: 14px 35px;
+      font-size: 16px;
       cursor: pointer;
-      background-color: #222;
+      background-color: #5865F2;
       color: #fff;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-weight: 500;
+      transition: background-color 0.3s;
     }
-    p {
-      font-size: 16px;
-      color: #555;
-      margin-top: 30px;
+    
+    button:hover {
+      background-color: #4752C4;
     }
-    #note {
-      font-size: 18px;
-      font-weight: bold;
-      line-height: 1.6;
+    
+    .warning {
+      background-color: #FFF4E5;
+      border: 1px solid #FFD4A3;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 25px auto;
+      max-width: 380px;
+      font-size: 14px;
+      color: #B07C0E;
+      line-height: 1.5;
     }
-    #note a {
-      font-size: 20px;
+    
+    .warning strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+    
+    .buy-section {
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 10px;
+    }
+    
+    .buy-button {
       display: inline-block;
-      margin-top: 12px;
+      background-color: #28c244;
+      color: white;
+      padding: 14px 35px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: background-color 0.3s;
     }
+    
+    .buy-button:hover {
+      background-color: #22a238;
+    }
+    
     .free-link {
       margin-top: 25px;
       padding: 15px;
-      background-color: #f0f8ff;
+      background-color: #E8F4FD;
       border-radius: 8px;
       display: inline-block;
     }
+    
     .free-link a {
-      color: #0066cc;
+      color: #2196F3;
       text-decoration: none;
-      font-weight: bold;
-      font-size: 17px;
+      font-weight: 500;
+      font-size: 16px;
     }
-    a {
-      color: #0066cc;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    a:hover {
+    
+    .free-link a:hover {
       text-decoration: underline;
     }
+    
     #about {
-      margin-top: 60px;
-      padding: 0 20px;
-      font-size: 17px;
-      line-height: 1.6;
-      color: #333;
-    }
-    #about img {
-      max-width: 300px;
-      width: 100%;
-      border-radius: 12px;
-      margin: 20px 0;
-    }
-    .login-info {
+      margin-top: 50px;
       font-size: 15px;
+      line-height: 1.7;
       color: #666;
-      margin-top: 20px;
-      font-style: italic;
+    }
+    
+    #about h3 {
+      color: #333;
+      font-size: 18px;
+      margin: 25px 0 15px;
+    }
+    
+    #about img {
+      max-width: 280px;
+      width: 100%;
+      border-radius: 10px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .map-link {
+      display: inline-block;
+      color: #5865F2;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 8px 16px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    
+    .map-link:hover {
+      background: #e5e5e5;
+    }
+    
+    .clickable-arrow {
+      margin-right: 6px;
+      font-size: 1.1em;
     }
   </style>
 </head>
@@ -106,77 +180,75 @@
     }
   </script>
 
-  <h1 id="title">
-    <svg class="instagram-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <radialGradient id="a" cx=".4" cy="1" r="1">
-        <stop offset=".1" stop-color="#fd5"/><stop offset=".5" stop-color="#ff543e"/><stop offset="1" stop-color="#c837ab"/>
-      </radialGradient>
-      <linearGradient id="b" x2=".2" y2="1">
-        <stop offset=".1" stop-color="#3771c8"/><stop offset=".5" stop-color="#60f" stop-opacity="0"/>
-      </linearGradient>
-      <rect id="c" height="512" rx="15%" width="512"/>
-      <use fill="url(#a)" xlink:href="#c"/>
-      <use fill="url(#b)" xlink:href="#c"/>
-      <g fill="none" stroke="#fff" stroke-width="30">
-        <rect height="308" rx="81" width="308" x="102" y="102"/>
-        <circle cx="256" cy="256" r="72"/>
-        <circle cx="347" cy="165" r="6"/>
-      </g>
-    </svg>
-    Instagram fotoğrafların için konumları keşfet.
-  </h1>
+  <div class="main-container">
+    <h1 id="title">
+      <svg class="instagram-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <radialGradient id="a" cx=".4" cy="1" r="1">
+          <stop offset=".1" stop-color="#fd5"/><stop offset=".5" stop-color="#ff543e"/><stop offset="1" stop-color="#c837ab"/>
+        </radialGradient>
+        <linearGradient id="b" x2=".2" y2="1">
+          <stop offset=".1" stop-color="#3771c8"/><stop offset=".5" stop-color="#60f" stop-opacity="0"/>
+        </linearGradient>
+        <rect id="c" height="512" rx="15%" width="512"/>
+        <use fill="url(#a)" xlink:href="#c"/>
+        <use fill="url(#b)" xlink:href="#c"/>
+        <g fill="none" stroke="#fff" stroke-width="30">
+          <rect height="308" rx="81" width="308" x="102" y="102"/>
+          <circle cx="256" cy="256" r="72"/>
+          <circle cx="347" cy="165" r="6"/>
+        </g>
+      </svg>
+      Instagram Fotoğraf Konumları
+    </h1>
 
-  <p id="subtitle">Kullanıcı adı ve şifrenizi girin:</p>
+    <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
+    <br>
+    <input type="password" id="passwordInput" placeholder="Şifre">
+    <br>
+    <button onclick="login()" id="loginButton"><span class="clickable-arrow">➤</span>Giriş Yap</button>
 
-  <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
-  <br>
-  <input type="password" id="passwordInput" placeholder="Şifre">
-  <br>
-  <button onclick="login()" id="loginButton">Giriş Yap</button>
+    <div class="warning" id="warningBox">
+      <strong>⚠️ Önemli Uyarı</strong>
+      <span id="warningText">Instagram kullanıcı adı ve şifrenizi GİRMEYİN! Platforma giriş için özel kullanıcı adı ve şifre satın almalısınız.</span>
+    </div>
 
-  <p class="login-info" id="loginInfo">*Giriş için size özel verilen kullanıcı adı ve şifre gereklidir</p>
+    <div class="buy-section">
+      <p id="buyText" style="margin: 0 0 15px 0; font-size: 16px;">Platforma erişim için:</p>
+      <a href="https://www.shopier.com/35589307" target="_blank" class="buy-button">
+        <span class="clickable-arrow">➤</span><span id="buyButtonText">Satın Al</span>
+      </a>
+    </div>
 
-  <p id="note">
-    Giriş bilgileriniz yok mu? <br>
-    <a href="https://www.shopier.com/35589307" target="_blank">Platforma erişim hakkı satın alın<br>👆</a>
-  </p>
-
-  <div class="free-link" id="freeLink">
-    <p style="margin: 0;">Ücretsiz sürümü denemek için:<br>
-    <a href="https://tr81.tr" target="_blank">tr81.tr</a></p>
+    <div class="free-link">
+      <span id="freeText">Ücretsiz deneme sürümü:</span> <a href="https://tr81.tr" target="_blank"><span class="clickable-arrow">➤</span>tr81.tr</a>
+    </div>
   </div>
 
   <div id="about">
     <div id="about-tr">
-      Seyahat etmeyi seviyor musunuz? Yurtiçi veya yurtdışı gideceğiniz yeri seçin, size oranın en güzel yerlerini gösterelim ve konum bilgilerini paylaşalım<br>
-      <h2>Biz kimiz?</h2>
+      <h3>Biz Kimiz?</h3>
       🌍 Tuğçe & Anuar<br>
-      Dünyayı geziyor, en güzel manzaralı yerleri keşfediyoruz.<br>
+      Dünyayı geziyor ve en güzel manzaralı yerleri keşfediyoruz.<br>
       <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Instagram Sayfamız">
       <br>
-      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank"> CVK Park Bosphorus📍</a>
+      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">
+        <span class="clickable-arrow">➤</span>CVK Park Bosphorus 📍
+      </a>
       <br><br>
-      Beğendiğimiz konumları bu sitede paylaşıyoruz.<br><br>
-      Platforma giriş yaptıktan sonra, bulunduğunuz yere en yakın çekim noktalarını keşfetmeye başlayabilirsiniz.<br><br>
-      Binlerce gezgin tarafından paylaşılan, özenle seçilmiş fotoğraf ve konumları bu platformda bulabilirsiniz.<br><br>
-
+      Beğendiğimiz konumları bu sitede paylaşıyoruz. Platforma giriş yaptıktan sonra, bulunduğunuz yere en yakın çekim noktalarını keşfedebilirsiniz.
     </div>
 
     <div id="about-en" style="display: none;">
-      Love to travel? Simply select the country and city you're planning to visit, and we'll show you the most scenic photo spots.<br><br>
-      <h2>Who are we?</h2>
+      <h3>Who Are We?</h3>
       🌍 Tuğçe & Anuar<br>
-       We travel the world and discover the most scenic spots<br>
+      We travel the world and discover the most scenic spots.<br>
       <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Our Instagram Page">
       <br>
-       <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI5MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank"> CVK Park Bosphorus📍</a>
+      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI5MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">
+        <span class="clickable-arrow">➤</span>CVK Park Bosphorus 📍
+      </a>
       <br><br>
-      We share our favorite photo locations right here on this site.<br><br>
-      You can explore hand-picked photo spots — stunning views and hidden locations!<br><br>
-      Once you purchase access, you'll be able to discover the best photo locations near you.<br>
-      
-
-      <br><br>
+      We share our favorite photo locations on this site. Once you purchase access, you'll discover the best photo spots near you.
     </div>
   </div>
 
@@ -184,22 +256,31 @@
     const lang = navigator.language || navigator.userLanguage;
 
     if (!lang.startsWith('tr')) {
-      document.getElementById('title').innerHTML = `Discover🔍🌍<br> secret locations📍<br>for your next viral🔥 <br>Instagram 📸 shot!`;
-      document.getElementById('subtitle').textContent = 'Enter your username and password:';
+      // Update to English
+      document.getElementById('title').innerHTML = `<svg class="instagram-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <radialGradient id="a" cx=".4" cy="1" r="1">
+          <stop offset=".1" stop-color="#fd5"/><stop offset=".5" stop-color="#ff543e"/><stop offset="1" stop-color="#c837ab"/>
+        </radialGradient>
+        <linearGradient id="b" x2=".2" y2="1">
+          <stop offset=".1" stop-color="#3771c8"/><stop offset=".5" stop-color="#60f" stop-opacity="0"/>
+        </linearGradient>
+        <rect id="c" height="512" rx="15%" width="512"/>
+        <use fill="url(#a)" xlink:href="#c"/>
+        <use fill="url(#b)" xlink:href="#c"/>
+        <g fill="none" stroke="#fff" stroke-width="30">
+          <rect height="308" rx="81" width="308" x="102" y="102"/>
+          <circle cx="256" cy="256" r="72"/>
+          <circle cx="347" cy="165" r="6"/>
+        </g>
+      </svg>Instagram Photo Locations`;
       document.getElementById('usernameInput').placeholder = 'Username';
       document.getElementById('passwordInput').placeholder = 'Password';
-      document.getElementById('loginButton').textContent = 'Login';
-      document.getElementById('loginInfo').textContent = '*Login requires a special username and password provided to you';
-      document.getElementById('note').innerHTML = `
-        Don't have access yet? <br>
-        <a href="https://www.shopier.com/35589307" target="_blank">Buy access for 2.5$</a>
-      `;
-      document.getElementById('freeLink').innerHTML = `
-        <p style="margin: 0;">Try free version:<br>
-        <a href="https://tr81.tr" target="_blank">tr81.tr</a></p>
-      `;
-
-      // Show English about section and hide Turkish
+      document.getElementById('loginButton').innerHTML = '<span class="clickable-arrow">➤</span>Login';
+      document.getElementById('warningText').textContent = "Do NOT enter your Instagram username and password! You must purchase special credentials for platform access.";
+      document.getElementById('buyText').textContent = 'For platform access:';
+      document.getElementById('buyButtonText').textContent = 'Buy Now ($2.5)';
+      document.getElementById('freeText').textContent = 'Free trial version:';
+      
       document.getElementById('about-tr').style.display = 'none';
       document.getElementById('about-en').style.display = 'block';
     }
@@ -215,6 +296,12 @@
         alert(lang.startsWith('tr') ? 'Kullanıcı adı veya şifre yanlış.' : 'Incorrect username or password.');
       }
     }
+
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
   </script>
 
 </body>
