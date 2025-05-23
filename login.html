@@ -3,43 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Türkiye'nin en güzel manzaralı yerlerini keşfedin. Fotoğraf çekim noktaları ve gizli lokasyonlar.">
   <title>duflat.com – Giriş</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
-      padding: 20px;
+      padding: 40px;
       margin: 0;
       background-color: #f9f9f9;
     }
     h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 28px;
+      margin-bottom: 30px;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+    svg.instagram-logo {
+      width: 1.2em;
+      height: 1.2em;
+      vertical-align: middle;
     }
     input {
-      padding: 12px;
-      font-size: 16px;
-      margin: 10px auto;
-      width: 90%;
+      padding: 14px;
+      font-size: 18px;
+      margin: 12px;
+      width: 80%;
       max-width: 320px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      display: block;
     }
     button {
-      padding: 12px 24px;
-      font-size: 16px;
-      margin-top: 10px;
+      padding: 14px 28px;
+      font-size: 18px;
+      cursor: pointer;
       background-color: #222;
       color: #fff;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    .access-button {
+      background-color: #ff6b35;
+      color: white;
+      padding: 16px 32px;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 20px 0;
+      border-radius: 8px;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .access-button:hover {
+      background-color: #ff5722;
+      text-decoration: none;
     }
     p {
-      font-size: 15px;
+      font-size: 16px;
       color: #555;
-      margin: 20px auto;
+      margin-top: 30px;
+    }
+    #note {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.6;
+    }
+    #note a {
+      font-size: 20px;
+      display: inline-block;
+      margin-top: 12px;
     }
     a {
       color: #0066cc;
@@ -50,70 +84,162 @@
       text-decoration: underline;
     }
     #about {
-      font-size: 15px;
+      margin-top: 20px;
+      padding: 0 20px;
+      font-size: 17px;
       line-height: 1.6;
       color: #333;
-      margin-bottom: 30px;
     }
     #about img {
-      max-width: 100%;
-      height: auto;
+      max-width: 300px;
+      width: 100%;
       border-radius: 12px;
-      margin: 15px 0;
+      margin: 20px 0;
     }
-    .section {
-      margin-bottom: 40px;
+    .login-section {
+      background-color: #fff;
+      padding: 30px;
+      margin: 30px auto;
+      max-width: 500px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .free-trial {
+      font-size: 16px;
+      color: #666;
+      margin-top: 20px;
+    }
+    .free-trial a {
+      color: #ff6b35;
+    }
+    .error-message {
+      color: #d32f2f;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+    .success-message {
+      color: #388e3c;
+      font-size: 16px;
+      margin-top: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
 
+  <div id="about">
+    <div id="about-tr">
+      <h1>Seyahat etmeyi seviyor musunuz?</h1>
+      Türkiye'de gideceğiniz İli seçin, size oranın en güzel yerlerini gösterelim ve konum bilgilerini paylaşalım<br>
+      <h2>Biz kimiz?</h2>
+      🌍 Tuğçe & Anuar<br>
+      Dünyayı geziyor, en güzel manzaralı yerleri keşfediyoruz.<br>
+      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Tuğçe ve Anuar'ın Instagram sayfasından manzara fotoğrafları">
+      <br>
+      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">➤ CVK Park Bosphorus📍</a>
+      <br><br>
+      Beğendiğimiz konumları bu sitede paylaşıyoruz.<br><br>
+      Platforma giriş yaptıktan sonra, manzaralı yerlerin çekim noktalarını keşfetmeye başlayabilirsiniz.<br><br>
+    </div>
+
+    <div id="about-en" style="display: none;">
+      <h1>Love to travel?</h1>
+      Simply select the city you're planning to visit in Türkiye, and we'll show you the most scenic photo spots in that city.<br><br>
+      <h2>Who are we?</h2>
+      🌍 Tuğçe & Anuar<br>
+      We travel the world and discover the most scenic spots<br>
+      <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Scenic photography spots from Tuğçe and Anuar's Instagram page">
+      <br>
+      <a class="map-link" href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul/@41.0349751,28.9858296,17z/data=!3m1!4b1!4m9!3m8!1s0x14cab7f1fe239f43:0x54477a917ddd623d!5m2!4m1!1i2!8m2!3d41.0349711!4d28.9884045!16s%2Fg%2F1ptw2kx86?entry=ttu&g_ep=EgoyMDI1MDQyOC4wIKXMDSoASAFQAw%3D%3D" target="_blank">➤ CVK Park Bosphorus📍</a>
+      <br><br>
+      We share our favorite photo locations right here on this site.<br><br>
+      Once you purchase access, you'll be able to discover the best photo locations near you.<br>
+      <br><br>
+    </div>
+  </div>
+
+  <a href="https://www.shopier.com/35589307" target="_blank" class="access-button" id="accessButton">
+    ➤ Giriş bilgilerini satın al
+  </a>
+
+  <div class="login-section">
+    <p id="subtitle">Giriş bilgilerinizi girin:</p>
+
+    <form id="loginForm">
+      <input type="text" id="usernameInput" placeholder="Kullanıcı adı" required>
+      <br>
+      <input type="password" id="passwordInput" placeholder="Şifre" required>
+      <br>
+      <button type="submit" id="loginButton">➤ Giriş Yap</button>
+      <div class="error-message" id="errorMessage">Kullanıcı adı veya şifre yanlış.</div>
+      <div class="success-message" id="successMessage">Giriş başarılı! Yönlendiriliyorsunuz...</div>
+    </form>
+
+    <p id="note">
+      Giriş bilgileriniz yok mu? <br>
+      <a href="https://www.shopier.com/35589307" target="_blank">➤ Platforma erişim satın alın<br>👆</a>
+    </p>
+
+    <p class="free-trial" id="freeTrial">
+      Platform nasıl çalıştığını merak edenler için ve ücretsiz denemek isteyenler için: <a href="https://tr81.tr" target="_blank">➤ tr81.tr</a>
+    </p>
+  </div>
+
   <script>
-    if (localStorage.getItem("duflat-access") === "granted") {
-      window.location.href = "main.html";
+    // Kullanıcı giriş yaptı mı kontrolü (localStorage yerine)
+    let isLoggedIn = false;
+
+    // Dil kontrolü ve çeviri
+    const lang = navigator.language || navigator.userLanguage;
+
+    if (!lang.startsWith('tr')) {
+      document.getElementById('subtitle').textContent = 'Enter your login information:';
+      document.getElementById('usernameInput').placeholder = 'Username';
+      document.getElementById('passwordInput').placeholder = 'Password';
+      document.getElementById('loginButton').innerHTML = '➤ Login';
+      document.getElementById('note').innerHTML = `
+        Don't have access yet? <br>
+        <a href="https://www.shopier.com/35589307" target="_blank">➤ Buy access for 2.5$</a>
+      `;
+      document.getElementById('accessButton').innerHTML = '➤ Buy Duflat Access';
+      document.getElementById('freeTrial').innerHTML = 'For free trial: <a href="https://tr81.tr" target="_blank">➤ tr81.tr</a>';
+      document.getElementById('errorMessage').textContent = 'Incorrect username or password.';
+      document.getElementById('successMessage').textContent = 'Login successful! Redirecting...';
+
+      // Show English about section and hide Turkish
+      document.getElementById('about-tr').style.display = 'none';
+      document.getElementById('about-en').style.display = 'block';
     }
-  </script>
 
-  <!-- 1. Tanıtım içeriği (En üste alındı) -->
-  <div id="about" class="section">
-    <p>Seyahat etmeyi seviyor musunuz? Türkiye'de gideceğiniz ili seçin, size oranın en güzel yerlerini gösterelim ve konum bilgilerini paylaşalım.</p>
-    <h2>Biz kimiz?</h2>
-    <p>🌍 Tuğçe & Anuar – Dünyayı geziyor, en güzel manzaralı yerleri keşfediyoruz.</p>
-    <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746083288/screenshot_fx7okx.jpg" alt="Instagram Sayfamız">
-    <p><a href="https://www.google.com/maps/place/CVK+Park+Bosphorus+Hotel+Istanbul" target="_blank">CVK Park Bosphorus📍</a></p>
-    <p>Beğendiğimiz konumları bu sitede paylaşıyoruz. Giriş yaptıktan sonra bulunduğunuz yere en yakın çekim noktalarını keşfetmeye başlayabilirsiniz.</p>
-    <p>Ücretsiz denemek için: <strong><a href="https://tr81.tr" target="_blank">tr81.tr</a></strong></p>
-  </div>
-
-  <!-- 2. Erişim Butonu -->
-  <div class="section">
-    <p><strong>Giriş bilgileriniz yok mu?</strong></p>
-    <a href="https://www.shopier.com/35589307" target="_blank">
-      <button>Platforma Erişim Hakkı Satın Al</button>
-    </a>
-  </div>
-
-  <!-- 3. Giriş Alanı -->
-  <div class="section">
-    <h1>Instagram fotoğrafların için konumları keşfet</h1>
-    <p>Kullanıcı adı ve şifrenizi girin:</p>
-    <input type="text" id="usernameInput" placeholder="Kullanıcı adı">
-    <input type="password" id="passwordInput" placeholder="Şifre">
-    <button onclick="login()" id="loginButton">Giriş Yap</button>
-  </div>
-
-  <script>
-    function login() {
+    // Form gönderimini dinle
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault(); // Sayfanın yenilenmesini engelle
+      
       const username = document.getElementById('usernameInput').value;
       const password = document.getElementById('passwordInput').value;
+      const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
 
-      if (username && password) {
-        localStorage.setItem("duflat-access", "granted");
-        window.location.href = "main.html";
+      // Hata mesajını gizle
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      if (username.toLowerCase() === 'global' && password === 'global2025') {
+        // Başarılı giriş - direkt yönlendir
+        window.location.href = 'main.html';
       } else {
-        alert("Lütfen kullanıcı adı ve şifrenizi girin.");
+        // Hatalı giriş
+        errorMsg.style.display = 'block';
+        
+        // 3 saniye sonra hata mesajını gizle
+        setTimeout(function() {
+          errorMsg.style.display = 'none';
+        }, 3000);
       }
-    }
+    });
+
+    // Enter tuşu ile form gönderimini destekle (form elementi sayesinde otomatik çalışır)
   </script>
 
 </body>
