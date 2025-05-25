@@ -137,6 +137,21 @@
       font-size: 18px;
       text-decoration: underline;
     }
+    .instagram-link {
+      background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+      color: white !important;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none !important;
+      transition: transform 0.3s ease;
+      display: inline-block;
+      margin: 5px;
+    }
+    .instagram-link:hover {
+      transform: scale(1.05);
+      color: white !important;
+      text-decoration: none !important;
+    }
   </style>
 </head>
 <body>
@@ -203,7 +218,7 @@
 
     <p id="note">
       Erişim ücreti size pahalı mı geldi? Instagram hikayenizde web sitemizi tanıtın → Ücretsiz erişim kazanın! <br>
-      <a href="http://instagram.com/liveanuar" target="_blank">➤ İletişim: @liveanuar <br>Tıkla iletişime geç!👆</a>
+      <a href="#" class="instagram-link" onclick="openInstagramDM()">➤ İletişim: @liveanuar <br>📩 Tıkla mesaj gönder!👆</a>
     </p>
 
     <p class="free-trial" id="freeTrial">
@@ -212,6 +227,31 @@
   </div>
 
   <script>
+    // Instagram DM açma fonksiyonu
+    function openInstagramDM() {
+      // Instagram uygulaması için deep link
+      const instagramApp = "instagram://user?username=liveanuar";
+      
+      // Uygulama yüklü değilse web versiyonu
+      const instagramWeb = "https://www.instagram.com/liveanuar/";
+      
+      // Mobil cihaz kontrolü
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Mobilde önce app'i dene
+        window.location.href = instagramApp;
+        
+        // 2 saniye sonra app açılmadıysa web'e yönlendir
+        setTimeout(() => {
+          window.location.href = instagramWeb;
+        }, 2000);
+      } else {
+        // Desktop'ta direkt web versiyonunu aç
+        window.open(instagramWeb, '_blank');
+      }
+    }
+
     // Dil kontrolü ve çeviri
     const lang = navigator.language || navigator.userLanguage;
 
@@ -222,7 +262,7 @@
       document.getElementById('loginButton').innerHTML = 'Login';
       document.getElementById('note').innerHTML = `
         Too expensive for you? Promote our website in your Instagram story → Get free access!  <br>
-        <a href="https://www.instagram.com/liveanuar" target="_blank">➤ Contact: @liveanuar</a>
+        <a href="#" class="instagram-link" onclick="openInstagramDM()">➤ Contact: @liveanuar <br>📩 Send Message!👆</a>
       `;
       document.getElementById('accessButton').innerHTML = 'Buy access for 5.5$';
       document.getElementById('freeTrial').innerHTML = 'For free trial: <a href="https://tr81.tr" target="_blank">➤ www.tr81.tr</a>';
