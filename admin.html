@@ -89,18 +89,32 @@
       margin-top: 30px;
       font-weight: bold;
       color: #333;
+      font-size: 20px;
+      margin-bottom: 20px;
     }
     
     .premium-link {
       margin-top: 10px;
       display: inline-block;
-      color: #0077cc;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
       text-decoration: none;
       font-weight: bold;
+      font-size: 18px;
+      padding: 15px 30px;
+      border-radius: 25px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid #FFD700;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 1px;
     }
     
     .premium-link:hover {
-      text-decoration: underline;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      background: linear-gradient(135deg, #FFA500, #FFD700);
+      text-decoration: none;
     }
     
     .location-link {
@@ -230,8 +244,8 @@
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
   
-  <p class="premium-info">**Daha fazla konum kilidini açmak için premium satın alın.**</p>
-  <p><a href="login.html" class="premium-link">➤ PREMIUM</a></p>
+  <p class="premium-info">Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. **Daha fazla konum kilidini 🔓 açmak için premium satın alın**</p>
+  <p><a href="login.html" class="premium-link">PREMIUM</a></p>
 
   <!-- EDİTOR PANEL -->
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
@@ -542,18 +556,32 @@
 '      margin-top: 30px;\n' +
 '      font-weight: bold;\n' +
 '      color: #333;\n' +
+'      font-size: 20px;\n' +
+'      margin-bottom: 20px;\n' +
 '    }\n' +
 '    \n' +
 '    .premium-link {\n' +
 '      margin-top: 10px;\n' +
 '      display: inline-block;\n' +
-'      color: #0077cc;\n' +
+'      background: linear-gradient(135deg, #FFD700, #FFA500);\n' +
+'      color: #000;\n' +
 '      text-decoration: none;\n' +
 '      font-weight: bold;\n' +
+'      font-size: 18px;\n' +
+'      padding: 15px 30px;\n' +
+'      border-radius: 25px;\n' +
+'      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);\n' +
+'      transition: all 0.3s ease;\n' +
+'      border: 2px solid #FFD700;\n' +
+'      font-family: \'Georgia\', \'Times New Roman\', serif;\n' +
+'      letter-spacing: 1px;\n' +
 '    }\n' +
 '    \n' +
 '    .premium-link:hover {\n' +
-'      text-decoration: underline;\n' +
+'      transform: translateY(-2px);\n' +
+'      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);\n' +
+'      background: linear-gradient(135deg, #FFA500, #FFD700);\n' +
+'      text-decoration: none;\n' +
 '    }\n' +
 '    \n' +
 '    .location-link {\n' +
@@ -585,8 +613,8 @@
 '  <h1>📸 ' + cityName + '</h1>\n' +
 locationsHTML +
 '  \n' +
-'  <p class="premium-info">**Daha fazla konum kilidini açmak için premium satın alın.**</p>\n' +
-'  <p><a href="login.html" class="premium-link">➤ PREMIUM</a></p>\n' +
+'  <p class="premium-info">Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. **Daha fazla konum kilidini 🔓 açmak için premium satın alın**</p>\n' +
+'  <p><a href="login.html" class="premium-link">PREMIUM</a></p>\n' +
 '</body>\n' +
 '</html>';
 
