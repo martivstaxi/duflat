@@ -85,14 +85,21 @@
       display: block;
     }
     
-    .back-link {
+    .premium-info {
       margin-top: 30px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .premium-link {
+      margin-top: 10px;
       display: inline-block;
       color: #0077cc;
       text-decoration: none;
+      font-weight: bold;
     }
     
-    .back-link:hover {
+    .premium-link:hover {
       text-decoration: underline;
     }
     
@@ -132,16 +139,18 @@
       max-height: 80vh;
       overflow-y: auto;
       display: none;
+      width: 400px;
     }
     
     .edit-panel h3 {
       margin-top: 0;
       color: #333;
+      font-size: 16px;
     }
     
-    .edit-panel input, .edit-panel button {
+    .edit-panel textarea, .edit-panel button {
       margin: 5px 0;
-      padding: 5px;
+      padding: 8px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -171,9 +180,45 @@
       cursor: pointer;
     }
     
-    #bulkLocations {
+    .clear-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+    }
+    
+    .process-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    #cityData {
       font-family: monospace;
       resize: vertical;
+      height: 200px;
+    }
+    
+    .info-box {
+      background: #e9ecef;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 12px;
+      text-align: left;
+    }
+    
+    .info-box code {
+      background: #f8f9fa;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
     }
   </style>
 </head>
@@ -185,23 +230,26 @@
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
   
-  <p><a href="https://www.instagram.com/liveanuar/" class="back-link">"Harika" bir yer biliyorsanız, fotoğraf ve konumunu bize gönderin, burada paylaşalım! Instagram: @liveanuar</a></p>
+  <p class="premium-info">**Daha fazla konum kilidini açmak için premium satın alın.**</p>
+  <p><a href="login.html" class="premium-link">➤ PREMIUM</a></p>
 
   <!-- EDİTOR PANEL -->
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
   
   <div class="edit-panel" id="editPanel">
-    <h3>⚙️ Şehir Ayarları</h3>
-    <input type="text" id="cityName" placeholder="Şehir Adı">
-    <button onclick="updateCityName()">Şehir Adını Güncelle</button>
-    <button onclick="resetLocalStorage()" style="background: #dc3545; color: white;">Tüm Veriyi Sıfırla</button>
+    <h3>🏙️ Şehir ve Konum Yöneticisi</h3>
     
-    <h3>📝 Konum Ekle</h3>
-    <textarea id="bulkLocations" rows="10" placeholder="Her satıra bir konum ekleyin. Format: KonumAdı@@GoogleMapsLink@@Foto1@@Foto2@@Foto3" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;"></textarea>
-    <button onclick="addBulkLocations()">Toplu Ekle</button>
-    <button onclick="clearAll()">Tümünü Temizle</button>
-    <button class="export-btn" onclick="exportHTML()">HTML Kodunu Kopyala</button>
-    <button onclick="toggleEditPanel()">Kapat</button>
+    <div class="info-box">
+      <strong>Format:</strong><br>
+      <code>ŞehirAdı@@@Konum1@@GoogleMapsLink@@Foto1@@Foto2@@Foto3@@@Konum2@@GoogleMapsLink@@Foto1@@Foto2@@Foto3</code>
+    </div>
+    
+    <textarea id="cityData" placeholder="Örnek:
+İstanbul@@@Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg@@@Galata Kulesi@@https://maps.google.com/?q=Galata+Kulesi@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg"></textarea>
+    
+    <button class="process-btn" onclick="processCityData()">🔄 Şehir Verilerini İşle</button>
+    <button class="export-btn" onclick="exportHTML()">📁 HTML Kodunu Kopyala</button>
+    <button onclick="toggleEditPanel()">❌ Kapat</button>
   </div>
 
   <script>
@@ -240,25 +288,6 @@
       localStorage.setItem(storageKey, cityName);
     }
 
-    // localStorage'ı tamamen sıfırla
-    function resetLocalStorage() {
-      if (confirm('Tüm kaydedilen veriyi silmek istediğinizden emin misiniz?')) {
-        const city = getCityFromUrl();
-        localStorage.removeItem('locations_' + city);
-        localStorage.removeItem('cityName_' + city);
-        location.reload();
-      }
-    }
-
-    // Şehir adını güncelle
-    function updateCityName() {
-      const newName = document.getElementById('cityName').value;
-      if (newName) {
-        saveCityName(newName);
-        updatePageTitle();
-      }
-    }
-
     // Konumları yükle
     function loadLocations() {
       const storageKey = getStorageKey();
@@ -275,6 +304,88 @@
     function saveLocations(locations) {
       const storageKey = getStorageKey();
       localStorage.setItem(storageKey, JSON.stringify(locations));
+    }
+
+    // Şehir verilerini işle
+    function processCityData() {
+      const cityDataText = document.getElementById('cityData').value;
+      if (!cityDataText.trim()) {
+        alert('Lütfen şehir verilerini girin!');
+        return;
+      }
+
+      try {
+        // İlk olarak şehir adını ve konumları ayır
+        const parts = cityDataText.split('@@@');
+        
+        if (parts.length < 2) {
+          alert('Geçersiz format! Şehir adı ve en az bir konum olmalı.');
+          return;
+        }
+
+        const cityName = parts[0].trim();
+        if (!cityName) {
+          alert('Şehir adı boş olamaz!');
+          return;
+        }
+
+        // Şehir adını kaydet
+        saveCityName(cityName);
+
+        // Konumları işle (önce temizle)
+        const locations = [];
+        for (let i = 1; i < parts.length; i++) {
+          const locationData = parts[i].trim();
+          if (!locationData) continue;
+
+          const locationParts = locationData.split('@@');
+          
+          if (locationParts.length < 2) {
+            console.log('Konum ' + i + ': Eksik veri - "' + locationData + '"');
+            continue;
+          }
+
+          const name = locationParts[0].trim();
+          const link = locationParts[1].trim();
+          const photos = [];
+
+          // Fotoğrafları topla
+          for (let j = 2; j < locationParts.length && j < 5; j++) {
+            if (locationParts[j] && locationParts[j].trim().startsWith('https://')) {
+              photos.push(locationParts[j].trim());
+            }
+          }
+
+          if (!name || !link) {
+            console.log('Konum ' + i + ': Ad veya link eksik - "' + locationData + '"');
+            continue;
+          }
+
+          const newLocation = {
+            name: name,
+            photos: photos,
+            link: link
+          };
+
+          locations.push(newLocation);
+        }
+
+        // Konumları kaydet
+        saveLocations(locations);
+        
+        // Sayfayı güncelle
+        updatePageTitle();
+        renderLocations();
+        
+        // Text alanını temizle
+        document.getElementById('cityData').value = '';
+        
+        console.log(cityName + ' şehri için ' + locations.length + ' konum başarıyla eklendi!');
+        
+      } catch (error) {
+        console.error('Veri işleme hatası:', error);
+        alert('Veri işlenirken bir hata oluştu. Formatı kontrol edin.');
+      }
     }
 
     // Konumları render et
@@ -305,6 +416,11 @@
     function exportHTML() {
       const cityName = loadCityName();
       const locations = loadLocations();
+      
+      if (locations.length === 0) {
+        alert('Önce konum ekleyin!');
+        return;
+      }
       
       // HTML'i güzel formatlamak için locationsHTML'i adım adım oluşturuyoruz
       var locationsHTML = '';
@@ -422,14 +538,21 @@
 '      display: block;\n' +
 '    }\n' +
 '    \n' +
-'    .back-link {\n' +
+'    .premium-info {\n' +
 '      margin-top: 30px;\n' +
+'      font-weight: bold;\n' +
+'      color: #333;\n' +
+'    }\n' +
+'    \n' +
+'    .premium-link {\n' +
+'      margin-top: 10px;\n' +
 '      display: inline-block;\n' +
 '      color: #0077cc;\n' +
 '      text-decoration: none;\n' +
+'      font-weight: bold;\n' +
 '    }\n' +
 '    \n' +
-'    .back-link:hover {\n' +
+'    .premium-link:hover {\n' +
 '      text-decoration: underline;\n' +
 '    }\n' +
 '    \n' +
@@ -458,11 +581,12 @@
 '</head>\n' +
 '<body>\n' +
 '  <!-- 🌐 Logo bağlantısı -->\n' +
-'  <a href="https://tr81.tr/index.html" class="logo">🌐</a>\n' +
+'  <a href="https://tr81.tr/login.html" class="logo">🌐</a>\n' +
 '  <h1>📸 ' + cityName + '</h1>\n' +
 locationsHTML +
 '  \n' +
-'  <p><a href="https://www.instagram.com/liveanuar/" class="back-link">"Harika" bir yer biliyorsanız, fotoğraf ve konumunu bize gönderin, burada paylaşalım! Instagram: @liveanuar</a></p>\n' +
+'  <p class="premium-info">**Daha fazla konum kilidini açmak için premium satın alın.**</p>\n' +
+'  <p><a href="login.html" class="premium-link">➤ PREMIUM</a></p>\n' +
 '</body>\n' +
 '</html>';
 
@@ -474,82 +598,12 @@ locationsHTML +
         alert('Kod kopyalanırken bir hata oluştu!');
       });
     }
-    
-    // Toplu konum ekle
-    function addBulkLocations() {
-      const bulkText = document.getElementById('bulkLocations').value;
-      if (!bulkText.trim()) {
-        alert('Lütfen konum bilgilerini girin!');
-        return;
-      }
-      
-      const lines = bulkText.split('\n');
-      let successCount = 0;
-      const locations = loadLocations();
-      
-      for(var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (!line.trim()) continue;
-        
-        let cleanedLine = line.replace(/^\d+\.\s*/, '');
-        const parts = cleanedLine.split('@@');
-        
-        if (parts.length < 2) {
-          console.log('Satır ' + (i + 1) + ': Eksik veri - "' + cleanedLine + '"');
-          continue;
-        }
-        
-        const name = parts[0].trim();
-        const link = parts[1].trim();
-        const photos = [];
-        
-        for (let j = 2; j < parts.length && j < 5; j++) {
-          if (parts[j].trim() && parts[j].trim().startsWith('https://')) {
-            photos.push(parts[j].trim());
-          }
-        }
-        
-        if (!name || !link) {
-          console.log('Satır ' + (i + 1) + ': Ad veya link eksik - "' + cleanedLine + '"');
-          continue;
-        }
-        
-        const newLocation = {
-          name: name,
-          photos: photos,
-          link: link
-        };
-        
-        locations.push(newLocation);
-        successCount++;
-        console.log('Satır ' + (i + 1) + ': Başarıyla eklendi - "' + name + '"');
-      }
-      
-      saveLocations(locations);
-      renderLocations();
-      document.getElementById('bulkLocations').value = '';
-      
-      console.log('Toplam ' + successCount + ' konum eklendi.');
-    }
-
-    // Tümünü temizle
-    function clearAll() {
-      if (confirm('Tüm konumları silmek istediğinizden emin misiniz?')) {
-        const storageKey = getStorageKey();
-        localStorage.removeItem(storageKey);
-        renderLocations();
-      }
-    }
 
     // Edit panelini aç/kapat
     function toggleEditPanel() {
       const panel = document.getElementById('editPanel');
       const isHidden = panel.style.display === 'none';
       panel.style.display = isHidden ? 'block' : 'none';
-      
-      if (isHidden) {
-        document.getElementById('cityName').value = loadCityName();
-      }
     }
 
     // Sayfa başlığını güncelle
