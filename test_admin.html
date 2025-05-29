@@ -1,0 +1,750 @@
+<!DOCTYPE html>  
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Şehir</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      text-decoration: none;
+      color: black;
+    }
+    
+    h1 { 
+      font-size: 26px; 
+      margin-top: 80px;
+      margin-bottom: 30px;
+    }
+    
+    .city-section {
+      margin-bottom: 30px;
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .city-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 5px 0;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .premium-info {
+      margin-top: 30px;
+      font-weight: bold;
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .premium-link {
+      margin-top: 10px;
+      display: inline-block;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 15px 30px;
+      border-radius: 25px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid #FFD700;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 1px;
+    }
+    
+    .premium-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      background: linear-gradient(135deg, #FFA500, #FFD700);
+      text-decoration: none;
+    }
+    
+    .location-link {
+      text-decoration: underline;
+      color: #0077cc;
+      display: flex;
+      align-items: center;
+    }
+    
+    .location-link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    
+    .click-icon {
+      margin-right: 5px;
+      display: inline-block;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+    }
+
+    /* EDİTOR PANEL */
+    .edit-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      z-index: 1000;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: none;
+      width: 400px;
+    }
+    
+    .edit-panel h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 16px;
+    }
+    
+    .edit-panel textarea, .edit-panel button {
+      margin: 5px 0;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .edit-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      font-size: 24px;
+      z-index: 1000;
+    }
+
+    .export-btn {
+      background: #28a745;
+      margin-top: 10px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+    }
+    
+    .clear-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+    }
+    
+    .process-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    #cityData {
+      font-family: monospace;
+      resize: vertical;
+      height: 200px;
+    }
+    
+    .info-box {
+      background: #e9ecef;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 12px;
+      text-align: left;
+    }
+    
+    .info-box code {
+      background: #f8f9fa;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://tr81.tr/index.html" class="logo">🌐</a>
+  <h1 id="city-header">📸 <span id="city-name"></span></h1>
+  
+  <!-- Konumlar dinamik olarak burada görünecek -->
+  <div id="locations-container"></div>
+  
+  <p class="premium-info">Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. **Daha fazla konum kilidini 🔓 açmak için premium satın alın**</p>
+  <p><a href="login.html" class="premium-link">PREMIUM</a></p>
+
+  <!-- EDİTOR PANEL -->
+  <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
+  
+  <div class="edit-panel" id="editPanel">
+    <h3>🏙️ Şehir ve Konum Yöneticisi</h3>
+    
+    <div class="info-box">
+      <strong>Format:</strong><br>
+      <code>ŞehirAdı@@@Konum1@@GoogleMapsLink@@Foto1@@Foto2@@Foto3@@@Konum2@@GoogleMapsLink@@Foto1@@Foto2@@Foto3</code>
+    </div>
+    
+    <textarea id="cityData" placeholder="Örnek:
+İstanbul@@@Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg@@@Galata Kulesi@@https://maps.google.com/?q=Galata+Kulesi@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg"></textarea>
+    
+    <button class="process-btn" onclick="processCityData()">🔄 Şehir Verilerini İşle</button>
+    <button class="export-btn" onclick="exportHTML()">📁 HTML Kodunu Kopyala</button>
+    <button onclick="toggleEditPanel()">❌ Kapat</button>
+  </div>
+
+  <script>
+    // Erişim kontrolü
+    if (localStorage.getItem("duflat-access") !== "granted") {
+      window.location.href = "index.html";
+    }
+
+    // URL'den şehir ismi al
+    function getCityFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('city') || 'Şehir';
+    }
+
+    // LocalStorage key
+    function getStorageKey() {
+      const city = getCityFromUrl();
+      return 'locations_' + city;
+    }
+
+    function getCityNameStorageKey() {
+      const city = getCityFromUrl();
+      return 'cityName_' + city;
+    }
+
+    // Şehir adını yükle
+    function loadCityName() {
+      const storageKey = getCityNameStorageKey();
+      const savedName = localStorage.getItem(storageKey);
+      return savedName || getCityFromUrl();
+    }
+
+    // Şehir adını kaydet
+    function saveCityName(cityName) {
+      const storageKey = getCityNameStorageKey();
+      localStorage.setItem(storageKey, cityName);
+    }
+
+    // Konumları yükle
+    function loadLocations() {
+      const storageKey = getStorageKey();
+      const savedLocations = localStorage.getItem(storageKey);
+      
+      if (savedLocations) {
+        return JSON.parse(savedLocations);
+      } else {
+        return [];
+      }
+    }
+
+    // Konumları kaydet
+    function saveLocations(locations) {
+      const storageKey = getStorageKey();
+      localStorage.setItem(storageKey, JSON.stringify(locations));
+    }
+
+    // Şehir verilerini işle
+    function processCityData() {
+      const cityDataText = document.getElementById('cityData').value;
+      if (!cityDataText.trim()) {
+        alert('Lütfen şehir verilerini girin!');
+        return;
+      }
+
+      try {
+        // İlk olarak şehir adını ve konumları ayır
+        const parts = cityDataText.split('@@@');
+        
+        if (parts.length < 2) {
+          alert('Geçersiz format! Şehir adı ve en az bir konum olmalı.');
+          return;
+        }
+
+        const cityName = parts[0].trim();
+        if (!cityName) {
+          alert('Şehir adı boş olamaz!');
+          return;
+        }
+
+        // Şehir adını kaydet
+        saveCityName(cityName);
+
+        // Konumları işle (önce temizle)
+        const locations = [];
+        for (let i = 1; i < parts.length; i++) {
+          const locationData = parts[i].trim();
+          if (!locationData) continue;
+
+          const locationParts = locationData.split('@@');
+          
+          if (locationParts.length < 2) {
+            console.log('Konum ' + i + ': Eksik veri - "' + locationData + '"');
+            continue;
+          }
+
+          const name = locationParts[0].trim();
+          const link = locationParts[1].trim();
+          const photos = [];
+
+          // Fotoğrafları topla
+          for (let j = 2; j < locationParts.length && j < 5; j++) {
+            if (locationParts[j] && locationParts[j].trim().startsWith('https://')) {
+              photos.push(locationParts[j].trim());
+            }
+          }
+
+          if (!name || !link) {
+            console.log('Konum ' + i + ': Ad veya link eksik - "' + locationData + '"');
+            continue;
+          }
+
+          const newLocation = {
+            name: name,
+            photos: photos,
+            link: link
+          };
+
+          locations.push(newLocation);
+        }
+
+        // Konumları kaydet
+        saveLocations(locations);
+        
+        // Sayfayı güncelle
+        updatePageTitle();
+        renderLocations();
+        
+        // Text alanını temizle
+        document.getElementById('cityData').value = '';
+        
+        console.log(cityName + ' şehri için ' + locations.length + ' konum başarıyla eklendi!');
+        
+      } catch (error) {
+        console.error('Veri işleme hatası:', error);
+        alert('Veri işlenirken bir hata oluştu. Formatı kontrol edin.');
+      }
+    }
+
+    // Konumları render et
+    function renderLocations() {
+      const container = document.getElementById('locations-container');
+      const locations = loadLocations();
+      
+      container.innerHTML = '';
+      
+      for(var i = 0; i < locations.length; i++) {
+        var location = locations[i];
+        const section = document.createElement('div');
+        section.className = 'city-section';
+        
+        let photosHTML = '';
+        for(var j = 0; j < location.photos.length; j++) {
+          photosHTML += '\n      <div class="photo-card">\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\n      </div>';
+        }
+        
+        section.innerHTML = 
+          '\n    <div class="city-header">\n      <h2 class="city-title">\n        <a href="' + location.link + '" target="_blank" class="location-link">\n          <span class="click-icon"></span>\n          ' + location.name + ' 📍\n        </a>\n      </h2>\n    </div>\n    \n    <div class="city-photos">' + photosHTML + '\n    </div>\n  ';
+        
+        container.appendChild(section);
+      }
+    }
+
+    // HTML kodunu dışa aktar ve direkt kopyala - MODERN TASARIM
+    function exportHTML() {
+      const cityName = loadCityName();
+      const locations = loadLocations();
+      
+      if (locations.length === 0) {
+        alert('Önce konum ekleyin!');
+        return;
+      }
+      
+      // HTML'i güzel formatlamak için locationsHTML'i adım adım oluşturuyoruz
+      var locationsHTML = '';
+      for(var i = 0; i < locations.length; i++) {
+        var location = locations[i];
+        var photosHTML = '';
+        
+        // Her fotoğraf için güzel formatlama
+        for(var j = 0; j < location.photos.length; j++) {
+          photosHTML += '      <div class="photo-card">\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\n      </div>\n';
+        }
+        
+        // Konum HTML'ini oluştur
+        locationsHTML += '  <div class="city-section">\n';
+        locationsHTML += '    <div class="city-header">\n';
+        locationsHTML += '      <h2 class="city-title">\n';
+        locationsHTML += '        <a href="' + location.link + '" target="_blank" class="location-link">\n';
+        locationsHTML += '          <span class="click-icon"></span>\n';
+        locationsHTML += '          ' + location.name + ' 📍\n';
+        locationsHTML += '        </a>\n';
+        locationsHTML += '      </h2>\n';
+        locationsHTML += '    </div>\n';
+        locationsHTML += '    \n';
+        locationsHTML += '    <div class="city-photos">\n';
+        locationsHTML += photosHTML;
+        locationsHTML += '    </div>\n';
+        locationsHTML += '  </div>\n\n';
+      }
+
+      // MODERN TASARIM İÇİN GÜNCELLENMIŞ HTML
+      const fullHTML = '<!DOCTYPE html>\n' +
+'<html lang="tr">\n' +
+'<head>\n' +
+'  <meta charset="UTF-8">\n' +
+'  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'  <title>' + cityName + '</title>\n' +
+'  <style>\n' +
+'    :root {\n' +
+'      --primary: #3b82f6;       /* Ana mavi */\n' +
+'      --primary-dark: #2563eb;  /* Koyu mavi */\n' +
+'      --accent: #f97316;        /* Turuncu aksan */\n' +
+'      --background: #f8fafc;    /* Açık arka plan */\n' +
+'      --card-bg: #ffffff;       /* Kart arka planı */\n' +
+'      --text: #334155;          /* Ana metin */\n' +
+'      --text-light: #64748b;    /* Açık metin */\n' +
+'      --border: #e2e8f0;        /* Kenarlık */\n' +
+'      --divider: #cbd5e1;       /* Ayırıcı */\n' +
+'      --shadow: rgba(0, 0, 0, 0.05); /* Hafif gölge */\n' +
+'      --demo-bg: #fef3c7;       /* Demo banner arka planı */\n' +
+'      --demo-border: #f59e0b;   /* Demo banner kenarlık */\n' +
+'      --premium-bg: #dcfce7;    /* Premium banner arka planı */\n' +
+'      --premium-border: #16a34a; /* Premium banner kenarlık */\n' +
+'    }\n\n' +
+'    * {\n' +
+'      margin: 0;\n' +
+'      padding: 0;\n' +
+'      box-sizing: border-box;\n' +
+'    }\n\n' +
+'    body {\n' +
+'      font-family: \'Segoe UI\', Tahoma, Genesis, Verdana, sans-serif;\n' +
+'      background-color: var(--background);\n' +
+'      color: var(--text);\n' +
+'      line-height: 1.6;\n' +
+'      padding: 10px;\n' +
+'      overflow-y: auto;\n' +
+'    }\n' +
+'    \n' +
+'    .logo {\n' +
+'      position: absolute;\n' +
+'      top: 20px;\n' +
+'      left: 20px;\n' +
+'      font-size: 28px;\n' +
+'      text-decoration: none;\n' +
+'      color: var(--text);\n' +
+'      transition: color 0.2s;\n' +
+'    }\n' +
+'    \n' +
+'    .logo:hover {\n' +
+'      color: var(--primary);\n' +
+'    }\n' +
+'    \n' +
+'    h1 {\n' +
+'      font-size: 32px;\n' +
+'      margin-top: 80px;\n' +
+'      margin-bottom: 40px;\n' +
+'      text-align: center;\n' +
+'      color: var(--primary-dark);\n' +
+'      font-weight: 600;\n' +
+'    }\n' +
+'    \n' +
+'    .city-section {\n' +
+'      margin-bottom: 40px;\n' +
+'      background-color: var(--card-bg);\n' +
+'      border-radius: 12px;\n' +
+'      padding: 0;\n' +
+'      box-shadow: 0 2px 8px var(--shadow);\n' +
+'      max-width: 1000px;\n' +
+'      margin-left: auto;\n' +
+'      margin-right: auto;\n' +
+'      overflow: hidden;\n' +
+'      border: 1px solid var(--border);\n' +
+'    }\n' +
+'    \n' +
+'    .city-header {\n' +
+'      padding: 20px 24px;\n' +
+'      margin: 0;\n' +
+'      border-bottom: 1px solid var(--border);\n' +
+'      background-color: #f0f7ff;\n' +
+'    }\n' +
+'    \n' +
+'    .city-title {\n' +
+'      margin: 0;\n' +
+'      font-size: 20px;\n' +
+'      color: var(--primary-dark);\n' +
+'      font-weight: 600;\n' +
+'    }\n' +
+'    \n' +
+'    .city-photos {\n' +
+'      display: flex;\n' +
+'      gap: 15px;\n' +
+'      overflow-x: auto;\n' +
+'      padding: 20px;\n' +
+'      scroll-snap-type: x mandatory;\n' +
+'      scrollbar-width: none;\n' +
+'      -webkit-overflow-scrolling: touch;\n' +
+'    }\n' +
+'    \n' +
+'    .city-photos::-webkit-scrollbar {\n' +
+'      display: none;\n' +
+'    }\n' +
+'    \n' +
+'    .photo-card {\n' +
+'      flex: 0 0 auto;\n' +
+'      width: 200px;\n' +
+'      height: 180px;\n' +
+'      border-radius: 8px;\n' +
+'      overflow: hidden;\n' +
+'      box-shadow: 0 2px 4px var(--shadow);\n' +
+'      scroll-snap-align: start;\n' +
+'      background-color: white;\n' +
+'      position: relative;\n' +
+'      transition: transform 0.2s;\n' +
+'    }\n' +
+'    \n' +
+'    .photo-card:hover {\n' +
+'      transform: scale(1.02);\n' +
+'    }\n' +
+'    \n' +
+'    .photo-card img {\n' +
+'      width: 100%;\n' +
+'      height: 100%;\n' +
+'      object-fit: cover;\n' +
+'      display: block;\n' +
+'    }\n' +
+'    \n' +
+'    .premium-info {\n' +
+'      margin-top: 40px;\n' +
+'      margin-bottom: 30px;\n' +
+'      text-align: center;\n' +
+'      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);\n' +
+'      padding: 24px;\n' +
+'      border-radius: 12px;\n' +
+'      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);\n' +
+'      max-width: 1000px;\n' +
+'      margin-left: auto;\n' +
+'      margin-right: auto;\n' +
+'      font-size: 17px;\n' +
+'      line-height: 1.6;\n' +
+'      border: 2px solid #16a34a;\n' +
+'      font-weight: 500;\n' +
+'      color: #15803d;\n' +
+'    }\n' +
+'    \n' +
+'    .premium-info::before {\n' +
+'      content: "✨ ";\n' +
+'      font-size: 24px;\n' +
+'      vertical-align: middle;\n' +
+'      margin-right: 8px;\n' +
+'    }\n' +
+'    \n' +
+'    .premium-link {\n' +
+'      margin-top: 20px;\n' +
+'      display: inline-block;\n' +
+'      background: linear-gradient(135deg, #FFD700, #FFA500);\n' +
+'      color: #000;\n' +
+'      text-decoration: none;\n' +
+'      font-weight: 700;\n' +
+'      font-size: 16px;\n' +
+'      padding: 12px 32px;\n' +
+'      border-radius: 8px;\n' +
+'      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);\n' +
+'      transition: all 0.3s ease;\n' +
+'      border: 2px solid #FFD700;\n' +
+'      font-family: inherit;\n' +
+'      letter-spacing: 0.5px;\n' +
+'    }\n' +
+'    \n' +
+'    .premium-link:hover {\n' +
+'      transform: translateY(-2px);\n' +
+'      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);\n' +
+'      background: linear-gradient(135deg, #FFA500, #FFD700);\n' +
+'      text-decoration: none;\n' +
+'    }\n' +
+'    \n' +
+'    .location-link {\n' +
+'      text-decoration: none;\n' +
+'      color: var(--primary);\n' +
+'      display: flex;\n' +
+'      align-items: center;\n' +
+'      gap: 8px;\n' +
+'      transition: color 0.2s;\n' +
+'    }\n' +
+'    \n' +
+'    .location-link:hover {\n' +
+'      color: var(--primary-dark);\n' +
+'      text-decoration: none;\n' +
+'    }\n' +
+'    \n' +
+'    .click-icon {\n' +
+'      color: var(--accent);\n' +
+'      display: inline-flex;\n' +
+'    }\n' +
+'    \n' +
+'    .click-icon::before {\n' +
+'      content: "➤";\n' +
+'      display: inline-block;\n' +
+'      font-size: 16px;\n' +
+'    }\n\n' +
+'    @media (max-width: 640px) {\n' +
+'      .city-photos {\n' +
+'        padding: 15px;\n' +
+'        gap: 10px;\n' +
+'      }\n' +
+'      \n' +
+'      .photo-card {\n' +
+'        width: 160px;\n' +
+'        height: 150px;\n' +
+'      }\n' +
+'      \n' +
+'      h1 {\n' +
+'        font-size: 26px;\n' +
+'        margin-top: 60px;\n' +
+'        margin-bottom: 30px;\n' +
+'      }\n' +
+'      \n' +
+'      .city-header {\n' +
+'        padding: 16px 20px;\n' +
+'      }\n' +
+'      \n' +
+'      .city-title {\n' +
+'        font-size: 18px;\n' +
+'      }\n' +
+'      \n' +
+'      .premium-info {\n' +
+'        font-size: 15px;\n' +
+'        padding: 20px;\n' +
+'        margin-top: 30px;\n' +
+'      }\n' +
+'      \n' +
+'      .premium-link {\n' +
+'        font-size: 14px;\n' +
+'        padding: 10px 24px;\n' +
+'      }\n' +
+'    }\n' +
+'  </style>\n' +
+'</head>\n' +
+'<body>\n' +
+'  <!-- 🌐 Logo bağlantısı -->\n' +
+'  <a href="https://tr81.tr/login.html" class="logo">🌐</a>\n' +
+'  <h1>📸 ' + cityName + '</h1>\n' +
+'  \n' +
+locationsHTML +
+'  <div class="premium-info">\n' +
+'    Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. Daha fazla konum kilidini 🔓 açmak için premium satın alın\n' +
+'  </div>\n' +
+'  \n' +
+'  <p style="text-align: center;">\n' +
+'    <a href="login.html" class="premium-link">PREMIUM</a>\n' +
+'  </p>\n' +
+'</body>\n' +
+'</html>';
+
+      // HTML kodunu direkt kopyala
+      navigator.clipboard.writeText(fullHTML).then(function() {
+        alert('Modern tasarım HTML kodu kopyalandı!');
+      }).catch(function(err) {
+        console.error('Kopyalama hatası:', err);
+        alert('Kod kopyalanırken bir hata oluştu!');
+      });
+    }
+
+    // Edit panelini aç/kapat
+    function toggleEditPanel() {
+      const panel = document.getElementById('editPanel');
+      const isHidden = panel.style.display === 'none';
+      panel.style.display = isHidden ? 'block' : 'none';
+    }
+
+    // Sayfa başlığını güncelle
+    function updatePageTitle() {
+      const cityName = loadCityName();
+      document.getElementById('city-name').textContent = cityName;
+      document.getElementById('page-title').textContent = cityName;
+    }
+
+    // Sayfa yüklendikinde çalıştır
+    window.onload = function() {
+      updatePageTitle();
+      renderLocations();
+    }
+  </script>
+</body>
+</html>
