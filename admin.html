@@ -6,60 +6,70 @@
   <title id="page-title">Şehir</title>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
+      background-color: #f8fafc;
+      color: #334155;
+      line-height: 1.6;
+      padding: 10px;
       overflow-y: auto;
-      background-color: #f5f5f5;
+      padding-bottom: 80px;
     }
     .logo {
       position: absolute;
       top: 20px;
       left: 20px;
-      font-size: 28px;
+      font-size: 34px;
       text-decoration: none;
       color: black;
     }
     
     h1 { 
-      font-size: 26px; 
-      margin-top: 80px;
-      margin-bottom: 30px;
+      font-size: 32px;
+      margin-top: 0px;
+      margin-bottom: 65px;
+      text-align: center;
+      color: #2563eb;
+      font-weight: 600;
+      position: relative;
+      top: 35px;
     }
     
     .city-section {
-      margin-bottom: 30px;
-      background-color: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      margin-bottom: 40px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       max-width: 1000px;
       margin-left: auto;
       margin-right: auto;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
     }
     
     .city-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
+      padding: 6px 10px 0px 10px;
+      margin: 0;
+      border: none;
+      background: transparent;
+      text-align: left;
     }
     
     .city-title {
       margin: 0;
       font-size: 20px;
-      color: #0077cc;
+      color: #2563eb;
+      font-weight: 600;
     }
     
     .city-photos {
       display: flex;
       gap: 15px;
       overflow-x: auto;
-      padding: 5px 0;
+      padding: 7px 15px 15px 15px;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
     
     .city-photos::-webkit-scrollbar {
@@ -68,14 +78,19 @@
     
     .photo-card {
       flex: 0 0 auto;
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
+      width: 264px;
+      height: 264px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
       scroll-snap-align: start;
       background-color: white;
       position: relative;
+      transition: transform 0.2s;
+    }
+    
+    .photo-card:hover {
+      transform: scale(1.02);
     }
     
     .photo-card img {
@@ -86,28 +101,46 @@
     }
     
     .premium-info {
-      margin-top: 30px;
-      font-weight: bold;
-      color: #333;
-      font-size: 20px;
-      margin-bottom: 20px;
+      margin-top: 40px;
+      margin-bottom: 30px;
+      text-align: center;
+      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 16px;
+      line-height: 1.5;
+      border: 2px solid #16a34a;
+      font-weight: 500;
+      color: #15803d;
+    }
+    
+    .premium-info::before {
+      content: "✨ ";
+      font-size: 22px;
+      vertical-align: middle;
+      margin-right: 8px;
     }
     
     .premium-link {
-      margin-top: 10px;
+      margin-top: 20px;
+      margin-bottom: 80px;
       display: inline-block;
       background: linear-gradient(135deg, #FFD700, #FFA500);
       color: #000;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 700;
       font-size: 18px;
-      padding: 15px 30px;
-      border-radius: 25px;
+      padding: 16px 32px;
+      border-radius: 12px;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
       transition: all 0.3s ease;
       border: 2px solid #FFD700;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      letter-spacing: 1px;
+      font-family: inherit;
+      letter-spacing: 0.5px;
     }
     
     .premium-link:hover {
@@ -118,25 +151,36 @@
     }
     
     .location-link {
-      text-decoration: underline;
-      color: #0077cc;
-      display: flex;
+      text-decoration: none;
+      color: #3b82f6;
+      display: inline-flex;
       align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 24px;
+      background: rgba(59, 130, 246, 0.08);
+      transition: all 0.2s ease;
+      font-size: 17px;
+      font-weight: 600;
+      max-width: fit-content;
     }
     
     .location-link:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #2563eb;
+      text-decoration: none;
+      transform: translateY(-1px);
     }
     
     .click-icon {
-      margin-right: 5px;
-      display: inline-block;
+      color: #f97316;
+      display: inline-flex;
     }
     
     .click-icon::before {
       content: "➤";
       display: inline-block;
+      font-size: 14px;
     }
 
     /* EDİTOR PANEL */
@@ -244,8 +288,8 @@
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
   
-  <p class="premium-info">Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. **Daha fazla konum kilidini 🔓 açmak için premium satın alın**</p>
-  <p><a href="login.html" class="premium-link">PREMIUM</a></p>
+  <p class="premium-info">Gizli konumları 🔓 açmak için Premium üyeliği alın veya Instagram hikayenizde → tanıtım videomuzu paylaşarak → 🎁 Premium kazanın! Bize ulaşın 📩 @tr81.tr</p>
+  <p style="text-align: center;"><a href="https://www.shopier.com/35589307" class="premium-link">PREMIUM 10$</a></p>
 
   <!-- EDİTOR PANEL -->
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
@@ -426,7 +470,7 @@
       }
     }
 
-    // HTML kodunu dışa aktar ve direkt kopyala
+    // HTML kodunu dışa aktar ve direkt kopyala - MODERN TASARIM
     function exportHTML() {
       const cityName = loadCityName();
       const locations = loadLocations();
@@ -461,166 +505,310 @@
         locationsHTML += '    <div class="city-photos">\n';
         locationsHTML += photosHTML;
         locationsHTML += '    </div>\n';
-        locationsHTML += '  </div>\n';
+        locationsHTML += '  </div>\n\n';
       }
 
-      // Tam HTML oluştur
-      const fullHTML = '<!DOCTYPE html>\n' +
-'<html lang="tr">\n' +
-'<head>\n' +
-'  <meta charset="UTF-8">\n' +
-'  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-'  <title>' + cityName + '</title>\n' +
-'  <style>\n' +
-'    body {\n' +
-'      font-family: sans-serif;\n' +
-'      text-align: center;\n' +
-'      padding: 20px;\n' +
-'      overflow-y: auto;\n' +
-'      background-color: #f5f5f5;\n' +
-'    }\n' +
-'    .logo {\n' +
-'      position: absolute;\n' +
-'      top: 20px;\n' +
-'      left: 20px;\n' +
-'      font-size: 28px;\n' +
-'      text-decoration: none;\n' +
-'      color: black;\n' +
-'    }\n' +
-'    \n' +
-'    h1 {\n' +
-'      font-size: 26px;\n' +
-'      margin-top: 80px;\n' +
-'      margin-bottom: 30px;\n' +
-'    }\n' +
-'    \n' +
-'    .city-section {\n' +
-'      margin-bottom: 30px;\n' +
-'      background-color: white;\n' +
-'      border-radius: 10px;\n' +
-'      padding: 15px;\n' +
-'      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);\n' +
-'      max-width: 1000px;\n' +
-'      margin-left: auto;\n' +
-'      margin-right: auto;\n' +
-'    }\n' +
-'    \n' +
-'    .city-header {\n' +
-'      display: flex;\n' +
-'      justify-content: space-between;\n' +
-'      align-items: center;\n' +
-'      margin-bottom: 15px;\n' +
-'      padding-bottom: 10px;\n' +
-'      border-bottom: 1px solid #eee;\n' +
-'    }\n' +
-'    \n' +
-'    .city-title {\n' +
-'      margin: 0;\n' +
-'      font-size: 20px;\n' +
-'      color: #0077cc;\n' +
-'    }\n' +
-'    \n' +
-'    .city-photos {\n' +
-'      display: flex;\n' +
-'      gap: 15px;\n' +
-'      overflow-x: auto;\n' +
-'      padding: 5px 0;\n' +
-'      scroll-snap-type: x mandatory;\n' +
-'      scrollbar-width: none;\n' +
-'    }\n' +
-'    \n' +
-'    .city-photos::-webkit-scrollbar {\n' +
-'      display: none;\n' +
-'    }\n' +
-'    \n' +
-'    .photo-card {\n' +
-'      flex: 0 0 auto;\n' +
-'      width: 200px;\n' +
-'      height: 200px;\n' +
-'      border-radius: 8px;\n' +
-'      overflow: hidden;\n' +
-'      box-shadow: 0 1px 3px rgba(0,0,0,0.12);\n' +
-'      scroll-snap-align: start;\n' +
-'      background-color: white;\n' +
-'      position: relative;\n' +
-'    }\n' +
-'    \n' +
-'    .photo-card img {\n' +
-'      width: 100%;\n' +
-'      height: 100%;\n' +
-'      object-fit: cover;\n' +
-'      display: block;\n' +
-'    }\n' +
-'    \n' +
-'    .premium-info {\n' +
-'      margin-top: 30px;\n' +
-'      font-weight: bold;\n' +
-'      color: #333;\n' +
-'      font-size: 20px;\n' +
-'      margin-bottom: 20px;\n' +
-'    }\n' +
-'    \n' +
-'    .premium-link {\n' +
-'      margin-top: 10px;\n' +
-'      display: inline-block;\n' +
-'      background: linear-gradient(135deg, #FFD700, #FFA500);\n' +
-'      color: #000;\n' +
-'      text-decoration: none;\n' +
-'      font-weight: bold;\n' +
-'      font-size: 18px;\n' +
-'      padding: 15px 30px;\n' +
-'      border-radius: 25px;\n' +
-'      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);\n' +
-'      transition: all 0.3s ease;\n' +
-'      border: 2px solid #FFD700;\n' +
-'      font-family: \'Georgia\', \'Times New Roman\', serif;\n' +
-'      letter-spacing: 1px;\n' +
-'    }\n' +
-'    \n' +
-'    .premium-link:hover {\n' +
-'      transform: translateY(-2px);\n' +
-'      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);\n' +
-'      background: linear-gradient(135deg, #FFA500, #FFD700);\n' +
-'      text-decoration: none;\n' +
-'    }\n' +
-'    \n' +
-'    .location-link {\n' +
-'      text-decoration: underline;\n' +
-'      color: #0077cc;\n' +
-'      display: flex;\n' +
-'      align-items: center;\n' +
-'    }\n' +
-'    \n' +
-'    .location-link:hover {\n' +
-'      text-decoration: underline;\n' +
-'      text-decoration-thickness: 2px;\n' +
-'    }\n' +
-'    \n' +
-'    .click-icon {\n' +
-'      margin-right: 5px;\n' +
-'      display: inline-block;\n' +
-'    }\n' +
-'    \n' +
-'    .click-icon::before {\n' +
-'      content: "➤";\n' +
-'      display: inline-block;\n' +
-'    }\n' +
-'  </style>\n' +
-'</head>\n' +
-'<body>\n' +
-'  <!-- 🌐 Logo bağlantısı -->\n' +
-'  <a href="https://tr81.tr/login.html" class="logo">🌐</a>\n' +
-'  <h1>📸 ' + cityName + '</h1>\n' +
-locationsHTML +
-'  \n' +
-'  <p class="premium-info">Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. **Daha fazla konum kilidini 🔓 açmak için premium satın alın**</p>\n' +
-'  <p><a href="login.html" class="premium-link">PREMIUM</a></p>\n' +
-'</body>\n' +
-'</html>';
+      // MODERN TASARIM İÇİN GÜNCELLENMIŞ HTML - KISA KONUM BUTONLARI VE FAZLA ALT BOŞLUK
+      const fullHTML = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${cityName}</title>
+  <style>
+    :root {
+      --primary: #3b82f6;       /* Ana mavi */
+      --primary-dark: #2563eb;  /* Koyu mavi */
+      --accent: #f97316;        /* Turuncu aksan */
+      --background: #f8fafc;    /* Açık arka plan */
+      --card-bg: #ffffff;       /* Kart arka planı */
+      --text: #334155;          /* Ana metin */
+      --text-light: #64748b;    /* Açık metin */
+      --border: #e2e8f0;        /* Kenarlık */
+      --divider: #cbd5e1;       /* Ayırıcı */
+      --shadow: rgba(0, 0, 0, 0.05); /* Hafif gölge */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 10px;
+      overflow-y: auto;
+      padding-bottom: 120px; /* Premium butonunun altına çok boşluk */
+    }
+    
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 34px;
+      text-decoration: none;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+    
+    .logo:hover {
+      color: var(--primary);
+    }
+    
+    h1 {
+      font-size: 32px;
+      margin-top: 0px;
+      margin-bottom: 65px;
+      text-align: center;
+      color: var(--primary-dark);
+      font-weight: 600;
+      position: relative;
+      top: 35px;
+    }
+    
+    .city-section {
+      margin-bottom: 40px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 2px 8px var(--shadow);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    
+    .city-header {
+      padding: 16px 20px;
+      margin: 0;
+      border: none;
+      background: transparent;
+      text-align: left;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 7px 15px 15px 15px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 280px;
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px var(--shadow);
+      scroll-snap-align: start;
+      background-color: white;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    
+    .photo-card:hover {
+      transform: scale(1.02);
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .premium-info {
+      margin-top: 40px;
+      margin-bottom: 30px;
+      text-align: center;
+      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 16px;
+      line-height: 1.5;
+      border: 2px solid #16a34a;
+      font-weight: 500;
+      color: #15803d;
+    }
+    
+    .premium-info::before {
+      content: "✨ ";
+      font-size: 22px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    
+    .premium-link {
+      margin-top: 20px;
+      margin-bottom: 80px;
+      display: inline-block;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 16px 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      transition: all 0.3s ease;
+      border: 2px solid #FFD700;
+      font-family: inherit;
+      letter-spacing: 0.5px;
+    }
+    
+    .premium-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      background: linear-gradient(135deg, #FFA500, #FFD700);
+      text-decoration: none;
+    }
+    
+    .location-link {
+      text-decoration: none;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      background: rgba(59, 130, 246, 0.08);
+      transition: all 0.2s ease;
+      font-size: 16px;
+      font-weight: 600;
+      max-width: fit-content;
+    }
+    
+    .location-link:hover {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary-dark);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+    .click-icon {
+      color: var(--accent);
+      display: inline-flex;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      display: inline-block;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+        padding-bottom: 60px;
+      }
+      
+      .logo {
+        top: 16px;
+        left: 16px;
+        font-size: 29px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin-top: 0px;
+        margin-bottom: 50px;
+        position: relative;
+        top: 30px;
+      }
+      
+      .city-section {
+        margin-bottom: 32px;
+        border-radius: 16px;
+      }
+      
+      .city-header {
+        padding: 6px 8px 0px 8px;
+        text-align: left;
+      }
+      
+      .city-title {
+        font-size: 18px;
+      }
+      
+      .city-photos {
+        padding: 8px 16px 16px 16px;
+        gap: 12px;
+      }
+      
+      .photo-card {
+        width: 216px;
+        height: 216px;
+        border-radius: 12px;
+      }
+      
+      .premium-info {
+        font-size: 15px;
+        padding: 20px;
+        margin: 32px 16px 24px 16px;
+        border-radius: 16px;
+      }
+      
+      .premium-link {
+        font-size: 16px;
+        padding: 14px 28px;
+        margin-bottom: 40px;
+        border-radius: 12px;
+      }
+      
+      .location-link {
+        padding: 8px 14px;
+        font-size: 16px;
+        border-radius: 20px;
+      }
+      
+      .click-icon::before {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://tr81.tr/login.html" class="logo">🌐</a>
+  <h1>📸 ${cityName}</h1>
+  
+${locationsHTML}  
+  <div class="premium-info">
+    Gizli konumları 🔓 açmak için Premium üyeliği alın veya Instagram hikayenizde → tanıtım videomuzu paylaşarak → 🎁 Premium kazanın! Bize ulaşın 📩 @tr81.tr
+  </div>
+  
+  <p style="text-align: center;">
+    <a href="https://www.shopier.com/35589307" class="premium-link">PREMIUM 10$</a>
+  </p>
+</body>
+</html>`;
 
       // HTML kodunu direkt kopyala
       navigator.clipboard.writeText(fullHTML).then(function() {
-        alert('HTML kodu kopyalandı!');
+        alert('Güncellenmiş modern tasarım HTML kodu kopyalandı!');
       }).catch(function(err) {
         console.error('Kopyalama hatası:', err);
         alert('Kod kopyalanırken bir hata oluştu!');
@@ -641,7 +829,7 @@ locationsHTML +
       document.getElementById('page-title').textContent = cityName;
     }
 
-    // Sayfa yüklendikinde çalıştır
+    // Sayfa yüklendikende çalıştır
     window.onload = function() {
       updatePageTitle();
       renderLocations();
