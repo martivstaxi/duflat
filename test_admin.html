@@ -543,7 +543,7 @@
   </div>
 
   <script>
-    // Memory-based data storage (localStorage'ın alternatifi)
+    // Memory-based data storage
     let cityData = {
       cityName: 'Demo Şehir',
       locations: [
@@ -675,10 +675,10 @@
         let photosHTML = '';
         
         for(let j = 0; j < location.photos.length; j++) {
-          photosHTML += '\\n        <div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
+          photosHTML += '      <div class="photo-card">\\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\\n      </div>\\n';
         }
         
-        locationsHTML += '\\n  <div class="city-section">\\n    <div class="city-header">\\n      <h2 class="city-title">\\n        <a href="' + location.link + '" target="_blank" class="location-link">\\n          <span class="click-icon"></span>' + location.name + ' 📍\\n        </a>\\n      </h2>\\n    </div>\\n    <div class="city-photos">' + photosHTML + '\\n    </div>\\n  </div>';
+        locationsHTML += '  <div class="city-section">\\n    <div class="city-header">\\n      <h2 class="city-title">\\n        <a href="' + location.link + '" target="_blank" class="location-link">\\n          <span class="click-icon"></span>\\n          ' + location.name + ' 📍\\n        </a>\\n      </h2>\\n    </div>\\n    \\n    <div class="city-photos">\\n' + photosHTML + '    </div>\\n  </div>\\n\\n';
       }
 
       const fullHTML = `<!DOCTYPE html>  
@@ -1044,9 +1044,7 @@
   <a href="https://tr81.tr/index.html" class="logo" onclick="window.open(this.href, '_blank'); return false;">🌐</a>
   <h1>📸 ${cityData.cityName}</h1>
   
-  <div id="locations-container">${locationsHTML}
-  </div>
-  
+${locationsHTML}  
   <div class="promotion-section">
     <div class="promotion-title">🎁Hediye fırsatı!</div>
     <p style="font-size: 24px;">Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p>
