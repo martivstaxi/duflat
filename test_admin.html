@@ -464,7 +464,7 @@
         locationsHTML += '  </div>\n\n';
       }
 
-      // MODERN TASARIM İÇİN GÜNCELLENMIŞ HTML - PASTE-1 GİBİ
+      // MODERN TASARIM İÇİN GÜNCELLENMIŞ HTML - KISA KONUM BUTONLARI VE FAZLA ALT BOŞLUK
       const fullHTML = `<!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -498,6 +498,7 @@
       line-height: 1.6;
       padding: 10px;
       overflow-y: auto;
+      padding-bottom: 120px; /* Premium butonunun altına çok boşluk */
     }
     
     .logo {
@@ -594,14 +595,14 @@
       margin-bottom: 30px;
       text-align: center;
       background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-      padding: 24px;
+      padding: 20px; /* Daha kısa yükseklik */
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
       max-width: 1000px;
       margin-left: auto;
       margin-right: auto;
-      font-size: 17px;
-      line-height: 1.6;
+      font-size: 16px; /* Daha küçük yazı */
+      line-height: 1.5;
       border: 2px solid #16a34a;
       font-weight: 500;
       color: #15803d;
@@ -609,20 +610,21 @@
     
     .premium-info::before {
       content: "✨ ";
-      font-size: 24px;
+      font-size: 20px; /* Daha küçük ikon */
       vertical-align: middle;
-      margin-right: 8px;
+      margin-right: 6px;
     }
     
     .premium-link {
       margin-top: 20px;
+      margin-bottom: 100px; /* Premium butonunun altına çok boşluk */
       display: inline-block;
       background: linear-gradient(135deg, #FFD700, #FFA500);
       color: #000;
       text-decoration: none;
       font-weight: 700;
-      font-size: 16px;
-      padding: 12px 32px;
+      font-size: 14px; /* Daha küçük yazı */
+      padding: 10px 24px; /* Daha kısa yükseklik */
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
       transition: all 0.3s ease;
@@ -643,13 +645,14 @@
       color: var(--primary);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
+      gap: 4px; /* Daha kısa gap */
+      padding: 4px 8px; /* Çok daha kısa padding */
+      border-radius: 12px; /* Daha küçük border radius */
       background: rgba(59, 130, 246, 0.08);
       transition: all 0.2s ease;
-      font-size: 16px;
+      font-size: 14px; /* Daha küçük yazı */
       font-weight: 500;
+      max-width: fit-content; /* Sadece içeriği kaplayacak kadar */
     }
     
     .location-link:hover {
@@ -667,10 +670,14 @@
     .click-icon::before {
       content: "➤";
       display: inline-block;
-      font-size: 16px;
+      font-size: 12px; /* Daha küçük ikon */
     }
 
     @media (max-width: 640px) {
+      body {
+        padding-bottom: 80px; /* Mobilde daha az alt boşluk */
+      }
+      
       .city-photos {
         padding: 15px;
         gap: 10px;
@@ -688,31 +695,36 @@
       }
       
       .city-header {
-        padding: 6px 12px 4px 12px;
+        padding: 8px 12px; /* Daha kısa padding */
       }
       
       .city-title {
-        font-size: 16px;
+        font-size: 14px; /* Daha küçük yazı */
       }
       
       .city-photos {
         padding: 12px;
       }
       
-      .photo-card {
-        width: 180px;
-        height: 160px;
-      }
-      
       .premium-info {
-        font-size: 15px;
-        padding: 20px;
+        font-size: 14px;
+        padding: 16px; /* Daha kısa yükseklik */
         margin-top: 30px;
       }
       
       .premium-link {
-        font-size: 14px;
-        padding: 10px 24px;
+        font-size: 12px;
+        padding: 8px 20px; /* Daha kısa yükseklik */
+        margin-bottom: 60px; /* Mobilde daha az alt boşluk */
+      }
+      
+      .location-link {
+        padding: 3px 6px; /* Mobilde daha da kısa */
+        font-size: 12px;
+      }
+      
+      .click-icon::before {
+        font-size: 10px;
       }
     }
   </style>
@@ -727,7 +739,7 @@ ${locationsHTML}
     Burada 3 özel yerin konum bilgisine ulaşabiliyorsunuz. Daha fazla konum kilidini 🔓 açmak için premium satın alın
   </div>
   
-  <p style="text-align: center; margin-bottom: 30px;">
+  <p style="text-align: center;">
     <a href="login.html" class="premium-link">PREMIUM</a>
   </p>
 </body>
@@ -735,7 +747,7 @@ ${locationsHTML}
 
       // HTML kodunu direkt kopyala
       navigator.clipboard.writeText(fullHTML).then(function() {
-        alert('Modern tasarım HTML kodu kopyalandı!');
+        alert('Güncellenmiş modern tasarım HTML kodu kopyalandı!');
       }).catch(function(err) {
         console.error('Kopyalama hatası:', err);
         alert('Kod kopyalanırken bir hata oluştu!');
@@ -756,7 +768,7 @@ ${locationsHTML}
       document.getElementById('page-title').textContent = cityName;
     }
 
-    // Sayfa yüklendikinde çalıştır
+    // Sayfa yüklendikende çalıştır
     window.onload = function() {
       updatePageTitle();
       renderLocations();
