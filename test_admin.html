@@ -133,6 +133,84 @@
       font-size: 14px;
     }
 
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      body {
+        padding: 5px;
+        padding-bottom: 60px;
+      }
+      
+      .logo {
+        top: 10px;
+        left: 10px;
+        font-size: 28px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin-bottom: 40px;
+        top: 20px;
+        padding: 0 40px;
+      }
+      
+      .city-section {
+        margin-bottom: 20px;
+        border-radius: 8px;
+      }
+      
+      .city-header {
+        padding: 8px 12px;
+      }
+      
+      .city-title {
+        font-size: 18px;
+      }
+      
+      .location-link {
+        font-size: 15px;
+        padding: 8px 14px;
+      }
+      
+      .city-photos {
+        padding: 5px 10px 10px 10px;
+        gap: 10px;
+      }
+      
+      .photo-card {
+        width: 220px;
+        height: 220px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 24px;
+        top: 8px;
+        left: 8px;
+      }
+      
+      h1 {
+        font-size: 20px;
+        margin-bottom: 30px;
+        top: 15px;
+        padding: 0 30px;
+      }
+      
+      .city-title {
+        font-size: 16px;
+      }
+      
+      .location-link {
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+      
+      .photo-card {
+        width: 180px;
+        height: 180px;
+      }
+    }
+
     /* Promotion Section */
     .promotion-section {
       background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -203,6 +281,33 @@
       color: #ffffff;
       text-decoration: none;
       background: linear-gradient(135deg, #ff8c00 0%, #ffb347 50%, #ffd700 100%);
+    }
+
+    /* Mobile Promotion Styles */
+    @media (max-width: 768px) {
+      .promotion-section {
+        margin: 20px auto;
+        padding: 20px 15px;
+        border-radius: 10px;
+      }
+      
+      .promotion-title {
+        font-size: 16px;
+      }
+      
+      .promo-text {
+        font-size: 14px;
+      }
+      
+      .instagram-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+      
+      .purchase-btn {
+        font-size: 15px;
+        padding: 15px;
+      }
     }
 
     /* EDİTOR PANEL */
@@ -299,6 +404,25 @@
       padding: 2px 4px;
       border-radius: 3px;
       font-family: monospace;
+    }
+
+    /* Mobile Editor Panel */
+    @media (max-width: 768px) {
+      .edit-panel {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-height: 70vh;
+      }
+      
+      .edit-btn {
+        bottom: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -501,19 +625,349 @@
         var photosHTML = '';
         
         for(var j = 0; j < location.photos.length; j++) {
-          photosHTML += '<div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
+          photosHTML += '\n        <div class="photo-card">\n          <img src="' + location.photos[j] + '" alt="' + location.name + '">\n        </div>';
         }
         
-        locationsHTML += '<div class="city-section"><div class="city-header"><h2 class="city-title"><a href="' + location.link + '" target="_blank" class="location-link"><span class="click-icon"></span>' + location.name + ' 📍</a></h2></div><div class="city-photos">' + photosHTML + '</div></div>';
+        locationsHTML += '\n  <div class="city-section">\n    <div class="city-header">\n      <h2 class="city-title">\n        <a href="' + location.link + '" target="_blank" class="location-link">\n          <span class="click-icon"></span>' + location.name + ' 📍\n        </a>\n      </h2>\n    </div>\n    <div class="city-photos">' + photosHTML + '\n    </div>\n  </div>';
       }
 
-      var fullHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + cityName + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f8fafc;color:#334155;padding:10px 10px 120px}.logo{position:absolute;top:20px;left:20px;font-size:34px;text-decoration:none;color:#334155}h1{font-size:32px;margin-bottom:65px;text-align:center;color:#2563eb;font-weight:600;position:relative;top:35px}.city-section{margin-bottom:40px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.05);max-width:1000px;margin-left:auto;margin-right:auto;overflow:hidden;border:1px solid #e2e8f0}.city-header{padding:16px 20px;text-align:left}.city-title{margin:0;font-size:20px;color:#2563eb;font-weight:600}.city-photos{display:flex;gap:15px;overflow-x:auto;padding:7px 15px 15px}.photo-card{flex:0 0 auto;width:280px;height:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,0.05);background:#fff;transition:transform 0.2s}.photo-card:hover{transform:scale(1.02)}.photo-card img{width:100%;height:100%;object-fit:cover}.location-link{text-decoration:none;color:#3b82f6;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:24px;background:rgba(59,130,246,0.08);transition:all 0.2s;font-size:16px;font-weight:600}.location-link:hover{background:rgba(59,130,246,0.15);color:#2563eb;text-decoration:none;transform:translateY(-1px)}.click-icon{color:#f97316}.click-icon::before{content:"➤";font-size:14px}.promotion-section{background:linear-gradient(135deg,#f8f9fa,#e9ecef);color:#495057;padding:25px;border-radius:15px;margin:30px auto;text-align:center;border:1px solid #e9ecef;max-width:1000px}.promotion-title{font-size:18px;font-weight:bold;margin-bottom:15px;color:#343a40}.instagram-btn{background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);color:#fff!important;padding:12px 25px;border-radius:20px;text-decoration:none!important;display:inline-block;font-weight:600;transition:all 0.3s;margin:10px 0;box-shadow:0 4px 15px rgba(225,48,108,0.3)}.instagram-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(225,48,108,0.4)}.promo-text{margin:15px 0;font-size:15px}.purchase-btn{width:100%;max-width:450px;padding:18px;background:linear-gradient(135deg,#ffd700,#ffb347,#ff8c00);color:#fff;text-decoration:none;border-radius:12px;font-size:17px;font-weight:600;display:inline-block;transition:all 0.3s;margin:15px 0 25px;box-shadow:0 4px 15px rgba(255,215,0,0.3)}.purchase-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,0.4);color:#fff;text-decoration:none}</style></head><body><a href="https://tr81.tr/login.html" class="logo">🌐</a><h1>📸 ' + cityName + '</h1>' + locationsHTML + '<div class="promotion-section"><div class="promotion-title">🎁Hediye fırsatı!</div><p>Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p><a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn">📩Instagram: @tr81.tr</a><div class="promo-text">Premium konumlar için bize yazın veya aşağıdan satın alabilirsiniz.</div><a href="https://www.shopier.com/35589307" target="_blank" class="purchase-btn">💳 Premium Erişim: 10$</a></div></body></html>';
+      var fullHTML = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${cityName}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
+      background-color: #f8fafc;
+      color: #334155;
+      line-height: 1.6;
+      padding: 10px;
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+    
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 34px;
+      text-decoration: none;
+      color: #334155;
+    }
+    
+    h1 {
+      font-size: 32px;
+      margin-bottom: 65px;
+      text-align: center;
+      color: #2563eb;
+      font-weight: 600;
+      position: relative;
+      top: 35px;
+    }
+    
+    .city-section {
+      margin-bottom: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .city-header {
+      padding: 16px 20px;
+      text-align: left;
+    }
+    
+    .city-title {
+      margin: 0;
+      font-size: 20px;
+      color: #2563eb;
+      font-weight: 600;
+    }
+    
+    .city-photos {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 7px 15px 15px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .city-photos::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .photo-card {
+      flex: 0 0 auto;
+      width: 264px;
+      height: 264px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      scroll-snap-align: start;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+    
+    .photo-card:hover {
+      transform: scale(1.02);
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .location-link {
+      text-decoration: none;
+      color: #3b82f6;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      background: rgba(59, 130, 246, 0.08);
+      transition: all 0.2s;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .location-link:hover {
+      background: rgba(59, 130, 246, 0.15);
+      color: #2563eb;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+    .click-icon {
+      color: #f97316;
+    }
+    
+    .click-icon::before {
+      content: "➤";
+      font-size: 14px;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 5px;
+        padding-bottom: 60px;
+      }
+      
+      .logo {
+        top: 10px;
+        left: 10px;
+        font-size: 28px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin-bottom: 40px;
+        top: 20px;
+        padding: 0 40px;
+      }
+      
+      .city-section {
+        margin-bottom: 20px;
+        border-radius: 8px;
+      }
+      
+      .city-header {
+        padding: 8px 12px;
+      }
+      
+      .city-title {
+        font-size: 18px;
+      }
+      
+      .location-link {
+        font-size: 15px;
+        padding: 8px 14px;
+      }
+      
+      .city-photos {
+        padding: 5px 10px 10px 10px;
+        gap: 10px;
+      }
+      
+      .photo-card {
+        width: 220px;
+        height: 220px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 24px;
+        top: 8px;
+        left: 8px;
+      }
+      
+      h1 {
+        font-size: 20px;
+        margin-bottom: 30px;
+        top: 15px;
+        padding: 0 30px;
+      }
+      
+      .city-title {
+        font-size: 16px;
+      }
+      
+      .location-link {
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+      
+      .photo-card {
+        width: 180px;
+        height: 180px;
+      }
+    }
+    
+    .promotion-section {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      color: #495057;
+      padding: 25px;
+      border-radius: 15px;
+      margin: 30px auto;
+      text-align: center;
+      border: 1px solid #e9ecef;
+      max-width: 1000px;
+    }
+    
+    .promotion-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #343a40;
+    }
+    
+    .instagram-btn {
+      background: linear-gradient(135deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+      color: #fff !important;
+      padding: 12px 25px;
+      border-radius: 20px;
+      text-decoration: none !important;
+      display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s;
+      margin: 10px 0;
+      box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
+    }
+    
+    .instagram-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(225, 48, 108, 0.4);
+    }
+    
+    .promo-text {
+      margin: 15px 0;
+      font-size: 15px;
+    }
+    
+    .purchase-btn {
+      width: 100%;
+      max-width: 450px;
+      padding: 18px;
+      background: linear-gradient(135deg, #ffd700, #ffb347, #ff8c00);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      display: inline-block;
+      transition: all 0.3s;
+      margin: 15px 0 25px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    .purchase-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+      color: #fff;
+      text-decoration: none;
+    }
+    
+    /* Mobile Promotion Styles */
+    @media (max-width: 768px) {
+      .promotion-section {
+        margin: 20px auto;
+        padding: 20px 15px;
+        border-radius: 10px;
+      }
+      
+      .promotion-title {
+        font-size: 16px;
+      }
+      
+      .promo-text {
+        font-size: 14px;
+      }
+      
+      .instagram-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+      
+      .purchase-btn {
+        font-size: 15px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="https://tr81.tr/login.html" class="logo">🌐</a>
+  <h1>📸 ${cityName}</h1>${locationsHTML}
+  
+  <div class="promotion-section">
+    <div class="promotion-title">🎁Hediye fırsatı!</div>
+    <p>Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p>
+    <a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn">
+      📩Instagram: @tr81.tr
+    </a>
+    <div class="promo-text">Premium konumlar için bize yazın veya aşağıdan satın alabilirsiniz.</div>
+    <a href="https://www.shopier.com/35589307" target="_blank" class="purchase-btn">
+      💳 Premium Erişim: 10$
+    </a>
+  </div>
+</body>
+</html>`;
       
       try {
         navigator.clipboard.writeText(fullHTML);
-        alert('HTML kodu kopyalandı!');
+        alert('Mobile-friendly HTML kodu kopyalandı!');
       } catch(err) {
-        alert('Kopyalama hatası!');
+        console.error('Kopyalama hatası:', err);
+        // Fallback: textarea ile göster
+        var textarea = document.createElement('textarea');
+        textarea.value = fullHTML;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          alert('HTML kodu kopyalandı!');
+        } catch(e) {
+          alert('Kopyalama başarısız. Manuel olarak kopyalayın.');
+        }
+        document.body.removeChild(textarea);
       }
     }
 
