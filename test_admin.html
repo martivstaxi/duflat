@@ -6,55 +6,75 @@
   <title id="page-title">Şehir</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
-      background-color: #f8fafc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
       color: #334155;
       line-height: 1.6;
-      padding: 10px;
+      padding: 16px;
       overflow-y: auto;
-      padding-bottom: 80px;
+      padding-bottom: 120px;
+      min-height: 100vh;
     }
     .logo {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      font-size: 24px;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 32px;
       text-decoration: none;
-      color: black;
+      color: #1e293b;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: all 0.3s ease;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
     
     .logo:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     }
     
     h1 { 
-      font-size: 25px;
-      margin-top: 0px;
-      margin-bottom: 56px;
+      font-size: clamp(28px, 6vw, 48px);
+      margin: 80px 0 60px 0;
       text-align: center;
-      color: #2563eb;
-      font-weight: 600;
-      position: relative;
-      top: 22px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      letter-spacing: -0.5px;
     }
     
     .city-section {
-      margin-bottom: 31px;
-      background-color: #ffffff;
-      border-radius: 8px;
+      margin-bottom: 48px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
       padding: 0;
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-      max-width: 720px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      max-width: 1200px;
       margin-left: auto;
       margin-right: auto;
       overflow: hidden;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.3s ease;
+    }
+    
+    .city-section:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
     }
     
     .city-header {
-      padding: 5px 7px 0px 7px;
+      padding: 24px 28px 16px 28px;
       margin: 0;
       border: none;
       background: transparent;
@@ -63,16 +83,16 @@
     
     .city-title {
       margin: 0;
-      font-size: 16px;
-      color: #2563eb;
-      font-weight: 600;
+      font-size: clamp(18px, 4vw, 24px);
+      color: #1e293b;
+      font-weight: 700;
     }
     
     .city-photos {
       display: flex;
-      gap: 11px;
+      gap: 20px;
       overflow-x: auto;
-      padding: 5px 11px 11px 11px;
+      padding: 16px 28px 28px 28px;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
@@ -84,19 +104,20 @@
     
     .photo-card {
       flex: 0 0 auto;
-      width: 228px;
-      height: 228px;
-      border-radius: 8px;
+      width: 320px;
+      height: 320px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       scroll-snap-align: start;
       background-color: white;
       position: relative;
-      transition: transform 0.2s;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .photo-card:hover {
-      transform: scale(1.02);
+      transform: scale(1.05) translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     }
     
     .photo-card img {
@@ -104,6 +125,11 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      transition: transform 0.4s ease;
+    }
+    
+    .photo-card:hover img {
+      transform: scale(1.1);
     }
     
     .location-link {
@@ -111,21 +137,24 @@
       color: #3b82f6;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 7px 13px;
-      border-radius: 18px;
-      background: rgba(59, 130, 246, 0.08);
-      transition: all 0.2s ease;
-      font-size: 13px;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      transition: all 0.3s ease;
+      font-size: clamp(14px, 3vw, 18px);
       font-weight: 600;
       max-width: fit-content;
+      border: 2px solid transparent;
     }
     
     .location-link:hover {
-      background: rgba(59, 130, 246, 0.15);
-      color: #2563eb;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+      color: #1e293b;
       text-decoration: none;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
     }
     
     .click-icon {
@@ -142,44 +171,31 @@
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       body {
-        padding: 5px;
-        padding-bottom: 80px;
+        padding: 12px;
+        padding-bottom: 100px;
       }
       
       .logo {
-        top: 8px;
-        left: 8px;
-        font-size: 28px;
-      }
-      
-      h1 {
-        font-size: 28px;
-        margin-bottom: 35px;
-        top: 15px;
-        padding: 0 8px;
-        line-height: 1.2;
+        top: 16px;
+        left: 16px;
+        font-size: 24px;
+        width: 48px;
+        height: 48px;
       }
       
       .city-section {
-        margin-bottom: 25px;
-        border-radius: 12px;
-        margin-left: 3px;
-        margin-right: 3px;
-        max-width: 100%;
+        margin-bottom: 32px;
+        border-radius: 20px;
+        margin-left: 0;
+        margin-right: 0;
       }
       
       .city-header {
-        padding: 15px 15px 8px 15px;
-      }
-      
-      .city-title {
-        font-size: 20px;
-        line-height: 1.3;
+        padding: 20px 20px 12px 20px;
       }
       
       .location-link {
-        font-size: 16px;
-        padding: 12px 18px;
+        padding: 10px 16px;
         border-radius: 25px;
         width: 100%;
         justify-content: center;
@@ -187,8 +203,8 @@
       }
       
       .city-photos {
-        padding: 8px 15px 20px 15px;
-        gap: 15px;
+        padding: 12px 20px 20px 20px;
+        gap: 16px;
       }
       
       .photo-card {
@@ -201,45 +217,29 @@
 
     @media (max-width: 480px) {
       body {
-        padding: 3px;
-        padding-bottom: 70px;
-        font-size: 16px;
+        padding: 8px;
+        padding-bottom: 80px;
       }
       
       .logo {
-        font-size: 24px;
-        top: 6px;
-        left: 6px;
-      }
-      
-      h1 {
-        font-size: 24px;
-        margin-bottom: 25px;
-        top: 10px;
-        padding: 0 6px;
-        line-height: 1.2;
+        font-size: 20px;
+        top: 12px;
+        left: 12px;
+        width: 40px;
+        height: 40px;
       }
       
       .city-section {
-        margin-bottom: 20px;
-        border-radius: 10px;
-        margin-left: 2px;
-        margin-right: 2px;
+        margin-bottom: 24px;
+        border-radius: 16px;
       }
       
       .city-header {
-        padding: 12px 12px 6px 12px;
-      }
-      
-      .city-title {
-        font-size: 18px;
-        line-height: 1.3;
-        text-align: center;
+        padding: 16px 16px 8px 16px;
       }
       
       .location-link {
-        font-size: 14px;
-        padding: 10px 15px;
+        padding: 8px 12px;
         border-radius: 20px;
         width: 100%;
         justify-content: center;
@@ -248,107 +248,131 @@
       }
       
       .city-photos {
-        padding: 6px 12px 15px 12px;
+        padding: 8px 16px 16px 16px;
         gap: 12px;
       }
       
       .photo-card {
-        width: 250px;
-        height: 250px;
-        border-radius: 10px;
-        min-width: 250px;
+        width: 240px;
+        height: 240px;
+        border-radius: 12px;
+        min-width: 240px;
       }
     }
 
     @media (max-width: 360px) {
       .photo-card {
-        width: 220px;
-        height: 220px;
-        min-width: 220px;
-      }
-      
-      h1 {
-        font-size: 20px;
-      }
-      
-      .city-title {
-        font-size: 16px;
+        width: 200px;
+        height: 200px;
+        min-width: 200px;
       }
       
       .location-link {
-        font-size: 13px;
-        padding: 8px 12px;
+        font-size: 12px;
+        padding: 6px 10px;
       }
     }
 
     /* Promotion Section */
     .promotion-section {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      color: #495057;
-      padding: 18px;
-      border-radius: 11px;
-      margin: 22px auto;
+      background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fde68a 100%);
+      color: #92400e;
+      padding: 32px;
+      border-radius: 24px;
+      margin: 48px auto;
       text-align: center;
-      border: 1px solid #e9ecef;
-      max-width: 720px;
+      border: 2px solid #fbbf24;
+      max-width: 1200px;
+      box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promotion-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .promotion-title {
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 11px;
-      color: #343a40;
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: #92400e;
+      position: relative;
+      z-index: 1;
     }
 
     .instagram-btn {
       background: linear-gradient(135deg, #405de6 0%, #5851db 50%, #833ab4 75%, #c13584 90%, #e1306c 95%, #fd1d1d 100%);
       color: white !important;
-      padding: 8px 18px;
-      border-radius: 14px;
+      padding: 16px 32px;
+      border-radius: 30px;
       text-decoration: none !important;
       display: inline-block;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      margin: 7px 0;
-      box-shadow: 0 4px 11px rgba(225, 48, 108, 0.3);
+      font-weight: 700;
+      font-size: clamp(14px, 3vw, 18px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      margin: 16px 0;
+      box-shadow: 0 8px 32px rgba(225, 48, 108, 0.4);
+      position: relative;
+      z-index: 1;
+      transform: perspective(1000px) rotateX(0deg);
     }
 
     .instagram-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(225, 48, 108, 0.4);
+      transform: perspective(1000px) rotateX(-10deg) translateY(-4px);
+      box-shadow: 0 20px 60px rgba(225, 48, 108, 0.6);
       color: white !important;
       background: linear-gradient(135deg, #fd1d1d 0%, #e1306c 5%, #c13584 10%, #833ab4 25%, #5851db 50%, #405de6 100%);
     }
 
     .promo-text {
-      margin: 11px 0;
-      font-size: 12px;
-      color: #495057;
+      margin: 20px 0;
+      font-size: clamp(14px, 3vw, 18px);
+      color: #92400e;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+      line-height: 1.6;
     }
 
     .purchase-btn {
       width: 100%;
-      max-width: 324px;
-      padding: 13px;
+      max-width: 400px;
+      padding: 20px 32px;
       background: linear-gradient(135deg, #ffd700 0%, #ffb347 50%, #ff8c00 100%);
-      color: #ffffff;
+      color: #1a1a1a;
       text-decoration: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 20px;
+      font-size: clamp(16px, 4vw, 22px);
+      font-weight: 800;
       display: inline-block;
-      transition: all 0.3s ease;
-      margin: 11px 0 18px 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      margin: 20px 0 32px 0;
       border: none;
-      box-shadow: 0 4px 11px rgba(255, 215, 0, 0.3);
+      box-shadow: 0 12px 40px rgba(255, 215, 0, 0.4);
       box-sizing: border-box;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      transform: perspective(1000px) rotateX(0deg);
     }
 
     .purchase-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(255, 215, 0, 0.4);
-      color: #ffffff;
+      transform: perspective(1000px) rotateX(-5deg) translateY(-6px);
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.6);
+      color: #1a1a1a;
       text-decoration: none;
       background: linear-gradient(135deg, #ff8c00 0%, #ffb347 50%, #ffd700 100%);
     }
@@ -356,40 +380,26 @@
     /* Mobile Promotion Styles */
     @media (max-width: 768px) {
       .promotion-section {
-        margin: 20px auto;
-        padding: 25px 15px;
-        border-radius: 15px;
-        margin-left: 3px;
-        margin-right: 3px;
-        max-width: 100%;
-      }
-      
-      .promotion-title {
-        font-size: 20px;
-        margin-bottom: 15px;
-      }
-      
-      .promo-text {
-        font-size: 16px;
-        margin: 15px 0;
-        line-height: 1.4;
+        margin: 32px auto;
+        padding: 24px 20px;
+        border-radius: 20px;
+        margin-left: 0;
+        margin-right: 0;
       }
       
       .instagram-btn {
-        padding: 12px 20px;
-        font-size: 16px;
-        margin: 15px 0;
-        border-radius: 20px;
-        width: 100%;
-        max-width: 300px;
+        padding: 12px 24px;
+        margin: 12px 0;
+        border-radius: 25px;
+        width: auto;
+        max-width: 320px;
         box-sizing: border-box;
       }
       
       .purchase-btn {
-        font-size: 18px;
-        padding: 15px;
-        margin: 15px 0 25px 0;
-        border-radius: 12px;
+        padding: 16px 24px;
+        margin: 16px 0 24px 0;
+        border-radius: 16px;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
@@ -398,38 +408,23 @@
 
     @media (max-width: 480px) {
       .promotion-section {
-        margin: 15px auto;
-        padding: 20px 12px;
-        border-radius: 12px;
-        margin-left: 2px;
-        margin-right: 2px;
-      }
-      
-      .promotion-title {
-        font-size: 18px;
-        margin-bottom: 12px;
-      }
-      
-      .promo-text {
-        font-size: 14px;
-        margin: 12px 0;
-        line-height: 1.4;
+        margin: 24px auto;
+        padding: 20px 16px;
+        border-radius: 16px;
       }
       
       .instagram-btn {
-        padding: 10px 15px;
-        font-size: 14px;
-        margin: 12px 0;
-        border-radius: 18px;
+        padding: 10px 20px;
+        margin: 10px 0;
+        border-radius: 20px;
         width: 100%;
         max-width: 100%;
       }
       
       .purchase-btn {
-        font-size: 16px;
-        padding: 12px;
-        margin: 12px 0 20px 0;
-        border-radius: 10px;
+        padding: 14px 20px;
+        margin: 14px 0 20px 0;
+        border-radius: 14px;
         width: 100%;
       }
     }
@@ -809,10 +804,10 @@
         let photosHTML = '';
         
         for(let j = 0; j < location.photos.length; j++) {
-          photosHTML += '      <div class="photo-card">\\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\\n      </div>\\n';
+          photosHTML += '      <div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
-        locationsHTML += '  <div class="city-section">\\n    <div class="city-header">\\n      <h2 class="city-title">\\n        <a href="' + location.link + '" target="_blank" class="location-link">\\n          <span class="click-icon"></span>\\n          ' + location.name + ' 📍\\n        </a>\\n      </h2>\\n    </div>\\n    \\n    <div class="city-photos">\\n' + photosHTML + '    </div>\\n  </div>\\n\\n';
+        locationsHTML += '  <div class="city-section"><div class="city-header"><h2 class="city-title"><a href="' + location.link + '" target="_blank" class="location-link"><span class="click-icon"></span>' + location.name + ' 📍</a></h2></div><div class="city-photos">' + photosHTML + '</div></div>';
       }
 
       const fullHTML = `<!DOCTYPE html>  
