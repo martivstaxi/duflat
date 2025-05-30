@@ -538,7 +538,7 @@
     }
     
     .city-header {
-      padding: 8px 15px 5px 15px;
+      padding: 16px 20px;
       margin: 0;
       border: none;
       background: transparent;
@@ -547,9 +547,9 @@
     
     .city-title {
       margin: 0;
-      font-size: 36px;
+      font-size: 20px;
       color: var(--primary-dark);
-      font-weight: 500;
+      font-weight: 600;
     }
     
     .city-photos {
@@ -568,11 +568,11 @@
     
     .photo-card {
       flex: 0 0 auto;
-      width: 480px;
-      height: 400px;
-      border-radius: 8px;
+      width: 280px;
+      height: 220px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 4px var(--shadow);
+      box-shadow: 0 4px 8px var(--shadow);
       scroll-snap-align: start;
       background-color: white;
       position: relative;
@@ -595,13 +595,13 @@
       margin-bottom: 30px;
       text-align: center;
       background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-      padding: 20px; /* Daha kısa yükseklik */
-      border-radius: 12px;
+      padding: 24px;
+      border-radius: 16px;
       box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
       max-width: 1000px;
       margin-left: auto;
       margin-right: auto;
-      font-size: 16px; /* Daha küçük yazı */
+      font-size: 16px;
       line-height: 1.5;
       border: 2px solid #16a34a;
       font-weight: 500;
@@ -610,22 +610,22 @@
     
     .premium-info::before {
       content: "✨ ";
-      font-size: 20px; /* Daha küçük ikon */
+      font-size: 22px;
       vertical-align: middle;
-      margin-right: 6px;
+      margin-right: 8px;
     }
     
     .premium-link {
       margin-top: 20px;
-      margin-bottom: 100px; /* Premium butonunun altına çok boşluk */
+      margin-bottom: 80px;
       display: inline-block;
       background: linear-gradient(135deg, #FFD700, #FFA500);
       color: #000;
       text-decoration: none;
       font-weight: 700;
-      font-size: 28px; /* 2 kat büyük yazı */
-      padding: 20px 48px; /* 2 kat büyük padding */
-      border-radius: 8px;
+      font-size: 18px;
+      padding: 16px 32px;
+      border-radius: 12px;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
       transition: all 0.3s ease;
       border: 2px solid #FFD700;
@@ -645,14 +645,14 @@
       color: var(--primary);
       display: inline-flex;
       align-items: center;
-      gap: 4px; /* Daha kısa gap */
-      padding: 4px 8px; /* Çok daha kısa padding */
-      border-radius: 12px; /* Daha küçük border radius */
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 24px;
       background: rgba(59, 130, 246, 0.08);
       transition: all 0.2s ease;
-      font-size: 28px; /* 2 kat büyük yazı */
-      font-weight: 500;
-      max-width: fit-content; /* Sadece içeriği kaplayacak kadar */
+      font-size: 16px;
+      font-weight: 600;
+      max-width: fit-content;
     }
     
     .location-link:hover {
@@ -670,62 +670,68 @@
     .click-icon::before {
       content: "➤";
       display: inline-block;
-      font-size: 12px; /* Daha küçük ikon */
+      font-size: 14px;
     }
 
     @media (max-width: 640px) {
       body {
-        padding-bottom: 80px; /* Mobilde daha az alt boşluk */
-      }
-      
-      .city-photos {
-        padding: 15px;
-        gap: 10px;
-      }
-      
-      .photo-card {
-        width: 320px;
-        height: 300px;
+        padding: 16px;
+        padding-bottom: 60px;
       }
       
       h1 {
-        font-size: 26px;
-        margin-top: 60px;
-        margin-bottom: 30px;
+        font-size: 24px;
+        margin-top: 70px;
+        margin-bottom: 24px;
+      }
+      
+      .city-section {
+        margin-bottom: 16px;
+        border-radius: 16px;
       }
       
       .city-header {
-        padding: 8px 12px; /* Daha kısa padding */
-        text-align: left; /* Mobilde de sola hizalı */
+        padding: 16px;
+        text-align: left;
       }
       
       .city-title {
-        font-size: 28px; /* Mobilde de büyük */
+        font-size: 18px;
       }
       
       .city-photos {
-        padding: 12px;
+        padding: 16px;
+        gap: 12px;
+      }
+      
+      .photo-card {
+        width: 240px;
+        height: 180px;
+        border-radius: 12px;
       }
       
       .premium-info {
-        font-size: 14px;
-        padding: 16px; /* Daha kısa yükseklik */
-        margin-top: 30px;
+        font-size: 15px;
+        padding: 20px;
+        margin: 32px 16px 24px 16px;
+        border-radius: 16px;
       }
       
       .premium-link {
-        font-size: 24px; /* Mobilde de büyük */
-        padding: 16px 40px; /* Mobilde de büyük padding */
-        margin-bottom: 60px; /* Mobilde daha az alt boşluk */
+        font-size: 16px;
+        padding: 14px 28px;
+        margin-bottom: 40px;
+        border-radius: 12px;
       }
       
       .location-link {
-        padding: 6px 12px; /* Mobilde de büyük */
-        font-size: 24px; /* Mobilde de büyük */
+        padding: 8px 12px;
+        font-size: 15px;
+        border-radius: 20px;
       }
       
       .click-icon::before {
-        font-size: 10px;
+        font-size: 12px;
       }
     }
   </style>
