@@ -473,9 +473,10 @@
   </div>
 
   <script>
-    if (localStorage.getItem("duflat-access") !== "granted") {
-      window.location.href = "index.html";
-    }
+    // Erişim kontrolü kaldırıldı - demo için
+    // if (localStorage.getItem("duflat-access") !== "granted") {
+    //   window.location.href = "index.html";
+    // }
 
     function getCityFromUrl() {
       var urlParams = new URLSearchParams(window.location.search);
@@ -585,7 +586,7 @@
         
         document.getElementById('cityData').value = '';
         
-        console.log(cityName + ' şehri için ' + locations.length + ' konum başarıyla eklendi!');
+        alert(cityName + ' şehri için ' + locations.length + ' konum başarıyla eklendi!');
         
       } catch (error) {
         console.error('Veri işleme hatası:', error);
@@ -631,58 +632,59 @@
         var photosHTML = '';
         
         for(var j = 0; j < location.photos.length; j++) {
-          photosHTML += '\n        <div class="photo-card">\n          <img src="' + location.photos[j] + '" alt="' + location.name + '">\n        </div>';
+          photosHTML += '\\n        <div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
-        locationsHTML += '\n  <div class="city-section">\n    <div class="city-header">\n      <h2 class="city-title">\n        <a href="' + location.link + '" target="_blank" class="location-link">\n          <span class="click-icon"></span>' + location.name + ' 📍\n        </a>\n      </h2>\n    </div>\n    <div class="city-photos">' + photosHTML + '\n    </div>\n  </div>';
+        locationsHTML += '\\n  <div class="city-section">\\n    <div class="city-header">\\n      <h2 class="city-title">\\n        <a href="' + location.link + '" target="_blank" class="location-link">\\n          <span class="click-icon"></span>' + location.name + ' 📍\\n        </a>\\n      </h2>\\n    </div>\\n    <div class="city-photos">' + photosHTML + '\\n    </div>\\n  </div>';
       }
 
-      var fullHTML = `<!DOCTYPE html>
+      var fullHTML = `<!DOCTYPE html>  
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${cityName}</title>
+  <title id="page-title">${cityName}</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     body {
       font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
       background-color: #f8fafc;
       color: #334155;
       line-height: 1.6;
-      padding: 12px;
+      padding: 10px;
       overflow-y: auto;
-      padding-bottom: 96px;
+      padding-bottom: 80px;
     }
-    
     .logo {
       position: absolute;
-      top: 24px;
-      left: 24px;
+      top: 20px;
+      left: 20px;
       font-size: 41px;
       text-decoration: none;
-      color: #334155;
+      color: black;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
     
-    h1 {
+    .logo:hover {
+      transform: scale(1.1);
+    }
+    
+    h1 { 
       font-size: 42px;
+      margin-top: 0px;
       margin-bottom: 94px;
       text-align: center;
       color: #2563eb;
       font-weight: 600;
       position: relative;
-      top: 42px;
+      top: 35px;
     }
     
     .city-section {
       margin-bottom: 53px;
-      background: #fff;
+      background-color: #ffffff;
       border-radius: 14px;
+      padding: 0;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       max-width: 1200px;
       margin-left: auto;
@@ -692,7 +694,10 @@
     }
     
     .city-header {
-      padding: 19px 24px;
+      padding: 7px 12px 0px 12px;
+      margin: 0;
+      border: none;
+      background: transparent;
       text-align: left;
     }
     
@@ -707,7 +712,7 @@
       display: flex;
       gap: 18px;
       overflow-x: auto;
-      padding: 8px 18px 18px;
+      padding: 8px 18px 18px 18px;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
@@ -725,7 +730,8 @@
       overflow: hidden;
       box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
       scroll-snap-align: start;
-      background: #fff;
+      background-color: white;
+      position: relative;
       transition: transform 0.2s;
     }
     
@@ -737,6 +743,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
     
     .location-link {
@@ -745,12 +752,13 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 10px 19px;
+      padding: 11px 22px;
       border-radius: 29px;
       background: rgba(59, 130, 246, 0.08);
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       font-size: 23px;
       font-weight: 600;
+      max-width: fit-content;
     }
     
     .location-link:hover {
@@ -762,191 +770,207 @@
     
     .click-icon {
       color: #f97316;
+      display: inline-flex;
     }
     
     .click-icon::before {
       content: "➤";
-      font-size: 14px;
+      display: inline-block;
+      font-size: 17px;
     }
-    
-    /* Mobile Responsive */
+
+    /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       body {
-        padding: 5px;
-        padding-bottom: 60px;
+        padding: 6px;
+        padding-bottom: 72px;
       }
       
       .logo {
-        top: 10px;
-        left: 10px;
-        font-size: 28px;
+        top: 12px;
+        left: 12px;
+        font-size: 34px;
       }
       
       h1 {
-        font-size: 24px;
-        margin-bottom: 40px;
-        top: 20px;
-        padding: 0 40px;
+        font-size: 31px;
+        margin-bottom: 58px;
+        top: 24px;
+        padding: 0 48px;
       }
       
       .city-section {
-        margin-bottom: 20px;
-        border-radius: 8px;
-      }
-      
-      .city-header {
-        padding: 8px 12px;
-      }
-      
-      .city-title {
-        font-size: 18px;
-      }
-      
-      .location-link {
-        font-size: 15px;
-        padding: 8px 14px;
-      }
-      
-      .city-photos {
-        padding: 5px 10px 10px 10px;
-        gap: 10px;
-      }
-      
-      .photo-card {
-        width: 220px;
-        height: 220px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .logo {
-        font-size: 24px;
-        top: 8px;
-        left: 8px;
-      }
-      
-      h1 {
-        font-size: 20px;
-        margin-bottom: 30px;
-        top: 15px;
-        padding: 0 30px;
-      }
-      
-      .city-title {
-        font-size: 16px;
-      }
-      
-      .location-link {
-        font-size: 14px;
-        padding: 6px 12px;
-      }
-      
-      .photo-card {
-        width: 180px;
-        height: 180px;
-      }
-    }
-    
-    .promotion-section {
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      color: #495057;
-      padding: 25px;
-      border-radius: 15px;
-      margin: 30px auto;
-      text-align: center;
-      border: 1px solid #e9ecef;
-      max-width: 1000px;
-    }
-    
-    .promotion-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #343a40;
-    }
-    
-    .instagram-btn {
-      background: linear-gradient(135deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
-      color: #fff !important;
-      padding: 12px 25px;
-      border-radius: 20px;
-      text-decoration: none !important;
-      display: inline-block;
-      font-weight: 600;
-      transition: all 0.3s;
-      margin: 10px 0;
-      box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
-    }
-    
-    .instagram-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(225, 48, 108, 0.4);
-    }
-    
-    .promo-text {
-      margin: 15px 0;
-      font-size: 17px;
-    }
-    
-    .purchase-btn {
-      width: 100%;
-      max-width: 450px;
-      padding: 18px;
-      background: linear-gradient(135deg, #ffd700, #ffb347, #ff8c00);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 12px;
-      font-size: 19px;
-      font-weight: 600;
-      display: inline-block;
-      transition: all 0.3s;
-      margin: 15px 0 25px;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-    }
-    
-    .purchase-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-      color: #fff;
-      text-decoration: none;
-    }
-    
-    /* Mobile Promotion Styles */
-    @media (max-width: 768px) {
-      .promotion-section {
-        margin: 20px auto;
-        padding: 20px 15px;
+        margin-bottom: 26px;
         border-radius: 10px;
       }
       
+      .city-header {
+        padding: 10px 14px;
+      }
+      
+      .city-title {
+        font-size: 24px;
+      }
+      
+      .location-link {
+        font-size: 20px;
+        padding: 10px 17px;
+      }
+      
+      .city-photos {
+        padding: 6px 12px 12px 12px;
+        gap: 12px;
+      }
+      
+      .photo-card {
+        width: 317px;
+        height: 317px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 29px;
+        top: 10px;
+        left: 10px;
+      }
+      
+      h1 {
+        font-size: 26px;
+        margin-bottom: 43px;
+        top: 18px;
+        padding: 0 36px;
+      }
+      
+      .city-title {
+        font-size: 22px;
+      }
+      
+      .location-link {
+        font-size: 18px;
+        padding: 7px 14px;
+      }
+      
+      .photo-card {
+        width: 259px;
+        height: 259px;
+      }
+    }
+
+    /* Promotion Section */
+    .promotion-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #495057;
+      padding: 30px;
+      border-radius: 18px;
+      margin: 36px auto;
+      text-align: center;
+      border: 1px solid #e9ecef;
+      max-width: 1200px;
+    }
+
+    .promotion-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 18px;
+      color: #343a40;
+    }
+
+    .instagram-btn {
+      background: linear-gradient(135deg, #405de6 0%, #5851db 50%, #833ab4 75%, #c13584 90%, #e1306c 95%, #fd1d1d 100%);
+      color: white !important;
+      padding: 14px 30px;
+      border-radius: 24px;
+      text-decoration: none !important;
+      display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin: 12px 0;
+      box-shadow: 0 5px 18px rgba(225, 48, 108, 0.3);
+    }
+
+    .instagram-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(225, 48, 108, 0.4);
+      color: white !important;
+      background: linear-gradient(135deg, #fd1d1d 0%, #e1306c 5%, #c13584 10%, #833ab4 25%, #5851db 50%, #405de6 100%);
+    }
+
+    .promo-text {
+      margin: 18px 0;
+      font-size: 20px;
+      color: #495057;
+    }
+
+    .purchase-btn {
+      width: 100%;
+      max-width: 540px;
+      padding: 22px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffb347 50%, #ff8c00 100%);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 14px;
+      font-size: 23px;
+      font-weight: 600;
+      display: inline-block;
+      transition: all 0.3s ease;
+      margin: 18px 0 30px 0;
+      border: none;
+      box-shadow: 0 5px 18px rgba(255, 215, 0, 0.3);
+      box-sizing: border-box;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .purchase-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+      color: #ffffff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #ff8c00 0%, #ffb347 50%, #ffd700 100%);
+    }
+
+    /* Mobile Promotion Styles */
+    @media (max-width: 768px) {
+      .promotion-section {
+        margin: 24px auto;
+        padding: 24px 18px;
+        border-radius: 12px;
+      }
+      
       .promotion-title {
-        font-size: 16px;
+        font-size: 22px;
       }
       
       .promo-text {
-        font-size: 14px;
+        font-size: 18px;
       }
       
       .instagram-btn {
-        padding: 10px 20px;
-        font-size: 14px;
+        padding: 12px 24px;
+        font-size: 17px;
       }
       
       .purchase-btn {
-        font-size: 15px;
-        padding: 15px;
+        font-size: 20px;
+        padding: 18px;
       }
     }
   </style>
 </head>
 <body>
-  <a href="https://tr81.tr/login.html" class="logo">🌐</a>
-  <h1>📸 ${cityName}</h1>${locationsHTML}
+  <!-- 🌐 Logo bağlantısı -->
+  <a href="https://tr81.tr/index.html" class="logo" onclick="window.open(this.href, '_blank'); return false;">🌐</a>
+  <h1 id="city-header">📸 <span id="city-name">${cityName}</span></h1>
   
+  <!-- Konumlar dinamik olarak burada görünecek -->
+  <div id="locations-container">${locationsHTML}
+  </div>
+  
+  <!-- Hediye Fırsatı Promosyonu -->
   <div class="promotion-section">
     <div class="promotion-title">🎁Hediye fırsatı!</div>
-    <p>Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p>
-    <a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn">
+    <p style="font-size: 24px;">Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p>
+    <a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn" style="font-size: 20px;">
       📩Instagram: @tr81.tr
     </a>
     <div class="promo-text">Premium konumlar için bize yazın veya aşağıdan satın alabilirsiniz.</div>
@@ -959,7 +983,7 @@
       
       try {
         navigator.clipboard.writeText(fullHTML);
-        alert('Mobile-friendly HTML kodu kopyalandı!');
+        alert('HTML kodu kopyalandı! (Orijinal editör ile tamamen aynı)');
       } catch(err) {
         console.error('Kopyalama hatası:', err);
         // Fallback: textarea ile göster
