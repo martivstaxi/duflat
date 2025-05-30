@@ -100,56 +100,6 @@
       display: block;
     }
     
-    .premium-info {
-      margin-top: 40px;
-      margin-bottom: 30px;
-      text-align: center;
-      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 16px;
-      line-height: 1.5;
-      border: 2px solid #16a34a;
-      font-weight: 500;
-      color: #15803d;
-    }
-    
-    .premium-info::before {
-      content: "✨ ";
-      font-size: 22px;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
-    
-    .premium-link {
-      margin-top: 20px;
-      margin-bottom: 80px;
-      display: inline-block;
-      background: linear-gradient(135deg, #FFD700, #FFA500);
-      color: #000;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 18px;
-      padding: 16px 32px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-      transition: all 0.3s ease;
-      border: 2px solid #FFD700;
-      font-family: inherit;
-      letter-spacing: 0.5px;
-    }
-    
-    .premium-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
-      background: linear-gradient(135deg, #FFA500, #FFD700);
-      text-decoration: none;
-    }
-    
     .location-link {
       text-decoration: none;
       color: #3b82f6;
@@ -181,6 +131,78 @@
       content: "➤";
       display: inline-block;
       font-size: 14px;
+    }
+
+    /* Promotion Section */
+    .promotion-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #495057;
+      padding: 25px;
+      border-radius: 15px;
+      margin: 30px auto;
+      text-align: center;
+      border: 1px solid #e9ecef;
+      max-width: 1000px;
+    }
+
+    .promotion-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #343a40;
+    }
+
+    .instagram-btn {
+      background: linear-gradient(135deg, #405de6 0%, #5851db 50%, #833ab4 75%, #c13584 90%, #e1306c 95%, #fd1d1d 100%);
+      color: white !important;
+      padding: 12px 25px;
+      border-radius: 20px;
+      text-decoration: none !important;
+      display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin: 10px 0;
+      box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
+    }
+
+    .instagram-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(225, 48, 108, 0.4);
+      color: white !important;
+      background: linear-gradient(135deg, #fd1d1d 0%, #e1306c 5%, #c13584 10%, #833ab4 25%, #5851db 50%, #405de6 100%);
+    }
+
+    .promo-text {
+      margin: 15px 0;
+      font-size: 15px;
+      color: #495057;
+    }
+
+    .purchase-btn {
+      width: 100%;
+      max-width: 450px;
+      padding: 18px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffb347 50%, #ff8c00 100%);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      display: inline-block;
+      transition: all 0.3s ease;
+      margin: 15px 0 25px 0;
+      border: none;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+      box-sizing: border-box;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .purchase-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+      color: #ffffff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #ff8c00 0%, #ffb347 50%, #ffd700 100%);
     }
 
     /* EDİTOR PANEL */
@@ -288,8 +310,18 @@
   <!-- Konumlar dinamik olarak burada görünecek -->
   <div id="locations-container"></div>
   
-  <p class="premium-info">Gizli konumları 🔓 açmak için Premium üyeliği alın veya Instagram hikayenizde → tanıtım videomuzu paylaşarak → 🎁 Premium kazanın! Bize ulaşın 📩 @tr81.tr</p>
-  <p style="text-align: center;"><a href="https://www.shopier.com/35589307" class="premium-link">PREMIUM 10$</a></p>
+  <!-- Hediye Fırsatı Promosyonu -->
+  <div class="promotion-section">
+    <div class="promotion-title">🎁Hediye fırsatı!</div>
+    <p>Web sitemizi hikayenizde paylaşın → Premium erişim kazanın!</p>
+    <a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn">
+      📩Instagram: @tr81.tr
+    </a>
+    <div class="promo-text">Tanıtım desteğiniz karşılığında premium erişim elde edin. Giriş bilgilerinizi almak için bize yazın veya aşağıdan satın alabilirsiniz.</div>
+    <a href="https://www.shopier.com/35589307" target="_blank" class="purchase-btn">
+      💳 Premium Erişim: 10$
+    </a>
+  </div>
 
   <!-- EDİTOR PANEL -->
   <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
@@ -311,45 +343,39 @@
   </div>
 
   <script>
-    // Erişim kontrolü
     if (localStorage.getItem("duflat-access") !== "granted") {
       window.location.href = "index.html";
     }
 
-    // URL'den şehir ismi al
     function getCityFromUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
+      var urlParams = new URLSearchParams(window.location.search);
       return urlParams.get('city') || 'Şehir';
     }
 
-    // LocalStorage key
     function getStorageKey() {
-      const city = getCityFromUrl();
+      var city = getCityFromUrl();
       return 'locations_' + city;
     }
 
     function getCityNameStorageKey() {
-      const city = getCityFromUrl();
+      var city = getCityFromUrl();
       return 'cityName_' + city;
     }
 
-    // Şehir adını yükle
     function loadCityName() {
-      const storageKey = getCityNameStorageKey();
-      const savedName = localStorage.getItem(storageKey);
+      var storageKey = getCityNameStorageKey();
+      var savedName = localStorage.getItem(storageKey);
       return savedName || getCityFromUrl();
     }
 
-    // Şehir adını kaydet
     function saveCityName(cityName) {
-      const storageKey = getCityNameStorageKey();
+      var storageKey = getCityNameStorageKey();
       localStorage.setItem(storageKey, cityName);
     }
 
-    // Konumları yükle
     function loadLocations() {
-      const storageKey = getStorageKey();
-      const savedLocations = localStorage.getItem(storageKey);
+      var storageKey = getStorageKey();
+      var savedLocations = localStorage.getItem(storageKey);
       
       if (savedLocations) {
         return JSON.parse(savedLocations);
@@ -358,57 +384,51 @@
       }
     }
 
-    // Konumları kaydet
     function saveLocations(locations) {
-      const storageKey = getStorageKey();
+      var storageKey = getStorageKey();
       localStorage.setItem(storageKey, JSON.stringify(locations));
     }
 
-    // Şehir verilerini işle
     function processCityData() {
-      const cityDataText = document.getElementById('cityData').value;
+      var cityDataText = document.getElementById('cityData').value;
       if (!cityDataText.trim()) {
         alert('Lütfen şehir verilerini girin!');
         return;
       }
 
       try {
-        // İlk olarak şehir adını ve konumları ayır
-        const parts = cityDataText.split('@@@');
+        var parts = cityDataText.split('@@@');
         
         if (parts.length < 2) {
           alert('Geçersiz format! Şehir adı ve en az bir konum olmalı.');
           return;
         }
 
-        const cityName = parts[0].trim();
+        var cityName = parts[0].trim();
         if (!cityName) {
           alert('Şehir adı boş olamaz!');
           return;
         }
 
-        // Şehir adını kaydet
         saveCityName(cityName);
 
-        // Konumları işle (önce temizle)
-        const locations = [];
-        for (let i = 1; i < parts.length; i++) {
-          const locationData = parts[i].trim();
+        var locations = [];
+        for (var i = 1; i < parts.length; i++) {
+          var locationData = parts[i].trim();
           if (!locationData) continue;
 
-          const locationParts = locationData.split('@@');
+          var locationParts = locationData.split('@@');
           
           if (locationParts.length < 2) {
             console.log('Konum ' + i + ': Eksik veri - "' + locationData + '"');
             continue;
           }
 
-          const name = locationParts[0].trim();
-          const link = locationParts[1].trim();
-          const photos = [];
+          var name = locationParts[0].trim();
+          var link = locationParts[1].trim();
+          var photos = [];
 
-          // Fotoğrafları topla
-          for (let j = 2; j < locationParts.length && j < 5; j++) {
+          for (var j = 2; j < locationParts.length && j < 5; j++) {
             if (locationParts[j] && locationParts[j].trim().startsWith('https://')) {
               photos.push(locationParts[j].trim());
             }
@@ -419,7 +439,7 @@
             continue;
           }
 
-          const newLocation = {
+          var newLocation = {
             name: name,
             photos: photos,
             link: link
@@ -428,14 +448,11 @@
           locations.push(newLocation);
         }
 
-        // Konumları kaydet
         saveLocations(locations);
         
-        // Sayfayı güncelle
         updatePageTitle();
         renderLocations();
         
-        // Text alanını temizle
         document.getElementById('cityData').value = '';
         
         console.log(cityName + ' şehri için ' + locations.length + ' konum başarıyla eklendi!');
@@ -446,390 +463,72 @@
       }
     }
 
-    // Konumları render et
     function renderLocations() {
-      const container = document.getElementById('locations-container');
-      const locations = loadLocations();
+      var container = document.getElementById('locations-container');
+      var locations = loadLocations();
       
       container.innerHTML = '';
       
       for(var i = 0; i < locations.length; i++) {
         var location = locations[i];
-        const section = document.createElement('div');
+        var section = document.createElement('div');
         section.className = 'city-section';
         
-        let photosHTML = '';
+        var photosHTML = '';
         for(var j = 0; j < location.photos.length; j++) {
-          photosHTML += '\n      <div class="photo-card">\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\n      </div>';
+          photosHTML += '<div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
         section.innerHTML = 
-          '\n    <div class="city-header">\n      <h2 class="city-title">\n        <a href="' + location.link + '" target="_blank" class="location-link">\n          <span class="click-icon"></span>\n          ' + location.name + ' 📍\n        </a>\n      </h2>\n    </div>\n    \n    <div class="city-photos">' + photosHTML + '\n    </div>\n  ';
+          '<div class="city-header"><h2 class="city-title"><a href="' + location.link + '" target="_blank" class="location-link"><span class="click-icon"></span>' + location.name + ' 📍</a></h2></div><div class="city-photos">' + photosHTML + '</div>';
         
         container.appendChild(section);
       }
     }
 
-    // HTML kodunu dışa aktar ve direkt kopyala - MODERN TASARIM
     function exportHTML() {
-      const cityName = loadCityName();
-      const locations = loadLocations();
+      var cityName = loadCityName();
+      var locations = loadLocations();
       
       if (locations.length === 0) {
         alert('Önce konum ekleyin!');
         return;
       }
       
-      // HTML'i güzel formatlamak için locationsHTML'i adım adım oluşturuyoruz
       var locationsHTML = '';
       for(var i = 0; i < locations.length; i++) {
         var location = locations[i];
         var photosHTML = '';
         
-        // Her fotoğraf için güzel formatlama
         for(var j = 0; j < location.photos.length; j++) {
-          photosHTML += '      <div class="photo-card">\n        <img src="' + location.photos[j] + '" alt="' + location.name + '">\n      </div>\n';
+          photosHTML += '<div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
-        // Konum HTML'ini oluştur
-        locationsHTML += '  <div class="city-section">\n';
-        locationsHTML += '    <div class="city-header">\n';
-        locationsHTML += '      <h2 class="city-title">\n';
-        locationsHTML += '        <a href="' + location.link + '" target="_blank" class="location-link">\n';
-        locationsHTML += '          <span class="click-icon"></span>\n';
-        locationsHTML += '          ' + location.name + ' 📍\n';
-        locationsHTML += '        </a>\n';
-        locationsHTML += '      </h2>\n';
-        locationsHTML += '    </div>\n';
-        locationsHTML += '    \n';
-        locationsHTML += '    <div class="city-photos">\n';
-        locationsHTML += photosHTML;
-        locationsHTML += '    </div>\n';
-        locationsHTML += '  </div>\n\n';
+        locationsHTML += '<div class="city-section"><div class="city-header"><h2 class="city-title"><a href="' + location.link + '" target="_blank" class="location-link"><span class="click-icon"></span>' + location.name + ' 📍</a></h2></div><div class="city-photos">' + photosHTML + '</div></div>';
       }
 
-      // MODERN TASARIM İÇİN GÜNCELLENMIŞ HTML - KISA KONUM BUTONLARI VE FAZLA ALT BOŞLUK
-      const fullHTML = `<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${cityName}</title>
-  <style>
-    :root {
-      --primary: #3b82f6;       /* Ana mavi */
-      --primary-dark: #2563eb;  /* Koyu mavi */
-      --accent: #f97316;        /* Turuncu aksan */
-      --background: #f8fafc;    /* Açık arka plan */
-      --card-bg: #ffffff;       /* Kart arka planı */
-      --text: #334155;          /* Ana metin */
-      --text-light: #64748b;    /* Açık metin */
-      --border: #e2e8f0;        /* Kenarlık */
-      --divider: #cbd5e1;       /* Ayırıcı */
-      --shadow: rgba(0, 0, 0, 0.05); /* Hafif gölge */
+      var fullHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + cityName + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f8fafc;color:#334155;padding:10px 10px 120px}.logo{position:absolute;top:20px;left:20px;font-size:34px;text-decoration:none;color:#334155}h1{font-size:32px;margin-bottom:65px;text-align:center;color:#2563eb;font-weight:600;position:relative;top:35px}.city-section{margin-bottom:40px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.05);max-width:1000px;margin-left:auto;margin-right:auto;overflow:hidden;border:1px solid #e2e8f0}.city-header{padding:16px 20px;text-align:left}.city-title{margin:0;font-size:20px;color:#2563eb;font-weight:600}.city-photos{display:flex;gap:15px;overflow-x:auto;padding:7px 15px 15px}.photo-card{flex:0 0 auto;width:280px;height:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,0.05);background:#fff;transition:transform 0.2s}.photo-card:hover{transform:scale(1.02)}.photo-card img{width:100%;height:100%;object-fit:cover}.location-link{text-decoration:none;color:#3b82f6;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:24px;background:rgba(59,130,246,0.08);transition:all 0.2s;font-size:16px;font-weight:600}.location-link:hover{background:rgba(59,130,246,0.15);color:#2563eb;text-decoration:none;transform:translateY(-1px)}.click-icon{color:#f97316}.click-icon::before{content:"➤";font-size:14px}.promotion-section{background:linear-gradient(135deg,#f8f9fa,#e9ecef);color:#495057;padding:25px;border-radius:15px;margin:30px auto;text-align:center;border:1px solid #e9ecef;max-width:1000px}.promotion-title{font-size:18px;font-weight:bold;margin-bottom:15px;color:#343a40}.instagram-btn{background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);color:#fff!important;padding:12px 25px;border-radius:20px;text-decoration:none!important;display:inline-block;font-weight:600;transition:all 0.3s;margin:10px 0;box-shadow:0 4px 15px rgba(225,48,108,0.3)}.instagram-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(225,48,108,0.4)}.promo-text{margin:15px 0;font-size:15px}.purchase-btn{width:100%;max-width:450px;padding:18px;background:linear-gradient(135deg,#ffd700,#ffb347,#ff8c00);color:#fff;text-decoration:none;border-radius:12px;font-size:17px;font-weight:600;display:inline-block;transition:all 0.3s;margin:15px 0 25px;box-shadow:0 4px 15px rgba(255,215,0,0.3)}.purchase-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,0.4);color:#fff;text-decoration:none}</style></head><body><a href="https://tr81.tr/login.html" class="logo">🌐</a><h1>📸 ' + cityName + '</h1>' + locationsHTML + '<div class="promotion-section"><div class="promotion-title">🎁Hediye fırsatı!</div><p>Web sitemizi hikayenizde paylaşın → Premium erişim kazanın!</p><a href="https://www.instagram.com/tr81.tr/" target="_blank" class="instagram-btn">📩Instagram: @tr81.tr</a><div class="promo-text">Tanıtım desteğiniz karşılığında premium erişim elde edin. Giriş bilgilerinizi almak için bize yazın veya aşağıdan satın alabilirsiniz.</div><a href="https://www.shopier.com/35589307" target="_blank" class="purchase-btn">💳 Premium Erişim: 10$</a></div></body></html>';
+      
+      try {
+        navigator.clipboard.writeText(fullHTML);
+        alert('HTML kodu kopyalandı!');
+      } catch(err) {
+        alert('Kopyalama hatası!');
+      }
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
-      background-color: var(--background);
-      color: var(--text);
-      line-height: 1.6;
-      padding: 10px;
-      overflow-y: auto;
-      padding-bottom: 120px; /* Premium butonunun altına çok boşluk */
-    }
-    
-    .logo {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 34px;
-      text-decoration: none;
-      color: var(--text);
-      transition: color 0.2s;
-    }
-    
-    .logo:hover {
-      color: var(--primary);
-    }
-    
-    h1 {
-      font-size: 32px;
-      margin-top: 0px;
-      margin-bottom: 65px;
-      text-align: center;
-      color: var(--primary-dark);
-      font-weight: 600;
-      position: relative;
-      top: 35px;
-    }
-    
-    .city-section {
-      margin-bottom: 40px;
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 0;
-      box-shadow: 0 2px 8px var(--shadow);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    
-    .city-header {
-      padding: 16px 20px;
-      margin: 0;
-      border: none;
-      background: transparent;
-      text-align: left;
-    }
-    
-    .city-title {
-      margin: 0;
-      font-size: 20px;
-      color: var(--primary-dark);
-      font-weight: 600;
-    }
-    
-    .city-photos {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 7px 15px 15px 15px;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .city-photos::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .photo-card {
-      flex: 0 0 auto;
-      width: 280px;
-      height: 220px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px var(--shadow);
-      scroll-snap-align: start;
-      background-color: white;
-      position: relative;
-      transition: transform 0.2s;
-    }
-    
-    .photo-card:hover {
-      transform: scale(1.02);
-    }
-    
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .premium-info {
-      margin-top: 40px;
-      margin-bottom: 30px;
-      text-align: center;
-      background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 16px;
-      line-height: 1.5;
-      border: 2px solid #16a34a;
-      font-weight: 500;
-      color: #15803d;
-    }
-    
-    .premium-info::before {
-      content: "✨ ";
-      font-size: 22px;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
-    
-    .premium-link {
-      margin-top: 20px;
-      margin-bottom: 80px;
-      display: inline-block;
-      background: linear-gradient(135deg, #FFD700, #FFA500);
-      color: #000;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 18px;
-      padding: 16px 32px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-      transition: all 0.3s ease;
-      border: 2px solid #FFD700;
-      font-family: inherit;
-      letter-spacing: 0.5px;
-    }
-    
-    .premium-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
-      background: linear-gradient(135deg, #FFA500, #FFD700);
-      text-decoration: none;
-    }
-    
-    .location-link {
-      text-decoration: none;
-      color: var(--primary);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      border-radius: 24px;
-      background: rgba(59, 130, 246, 0.08);
-      transition: all 0.2s ease;
-      font-size: 16px;
-      font-weight: 600;
-      max-width: fit-content;
-    }
-    
-    .location-link:hover {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--primary-dark);
-      text-decoration: none;
-      transform: translateY(-1px);
-    }
-    
-    .click-icon {
-      color: var(--accent);
-      display: inline-flex;
-    }
-    
-    .click-icon::before {
-      content: "➤";
-      display: inline-block;
-      font-size: 14px;
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 16px;
-        padding-bottom: 60px;
-      }
-      
-      .logo {
-        top: 16px;
-        left: 16px;
-        font-size: 29px;
-      }
-      
-      h1 {
-        font-size: 24px;
-        margin-top: 0px;
-        margin-bottom: 50px;
-        position: relative;
-        top: 30px;
-      }
-      
-      .city-section {
-        margin-bottom: 32px;
-        border-radius: 16px;
-      }
-      
-      .city-header {
-        padding: 6px 8px 0px 8px;
-        text-align: left;
-      }
-      
-      .city-title {
-        font-size: 18px;
-      }
-      
-      .city-photos {
-        padding: 8px 16px 16px 16px;
-        gap: 12px;
-      }
-      
-      .photo-card {
-        width: 216px;
-        height: 216px;
-        border-radius: 12px;
-      }
-      
-      .premium-info {
-        font-size: 15px;
-        padding: 20px;
-        margin: 32px 16px 24px 16px;
-        border-radius: 16px;
-      }
-      
-      .premium-link {
-        font-size: 16px;
-        padding: 14px 28px;
-        margin-bottom: 40px;
-        border-radius: 12px;
-      }
-      
-      .location-link {
-        padding: 8px 14px;
-        font-size: 16px;
-        border-radius: 20px;
-      }
-      
-      .click-icon::before {
-        font-size: 12px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <!-- 🌐 Logo bağlantısı -->
-  <a href="https://tr81.tr/login.html" class="logo">🌐</a>
-  <h1>📸 ${cityName}</h1>
-  
-${locationsHTML}  
-  <div class="premium-info">
-    Gizli konumları 🔓 açmak için Premium üyeliği alın veya Instagram hikayenizde → tanıtım videomuzu paylaşarak → 🎁 Premium kazanın! Bize ulaşın 📩 @tr81.tr
-  </div>
-  
-  <p style="text-align: center;">
-    <a href="https://www.shopier.com/35589307" class="premium-link">PREMIUM 10$</a>
-  </p>
-</body>
-</html>`;
-
-      // HTML kodunu direkt kopyala
-      navigator.clipboard.writeText(fullHTML).then(function() {
-        alert('Güncellenmiş modern tasarım HTML kodu kopyalandı!');
-      }).catch(function(err) {
-        console.error('Kopyalama hatası:', err);
-        alert('Kod kopyalanırken bir hata oluştu!');
-      });
-    }
-
-    // Edit panelini aç/kapat
     function toggleEditPanel() {
-      const panel = document.getElementById('editPanel');
-      const isHidden = panel.style.display === 'none';
+      var panel = document.getElementById('editPanel');
+      var isHidden = panel.style.display === 'none';
       panel.style.display = isHidden ? 'block' : 'none';
     }
 
-    // Sayfa başlığını güncelle
     function updatePageTitle() {
-      const cityName = loadCityName();
+      var cityName = loadCityName();
       document.getElementById('city-name').textContent = cityName;
       document.getElementById('page-title').textContent = cityName;
     }
 
-    // Sayfa yüklendikende çalıştır
     window.onload = function() {
       updatePageTitle();
       renderLocations();
