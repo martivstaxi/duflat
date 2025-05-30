@@ -399,6 +399,14 @@
       cursor: pointer;
       font-size: 24px;
       z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 119, 204, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      background: #005599;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 119, 204, 0.4);
     }
 
     .export-btn {
@@ -475,10 +483,32 @@
 <body>
   <!-- 🌐 Logo bağlantısı -->
   <a href="https://tr81.tr/index.html" class="logo" onclick="window.open(this.href, '_blank'); return false;">🌐</a>
-  <h1 id="city-header">📸 <span id="city-name"></span></h1>
+  <h1 id="city-header">📸 <span id="city-name">Demo Şehir</span></h1>
   
   <!-- Konumlar dinamik olarak burada görünecek -->
-  <div id="locations-container"></div>
+  <div id="locations-container">
+    <!-- Demo konum -->
+    <div class="city-section">
+      <div class="city-header">
+        <h2 class="city-title">
+          <a href="https://maps.google.com/?q=Demo+Konum" target="_blank" class="location-link">
+            <span class="click-icon"></span>Demo Konum 📍
+          </a>
+        </h2>
+      </div>
+      <div class="city-photos">
+        <div class="photo-card">
+          <img src="https://picsum.photos/380/380?random=1" alt="Demo Konum">
+        </div>
+        <div class="photo-card">
+          <img src="https://picsum.photos/380/380?random=2" alt="Demo Konum">
+        </div>
+        <div class="photo-card">
+          <img src="https://picsum.photos/380/380?random=3" alt="Demo Konum">
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- Hediye Fırsatı Promosyonu -->
   <div class="promotion-section">
@@ -494,7 +524,7 @@
   </div>
 
   <!-- EDİTOR PANEL -->
-  <button class="edit-btn" onclick="toggleEditPanel()">✎</button>
+  <button class="edit-btn" onclick="toggleEditPanel()" title="Editörü Aç">✎</button>
   
   <div class="edit-panel" id="editPanel">
     <h3>🏙️ Şehir ve Konum Yöneticisi</h3>
@@ -505,7 +535,7 @@
     </div>
     
     <textarea id="cityData" placeholder="Örnek:
-İstanbul@@@Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg@@@Galata Kulesi@@https://maps.google.com/?q=Galata+Kulesi@@https://example.com/foto1.jpg@@https://example.com/foto2.jpg@@https://example.com/foto3.jpg"></textarea>
+İstanbul@@@Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsum.photos/380/380?random=4@@https://picsum.photos/380/380?random=5@@https://picsum.photos/380/380?random=6@@@Galata Kulesi@@https://maps.google.com/?q=Galata+Kulesi@@https://picsum.photos/380/380?random=7@@https://picsum.photos/380/380?random=8@@https://picsum.photos/380/380?random=9"></textarea>
     
     <button class="process-btn" onclick="processCityData()">🔄 Şehir Verilerini İşle</button>
     <button class="export-btn" onclick="exportHTML()">📁 HTML Kodunu Kopyala</button>
@@ -513,93 +543,69 @@
   </div>
 
   <script>
-    // Erişim kontrolü kaldırıldı - demo için
-    // if (localStorage.getItem("duflat-access") !== "granted") {
-    //   window.location.href = "index.html";
-    // }
+    // Memory-based data storage (localStorage'ın alternatifi)
+    let cityData = {
+      cityName: 'Demo Şehir',
+      locations: [
+        {
+          name: 'Demo Konum',
+          photos: [
+            'https://picsum.photos/380/380?random=1',
+            'https://picsum.photos/380/380?random=2', 
+            'https://picsum.photos/380/380?random=3'
+          ],
+          link: 'https://maps.google.com/?q=Demo+Konum'
+        }
+      ]
+    };
 
-    function getCityFromUrl() {
-      var urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('city') || 'Şehir';
-    }
-
-    function getStorageKey() {
-      var city = getCityFromUrl();
-      return 'locations_' + city;
-    }
-
-    function getCityNameStorageKey() {
-      var city = getCityFromUrl();
-      return 'cityName_' + city;
-    }
-
-    function loadCityName() {
-      var storageKey = getCityNameStorageKey();
-      var savedName = localStorage.getItem(storageKey);
-      return savedName || getCityFromUrl();
-    }
-
-    function saveCityName(cityName) {
-      var storageKey = getCityNameStorageKey();
-      localStorage.setItem(storageKey, cityName);
-    }
-
-    function loadLocations() {
-      var storageKey = getStorageKey();
-      var savedLocations = localStorage.getItem(storageKey);
-      
-      if (savedLocations) {
-        return JSON.parse(savedLocations);
+    function toggleEditPanel() {
+      const panel = document.getElementById('editPanel');
+      if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
       } else {
-        return [];
+        panel.style.display = 'none';
       }
     }
 
-    function saveLocations(locations) {
-      var storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(locations));
-    }
-
     function processCityData() {
-      var cityDataText = document.getElementById('cityData').value;
+      const cityDataText = document.getElementById('cityData').value;
       if (!cityDataText.trim()) {
         alert('Lütfen şehir verilerini girin!');
         return;
       }
 
       try {
-        var parts = cityDataText.split('@@@');
+        const parts = cityDataText.split('@@@');
         
         if (parts.length < 2) {
           alert('Geçersiz format! Şehir adı ve en az bir konum olmalı.');
           return;
         }
 
-        var cityName = parts[0].trim();
+        const cityName = parts[0].trim();
         if (!cityName) {
           alert('Şehir adı boş olamaz!');
           return;
         }
 
-        saveCityName(cityName);
-
-        var locations = [];
-        for (var i = 1; i < parts.length; i++) {
-          var locationData = parts[i].trim();
+        const locations = [];
+        for (let i = 1; i < parts.length; i++) {
+          const locationData = parts[i].trim();
           if (!locationData) continue;
 
-          var locationParts = locationData.split('@@');
+          const locationParts = locationData.split('@@');
           
           if (locationParts.length < 2) {
             console.log('Konum ' + i + ': Eksik veri - "' + locationData + '"');
             continue;
           }
 
-          var name = locationParts[0].trim();
-          var link = locationParts[1].trim();
-          var photos = [];
+          const name = locationParts[0].trim();
+          const link = locationParts[1].trim();
+          const photos = [];
 
-          for (var j = 2; j < locationParts.length && j < 5; j++) {
+          for (let j = 2; j < locationParts.length && j < 5; j++) {
             if (locationParts[j] && locationParts[j].trim().startsWith('https://')) {
               photos.push(locationParts[j].trim());
             }
@@ -610,16 +616,18 @@
             continue;
           }
 
-          var newLocation = {
+          locations.push({
             name: name,
             photos: photos,
             link: link
-          };
-
-          locations.push(newLocation);
+          });
         }
 
-        saveLocations(locations);
+        // Memory'de sakla
+        cityData = {
+          cityName: cityName,
+          locations: locations
+        };
         
         updatePageTitle();
         renderLocations();
@@ -635,18 +643,16 @@
     }
 
     function renderLocations() {
-      var container = document.getElementById('locations-container');
-      var locations = loadLocations();
-      
+      const container = document.getElementById('locations-container');
       container.innerHTML = '';
       
-      for(var i = 0; i < locations.length; i++) {
-        var location = locations[i];
-        var section = document.createElement('div');
+      for(let i = 0; i < cityData.locations.length; i++) {
+        const location = cityData.locations[i];
+        const section = document.createElement('div');
         section.className = 'city-section';
         
-        var photosHTML = '';
-        for(var j = 0; j < location.photos.length; j++) {
+        let photosHTML = '';
+        for(let j = 0; j < location.photos.length; j++) {
           photosHTML += '<div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
@@ -658,32 +664,29 @@
     }
 
     function exportHTML() {
-      var cityName = loadCityName();
-      var locations = loadLocations();
-      
-      if (locations.length === 0) {
+      if (cityData.locations.length === 0) {
         alert('Önce konum ekleyin!');
         return;
       }
       
-      var locationsHTML = '';
-      for(var i = 0; i < locations.length; i++) {
-        var location = locations[i];
-        var photosHTML = '';
+      let locationsHTML = '';
+      for(let i = 0; i < cityData.locations.length; i++) {
+        const location = cityData.locations[i];
+        let photosHTML = '';
         
-        for(var j = 0; j < location.photos.length; j++) {
+        for(let j = 0; j < location.photos.length; j++) {
           photosHTML += '\\n        <div class="photo-card"><img src="' + location.photos[j] + '" alt="' + location.name + '"></div>';
         }
         
         locationsHTML += '\\n  <div class="city-section">\\n    <div class="city-header">\\n      <h2 class="city-title">\\n        <a href="' + location.link + '" target="_blank" class="location-link">\\n          <span class="click-icon"></span>' + location.name + ' 📍\\n        </a>\\n      </h2>\\n    </div>\\n    <div class="city-photos">' + photosHTML + '\\n    </div>\\n  </div>';
       }
 
-      var fullHTML = \`<!DOCTYPE html>  
+      const fullHTML = `<!DOCTYPE html>  
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">\${cityName}</title>
+  <title>${cityData.cityName}</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Genesis, Verdana, sans-serif;
@@ -1038,15 +1041,12 @@
   </style>
 </head>
 <body>
-  <!-- 🌐 Logo bağlantısı -->
   <a href="https://tr81.tr/index.html" class="logo" onclick="window.open(this.href, '_blank'); return false;">🌐</a>
-  <h1 id="city-header">📸 <span id="city-name">\${cityName}</span></h1>
+  <h1>📸 ${cityData.cityName}</h1>
   
-  <!-- Konumlar dinamik olarak burada görünecek -->
-  <div id="locations-container">\${locationsHTML}
+  <div id="locations-container">${locationsHTML}
   </div>
   
-  <!-- Hediye Fırsatı Promosyonu -->
   <div class="promotion-section">
     <div class="promotion-title">🎁Hediye fırsatı!</div>
     <p style="font-size: 24px;">Gizli konumları 🔓 açmak için → Instagram hikayenizde web sitemizi paylaşın → Premium erişim kazanın!</p>
@@ -1059,15 +1059,14 @@
     </a>
   </div>
 </body>
-</html>\`;
+</html>`;
       
       try {
         navigator.clipboard.writeText(fullHTML);
-        alert('HTML kodu kopyalandı! (Mobil responsive dahil)');
+        alert('HTML kodu kopyalandı! (Mobil responsive ile birlikte)');
       } catch(err) {
-        console.error('Kopyalama hatası:', err);
-        // Fallback: textarea ile göster
-        var textarea = document.createElement('textarea');
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
         textarea.value = fullHTML;
         document.body.appendChild(textarea);
         textarea.select();
@@ -1075,24 +1074,18 @@
           document.execCommand('copy');
           alert('HTML kodu kopyalandı!');
         } catch(e) {
-          alert('Kopyalama başarısız. Manuel olarak kopyalayın.');
+          prompt('HTML kodu (Ctrl+C ile kopyalayın):', fullHTML);
         }
         document.body.removeChild(textarea);
       }
     }
 
-    function toggleEditPanel() {
-      var panel = document.getElementById('editPanel');
-      var isHidden = panel.style.display === 'none';
-      panel.style.display = isHidden ? 'block' : 'none';
-    }
-
     function updatePageTitle() {
-      var cityName = loadCityName();
-      document.getElementById('city-name').textContent = cityName;
-      document.getElementById('page-title').textContent = cityName;
+      document.getElementById('city-name').textContent = cityData.cityName;
+      document.getElementById('page-title').textContent = cityData.cityName;
     }
 
+    // Sayfa yüklendiğinde çalışacak
     window.onload = function() {
       updatePageTitle();
       renderLocations();
