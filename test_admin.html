@@ -946,7 +946,6 @@
     <div class="edit-section">
       <h4>📍 Şehir Bilgileri</h4>
       <input type="text" id="cityNameInput" placeholder="Şehir Adı (örn: İstanbul)" value="Demo Şehir">
-      <input type="text" id="citySubtitleInput" placeholder="Alt Başlık (örn: Keşfedilecek güzel yerler)" value="Keşfedilecek güzel yerler">
     </div>
     
     <div class="edit-section">
@@ -1117,7 +1116,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
     // Memory-based data storage
     let cityData = {
       cityName: 'Demo Şehir',
-      citySubtitle: 'Keşfedilecek güzel yerler',
       background: 'default',
       customBgUrl: '',
       locations: [
@@ -1183,7 +1181,7 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
       currentLang = code;
       const t = translations[code];
       
-      document.getElementById('subtitle').textContent = t.subtitle || cityData.citySubtitle;
+      document.getElementById('subtitle').textContent = t.subtitle;
       document.getElementById('locations-label').textContent = t.locationsLabel;
       document.getElementById('photos-label').textContent = t.photosLabel;
       document.getElementById('langFlag').textContent = t.flag;
@@ -1295,7 +1293,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
         panel.style.display = 'block';
         // Load current values
         document.getElementById('cityNameInput').value = cityData.cityName;
-        document.getElementById('citySubtitleInput').value = cityData.citySubtitle;
         if (cityData.customBgUrl) {
           document.getElementById('customBgUrl').value = cityData.customBgUrl;
         }
@@ -1307,7 +1304,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
     function processCityData() {
       const cityDataText = document.getElementById('cityData').value;
       const cityName = document.getElementById('cityNameInput').value.trim();
-      const citySubtitle = document.getElementById('citySubtitleInput').value.trim();
       
       if (!cityName) {
         alert('Lütfen şehir adını girin!');
@@ -1322,7 +1318,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
       try {
         // Update city info
         cityData.cityName = cityName;
-        cityData.citySubtitle = citySubtitle;
         
         // Parse locations
         const parts = cityDataText.split('@@@');
@@ -1406,7 +1401,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
     function updatePageTitle() {
       document.getElementById('city-name').textContent = cityData.cityName;
       document.getElementById('page-title').textContent = cityData.cityName;
-      document.getElementById('subtitle').textContent = cityData.citySubtitle;
     }
 
     function updateStats() {
@@ -1421,7 +1415,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
       if (confirm('Tüm şehir verilerini temizleyip demo durumuna dönmek istediğinizden emin misiniz?')) {
         cityData = {
           cityName: 'Demo Şehir',
-          citySubtitle: 'Keşfedilecek güzel yerler',
           background: 'default',
           customBgUrl: '',
           locations: [{
@@ -1439,7 +1432,6 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
         updateStats();
         document.getElementById('cityData').value = '';
         document.getElementById('cityNameInput').value = cityData.cityName;
-        document.getElementById('citySubtitleInput').value = cityData.citySubtitle;
         document.getElementById('customBgUrl').value = '';
         selectBackground('default');
         alert('🗑️ Veriler temizlendi ve demo verileri yüklendi.');
@@ -1517,7 +1509,7 @@ Beylerbeyi Sarayı@@https://maps.google.com/?q=Beylerbeyi+Sarayı@@https://picsu
   
   <div class="container">
     <h1><span class="camera-emoji">📸</span><span class="gradient-text">${cityData.cityName}</span></h1>
-    <p class="subtitle" id="subtitle">${cityData.citySubtitle}</p>
+    <p class="subtitle" id="subtitle"></p>
     
     <!-- Stats Section -->
     <div class="stats-section">
@@ -1542,7 +1534,6 @@ ${locationsHTML}    </div>
     // Dil verileri
     const translations = ${JSON.stringify(translations, null, 4)};
 
-    const citySubtitle = '${cityData.citySubtitle}';
     let currentLang = 'tr';
 
     // Normalize text for search
@@ -1584,7 +1575,7 @@ ${locationsHTML}    </div>
       currentLang = code;
       const t = translations[code];
       
-      document.getElementById('subtitle').textContent = citySubtitle;
+      document.getElementById('subtitle').textContent = t.subtitle;
       document.getElementById('locations-label').textContent = t.locationsLabel;
       document.getElementById('photos-label').textContent = t.photosLabel;
       document.getElementById('langFlag').textContent = t.flag;
