@@ -805,6 +805,7 @@
         <li>A2-A3...: Konum Adları</li>
         <li>B2-B3...: Google Maps Linkleri</li>
         <li>C2-H2...: Fotoğraf URL'leri (6 adet)</li>
+        <li>Virgül, noktalı virgül veya TAB ayırıcı desteklenir</li>
       </ul>
     </div>
     
@@ -1068,31 +1069,31 @@
     function handleCSVFile(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const csvContent = e.target.result;
           console.log('CSV içeriği:', csvContent); // Debug için
-          
+
           const lines = csvContent.split(/\r?\n/); // Hem \n hem \r\n destekle
           console.log('Satır sayısı:', lines.length); // Debug için
-          
+
           if (lines.length < 2) {
             alert('CSV dosyası en az 2 satır içermelidir!');
             return;
           }
-          
-          // İlk satırdan şehir adını al
+
+          // İlk satırdan şehir adını al ve ayıracı belirle
           const firstLine = lines[0].trim();
-          let cityName = '';
-          
-          // Tab veya virgül ile ayrılmış olabilir
+          let delimiter = ',';
           if (firstLine.includes('\t')) {
-            cityName = firstLine.split('\t')[0].trim();
-          } else {
-            cityName = firstLine.split(',')[0].trim();
+            delimiter = '\t';
+          } else if (firstLine.includes(';')) {
+            delimiter = ';';
           }
+
+          const cityName = firstLine.split(delimiter)[0].trim();
           
           if (!cityName) {
             alert('Şehir adı (A1) boş olamaz!');
@@ -1108,13 +1109,8 @@
             
             console.log('Satır ' + i + ':', line); // Debug için
             
-            // Tab karakteri ile ayırma
-            let cells;
-            if (line.includes('\t')) {
-              cells = line.split('\t');
-            } else {
-              cells = line.split(',');
-            }
+            // Satırı belirlenen ayıraca göre böl
+            const cells = line.split(delimiter);
             
             console.log('Hücre sayısı:', cells.length, 'Hücreler:', cells); // Debug için
             
