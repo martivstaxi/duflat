@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Türkiye | 81 İlin En Güzel Manzaraları</title>
+
+<!-- Inter Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* === Değişkenler === */
+:root{
+  --primary:#3b82f6;--primary-dark:#1d4ed8;--secondary:#8b5cf6;--accent:#f97316;
+  --bg-grad:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);--card-bg:rgba(255,255,255,.95);
+  --glass-bg:rgba(255,255,255,.60);--glass-border:rgba(0,0,0,.08);--text-primary:#334155;
+  --text-secondary:#64748b;--text-muted:#94a3b8;--shadow-lg:0 6px 24px rgba(0,0,0,.08);
+  --shadow-xl:0 12px 40px rgba(0,0,0,.12);
+}
+
+/* === Reset & Body === */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Inter',sans-serif;
+  background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/df156335-417a-4600-a36a-a78c69799c00/public');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color:var(--text-primary);
+  min-height:100vh;line-height:1.6;overflow-x:hidden;
+  position: relative;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-color: #e2e8f0;
+}
+body::after{
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(248, 250, 252, 0.4);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container{max-width:1100px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;top:20px;right:20px;z-index:100;
+}
+.lang-btn{
+  background:rgba(255,255,255,.2);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 16px;cursor:pointer;
+  font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;
+  box-shadow:var(--shadow-lg);transition:.3s;color:var(--text-primary);
+}
+.lang-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-xl);background:rgba(255,255,255,.3);}
+.lang-list{
+  position:absolute;top:calc(100% + 8px);right:0;background:rgba(255,255,255,.98);
+  backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:12px;
+  box-shadow:var(--shadow-xl);max-height:320px;overflow-y:auto;display:none;min-width:160px;
+}
+.lang-list.show{display:block;animation:fadeIn .3s ease;}
+.lang-item{
+  padding:10px 16px;cursor:pointer;transition:background .2s;display:flex;
+  align-items:center;gap:8px;font-size:14px;color:var(--text-primary);
+}
+.lang-item:hover{background:var(--glass-bg);color:var(--primary);}
+.lang-item.active{background:var(--primary);color:#fff;}
+
+/* === World Button === */
+.world-button{
+  position:fixed;top:20px;left:20px;z-index:100;
+}
+.world-btn{
+  background:rgba(255,255,255,.2);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 16px;cursor:pointer;
+  font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;
+  box-shadow:var(--shadow-lg);transition:.3s;color:var(--text-primary);
+}
+.world-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-xl);background:rgba(255,255,255,.3);}
+
+/* === Header === */
+.header{padding:80px 16px 40px;text-align:center;position:relative;z-index:1;}
+.title{
+  font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;margin-bottom:12px;
+  letter-spacing:-.5px;
+  line-height:1.4;
+}
+.title-word{
+  display:inline-block;
+  margin:0 0.15em;
+  font-weight:700;
+  transition:all 0.3s ease;
+}
+.title-word:hover{
+  transform:translateY(-2px) scale(1.05);
+}
+.title-emoji{
+  display:inline-block;
+  font-size:1em;
+  vertical-align:middle;
+  margin-left:0.2em;
+}
+/* Doğa renkleri - düz renkler */
+.word-0{color:#27ae60;} /* Orman yeşili */
+.word-1{color:#3498db;} /* Gökyüzü mavisi */
+.word-2{color:#e67e22;} /* Turuncu */
+.word-3{color:#8e44ad;} /* Mor */
+.word-4{color:#16a085;} /* Turkuaz */
+.word-5{color:#c0392b;} /* Kırmızı */
+.word-6{color:#f39c12;} /* Altın sarısı */
+
+/* === Search === */
+.search-box{max-width:320px;margin:0 auto 40px;position:relative;z-index:1;}
+.search{
+  width:100%;padding:14px 48px 14px 20px;font-size:15px;background:rgba(255,255,255,.3);
+  backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.4);border-radius:20px;
+  transition:.3s;color:var(--text-primary);
+}
+.search:focus{outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(59,130,246,.1);background:rgba(255,255,255,.5);}
+.search-icon{position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  color:var(--text-secondary);pointer-events:none;}
+
+/* === Info === */
+.info{
+  max-width:320px;margin:0 auto 40px;padding:20px 24px;text-align:center;
+  background:rgba(255,255,255,.3);backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.4);
+  border-radius:20px;font-size:14px;line-height:1.6;color:var(--text-primary);
+  box-shadow:var(--shadow-lg);position:relative;z-index:1;display:block;
+}
+.info.premium{background:linear-gradient(135deg,rgba(220,252,231,.3) 0%,rgba(209,250,229,.3) 100%);
+  backdrop-filter:blur(20px);border-color:rgba(22,163,74,.4);color:#16a34a;}
+.info a{color:var(--primary);font-weight:600;text-decoration:none;transition:.3s;}
+.info a:hover{color:var(--primary-dark);text-decoration:underline;}
+
+/* === Grid === */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  padding-bottom:40px;
+  position:relative;
+  z-index:1;
+  max-width:600px;
+  margin:0 auto;
+}
+.card{
+  background:rgba(255,255,255,.3);
+  backdrop-filter:blur(20px);
+  border:2px solid rgba(255,255,255,.4);
+  border-radius:20px;
+  padding:20px 12px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s cubic-bezier(.4,0,.2,1);
+  position:relative;
+  box-shadow:var(--shadow-lg);
+  aspect-ratio:1/1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:var(--primary);background:rgba(255,255,255,.5);}
+.city-code{font-weight:700;font-size:24px;color:var(--text-primary);line-height:1;}
+.city-name{font-weight:400;font-size:13px;color:var(--text-secondary);margin-top:4px;word-break:break-word;line-height:1.2;}
+.lock-icon{font-size:16px;margin-top:6px;display:block;}
+.card.free{background:linear-gradient(135deg,rgba(254,243,199,.3) 0%,rgba(253,230,138,.3) 100%);backdrop-filter:blur(20px);border:2px solid rgba(245,158,11,.4);}
+
+/* === Mobile === */
+@media(max-width:768px){
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  body{
+    min-height: 100vh;
+    background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/ce399dec-ddac-4455-521d-697751d46300/public');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/ce399dec-ddac-4455-521d-697751d46300/public');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(248, 250, 252, 0.2);
+    pointer-events: none;
+    z-index: -1;
+  }
+  /* Container düzenlemesi */
+  .container{
+    max-width:100%;
+    min-height:100vh;
+    position: relative;
+    z-index: 1;
+    padding: 0 12px 50px 12px;
+  }
+  /* Search box ve info özel ayarlar */
+  .search-box {
+    margin: 0 auto 40px !important;
+    padding: 0 4px;
+    max-width: calc(100% - 8px);
+  }
+  .info {
+    margin: 0 auto 40px !important;
+    max-width: calc(100% - 8px);
+    background: rgba(255,255,255,.3) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,.4) !important;
+  }
+  /* Grid - mobilde sabit 3 sütun ve ortalama */
+  .grid {
+    gap:10px;
+    padding-bottom:40px;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 100%;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* Kart boyutları mobilde */
+  .card {
+    padding: 18px 10px !important;
+    aspect-ratio: 1/1 !important;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .city-code{font-size:20px !important;line-height:1;}
+  .city-name{font-size:11px !important;line-height:1.2;word-break:break-word;margin-top:3px;}
+  .lock-icon{font-size:15px !important;margin-top:4px;display:block !important;}
+  .info {
+    background: rgba(255,255,255,.3) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,.4) !important;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .info.premium {
+    background: linear-gradient(135deg,rgba(220,252,231,.3) 0%,rgba(209,250,229,.3) 100%) !important;
+    backdrop-filter: blur(20px);
+    border-color: rgba(22,163,74,.4) !important;
+  }
+  /* Diğer mobil stiller */
+  .lang-select{top:16px;right:16px}
+  .lang-btn{padding:8px 12px;font-size:13px}
+  .world-button{top:16px;left:16px}
+  .world-btn{padding:8px 12px;font-size:13px}
+  .header{padding:70px 16px 32px}.title{font-size:1.875rem}
+  .search{padding:12px 44px 12px 16px;font-size:14px}.info{font-size:13px;padding:16px 20px}
+  .card{padding:20px 12px}
+  .city-name{font-size:13px}
+}
+@media(max-width:480px){
+  .grid{
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .card{
+    padding: 15px 8px !important;
+    aspect-ratio: 1/1 !important;
+  }
+  .city-code{font-size:18px !important;}
+  .city-name{font-size:10px !important;}
+  .lock-icon{font-size:14px !important;margin-top:3px;display:block !important;}
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeIn .3s ease;}
+
+/* Desktop */
+@media(min-width:769px){
+  .search-box, .info {
+    max-width: 600px !important;
+  }
+  .grid {
+    max-width: 600px;
+    margin: 0 auto;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+  <!-- World Button -->
+  <div class="world-button">
+    <button class="world-btn" onclick="location.href='world.html'">
+      <span>🌍</span>
+      <span id="worldButtonText">Dünya Konumları</span>
+    </button>
+  </div>
+
+  <!-- Language Selector -->
+  <div class="lang-select">
+    <button class="lang-btn" onclick="toggleLang()">
+      <span id="langFlag">🇹🇷</span>
+      <span id="langName">TR</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+        <path d="M3 5L6 8L9 5"/>
+      </svg>
+    </button>
+    <div class="lang-list" id="langList"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1 class="title" id="title">Türkiye'nin manzaralı yerlerini keşfet 📍</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input id="search" class="search" type="text" placeholder="Bir il ara..." autocomplete="off">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+      </svg>
+    </div>
+
+    <!-- Info -->
+    <div id="info" class="info">
+      Antalya'yı ücretsiz keşfet! ⚡ Tüm iller için <a href="https://www.tr81.tr/login.html">giriş yap</a>
+    </div>
+
+    <!-- Grid -->
+    <div id="grid" class="grid"></div>
+  </div>
+
+<script>
+// Çeviriler
+const lang = {
+  tr:{flag:'🇹🇷',name:'TR',title:'Türkiye\'nin manzaralı yerlerini keşfet 📍',
+    search:'Bir il ara...',banner:'Antalya\'yı ücretsiz keşfet! ⚡ Tüm iller için <a href="https://www.tr81.tr/login.html">giriş yap</a>',
+    premium:'🔓 Tüm iller açık!',worldButton:'Dünya Konumları'},
+  en:{flag:'🇬🇧',name:'EN',title:'Explore Türkiye\'s scenic spots 📍',
+    search:'Search province...',banner:'Explore Antalya free! ⚡ <a href="https://www.tr81.tr/login.html">Login</a> for all provinces',
+    premium:'🔓 All provinces unlocked!',worldButton:'World Locations'},
+  de:{flag:'🇩🇪',name:'DE',title:'Entdecke die malerischen Orte der Türkei 📍',
+    search:'Provinz suchen...',banner:'Entdecke Antalya kostenlos! ⚡ <a href="https://www.tr81.tr/login.html">Anmelden</a> für alle Provinzen',
+    premium:'🔓 Alle Provinzen freigeschaltet!',worldButton:'Weltweite Standorte'},
+  fr:{flag:'🇫🇷',name:'FR',title:'Explorez les sites pittoresques de la Turquie 📍',
+    search:'Rechercher une province...',banner:'Explorez Antalya gratuitement ! ⚡ <a href="https://www.tr81.tr/login.html">Se connecter</a> pour toutes les provinces',
+    premium:'🔓 Toutes les provinces débloquées !',worldButton:'Sites mondiaux'},
+  es:{flag:'🇪🇸',name:'ES',title:'Explora los lugares pintorescos de Turquía 📍',
+    search:'Buscar provincia...',banner:'¡Explora Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Iniciar sesión</a> para todas las provincias',
+    premium:'🔓 ¡Todas las provincias desbloqueadas!',worldButton:'Ubicaciones mundiales'},
+  it:{flag:'🇮🇹',name:'IT',title:'Esplora i luoghi pittoreschi della Turchia 📍',
+    search:'Cerca provincia...',banner:'Esplora Antalya gratuitamente! ⚡ <a href="https://www.tr81.tr/login.html">Accedi</a> per tutte le province',
+    premium:'🔓 Tutte le province sbloccate!',worldButton:'Località mondiali'},
+  pt:{flag:'🇵🇹',name:'PT',title:'Explore os locais pitorescos da Turquia 📍',
+    search:'Pesquisar província...',banner:'Explore Antalya gratuitamente! ⚡ <a href="https://www.tr81.tr/login.html">Entrar</a> para todas as províncias',
+    premium:'🔓 Todas as províncias desbloqueadas!',worldButton:'Localizações mundiais'},
+  ru:{flag:'🇷🇺',name:'RU',title:'Исследуйте живописные места Турции 📍',
+    search:'Поиск провинции...',banner:'Исследуйте Анталью бесплатно! ⚡ <a href="https://www.tr81.tr/login.html">Войдите</a> для доступа ко всем провинциям',
+    premium:'🔓 Все провинции разблокированы!',worldButton:'Мировые локации'},
+  ja:{flag:'🇯🇵',name:'JA',title:'トルコの風光明媚な場所を探索 📍',
+    search:'県を検索...',banner:'アンタルヤを無料で探索！⚡ すべての県にアクセスするには<a href="https://www.tr81.tr/login.html">ログイン</a>',
+    premium:'🔓 すべての県が利用可能！',worldButton:'世界の場所'},
+  zh:{flag:'🇨🇳',name:'ZH',title:'探索土耳其的风景名胜 📍',
+    search:'搜索省份...',banner:'免费探索安塔利亚！⚡ <a href="https://www.tr81.tr/login.html">登录</a>访问所有省份',
+    premium:'🔓 所有省份已解锁！',worldButton:'世界地点'},
+  ar:{flag:'🇸🇦',name:'AR',title:'اكتشف المواقع الخلابة في تركيا 📍',
+    search:'ابحث عن محافظة...',banner:'اكتشف أنطاليا مجانًا! ⚡ <a href="https://www.tr81.tr/login.html">تسجيل الدخول</a> للوصول إلى جميع المحافظات',
+    premium:'🔓 جميع المحافظات متاحة!',worldButton:'المواقع العالمية'},
+  ko:{flag:'🇰🇷',name:'KO',title:'터키의 경치 좋은 장소 탐험 📍',
+    search:'도 검색...',banner:'안탈리아를 무료로 탐험하세요! ⚡ 모든 도에 접근하려면 <a href="https://www.tr81.tr/login.html">로그인</a>',
+    premium:'🔓 모든 도 이용 가능!',worldButton:'세계 위치'},
+  hi:{flag:'🇮🇳',name:'HI',title:'तुर्की के सुंदर स्थलों का अन्वेषण करें 📍',
+    search:'प्रांत खोजें...',banner:'अंताल्या मुफ्त में देखें! ⚡ सभी प्रांतों के लिए <a href="https://www.tr81.tr/login.html">लॉगिन करें</a>',
+    premium:'🔓 सभी प्रांत खुले हैं!',worldButton:'विश्व स्थान'},
+  uk:{flag:'🇺🇦',name:'UK',title:'Досліджуйте мальовничі місця Туреччини 📍',
+    search:'Пошук провінції...',banner:'Досліджуйте Анталію безкоштовно! ⚡ <a href="https://www.tr81.tr/login.html">Увійдіть</a> для доступу до всіх провінцій',
+    premium:'🔓 Усі провінції розблоковані!',worldButton:'Світові локації'},
+  pl:{flag:'🇵🇱',name:'PL',title:'Odkryj malownicze miejsca Turcji 📍',
+    search:'Szukaj prowincji...',banner:'Odkryj Antalyę za darmo! ⚡ <a href="https://www.tr81.tr/login.html">Zaloguj się</a> aby uzyskać dostęp do wszystkich prowincji',
+    premium:'🔓 Wszystkie prowincje odblokowane!',worldButton:'Lokalizacje świata'},
+  ro:{flag:'🇷🇴',name:'RO',title:'Explorați locurile pitorești din Turcia 📍',
+    search:'Căutați provincie...',banner:'Explorați Antalya gratuit! ⚡ <a href="https://www.tr81.tr/login.html">Conectați-vă</a> pentru toate provinciile',
+    premium:'🔓 Toate provinciile deblocate!',worldButton:'Locații mondiale'},
+  el:{flag:'🇬🇷',name:'EL',title:'Εξερευνήστε τα γραφικά μέρη της Τουρκίας 📍',
+    search:'Αναζήτηση επαρχίας...',banner:'Εξερευνήστε την Αττάλεια δωρεάν! ⚡ <a href="https://www.tr81.tr/login.html">Συνδεθείτε</a> για όλες τις επαρχίες',
+    premium:'🔓 Όλες οι επαρχίες ξεκλειδωμένες!',worldButton:'Παγκόσμιες τοποθεσίες'},
+  hu:{flag:'🇭🇺',name:'HU',title:'Fedezze fel Törökország festői helyeit 📍',
+    search:'Tartomány keresése...',banner:'Fedezze fel Antalyát ingyen! ⚡ <a href="https://www.tr81.tr/login.html">Jelentkezzen be</a> az összes tartományhoz',
+    premium:'🔓 Minden tartomány feloldva!',worldButton:'Világ helyszínek'},
+  cs:{flag:'🇨🇿',name:'CS',title:'Prozkoumejte malebná místa Turecka 📍',
+    search:'Hledat provincii...',banner:'Prozkoumejte Antalyi zdarma! ⚡ <a href="https://www.tr81.tr/login.html">Přihlaste se</a> pro všechny provincie',
+    premium:'🔓 Všechny provincie odemčeny!',worldButton:'Světové lokace'},
+  nl:{flag:'🇳🇱',name:'NL',title:'Ontdek de schilderachtige plekken van Turkije 📍',
+    search:'Zoek provincie...',banner:'Ontdek Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Log in</a> voor alle provincies',
+    premium:'🔓 Alle provincies ontgrendeld!',worldButton:'Wereldlocaties'},
+  th:{flag:'🇹🇭',name:'TH',title:'สำรวจสถานที่สวยงามของตุรกี 📍',
+    search:'ค้นหาจังหวัด...',banner:'สำรวจอันตาลยาฟรี! ⚡ <a href="https://www.tr81.tr/login.html">เข้าสู่ระบบ</a> สำหรับทุกจังหวัด',
+    premium:'🔓 ปลดล็อคทุกจังหวัดแล้ว!',worldButton:'สถานที่ทั่วโลก'},
+  vi:{flag:'🇻🇳',name:'VI',title:'Khám phá những địa điểm đẹp của Thổ Nhĩ Kỳ 📍',
+    search:'Tìm kiếm tỉnh...',banner:'Khám phá Antalya miễn phí! ⚡ <a href="https://www.tr81.tr/login.html">Đăng nhập</a> để truy cập tất cả các tỉnh',
+    premium:'🔓 Đã mở khóa tất cả các tỉnh!',worldButton:'Địa điểm thế giới'},
+  id:{flag:'🇮🇩',name:'ID',title:'Jelajahi tempat-tempat indah di Turki 📍',
+    search:'Cari provinsi...',banner:'Jelajahi Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Masuk</a> untuk semua provinsi',
+    premium:'🔓 Semua provinsi terbuka!',worldButton:'Lokasi Dunia'},
+  ms:{flag:'🇲🇾',name:'MS',title:'Terokai tempat-tempat indah di Turki 📍',
+    search:'Cari wilayah...',banner:'Terokai Antalya percuma! ⚡ <a href="https://www.tr81.tr/login.html">Log masuk</a> untuk semua wilayah',
+    premium:'🔓 Semua wilayah dibuka!',worldButton:'Lokasi Dunia'},
+  sv:{flag:'🇸🇪',name:'SV',title:'Utforska Turkiets vackra platser 📍',
+    search:'Sök provins...',banner:'Utforska Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Logga in</a> för alla provinser',
+    premium:'🔓 Alla provinser upplåsta!',worldButton:'Världsplatser'},
+  no:{flag:'🇳🇴',name:'NO',title:'Utforsk Tyrkias vakre steder 📍',
+    search:'Søk provins...',banner:'Utforsk Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Logg inn</a> for alle provinser',
+    premium:'🔓 Alle provinser låst opp!',worldButton:'Verdenssteder'},
+  da:{flag:'🇩🇰',name:'DA',title:'Udforsk Tyrkiets smukke steder 📍',
+    search:'Søg provins...',banner:'Udforsk Antalya gratis! ⚡ <a href="https://www.tr81.tr/login.html">Log ind</a> for alle provinser',
+    premium:'🔓 Alle provinser låst op!',worldButton:'Verdenslokationer'},
+  fi:{flag:'🇫🇮',name:'FI',title:'Tutki Turkin kauniita paikkoja 📍',
+    search:'Etsi maakunta...',banner:'Tutustu Antalyaan ilmaiseksi! ⚡ <a href="https://www.tr81.tr/login.html">Kirjaudu</a> kaikkiin maakuntiin',
+    premium:'🔓 Kaikki maakunnat avattu!',worldButton:'Maailman kohteet'},
+  bn:{flag:'🇧🇩',name:'BN',title:'তুরস্কের সুন্দর স্থানগুলি অন্বেষণ করুন 📍',
+    search:'প্রদেশ অনুসন্ধান করুন...',banner:'আন্তালিয়া বিনামূল্যে ঘুরে দেখুন! ⚡ সব প্রদেশের জন্য <a href="https://www.tr81.tr/login.html">লগইন করুন</a>',
+    premium:'🔓 সব প্রদেশ খোলা!',worldButton:'বিশ্ব অবস্থান'},
+  tl:{flag:'🇵🇭',name:'TL',title:'Tuklasin ang magagandang lugar sa Turkey 📍',
+    search:'Maghanap ng lalawigan...',banner:'Tuklasin ang Antalya nang libre! ⚡ <a href="https://www.tr81.tr/login.html">Mag-login</a> para sa lahat ng lalawigan',
+    premium:'🔓 Lahat ng lalawigan ay bukas!',worldButton:'Mga Lokasyon sa Mundo'},
+  hak:{flag:'🇨🇳',name:'HAK',title:'探索土耳其个靚地方 📍',
+    search:'搜尋省份...',banner:'免費探索安塔利亞！⚡ <a href="https://www.tr81.tr/login.html">登入</a>查看所有省份',
+    premium:'🔓 所有省份已解鎖！',worldButton:'世界地點'},
+  hr:{flag:'🇭🇷',name:'HR',title:'Istražite slikovita mjesta Turske 📍',
+    search:'Pretraži provinciju...',banner:'Istražite Antalyu besplatno! ⚡ <a href="https://www.tr81.tr/login.html">Prijavite se</a> za sve provincije',
+    premium:'🔓 Sve provincije otključane!',worldButton:'Svjetske lokacije'},
+  he:{flag:'🇮🇱',name:'HE',title:'גלו את המקומות היפים של טורקיה 📍',
+    search:'חפש מחוז...',banner:'חקרו את אנטליה בחינם! ⚡ <a href="https://www.tr81.tr/login.html">התחברו</a> לכל המחוזות',
+    premium:'🔓 כל המחוזות פתוחים!',worldButton:'מיקומים בעולם'},
+  fa:{flag:'🇮🇷',name:'FA',title:'مکان‌های زیبای ترکیه را کشف کنید 📍',
+    search:'جستجوی استان...',banner:'آنتالیا را رایگان کشف کنید! ⚡ برای همه استان‌ها <a href="https://www.tr81.tr/login.html">وارد شوید</a>',
+    premium:'🔓 همه استان‌ها باز هستند!',worldButton:'مکان‌های جهانی'},
+  ca:{flag:'🇪🇸',name:'CA',title:'Exploreu els llocs pintorescos de Turquia 📍',
+    search:'Cercar província...',banner:'Exploreu Antalya gratuïtament! ⚡ <a href="https://www.tr81.tr/login.html">Inicieu sessió</a> per a totes les províncies',
+    premium:'🔓 Totes les províncies desbloquejades!',worldButton:'Ubicacions mundials'},
+  arz:{flag:'🇪🇬',name:'ARZ',title:'اكتشف الأماكن الجميلة في تركيا 📍',
+    search:'دوّر على محافظة...',banner:'اكتشف أنطاليا ببلاش! ⚡ <a href="https://www.tr81.tr/login.html">سجل دخول</a> عشان كل المحافظات',
+    premium:'🔓 كل المحافظات مفتوحة!',worldButton:'أماكن في العالم'},
+  sk:{flag:'🇸🇰',name:'SK',title:'Preskúmajte malebné miesta Turecka 📍',
+    search:'Hľadať provinciu...',banner:'Preskúmajte Antalyu zadarmo! ⚡ <a href="https://www.tr81.tr/login.html">Prihláste sa</a> pre všetky provincie',
+    premium:'🔓 Všetky provincie odomknuté!',worldButton:'Svetové lokality'},
+  ur:{flag:'🇵🇰',name:'UR',title:'ترکی کے خوبصورت مقامات دریافت کریں 📍',
+    search:'صوبہ تلاش کریں...',banner:'انطالیہ مفت میں دیکھیں! ⚡ تمام صوبوں کے لیے <a href="https://www.tr81.tr/login.html">لاگ ان کریں</a>',
+    premium:'🔓 تمام صوبے کھلے ہیں!',worldButton:'عالمی مقامات'},
+  wuu:{flag:'🇨🇳',name:'WUU',title:'探索土耳其个美丽地方 📍',
+    search:'搜索省份...',banner:'免费探索安塔利亚！⚡ <a href="https://www.tr81.tr/login.html">登录</a>访问所有省份',
+    premium:'🔓 所有省份已解锁！',worldButton:'世界地点'},
+  yue:{flag:'🇭🇰',name:'YUE',title:'探索土耳其嘅靚景點 📍',
+    search:'搵省份...',banner:'免費探索安塔利亞！⚡ <a href="https://www.tr81.tr/login.html">登入</a>睇晒所有省份',
+    premium:'🔓 所有省份已解鎖！',worldButton:'世界地點'}
+};
+
+// Şehir listesi
+const cities = [
+  ['antalya','Antalya'],['adana','Adana'],['adiyaman','Adıyaman'],
+  ['afyon','Afyonkarahisar'],['agri','Ağrı'],['aksaray','Aksaray'],
+  ['amasya','Amasya'],['ankara','Ankara'],['ardahan','Ardahan'],
+  ['artvin','Artvin'],['aydin','Aydın'],['balikesir','Balıkesir'],
+  ['bartin','Bartın'],['batman','Batman'],['bayburt','Bayburt'],
+  ['bilecik','Bilecik'],['bingol','Bingöl'],['bitlis','Bitlis'],
+  ['bolu','Bolu'],['burdur','Burdur'],['bursa','Bursa'],
+  ['canakkale','Çanakkale'],['cankiri','Çankırı'],['corum','Çorum'],
+  ['denizli','Denizli'],['diyarbakir','Diyarbakır'],['duzce','Düzce'],
+  ['edirne','Edirne'],['elazig','Elazığ'],['erzincan','Erzincan'],
+  ['erzurum','Erzurum'],['eskisehir','Eskişehir'],['gaziantep','Gaziantep'],
+  ['giresun','Giresun'],['gumushane','Gümüşhane'],['hakkari','Hakkari'],
+  ['hatay','Hatay'],['igdir','Iğdır'],['isparta','Isparta'],
+  ['istanbul','İstanbul'],['izmir','İzmir'],['kahramanmaras','Kahramanmaraş'],
+  ['karabuk','Karabük'],['karaman','Karaman'],['kars','Kars'],
+  ['kastamonu','Kastamonu'],['kayseri','Kayseri'],['kilis','Kilis'],
+  ['kirikkale','Kırıkkale'],['kirklareli','Kırklareli'],['kirsehir','Kırşehir'],
+  ['kocaeli','Kocaeli'],['konya','Konya'],['kutahya','Kütahya'],
+  ['malatya','Malatya'],['manisa','Manisa'],['mardin','Mardin'],
+  ['mersin','Mersin'],['mugla','Muğla'],['mus','Muş'],
+  ['nevsehir','Nevşehir'],['nigde','Niğde'],['ordu','Ordu'],
+  ['osmaniye','Osmaniye'],['rize','Rize'],['sakarya','Sakarya'],
+  ['samsun','Samsun'],['sanliurfa','Şanlıurfa'],['siirt','Siirt'],
+  ['sinop','Sinop'],['sirnak','Şırnak'],['sivas','Sivas'],
+  ['tekirdag','Tekirdağ'],['tokat','Tokat'],['trabzon','Trabzon'],
+  ['tunceli','Tunceli'],['usak','Uşak'],['van','Van'],
+  ['yalova','Yalova'],['yozgat','Yozgat'],['zonguldak','Zonguldak']
+];
+
+// Tüm 81 il için çeviriler
+const cityTranslations = {
+  adana: {
+    en: 'Adana', de: 'Adana', fr: 'Adana', es: 'Adana', it: 'Adana',
+    pt: 'Adana', ru: 'Адана', ja: 'アダナ', zh: '阿达纳', ar: 'أضنة', ko: '아다나',
+    hi: 'अडाना', uk: 'Адана', pl: 'Adana', ro: 'Adana', el: 'Αντάνα', 
+    hu: 'Adana', cs: 'Adana', nl: 'Adana'
+  },
+  adiyaman: {
+    en: 'Adiyaman', de: 'Adıyaman', fr: 'Adıyaman', es: 'Adıyaman', it: 'Adıyaman',
+    pt: 'Adıyaman', ru: 'Адыяман', ja: 'アドゥヤマン', zh: '阿德亚曼', ar: 'أديامان', ko: '아드야만',
+    hi: 'अदियामान', uk: 'Адияман', pl: 'Adıyaman', ro: 'Adıyaman', el: 'Αντιγιαμάν',
+    hu: 'Adıyaman', cs: 'Adıyaman', nl: 'Adıyaman'
+  },
+  afyon: {
+    en: 'Afyonkarahisar', de: 'Afyonkarahisar', fr: 'Afyonkarahisar', es: 'Afyonkarahisar', it: 'Afyonkarahisar',
+    pt: 'Afyonkarahisar', ru: 'Афьонкарахисар', ja: 'アフィヨンカラヒサル', zh: '阿菲永卡拉希萨尔', ar: 'أفيون قره حصار', ko: '아피온카라히사르'
+  },
+  agri: {
+    en: 'Agri', de: 'Ağrı', fr: 'Ağrı', es: 'Ağrı', it: 'Ağrı',
+    pt: 'Ağrı', ru: 'Агры', ja: 'アール', zh: '阿勒', ar: 'أغري', ko: '아르'
+  },
+  aksaray: {
+    en: 'Aksaray', de: 'Aksaray', fr: 'Aksaray', es: 'Aksaray', it: 'Aksaray',
+    pt: 'Aksaray', ru: 'Аксарай', ja: 'アクサライ', zh: '阿克萨赖', ar: 'أق سراي', ko: '악사라이'
+  },
+  amasya: {
+    en: 'Amasya', de: 'Amasya', fr: 'Amasya', es: 'Amasya', it: 'Amasya',
+    pt: 'Amasya', ru: 'Амасья', ja: 'アマスィヤ', zh: '阿马西亚', ar: 'أماسيا', ko: '아마시아'
+  },
+  ankara: {
+    en: 'Ankara', de: 'Ankara', fr: 'Ankara', es: 'Ankara', it: 'Ankara',
+    pt: 'Ancara', ru: 'Анкара', ja: 'アンカラ', zh: '安卡拉', ar: 'أنقرة', ko: '앙카라',
+    hi: 'अंकारा', uk: 'Анкара', pl: 'Ankara', ro: 'Ankara', el: 'Άγκυρα',
+    hu: 'Ankara', cs: 'Ankara', nl: 'Ankara', th: 'อังการา', vi: 'Ankara',
+    id: 'Ankara', ms: 'Ankara', sv: 'Ankara', no: 'Ankara', da: 'Ankara',
+    fi: 'Ankara', bn: 'আঙ্কারা', tl: 'Ankara', hak: '安卡拉', hr: 'Ankara',
+    he: 'אנקרה', fa: 'آنکارا', ca: 'Ankara', arz: 'أنقرة', sk: 'Ankara',
+    ur: 'انقرہ', wuu: '安卡拉', yue: '安卡拉'
+  },
+  antalya: {
+    en: 'Antalya', de: 'Antalya', fr: 'Antalya', es: 'Antalya', it: 'Antalya',
+    pt: 'Antália', ru: 'Анталья', ja: 'アンタルヤ', zh: '安塔利亚', ar: 'أنطاليا', ko: '안탈리아',
+    hi: 'अंताल्या', uk: 'Анталія', pl: 'Antalya', ro: 'Antalya', el: 'Αττάλεια',
+    hu: 'Antalya', cs: 'Antalya', nl: 'Antalya', th: 'อันตัลยา', vi: 'Antalya',
+    id: 'Antalya', ms: 'Antalya', sv: 'Antalya', no: 'Antalya', da: 'Antalya',
+    fi: 'Antalya', bn: 'আন্তালিয়া', tl: 'Antalya', hak: '安塔利亞', hr: 'Antalya',
+    he: 'אנטליה', fa: 'آنتالیا', ca: 'Antalya', arz: 'أنطاليا', sk: 'Antalya',
+    ur: 'انطالیہ', wuu: '安塔利亚', yue: '安塔利亞'
+  },
+  ardahan: {
+    en: 'Ardahan', de: 'Ardahan', fr: 'Ardahan', es: 'Ardahan', it: 'Ardahan',
+    pt: 'Ardahan', ru: 'Ардахан', ja: 'アルダハン', zh: '阿尔达罕', ar: 'أردهان', ko: '아르다한'
+  },
+  artvin: {
+    en: 'Artvin', de: 'Artvin', fr: 'Artvin', es: 'Artvin', it: 'Artvin',
+    pt: 'Artvin', ru: 'Артвин', ja: 'アルトヴィン', zh: '阿尔特温', ar: 'أرتفين', ko: '아르트빈'
+  },
+  aydin: {
+    en: 'Aydin', de: 'Aydın', fr: 'Aydın', es: 'Aydın', it: 'Aydın',
+    pt: 'Aydın', ru: 'Айдын', ja: 'アイドゥン', zh: '艾登', ar: 'أيدين', ko: '아이든'
+  },
+  balikesir: {
+    en: 'Balikesir', de: 'Balıkesir', fr: 'Balıkesir', es: 'Balıkesir', it: 'Balıkesir',
+    pt: 'Balıkesir', ru: 'Балыкесир', ja: 'バルケスィル', zh: '巴勒克埃西尔', ar: 'باليكسير', ko: '발르케시르'
+  },
+  bartin: {
+    en: 'Bartin', de: 'Bartın', fr: 'Bartın', es: 'Bartın', it: 'Bartın',
+    pt: 'Bartın', ru: 'Бартын', ja: 'バルトゥン', zh: '巴尔滕', ar: 'بارتين', ko: '바르튼'
+  },
+  batman: {
+    en: 'Batman', de: 'Batman', fr: 'Batman', es: 'Batman', it: 'Batman',
+    pt: 'Batman', ru: 'Батман', ja: 'バトマン', zh: '巴特曼', ar: 'باتمان', ko: '바트만'
+  },
+  bayburt: {
+    en: 'Bayburt', de: 'Bayburt', fr: 'Bayburt', es: 'Bayburt', it: 'Bayburt',
+    pt: 'Bayburt', ru: 'Байбурт', ja: 'バイブルト', zh: '巴伊布尔特', ar: 'بايبورت', ko: '바이부르트'
+  },
+  bilecik: {
+    en: 'Bilecik', de: 'Bilecik', fr: 'Bilecik', es: 'Bilecik', it: 'Bilecik',
+    pt: 'Bilecik', ru: 'Биледжик', ja: 'ビレジク', zh: '比莱吉克', ar: 'بيلجيك', ko: '빌레지크'
+  },
+  bingol: {
+    en: 'Bingol', de: 'Bingöl', fr: 'Bingöl', es: 'Bingöl', it: 'Bingöl',
+    pt: 'Bingöl', ru: 'Бингёль', ja: 'ビンギョル', zh: '宾格尔', ar: 'بينغول', ko: '빙괼'
+  },
+  bitlis: {
+    en: 'Bitlis', de: 'Bitlis', fr: 'Bitlis', es: 'Bitlis', it: 'Bitlis',
+    pt: 'Bitlis', ru: 'Битлис', ja: 'ビトリス', zh: '比特利斯', ar: 'بدليس', ko: '비틀리스'
+  },
+  bolu: {
+    en: 'Bolu', de: 'Bolu', fr: 'Bolu', es: 'Bolu', it: 'Bolu',
+    pt: 'Bolu', ru: 'Болу', ja: 'ボル', zh: '博卢', ar: 'بولو', ko: '볼루'
+  },
+  burdur: {
+    en: 'Burdur', de: 'Burdur', fr: 'Burdur', es: 'Burdur', it: 'Burdur',
+    pt: 'Burdur', ru: 'Бурдур', ja: 'ブルドゥル', zh: '布尔杜尔', ar: 'بوردور', ko: '부르두르'
+  },
+  bursa: {
+    en: 'Bursa', de: 'Bursa', fr: 'Bursa', es: 'Bursa', it: 'Bursa',
+    pt: 'Bursa', ru: 'Бурса', ja: 'ブルサ', zh: '布尔萨', ar: 'بورصة', ko: '부르사',
+    hi: 'बुर्सा', uk: 'Бурса', pl: 'Bursa', ro: 'Bursa', el: 'Προύσα',
+    hu: 'Bursa', cs: 'Bursa', nl: 'Bursa'
+  },
+  canakkale: {
+    en: 'Canakkale', de: 'Çanakkale', fr: 'Çanakkale', es: 'Çanakkale', it: 'Çanakkale',
+    pt: 'Çanakkale', ru: 'Чанаккале', ja: 'チャナッカレ', zh: '恰纳卡莱', ar: 'جناق قلعة', ko: '차나칼레'
+  },
+  cankiri: {
+    en: 'Cankiri', de: 'Çankırı', fr: 'Çankırı', es: 'Çankırı', it: 'Çankırı',
+    pt: 'Çankırı', ru: 'Чанкыры', ja: 'チャンクル', zh: '昌克勒', ar: 'جانقري', ko: '찬크르'
+  },
+  corum: {
+    en: 'Corum', de: 'Çorum', fr: 'Çorum', es: 'Çorum', it: 'Çorum',
+    pt: 'Çorum', ru: 'Чорум', ja: 'チョルム', zh: '乔鲁姆', ar: 'جوروم', ko: '초룸'
+  },
+  denizli: {
+    en: 'Denizli', de: 'Denizli', fr: 'Denizli', es: 'Denizli', it: 'Denizli',
+    pt: 'Denizli', ru: 'Денизли', ja: 'デニズリ', zh: '代尼兹利', ar: 'دنيزلي', ko: '데니즐리'
+  },
+  diyarbakir: {
+    en: 'Diyarbakir', de: 'Diyarbakır', fr: 'Diyarbakır', es: 'Diyarbakır', it: 'Diyarbakır',
+    pt: 'Diyarbakır', ru: 'Диярбакыр', ja: 'ディヤルバクル', zh: '迪亚巴克尔', ar: 'ديار بكر', ko: '디야르바크르'
+  },
+  duzce: {
+    en: 'Duzce', de: 'Düzce', fr: 'Düzce', es: 'Düzce', it: 'Düzce',
+    pt: 'Düzce', ru: 'Дюздже', ja: 'デュズジェ', zh: '迪兹杰', ar: 'دوزجه', ko: '뒤즈제'
+  },
+  edirne: {
+    en: 'Edirne', de: 'Edirne', fr: 'Edirne', es: 'Edirne', it: 'Edirne',
+    pt: 'Edirne', ru: 'Эдирне', ja: 'エディルネ', zh: '埃迪尔内', ar: 'أدرنة', ko: '에디르네'
+  },
+  elazig: {
+    en: 'Elazig', de: 'Elazığ', fr: 'Elazığ', es: 'Elazığ', it: 'Elazığ',
+    pt: 'Elazığ', ru: 'Элязыг', ja: 'エラズー', zh: '埃拉泽', ar: 'إلازيغ', ko: '엘라즈으'
+  },
+  erzincan: {
+    en: 'Erzincan', de: 'Erzincan', fr: 'Erzincan', es: 'Erzincan', it: 'Erzincan',
+    pt: 'Erzincan', ru: 'Эрзинджан', ja: 'エルズィンジャン', zh: '埃尔津詹', ar: 'أرزنجان', ko: '에르진잔'
+  },
+  erzurum: {
+    en: 'Erzurum', de: 'Erzurum', fr: 'Erzurum', es: 'Erzurum', it: 'Erzurum',
+    pt: 'Erzurum', ru: 'Эрзурум', ja: 'エルズルム', zh: '埃尔祖鲁姆', ar: 'أرضروم', ko: '에르주룸'
+  },
+  eskisehir: {
+    en: 'Eskisehir', de: 'Eskişehir', fr: 'Eskişehir', es: 'Eskişehir', it: 'Eskişehir',
+    pt: 'Eskişehir', ru: 'Эскишехир', ja: 'エスキシェヒル', zh: '埃斯基谢希尔', ar: 'إسكي شهر', ko: '에스키셰히르'
+  },
+  gaziantep: {
+    en: 'Gaziantep', de: 'Gaziantep', fr: 'Gaziantep', es: 'Gaziantep', it: 'Gaziantep',
+    pt: 'Gaziantep', ru: 'Газиантеп', ja: 'ガズィアンテプ', zh: '加济安泰普', ar: 'غازي عنتاب', ko: '가지안테프'
+  },
+  giresun: {
+    en: 'Giresun', de: 'Giresun', fr: 'Giresun', es: 'Giresun', it: 'Giresun',
+    pt: 'Giresun', ru: 'Гиресун', ja: 'ギレスン', zh: '吉雷松', ar: 'غيرسون', ko: '기레순'
+  },
+  gumushane: {
+    en: 'Gumushane', de: 'Gümüşhane', fr: 'Gümüşhane', es: 'Gümüşhane', it: 'Gümüşhane',
+    pt: 'Gümüşhane', ru: 'Гюмюшхане', ja: 'ギュミュシュハネ', zh: '居米什哈内', ar: 'غوموش خانه', ko: '귀뮈샤네'
+  },
+  hakkari: {
+    en: 'Hakkari', de: 'Hakkari', fr: 'Hakkari', es: 'Hakkari', it: 'Hakkari',
+    pt: 'Hakkari', ru: 'Хаккяри', ja: 'ハッカリ', zh: '哈卡里', ar: 'هكاري', ko: '하카리'
+  },
+  hatay: {
+    en: 'Hatay', de: 'Hatay', fr: 'Hatay', es: 'Hatay', it: 'Hatay',
+    pt: 'Hatay', ru: 'Хатай', ja: 'ハタイ', zh: '哈塔伊', ar: 'هاتاي', ko: '하타이'
+  },
+  igdir: {
+    en: 'Igdir', de: 'Iğdır', fr: 'Iğdır', es: 'Iğdır', it: 'Iğdır',
+    pt: 'Iğdır', ru: 'Ыгдыр', ja: 'ウードゥル', zh: '厄德尔', ar: 'إغدير', ko: '으드르'
+  },
+  isparta: {
+    en: 'Isparta', de: 'Isparta', fr: 'Isparta', es: 'Isparta', it: 'Isparta',
+    pt: 'Isparta', ru: 'Ыспарта', ja: 'ウスパルタ', zh: '伊斯帕尔塔', ar: 'إسبرطة', ko: '으스파르타'
+  },
+  istanbul: {
+    en: 'Istanbul', de: 'Istanbul', fr: 'Istanbul', es: 'Estambul', it: 'Istanbul',
+    pt: 'Istambul', ru: 'Стамбул', ja: 'イスタンブール', zh: '伊斯坦布尔', ar: 'إسطنبول', ko: '이스탄불',
+    hi: 'इस्तांबुल', uk: 'Стамбул', pl: 'Stambuł', ro: 'Istanbul', el: 'Κωνσταντινούπολη',
+    hu: 'Isztambul', cs: 'Istanbul', nl: 'Istanbul', th: 'อิสตันบูล', vi: 'Istanbul',
+    id: 'Istanbul', ms: 'Istanbul', sv: 'Istanbul', no: 'Istanbul', da: 'Istanbul',
+    fi: 'Istanbul', bn: 'ইস্তানবুল', tl: 'Istanbul', hak: '伊斯坦堡', hr: 'Istanbul',
+    he: 'איסטנבול', fa: 'استانبول', ca: 'Istanbul', arz: 'إسطنبول', sk: 'Istanbul',
+    ur: 'استنبول', wuu: '伊斯坦布尔', yue: '伊斯坦堡'
+  },
+  izmir: {
+    en: 'Izmir', de: 'Izmir', fr: 'Izmir', es: 'Esmirna', it: 'Smirne',
+    pt: 'Esmirna', ru: 'Измир', ja: 'イズミル', zh: '伊兹密尔', ar: 'إزمير', ko: '이즈미르',
+    hi: 'इज़मिर', uk: 'Ізмір', pl: 'Izmir', ro: 'Izmir', el: 'Σμύρνη',
+    hu: 'Izmir', cs: 'Izmir', nl: 'Izmir', th: 'อิซเมียร์', vi: 'Izmir',
+    id: 'Izmir', ms: 'Izmir', sv: 'Izmir', no: 'Izmir', da: 'Izmir',
+    fi: 'Izmir', bn: 'ইজমির', tl: 'Izmir', hak: '伊茲密爾', hr: 'Izmir',
+    he: 'איזמיר', fa: 'ازمیر', ca: 'Esmirna', arz: 'إزمير', sk: 'Izmir',
+    ur: 'ازمیر', wuu: '伊兹密尔', yue: '伊茲密爾'
+  },
+  kahramanmaras: {
+    en: 'Kahramanmaras', de: 'Kahramanmaraş', fr: 'Kahramanmaraş', es: 'Kahramanmaraş', it: 'Kahramanmaraş',
+    pt: 'Kahramanmaraş', ru: 'Кахраманмараш', ja: 'カフラマンマラシュ', zh: '卡赫拉曼马拉什', ar: 'قهرمان مرعش', ko: '카라만마라시'
+  },
+  karabuk: {
+    en: 'Karabuk', de: 'Karabük', fr: 'Karabük', es: 'Karabük', it: 'Karabük',
+    pt: 'Karabük', ru: 'Карабюк', ja: 'カラビュク', zh: '卡拉比克', ar: 'قره بوك', ko: '카라뷔크'
+  },
+  karaman: {
+    en: 'Karaman', de: 'Karaman', fr: 'Karaman', es: 'Karaman', it: 'Karaman',
+    pt: 'Karaman', ru: 'Караман', ja: 'カラマン', zh: '卡拉曼', ar: 'قرامان', ko: '카라만'
+  },
+  kars: {
+    en: 'Kars', de: 'Kars', fr: 'Kars', es: 'Kars', it: 'Kars',
+    pt: 'Kars', ru: 'Карс', ja: 'カルス', zh: '卡尔斯', ar: 'قارص', ko: '카르스'
+  },
+  kastamonu: {
+    en: 'Kastamonu', de: 'Kastamonu', fr: 'Kastamonu', es: 'Kastamonu', it: 'Kastamonu',
+    pt: 'Kastamonu', ru: 'Кастамону', ja: 'カスタモヌ', zh: '卡斯塔莫努', ar: 'قسطموني', ko: '카스타모누'
+  },
+  kayseri: {
+    en: 'Kayseri', de: 'Kayseri', fr: 'Kayseri', es: 'Kayseri', it: 'Kayseri',
+    pt: 'Kayseri', ru: 'Кайсери', ja: 'カイセリ', zh: '开塞利', ar: 'قيصري', ko: '카이세리'
+  },
+  kilis: {
+    en: 'Kilis', de: 'Kilis', fr: 'Kilis', es: 'Kilis', it: 'Kilis',
+    pt: 'Kilis', ru: 'Килис', ja: 'キリス', zh: '基利斯', ar: 'كيليس', ko: '킬리스'
+  },
+  kirikkale: {
+    en: 'Kirikkale', de: 'Kırıkkale', fr: 'Kırıkkale', es: 'Kırıkkale', it: 'Kırıkkale',
+    pt: 'Kırıkkale', ru: 'Кырыккале', ja: 'クルッカレ', zh: '克勒克卡莱', ar: 'قريق قلعة', ko: '크르크칼레'
+  },
+  kirklareli: {
+    en: 'Kirklareli', de: 'Kırklareli', fr: 'Kırklareli', es: 'Kırklareli', it: 'Kırklareli',
+    pt: 'Kırklareli', ru: 'Кыркларели', ja: 'クルクラーレリ', zh: '克尔克拉雷利', ar: 'قرق لر إيلي', ko: '크르클라렐리'
+  },
+  kirsehir: {
+    en: 'Kirsehir', de: 'Kırşehir', fr: 'Kırşehir', es: 'Kırşehir', it: 'Kırşehir',
+    pt: 'Kırşehir', ru: 'Кыршехир', ja: 'クルシェヒル', zh: '克尔谢希尔', ar: 'قرشهر', ko: '크르셰히르'
+  },
+  kocaeli: {
+    en: 'Kocaeli', de: 'Kocaeli', fr: 'Kocaeli', es: 'Kocaeli', it: 'Kocaeli',
+    pt: 'Kocaeli', ru: 'Коджаэли', ja: 'コジャエリ', zh: '科贾埃利', ar: 'قوجه ايلي', ko: '코자엘리'
+  },
+  konya: {
+    en: 'Konya', de: 'Konya', fr: 'Konya', es: 'Konya', it: 'Konya',
+    pt: 'Konya', ru: 'Конья', ja: 'コンヤ', zh: '科尼亚', ar: 'قونية', ko: '코니아',
+    hi: 'कोन्या', uk: 'Конья', pl: 'Konya', ro: 'Konya', el: 'Ικόνιον',
+    hu: 'Konya', cs: 'Konya', nl: 'Konya'
+  },
+  kutahya: {
+    en: 'Kutahya', de: 'Kütahya', fr: 'Kütahya', es: 'Kütahya', it: 'Kütahya',
+    pt: 'Kütahya', ru: 'Кютахья', ja: 'キュタヒヤ', zh: '屈塔希亚', ar: 'كوتاهيا', ko: '퀴타히아'
+  },
+  malatya: {
+    en: 'Malatya', de: 'Malatya', fr: 'Malatya', es: 'Malatya', it: 'Malatya',
+    pt: 'Malatya', ru: 'Малатья', ja: 'マラティヤ', zh: '马拉蒂亚', ar: 'ملاطية', ko: '말라티아'
+  },
+  manisa: {
+    en: 'Manisa', de: 'Manisa', fr: 'Manisa', es: 'Manisa', it: 'Manisa',
+    pt: 'Manisa', ru: 'Маниса', ja: 'マニサ', zh: '马尼萨', ar: 'مانيسا', ko: '마니사'
+  },
+  mardin: {
+    en: 'Mardin', de: 'Mardin', fr: 'Mardin', es: 'Mardin', it: 'Mardin',
+    pt: 'Mardin', ru: 'Мардин', ja: 'マルディン', zh: '马尔丁', ar: 'ماردين', ko: '마르딘'
+  },
+  mersin: {
+    en: 'Mersin', de: 'Mersin', fr: 'Mersin', es: 'Mersin', it: 'Mersin',
+    pt: 'Mersin', ru: 'Мерсин', ja: 'メルスィン', zh: '梅尔辛', ar: 'مرسين', ko: '메르신'
+  },
+  mugla: {
+    en: 'Mugla', de: 'Muğla', fr: 'Muğla', es: 'Muğla', it: 'Muğla',
+    pt: 'Muğla', ru: 'Мугла', ja: 'ムーラ', zh: '穆拉', ar: 'موغلا', ko: '무을라'
+  },
+  mus: {
+    en: 'Mus', de: 'Muş', fr: 'Muş', es: 'Muş', it: 'Muş',
+    pt: 'Muş', ru: 'Муш', ja: 'ムシュ', zh: '穆什', ar: 'موش', ko: '무시'
+  },
+  nevsehir: {
+    en: 'Nevsehir', de: 'Nevşehir', fr: 'Nevşehir', es: 'Nevşehir', it: 'Nevşehir',
+    pt: 'Nevşehir', ru: 'Невшехир', ja: 'ネヴシェヒル', zh: '内夫谢希尔', ar: 'نوشهر', ko: '네브셰히르'
+  },
+  nigde: {
+    en: 'Nigde', de: 'Niğde', fr: 'Niğde', es: 'Niğde', it: 'Niğde',
+    pt: 'Niğde', ru: 'Нигде', ja: 'ニーデ', zh: '尼代', ar: 'نيغده', ko: '니데'
+  },
+  ordu: {
+    en: 'Ordu', de: 'Ordu', fr: 'Ordu', es: 'Ordu', it: 'Ordu',
+    pt: 'Ordu', ru: 'Орду', ja: 'オルドゥ', zh: '奥尔杜', ar: 'أوردو', ko: '오르두'
+  },
+  osmaniye: {
+    en: 'Osmaniye', de: 'Osmaniye', fr: 'Osmaniye', es: 'Osmaniye', it: 'Osmaniye',
+    pt: 'Osmaniye', ru: 'Османие', ja: 'オスマニエ', zh: '奥斯曼尼耶', ar: 'عثمانية', ko: '오스마니예'
+  },
+  rize: {
+    en: 'Rize', de: 'Rize', fr: 'Rize', es: 'Rize', it: 'Rize',
+    pt: 'Rize', ru: 'Ризе', ja: 'リゼ', zh: '里泽', ar: 'ريزه', ko: '리제'
+  },
+  sakarya: {
+    en: 'Sakarya', de: 'Sakarya', fr: 'Sakarya', es: 'Sakarya', it: 'Sakarya',
+    pt: 'Sakarya', ru: 'Сакарья', ja: 'サカルヤ', zh: '萨卡里亚', ar: 'صقاريا', ko: '사카리아'
+  },
+  samsun: {
+    en: 'Samsun', de: 'Samsun', fr: 'Samsun', es: 'Samsun', it: 'Samsun',
+    pt: 'Samsun', ru: 'Самсун', ja: 'サムスン', zh: '萨姆松', ar: 'سامسون', ko: '삼순'
+  },
+  sanliurfa: {
+    en: 'Sanliurfa', de: 'Şanlıurfa', fr: 'Şanlıurfa', es: 'Şanlıurfa', it: 'Şanlıurfa',
+    pt: 'Şanlıurfa', ru: 'Шанлыурфа', ja: 'シャンルウルファ', zh: '尚勒乌尔法', ar: 'شانلي أورفا', ko: '샨르우르파'
+  },
+  siirt: {
+    en: 'Siirt', de: 'Siirt', fr: 'Siirt', es: 'Siirt', it: 'Siirt',
+    pt: 'Siirt', ru: 'Сиирт', ja: 'スィイルト', zh: '锡尔特', ar: 'سيرت', ko: '시이르트'
+  },
+  sinop: {
+    en: 'Sinop', de: 'Sinop', fr: 'Sinop', es: 'Sinop', it: 'Sinop',
+    pt: 'Sinop', ru: 'Синоп', ja: 'スィノプ', zh: '锡诺普', ar: 'سينوب', ko: '시노프'
+  },
+  sirnak: {
+    en: 'Sirnak', de: 'Şırnak', fr: 'Şırnak', es: 'Şırnak', it: 'Şırnak',
+    pt: 'Şırnak', ru: 'Ширнак', ja: 'シュルナク', zh: '舍尔纳克', ar: 'شرناق', ko: '시르나크'
+  },
+  sivas: {
+    en: 'Sivas', de: 'Sivas', fr: 'Sivas', es: 'Sivas', it: 'Sivas',
+    pt: 'Sivas', ru: 'Сивас', ja: 'スィヴァス', zh: '锡瓦斯', ar: 'سيواس', ko: '시바스'
+  },
+  tekirdag: {
+    en: 'Tekirdag', de: 'Tekirdağ', fr: 'Tekirdağ', es: 'Tekirdağ', it: 'Tekirdağ',
+    pt: 'Tekirdağ', ru: 'Текирдаг', ja: 'テキルダー', zh: '泰基尔达', ar: 'تكيرداغ', ko: '테키르다'
+  },
+  tokat: {
+    en: 'Tokat', de: 'Tokat', fr: 'Tokat', es: 'Tokat', it: 'Tokat',
+    pt: 'Tokat', ru: 'Токат', ja: 'トカット', zh: '托卡特', ar: 'توقات', ko: '토카트'
+  },
+  trabzon: {
+    en: 'Trabzon', de: 'Trabzon', fr: 'Trébizonde', es: 'Trebisonda', it: 'Trebisonda',
+    pt: 'Trebizonda', ru: 'Трабзон', ja: 'トラブゾン', zh: '特拉布宗', ar: 'طرابزون', ko: '트라브존',
+    hi: 'त्राब्ज़ोन', uk: 'Трабзон', pl: 'Trabzon', ro: 'Trabzon', el: 'Τραπεζούντα',
+    hu: 'Trabzon', cs: 'Trabzon', nl: 'Trabzon'
+  },
+  tunceli: {
+    en: 'Tunceli', de: 'Tunceli', fr: 'Tunceli', es: 'Tunceli', it: 'Tunceli',
+    pt: 'Tunceli', ru: 'Тунджели', ja: 'トゥンジェリ', zh: '通杰利', ar: 'تونجلي', ko: '툰젤리'
+  },
+  usak: {
+    en: 'Usak', de: 'Uşak', fr: 'Uşak', es: 'Uşak', it: 'Uşak',
+    pt: 'Uşak', ru: 'Ушак', ja: 'ウシャク', zh: '乌沙克', ar: 'أوشاق', ko: '우샤크'
+  },
+  van: {
+    en: 'Van', de: 'Van', fr: 'Van', es: 'Van', it: 'Van',
+    pt: 'Van', ru: 'Ван', ja: 'ヴァン', zh: '凡城', ar: 'وان', ko: '반'
+  },
+  yalova: {
+    en: 'Yalova', de: 'Yalova', fr: 'Yalova', es: 'Yalova', it: 'Yalova',
+    pt: 'Yalova', ru: 'Ялова', ja: 'ヤロヴァ', zh: '亚洛瓦', ar: 'يالوفا', ko: '얄로바'
+  },
+  yozgat: {
+    en: 'Yozgat', de: 'Yozgat', fr: 'Yozgat', es: 'Yozgat', it: 'Yozgat',
+    pt: 'Yozgat', ru: 'Йозгат', ja: 'ヨズガト', zh: '约兹加特', ar: 'يوزغات', ko: '요즈가트'
+  },
+  zonguldak: {
+    en: 'Zonguldak', de: 'Zonguldak', fr: 'Zonguldak', es: 'Zonguldak', it: 'Zonguldak',
+    pt: 'Zonguldak', ru: 'Зонгулдак', ja: 'ゾングルダク', zh: '宗古尔达克', ar: 'زونغولداق', ko: '종굴다크'
+  }
+};
+
+// İl ismini dile göre getir
+function getCityName(slug, originalName, langCode) {
+  if (langCode === 'tr') return originalName;
+  
+  // Eğer çeviri varsa onu döndür
+  if (cityTranslations[slug] && cityTranslations[slug][langCode]) {
+    return cityTranslations[slug][langCode];
+  }
+  
+  // Çeviri yoksa, bazı diller için özel karakterleri düzelt
+  if (['en', 'de', 'fr', 'es', 'it', 'pt', 'nl', 'ro', 'pl', 'cs', 'hu', 'sv', 'no', 'da', 'fi', 'id', 'ms', 'tl', 'hr', 'ca', 'sk'].includes(langCode)) {
+    // Latin alfabesi kullanan diller için Türkçe karakterleri koru
+    return originalName;
+  }
+  
+  // Diğer diller için varsayılan ismi döndür
+  return originalName;
+}
+
+// Kartları güncelle
+function updateCards() {
+  if (typeof currentLang === 'undefined') return;
+  
+  document.querySelectorAll('.card').forEach(card => {
+    const slug = card.dataset.slug;
+    const originalName = card.dataset.originalName;
+    if (!slug || !originalName) return;
+    
+    const translatedName = getCityName(slug, originalName, currentLang);
+    
+    // İlk 2 harfi güncelle
+    const code = translatedName.substring(0, 2).toUpperCase();
+    const codeElement = card.querySelector('.city-code');
+    const nameElement = card.querySelector('.city-name');
+    
+    if (codeElement) codeElement.textContent = code;
+    if (nameElement) nameElement.textContent = translatedName;
+    
+    // Arama için veriyi güncelle
+    card.dataset.search = translatedName;
+  });
+}
+
+// Normalize fonksiyonu
+const norm = t =>
+  t
+    .toLowerCase()
+    .normalize('NFD')              // decompose characters (e.g., İ → i + ◌̇)
+    .replace(/[\u0300-\u036f]/g, '') // strip combining marks
+    .replace(/[çğıöşü]/g, ch => ({ 'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u' }[ch]));
+
+// Mevcut dil
+let currentLang = 'tr';
+
+// Tarayıcı dili tespit et
+function detectLang(){
+  const saved = localStorage.getItem('lang');
+  if(saved && lang[saved]) return saved;
+  const browser = navigator.language.toLowerCase();
+  for(const code in lang){
+    if(browser.startsWith(code)) return code;
+  }
+  return 'tr';
+}
+
+// Başlığı renklendir
+function colorizeTitle() {
+  const titleElement = document.getElementById('title');
+  if (!titleElement) return;
+  
+  const text = titleElement.textContent;
+  
+  // 📍 emojisini ayır
+  const parts = text.split('📍');
+  const words = parts[0].trim().split(/\s+/);
+  
+  // Her kelimeyi renkli span'a dönüştür
+  let html = '';
+  words.forEach((word, index) => {
+    const colorIndex = index % 7;
+    html += `<span class="title-word word-${colorIndex}">${word}</span> `;
+  });
+  
+  // 📍 emojisini ekle
+  html += '<span class="title-emoji">📍</span>';
+  
+  titleElement.innerHTML = html;
+}
+
+// Dil ayarla
+function setLang(code){
+  currentLang = code;
+  const t = lang[code];
+  document.getElementById('title').textContent = t.title;
+  document.getElementById('search').placeholder = t.search;
+  document.getElementById('langFlag').textContent = t.flag;
+  document.getElementById('langName').textContent = t.name;
+  document.getElementById('worldButtonText').textContent = t.worldButton;
+  
+  const access = localStorage.getItem('duflat-access')==='granted';
+  const info = document.getElementById('info');
+  info.innerHTML = access ? t.premium : t.banner;
+  info.className = access ? 'info premium' : 'info';
+  
+  document.documentElement.lang = code;
+  localStorage.setItem('lang', code);
+  
+  document.querySelectorAll('.lang-item').forEach(i=>i.classList.toggle('active',i.dataset.lang===code));
+  
+  // Başlığı renklendir
+  colorizeTitle();
+  
+  // Kartları güncelle
+  updateCards();
+}
+
+// Dil menüsünü oluştur
+function createLangMenu(){
+  const list = document.getElementById('langList');
+  for(const [code,data] of Object.entries(lang)){
+    const item = document.createElement('div');
+    item.className='lang-item';
+    item.dataset.lang = code;
+    item.innerHTML = `<span>${data.flag}</span><span>${data.name}</span>`;
+    item.onclick = ()=>{ setLang(code); toggleLang(false); };
+    list.appendChild(item);
+  }
+}
+
+// Menü göster/gizle
+function toggleLang(force){
+  const list = document.getElementById('langList');
+  if(force===false){ list.classList.remove('show'); }
+  else{ list.classList.toggle('show'); }
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('grid');
+  const search = document.getElementById('search');
+  const access = localStorage.getItem('duflat-access') === 'granted';
+  
+  createLangMenu();
+  setLang(detectLang());
+  
+  // Kartları oluştur
+  cities.forEach(([slug, name]) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (slug === 'antalya' ? ' free' : '');
+    card.dataset.slug = slug;
+    card.dataset.originalName = name;
+    
+    // Dile göre ismi al
+    const translatedName = getCityName(slug, name, currentLang);
+    card.dataset.search = translatedName;
+    
+    // İlk 2 harfi büyük yap
+    const code = translatedName.substring(0, 2).toUpperCase();
+    
+    const locked = (!access && slug !== 'antalya');
+    let cardContent = `<div class="city-code">${code}</div>`;
+    cardContent += `<div class="city-name">${translatedName}</div>`;
+    if(locked) {
+      cardContent += `<span class="lock-icon">🔒</span>`;
+    }
+    card.innerHTML = cardContent;
+    
+    card.onclick = () => {
+      if(access || slug === 'antalya') {
+        // Eğer granted ise tüm iller için normal .html sayfasına git
+        // Eğer granted değilse sadece antalya için demo sayfasına git
+        if(access) {
+          location.href = `${slug}.html`;
+        } else if(slug === 'antalya') {
+          location.href = 'antalya_demo.html';
+        }
+      } else {
+        location.href = 'login.html';
+      }
+    };
+    
+    grid.appendChild(card);
+  });
+  
+  // Arama
+  search.addEventListener('input', e => {
+    const v = norm(e.target.value);
+    document.getElementById('info').style.display = v ? 'none' : '';
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.display = norm(c.dataset.search).includes(v) ? '' : 'none';
+    });
+  });
+  
+  // Dropdown kapat
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.lang-select')) toggleLang(false);
+  });
+});
+</script>
+</body>
+</html>
