@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>USA | Scenic Views from All 50 States</title>
+
+<!-- Inter Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* === Variables === */
+:root{
+  --primary:#3b82f6;--primary-dark:#1d4ed8;--secondary:#8b5cf6;--accent:#f97316;
+  --bg-grad:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);--card-bg:rgba(255,255,255,.95);
+  --glass-bg:rgba(255,255,255,.60);--glass-border:rgba(0,0,0,.08);--text-primary:#334155;
+  --text-secondary:#64748b;--text-muted:#94a3b8;--shadow-lg:0 6px 24px rgba(0,0,0,.08);
+  --shadow-xl:0 12px 40px rgba(0,0,0,.12);
+}
+
+/* === Reset & Body === */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Inter',sans-serif;
+  background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/df156335-417a-4600-a36a-a78c69799c00/public');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color:var(--text-primary);
+  min-height:100vh;line-height:1.6;overflow-x:hidden;
+  position: relative;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-color: #e2e8f0;
+}
+body::after{
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(248, 250, 252, 0.4);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container{max-width:1100px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;top:20px;right:20px;z-index:100;
+}
+.lang-btn{
+  background:rgba(255,255,255,.2);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 16px;cursor:pointer;
+  font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;
+  box-shadow:var(--shadow-lg);transition:.3s;color:var(--text-primary);
+}
+.lang-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-xl);background:rgba(255,255,255,.3);}
+.lang-list{
+  position:absolute;top:calc(100% + 8px);right:0;background:rgba(255,255,255,.98);
+  backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:12px;
+  box-shadow:var(--shadow-xl);max-height:320px;overflow-y:auto;display:none;min-width:160px;
+}
+.lang-list.show{display:block;animation:fadeIn .3s ease;}
+.lang-item{
+  padding:10px 16px;cursor:pointer;transition:background .2s;display:flex;
+  align-items:center;gap:8px;font-size:14px;color:var(--text-primary);
+}
+.lang-item:hover{background:var(--glass-bg);color:var(--primary);}
+.lang-item.active{background:var(--primary);color:#fff;}
+
+/* === World Button === */
+.world-button{
+  position:fixed;top:20px;left:20px;z-index:100;
+}
+.world-btn{
+  background:rgba(255,255,255,.2);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 16px;cursor:pointer;
+  font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;
+  box-shadow:var(--shadow-lg);transition:.3s;color:var(--text-primary);
+}
+.world-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-xl);background:rgba(255,255,255,.3);}
+
+/* === Header === */
+.header{padding:80px 16px 40px;text-align:center;position:relative;z-index:1;}
+.title{
+  font-size:clamp(1.75rem,4vw,2.5rem);font-weight:700;margin-bottom:12px;
+  letter-spacing:-.5px;
+  line-height:1.4;
+}
+.title-word{
+  display:inline-block;
+  margin:0 0.15em;
+  font-weight:700;
+  transition:all 0.3s ease;
+}
+.title-word:hover{
+  transform:translateY(-2px) scale(1.05);
+}
+.title-emoji{
+  display:inline-block;
+  font-size:1em;
+  vertical-align:middle;
+  margin-left:0.2em;
+}
+/* USA patriotic colors */
+.word-0{color:#b91c1c;} /* Red */
+.word-1{color:#1e40af;} /* Blue */
+.word-2{color:#b91c1c;} /* Red */
+.word-3{color:#1e40af;} /* Blue */
+.word-4{color:#b91c1c;} /* Red */
+.word-5{color:#1e40af;} /* Blue */
+.word-6{color:#b91c1c;} /* Red */
+
+/* === Search === */
+.search-box{max-width:320px;margin:0 auto 40px;position:relative;z-index:1;}
+.search{
+  width:100%;padding:14px 48px 14px 20px;font-size:15px;background:rgba(255,255,255,.3);
+  backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.4);border-radius:20px;
+  transition:.3s;color:var(--text-primary);
+}
+.search:focus{outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(59,130,246,.1);background:rgba(255,255,255,.5);}
+.search-icon{position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  color:var(--text-secondary);pointer-events:none;}
+
+/* === Info === */
+.info{
+  max-width:320px;margin:0 auto 40px;padding:20px 24px;text-align:center;
+  background:rgba(255,255,255,.3);backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.4);
+  border-radius:20px;font-size:14px;line-height:1.6;color:var(--text-primary);
+  box-shadow:var(--shadow-lg);position:relative;z-index:1;display:block;
+}
+.info.premium{background:linear-gradient(135deg,rgba(220,252,231,.3) 0%,rgba(209,250,229,.3) 100%);
+  backdrop-filter:blur(20px);border-color:rgba(22,163,74,.4);color:#16a34a;}
+.info a{color:var(--primary);font-weight:600;text-decoration:none;transition:.3s;}
+.info a:hover{color:var(--primary-dark);text-decoration:underline;}
+
+/* === Grid === */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:16px;
+  padding-bottom:40px;
+  position:relative;
+  z-index:1;
+  max-width:900px;
+  margin:0 auto;
+}
+.card{
+  background:rgba(255,255,255,.3);
+  backdrop-filter:blur(20px);
+  border:2px solid rgba(255,255,255,.4);
+  border-radius:20px;
+  padding:20px 12px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s cubic-bezier(.4,0,.2,1);
+  position:relative;
+  box-shadow:var(--shadow-lg);
+  aspect-ratio:1/1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.card:hover{transform:translateY(-6px);box-shadow:var(--shadow-xl);border-color:var(--primary);background:rgba(255,255,255,.5);}
+.state-code{font-weight:700;font-size:24px;color:var(--text-primary);line-height:1;}
+.state-name{font-weight:400;font-size:13px;color:var(--text-secondary);margin-top:4px;word-break:break-word;line-height:1.2;}
+.lock-icon{font-size:16px;margin-top:6px;display:block;}
+
+/* === Mobile === */
+@media(max-width:768px){
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  body{
+    min-height: 100vh;
+    background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/ce399dec-ddac-4455-521d-697751d46300/public');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://imagedelivery.net/hvHh954PgWT-gbZ25oXErA/ce399dec-ddac-4455-521d-697751d46300/public');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(248, 250, 252, 0.2);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .container{
+    max-width:100%;
+    min-height:100vh;
+    position: relative;
+    z-index: 1;
+    padding: 0 12px 50px 12px;
+  }
+  .search-box {
+    margin: 0 auto 40px !important;
+    padding: 0 4px;
+    max-width: calc(100% - 8px);
+  }
+  .info {
+    margin: 0 auto 40px !important;
+    max-width: calc(100% - 8px);
+    background: rgba(255,255,255,.3) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,.4) !important;
+  }
+  .grid {
+    gap:10px;
+    padding-bottom:40px;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 100%;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .card {
+    padding: 18px 10px !important;
+    aspect-ratio: 1/1 !important;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .state-code{font-size:20px !important;line-height:1;}
+  .state-name{font-size:11px !important;line-height:1.2;word-break:break-word;margin-top:3px;}
+  .lock-icon{font-size:15px !important;margin-top:4px;display:block !important;}
+  .info {
+    background: rgba(255,255,255,.3) !important;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,.4) !important;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .info.premium {
+    background: linear-gradient(135deg,rgba(220,252,231,.3) 0%,rgba(209,250,229,.3) 100%) !important;
+    backdrop-filter: blur(20px);
+    border-color: rgba(22,163,74,.4) !important;
+  }
+  .lang-select{top:16px;right:16px}
+  .lang-btn{padding:8px 12px;font-size:13px}
+  .world-button{top:16px;left:16px}
+  .world-btn{padding:8px 12px;font-size:13px}
+  .header{padding:70px 16px 32px}.title{font-size:1.875rem}
+  .search{padding:12px 44px 12px 16px;font-size:14px}.info{font-size:13px;padding:16px 20px}
+  .card{padding:20px 12px}
+  .state-name{font-size:13px}
+}
+@media(max-width:480px){
+  .grid{
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .card{
+    padding: 15px 8px !important;
+    aspect-ratio: 1/1 !important;
+  }
+  .state-code{font-size:18px !important;}
+  .state-name{font-size:10px !important;}
+  .lock-icon{font-size:14px !important;margin-top:3px;display:block !important;}
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeIn .3s ease;}
+
+/* Desktop */
+@media(min-width:769px){
+  .search-box, .info {
+    max-width: 600px !important;
+  }
+  .grid {
+    max-width: 900px;
+    margin: 0 auto;
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+  <!-- World Button -->
+  <div class="world-button">
+    <button class="world-btn" onclick="location.href='world.html'">
+      <span>🌍</span>
+      <span id="worldButtonText">World Locations</span>
+    </button>
+  </div>
+
+  <!-- Language Selector -->
+  <div class="lang-select">
+    <button class="lang-btn" onclick="toggleLang()">
+      <span id="langFlag">🇺🇸</span>
+      <span id="langName">EN</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+        <path d="M3 5L6 8L9 5"/>
+      </svg>
+    </button>
+    <div class="lang-list" id="langList"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1 class="title" id="title">Explore USA's scenic locations 📍</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input id="search" class="search" type="text" placeholder="Search state..." autocomplete="off">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+      </svg>
+    </div>
+
+    <!-- Info -->
+    <div id="info" class="info">
+      All states locked 🔒 <a href="https://www.tr81.tr/login.html">Login</a> to explore scenic USA
+    </div>
+
+    <!-- Grid -->
+    <div id="grid" class="grid"></div>
+  </div>
+
+<script>
+// Translations
+const lang = {
+  en:{flag:'🇺🇸',name:'EN',title:'Explore USA\'s scenic locations 📍',
+    search:'Search state...',banner:'All states locked 🔒 <a href="https://www.tr81.tr/login.html">Login</a> to explore',
+    premium:'🔓 All states unlocked!',worldButton:'World Locations'},
+  es:{flag:'🇪🇸',name:'ES',title:'Explora los lugares pintorescos de EE.UU. 📍',
+    search:'Buscar estado...',banner:'Todos los estados bloqueados 🔒 <a href="https://www.tr81.tr/login.html">Inicia sesión</a> para explorar',
+    premium:'🔓 ¡Todos los estados desbloqueados!',worldButton:'Ubicaciones mundiales'},
+  fr:{flag:'🇫🇷',name:'FR',title:'Explorez les sites pittoresques des États-Unis 📍',
+    search:'Rechercher un état...',banner:'Tous les états verrouillés 🔒 <a href="https://www.tr81.tr/login.html">Connectez-vous</a> pour explorer',
+    premium:'🔓 Tous les états débloqués !',worldButton:'Sites mondiaux'},
+  de:{flag:'🇩🇪',name:'DE',title:'Entdecke die malerischen Orte der USA 📍',
+    search:'Staat suchen...',banner:'Alle Staaten gesperrt 🔒 <a href="https://www.tr81.tr/login.html">Melden Sie sich an</a> zum Erkunden',
+    premium:'🔓 Alle Staaten freigeschaltet!',worldButton:'Weltweite Standorte'},
+  it:{flag:'🇮🇹',name:'IT',title:'Esplora i luoghi pittoreschi degli USA 📍',
+    search:'Cerca stato...',banner:'Tutti gli stati bloccati 🔒 <a href="https://www.tr81.tr/login.html">Accedi</a> per esplorare',
+    premium:'🔓 Tutti gli stati sbloccati!',worldButton:'Località mondiali'},
+  pt:{flag:'🇵🇹',name:'PT',title:'Explore os locais pitorescos dos EUA 📍',
+    search:'Pesquisar estado...',banner:'Todos os estados bloqueados 🔒 <a href="https://www.tr81.tr/login.html">Entre</a> para explorar',
+    premium:'🔓 Todos os estados desbloqueados!',worldButton:'Localizações mundiais'},
+  ru:{flag:'🇷🇺',name:'RU',title:'Исследуйте живописные места США 📍',
+    search:'Поиск штата...',banner:'Все штаты заблокированы 🔒 <a href="https://www.tr81.tr/login.html">Войдите</a> для исследования',
+    premium:'🔓 Все штаты разблокированы!',worldButton:'Мировые локации'},
+  ja:{flag:'🇯🇵',name:'JA',title:'アメリカの風光明媚な場所を探索 📍',
+    search:'州を検索...',banner:'すべての州がロックされています 🔒 探索するには<a href="https://www.tr81.tr/login.html">ログイン</a>',
+    premium:'🔓 すべての州が利用可能！',worldButton:'世界の場所'},
+  zh:{flag:'🇨🇳',name:'ZH',title:'探索美国的风景名胜 📍',
+    search:'搜索州...',banner:'所有州已锁定 🔒 <a href="https://www.tr81.tr/login.html">登录</a>探索',
+    premium:'🔓 所有州已解锁！',worldButton:'世界地点'},
+  ko:{flag:'🇰🇷',name:'KO',title:'미국의 경치 좋은 장소 탐험 📍',
+    search:'주 검색...',banner:'모든 주가 잠겨 있습니다 🔒 탐험하려면 <a href="https://www.tr81.tr/login.html">로그인</a>',
+    premium:'🔓 모든 주 이용 가능!',worldButton:'세계 위치'},
+  ar:{flag:'🇸🇦',name:'AR',title:'اكتشف المواقع الخلابة في الولايات المتحدة 📍',
+    search:'ابحث عن ولاية...',banner:'جميع الولايات مقفلة 🔒 <a href="https://www.tr81.tr/login.html">سجّل الدخول</a> للاستكشاف',
+    premium:'🔓 جميع الولايات متاحة!',worldButton:'المواقع العالمية'},
+  hi:{flag:'🇮🇳',name:'HI',title:'अमेरिका के सुंदर स्थलों का अन्वेषण करें 📍',
+    search:'राज्य खोजें...',banner:'सभी राज्य लॉक हैं 🔒 अन्वेषण के लिए <a href="https://www.tr81.tr/login.html">लॉगिन करें</a>',
+    premium:'🔓 सभी राज्य खुले हैं!',worldButton:'विश्व स्थान'},
+  tr:{flag:'🇹🇷',name:'TR',title:'ABD\'nin manzaralı yerlerini keşfet 📍',
+    search:'Eyalet ara...',banner:'Tüm eyaletler kilitli 🔒 Keşfetmek için <a href="https://www.tr81.tr/login.html">giriş yap</a>',
+    premium:'🔓 Tüm eyaletler açık!',worldButton:'Dünya Konumları'},
+  nl:{flag:'🇳🇱',name:'NL',title:'Ontdek de schilderachtige plekken van de VS 📍',
+    search:'Zoek staat...',banner:'Alle staten vergrendeld 🔒 <a href="https://www.tr81.tr/login.html">Log in</a> om te verkennen',
+    premium:'🔓 Alle staten ontgrendeld!',worldButton:'Wereldlocaties'},
+  pl:{flag:'🇵🇱',name:'PL',title:'Odkryj malownicze miejsca USA 📍',
+    search:'Szukaj stanu...',banner:'Wszystkie stany zablokowane 🔒 <a href="https://www.tr81.tr/login.html">Zaloguj się</a> aby odkrywać',
+    premium:'🔓 Wszystkie stany odblokowane!',worldButton:'Lokalizacje świata'},
+  sv:{flag:'🇸🇪',name:'SV',title:'Utforska USA:s vackra platser 📍',
+    search:'Sök delstat...',banner:'Alla delstater låsta 🔒 <a href="https://www.tr81.tr/login.html">Logga in</a> för att utforska',
+    premium:'🔓 Alla delstater upplåsta!',worldButton:'Världsplatser'},
+  uk:{flag:'🇺🇦',name:'UK',title:'Досліджуйте мальовничі місця США 📍',
+    search:'Пошук штату...',banner:'Усі штати заблоковані 🔒 <a href="https://www.tr81.tr/login.html">Увійдіть</a> для дослідження',
+    premium:'🔓 Усі штати розблоковані!',worldButton:'Світові локації'},
+  el:{flag:'🇬🇷',name:'EL',title:'Εξερευνήστε τα γραφικά μέρη των ΗΠΑ 📍',
+    search:'Αναζήτηση πολιτείας...',banner:'Όλες οι πολιτείες κλειδωμένες 🔒 <a href="https://www.tr81.tr/login.html">Συνδεθείτε</a> για εξερεύνηση',
+    premium:'🔓 Όλες οι πολιτείες ξεκλειδωμένες!',worldButton:'Παγκόσμιες τοποθεσίες'},
+  th:{flag:'🇹🇭',name:'TH',title:'สำรวจสถานที่สวยงามของสหรัฐฯ 📍',
+    search:'ค้นหารัฐ...',banner:'ทุกรัฐถูกล็อค 🔒 <a href="https://www.tr81.tr/login.html">เข้าสู่ระบบ</a>เพื่อสำรวจ',
+    premium:'🔓 ปลดล็อคทุกรัฐแล้ว!',worldButton:'สถานที่ทั่วโลก'},
+  vi:{flag:'🇻🇳',name:'VI',title:'Khám phá những địa điểm đẹp của Hoa Kỳ 📍',
+    search:'Tìm kiếm bang...',banner:'Tất cả các bang đã khóa 🔒 <a href="https://www.tr81.tr/login.html">Đăng nhập</a> để khám phá',
+    premium:'🔓 Đã mở khóa tất cả các bang!',worldButton:'Địa điểm thế giới'},
+  no:{flag:'🇳🇴',name:'NO',title:'Utforsk USAs vakre steder 📍',
+    search:'Søk delstat...',banner:'Alle delstater låst 🔒 <a href="https://www.tr81.tr/login.html">Logg inn</a> for å utforske',
+    premium:'🔓 Alle delstater låst opp!',worldButton:'Verdenssteder'},
+  da:{flag:'🇩🇰',name:'DA',title:'Udforsk USAs smukke steder 📍',
+    search:'Søg delstat...',banner:'Alle delstater låst 🔒 <a href="https://www.tr81.tr/login.html">Log ind</a> for at udforske',
+    premium:'🔓 Alle delstater låst op!',worldButton:'Verdenslokationer'},
+  fi:{flag:'🇫🇮',name:'FI',title:'Tutustu USA:n kauniisiin paikkoihin 📍',
+    search:'Hae osavaltiota...',banner:'Kaikki osavaltiot lukittu 🔒 <a href="https://www.tr81.tr/login.html">Kirjaudu</a> tutkimaan',
+    premium:'🔓 Kaikki osavaltiot avattu!',worldButton:'Maailman kohteet'},
+  cs:{flag:'🇨🇿',name:'CS',title:'Prozkoumejte malebná místa USA 📍',
+    search:'Hledat stát...',banner:'Všechny státy uzamčeny 🔒 <a href="https://www.tr81.tr/login.html">Přihlaste se</a> k prozkoumání',
+    premium:'🔓 Všechny státy odemčeny!',worldButton:'Světové lokality'},
+  ro:{flag:'🇷🇴',name:'RO',title:'Explorați locurile pitorești din SUA 📍',
+    search:'Căutați stat...',banner:'Toate statele blocate 🔒 <a href="https://www.tr81.tr/login.html">Conectați-vă</a> pentru a explora',
+    premium:'🔓 Toate statele deblocate!',worldButton:'Locații mondiale'},
+  hu:{flag:'🇭🇺',name:'HU',title:'Fedezze fel az USA festői helyeit 📍',
+    search:'Állam keresése...',banner:'Minden állam zárolva 🔒 <a href="https://www.tr81.tr/login.html">Jelentkezzen be</a> a felfedezéshez',
+    premium:'🔓 Minden állam feloldva!',worldButton:'Világ helyszínek'},
+  bn:{flag:'🇧🇩',name:'BN',title:'মার্কিন যুক্তরাষ্ট্রের সুন্দর স্থান অন্বেষণ করুন 📍',
+    search:'রাজ্য অনুসন্ধান করুন...',banner:'সব রাজ্য লক করা আছে 🔒 অন্বেষণ করতে <a href="https://www.tr81.tr/login.html">লগইন করুন</a>',
+    premium:'🔓 সব রাজ্য খোলা!',worldButton:'বিশ্ব অবস্থান'},
+  tl:{flag:'🇵🇭',name:'TL',title:'Tuklasin ang magagandang lugar sa USA 📍',
+    search:'Maghanap ng estado...',banner:'Lahat ng estado ay naka-lock 🔒 <a href="https://www.tr81.tr/login.html">Mag-login</a> upang magtuklas',
+    premium:'🔓 Lahat ng estado ay bukas!',worldButton:'Mga Lokasyon sa Mundo'},
+  hr:{flag:'🇭🇷',name:'HR',title:'Istražite slikovita mjesta SAD-a 📍',
+    search:'Pretraži državu...',banner:'Sve države zaključane 🔒 <a href="https://www.tr81.tr/login.html">Prijavite se</a> za istraživanje',
+    premium:'🔓 Sve države otključane!',worldButton:'Svjetske lokacije'},
+  he:{flag:'🇮🇱',name:'HE',title:'גלו את המקומות היפים של ארה"ב 📍',
+    search:'חפש מדינה...',banner:'כל המדינות נעולות 🔒 <a href="https://www.tr81.tr/login.html">התחברו</a> כדי לחקור',
+    premium:'🔓 כל המדינות פתוחות!',worldButton:'מיקומים בעולם'},
+  fa:{flag:'🇮🇷',name:'FA',title:'مکان‌های زیبای ایالات متحده را کشف کنید 📍',
+    search:'جستجوی ایالت...',banner:'همه ایالت‌ها قفل هستند 🔒 برای کشف <a href="https://www.tr81.tr/login.html">وارد شوید</a>',
+    premium:'🔓 همه ایالت‌ها باز هستند!',worldButton:'مکان‌های جهانی'},
+  ca:{flag:'🇪🇸',name:'CA',title:'Exploreu els llocs pintorescos dels EUA 📍',
+    search:'Cercar estat...',banner:'Tots els estats bloquejats 🔒 <a href="https://www.tr81.tr/login.html">Inicieu sessió</a> per explorar',
+    premium:'🔓 Tots els estats desbloquejats!',worldButton:'Ubicacions mundials'},
+  sk:{flag:'🇸🇰',name:'SK',title:'Preskúmajte malebné miesta USA 📍',
+    search:'Hľadať štát...',banner:'Všetky štáty uzamknuté 🔒 <a href="https://www.tr81.tr/login.html">Prihláste sa</a> na preskúmanie',
+    premium:'🔓 Všetky štáty odomknuté!',worldButton:'Svetové lokality'},
+  ur:{flag:'🇵🇰',name:'UR',title:'امریکہ کے خوبصورت مقامات دریافت کریں 📍',
+    search:'ریاست تلاش کریں...',banner:'تمام ریاستیں مقفل ہیں 🔒 دریافت کے لیے <a href="https://www.tr81.tr/login.html">لاگ ان کریں</a>',
+    premium:'🔓 تمام ریاستیں کھلی ہیں!',worldButton:'عالمی مقامات'},
+  id:{flag:'🇮🇩',name:'ID',title:'Jelajahi tempat-tempat indah di AS 📍',
+    search:'Cari negara bagian...',banner:'Semua negara bagian terkunci 🔒 <a href="https://www.tr81.tr/login.html">Masuk</a> untuk menjelajah',
+    premium:'🔓 Semua negara bagian terbuka!',worldButton:'Lokasi Dunia'},
+  ms:{flag:'🇲🇾',name:'MS',title:'Terokai tempat-tempat cantik di AS 📍',
+    search:'Cari negeri...',banner:'Semua negeri dikunci 🔒 <a href="https://www.tr81.tr/login.html">Log masuk</a> untuk meneroka',
+    premium:'🔓 Semua negeri dibuka!',worldButton:'Lokasi Dunia'},
+  hak:{flag:'🇨🇳',name:'HAK',title:'探索美國个靚地方 📍',
+    search:'搜尋州...',banner:'所有州已鎖定 🔒 <a href="https://www.tr81.tr/login.html">登入</a>探索',
+    premium:'🔓 所有州已解鎖！',worldButton:'世界地點'},
+  arz:{flag:'🇪🇬',name:'ARZ',title:'اكتشف الأماكن الجميلة في أمريكا 📍',
+    search:'دوّر على ولاية...',banner:'كل الولايات مقفولة 🔒 عشان تكتشف <a href="https://www.tr81.tr/login.html">سجل دخول</a>',
+    premium:'🔓 كل الولايات مفتوحة!',worldButton:'أماكن في العالم'},
+  wuu:{flag:'🇨🇳',name:'WUU',title:'探索美国个美丽地方 📍',
+    search:'搜索州...',banner:'所有州已锁定 🔒 <a href="https://www.tr81.tr/login.html">登录</a>探索',
+    premium:'🔓 所有州已解锁！',worldButton:'世界地点'},
+  yue:{flag:'🇭🇰',name:'YUE',title:'探索美國嘅靚景點 📍',
+    search:'搵州...',banner:'所有州已鎖住 🔒 <a href="https://www.tr81.tr/login.html">登入</a>探索',
+    premium:'🔓 所有州已解鎖！',worldButton:'世界地點'}
+};
+
+// States list (all 50 states)
+const states = [
+  ['alabama','Alabama','AL'],['alaska','Alaska','AK'],['arizona','Arizona','AZ'],
+  ['arkansas','Arkansas','AR'],['california','California','CA'],['colorado','Colorado','CO'],
+  ['connecticut','Connecticut','CT'],['delaware','Delaware','DE'],['florida','Florida','FL'],
+  ['georgia','Georgia','GA'],['hawaii','Hawaii','HI'],['idaho','Idaho','ID'],
+  ['illinois','Illinois','IL'],['indiana','Indiana','IN'],['iowa','Iowa','IA'],
+  ['kansas','Kansas','KS'],['kentucky','Kentucky','KY'],['louisiana','Louisiana','LA'],
+  ['maine','Maine','ME'],['maryland','Maryland','MD'],['massachusetts','Massachusetts','MA'],
+  ['michigan','Michigan','MI'],['minnesota','Minnesota','MN'],['mississippi','Mississippi','MS'],
+  ['missouri','Missouri','MO'],['montana','Montana','MT'],['nebraska','Nebraska','NE'],
+  ['nevada','Nevada','NV'],['new_hampshire','New Hampshire','NH'],['new_jersey','New Jersey','NJ'],
+  ['new_mexico','New Mexico','NM'],['new_york','New York','NY'],['north_carolina','North Carolina','NC'],
+  ['north_dakota','North Dakota','ND'],['ohio','Ohio','OH'],['oklahoma','Oklahoma','OK'],
+  ['oregon','Oregon','OR'],['pennsylvania','Pennsylvania','PA'],['rhode_island','Rhode Island','RI'],
+  ['south_carolina','South Carolina','SC'],['south_dakota','South Dakota','SD'],['tennessee','Tennessee','TN'],
+  ['texas','Texas','TX'],['utah','Utah','UT'],['vermont','Vermont','VT'],
+  ['virginia','Virginia','VA'],['washington','Washington','WA'],['west_virginia','West Virginia','WV'],
+  ['wisconsin','Wisconsin','WI'],['wyoming','Wyoming','WY']
+];
+
+// State translations
+const stateTranslations = {
+  alabama: {
+    es: 'Alabama', fr: 'Alabama', de: 'Alabama', it: 'Alabama', pt: 'Alabama',
+    ru: 'Алабама', ja: 'アラバマ', zh: '阿拉巴马', ko: '앨라배마', ar: 'ألاباما',
+    hi: 'अलाबामा', tr: 'Alabama', nl: 'Alabama', pl: 'Alabama', sv: 'Alabama'
+  },
+  alaska: {
+    es: 'Alaska', fr: 'Alaska', de: 'Alaska', it: 'Alaska', pt: 'Alasca',
+    ru: 'Аляска', ja: 'アラスカ', zh: '阿拉斯加', ko: '알래스카', ar: 'ألاسكا',
+    hi: 'अलास्का', tr: 'Alaska', nl: 'Alaska', pl: 'Alaska', sv: 'Alaska'
+  },
+  arizona: {
+    es: 'Arizona', fr: 'Arizona', de: 'Arizona', it: 'Arizona', pt: 'Arizona',
+    ru: 'Аризона', ja: 'アリゾナ', zh: '亚利桑那', ko: '애리조나', ar: 'أريزونا',
+    hi: 'एरिज़ोना', tr: 'Arizona', nl: 'Arizona', pl: 'Arizona', sv: 'Arizona'
+  },
+  arkansas: {
+    es: 'Arkansas', fr: 'Arkansas', de: 'Arkansas', it: 'Arkansas', pt: 'Arkansas',
+    ru: 'Арканзас', ja: 'アーカンソー', zh: '阿肯色', ko: '아칸소', ar: 'أركنساس',
+    hi: 'आर्कन्सा', tr: 'Arkansas', nl: 'Arkansas', pl: 'Arkansas', sv: 'Arkansas'
+  },
+  california: {
+    es: 'California', fr: 'Californie', de: 'Kalifornien', it: 'California', pt: 'Califórnia',
+    ru: 'Калифорния', ja: 'カリフォルニア', zh: '加利福尼亚', ko: '캘리포니아', ar: 'كاليفورنيا',
+    hi: 'कैलिफ़ोर्निया', tr: 'Kaliforniya', nl: 'Californië', pl: 'Kalifornia', sv: 'Kalifornien'
+  },
+  colorado: {
+    es: 'Colorado', fr: 'Colorado', de: 'Colorado', it: 'Colorado', pt: 'Colorado',
+    ru: 'Колорадо', ja: 'コロラド', zh: '科罗拉多', ko: '콜로라도', ar: 'كولورادو',
+    hi: 'कोलोराडो', tr: 'Colorado', nl: 'Colorado', pl: 'Kolorado', sv: 'Colorado'
+  },
+  connecticut: {
+    es: 'Connecticut', fr: 'Connecticut', de: 'Connecticut', it: 'Connecticut', pt: 'Connecticut',
+    ru: 'Коннектикут', ja: 'コネチカット', zh: '康涅狄格', ko: '코네티컷', ar: 'كونيتيكت',
+    hi: 'कनेक्टिकट', tr: 'Connecticut', nl: 'Connecticut', pl: 'Connecticut', sv: 'Connecticut'
+  },
+  delaware: {
+    es: 'Delaware', fr: 'Delaware', de: 'Delaware', it: 'Delaware', pt: 'Delaware',
+    ru: 'Делавэр', ja: 'デラウェア', zh: '特拉华', ko: '델라웨어', ar: 'ديلاوير',
+    hi: 'डेलावेयर', tr: 'Delaware', nl: 'Delaware', pl: 'Delaware', sv: 'Delaware'
+  },
+  florida: {
+    es: 'Florida', fr: 'Floride', de: 'Florida', it: 'Florida', pt: 'Flórida',
+    ru: 'Флорида', ja: 'フロリダ', zh: '佛罗里达', ko: '플로리다', ar: 'فلوريدا',
+    hi: 'फ़्लोरिडा', tr: 'Florida', nl: 'Florida', pl: 'Floryda', sv: 'Florida'
+  },
+  georgia: {
+    es: 'Georgia', fr: 'Géorgie', de: 'Georgia', it: 'Georgia', pt: 'Geórgia',
+    ru: 'Джорджия', ja: 'ジョージア', zh: '佐治亚', ko: '조지아', ar: 'جورجيا',
+    hi: 'जॉर्जिया', tr: 'Georgia', nl: 'Georgia', pl: 'Georgia', sv: 'Georgia'
+  },
+  hawaii: {
+    es: 'Hawái', fr: 'Hawaï', de: 'Hawaii', it: 'Hawaii', pt: 'Havaí',
+    ru: 'Гавайи', ja: 'ハワイ', zh: '夏威夷', ko: '하와이', ar: 'هاواي',
+    hi: 'हवाई', tr: 'Hawaii', nl: 'Hawaï', pl: 'Hawaje', sv: 'Hawaii'
+  },
+  idaho: {
+    es: 'Idaho', fr: 'Idaho', de: 'Idaho', it: 'Idaho', pt: 'Idaho',
+    ru: 'Айдахо', ja: 'アイダホ', zh: '爱达荷', ko: '아이다호', ar: 'أيداهو',
+    hi: 'आयडाहो', tr: 'Idaho', nl: 'Idaho', pl: 'Idaho', sv: 'Idaho'
+  },
+  illinois: {
+    es: 'Illinois', fr: 'Illinois', de: 'Illinois', it: 'Illinois', pt: 'Illinois',
+    ru: 'Иллинойс', ja: 'イリノイ', zh: '伊利诺伊', ko: '일리노이', ar: 'إلينوي',
+    hi: 'इलिनोइस', tr: 'Illinois', nl: 'Illinois', pl: 'Illinois', sv: 'Illinois'
+  },
+  indiana: {
+    es: 'Indiana', fr: 'Indiana', de: 'Indiana', it: 'Indiana', pt: 'Indiana',
+    ru: 'Индиана', ja: 'インディアナ', zh: '印第安纳', ko: '인디애나', ar: 'إنديانا',
+    hi: 'इंडियाना', tr: 'Indiana', nl: 'Indiana', pl: 'Indiana', sv: 'Indiana'
+  },
+  iowa: {
+    es: 'Iowa', fr: 'Iowa', de: 'Iowa', it: 'Iowa', pt: 'Iowa',
+    ru: 'Айова', ja: 'アイオワ', zh: '爱荷华', ko: '아이오와', ar: 'أيوا',
+    hi: 'आयोवा', tr: 'Iowa', nl: 'Iowa', pl: 'Iowa', sv: 'Iowa'
+  },
+  kansas: {
+    es: 'Kansas', fr: 'Kansas', de: 'Kansas', it: 'Kansas', pt: 'Kansas',
+    ru: 'Канзас', ja: 'カンザス', zh: '堪萨斯', ko: '캔자스', ar: 'كانساس',
+    hi: 'कैनसस', tr: 'Kansas', nl: 'Kansas', pl: 'Kansas', sv: 'Kansas'
+  },
+  kentucky: {
+    es: 'Kentucky', fr: 'Kentucky', de: 'Kentucky', it: 'Kentucky', pt: 'Kentucky',
+    ru: 'Кентукки', ja: 'ケンタッキー', zh: '肯塔基', ko: '켄터키', ar: 'كنتاكي',
+    hi: 'केंटकी', tr: 'Kentucky', nl: 'Kentucky', pl: 'Kentucky', sv: 'Kentucky'
+  },
+  louisiana: {
+    es: 'Luisiana', fr: 'Louisiane', de: 'Louisiana', it: 'Louisiana', pt: 'Louisiana',
+    ru: 'Луизиана', ja: 'ルイジアナ', zh: '路易斯安那', ko: '루이지애나', ar: 'لويزيانا',
+    hi: 'लुइसियाना', tr: 'Louisiana', nl: 'Louisiana', pl: 'Luizjana', sv: 'Louisiana'
+  },
+  maine: {
+    es: 'Maine', fr: 'Maine', de: 'Maine', it: 'Maine', pt: 'Maine',
+    ru: 'Мэн', ja: 'メイン', zh: '缅因', ko: '메인', ar: 'مين',
+    hi: 'मेन', tr: 'Maine', nl: 'Maine', pl: 'Maine', sv: 'Maine'
+  },
+  maryland: {
+    es: 'Maryland', fr: 'Maryland', de: 'Maryland', it: 'Maryland', pt: 'Maryland',
+    ru: 'Мэриленд', ja: 'メリーランド', zh: '马里兰', ko: '메릴랜드', ar: 'ماريلاند',
+    hi: 'मैरीलैंड', tr: 'Maryland', nl: 'Maryland', pl: 'Maryland', sv: 'Maryland'
+  },
+  massachusetts: {
+    es: 'Massachusetts', fr: 'Massachusetts', de: 'Massachusetts', it: 'Massachusetts', pt: 'Massachusetts',
+    ru: 'Массачусетс', ja: 'マサチューセッツ', zh: '马萨诸塞', ko: '매사추세츠', ar: 'ماساتشوستس',
+    hi: 'मैसाचुसेट्स', tr: 'Massachusetts', nl: 'Massachusetts', pl: 'Massachusetts', sv: 'Massachusetts'
+  },
+  michigan: {
+    es: 'Míchigan', fr: 'Michigan', de: 'Michigan', it: 'Michigan', pt: 'Michigan',
+    ru: 'Мичиган', ja: 'ミシガン', zh: '密歇根', ko: '미시간', ar: 'ميشيغان',
+    hi: 'मिशिगन', tr: 'Michigan', nl: 'Michigan', pl: 'Michigan', sv: 'Michigan'
+  },
+  minnesota: {
+    es: 'Minnesota', fr: 'Minnesota', de: 'Minnesota', it: 'Minnesota', pt: 'Minnesota',
+    ru: 'Миннесота', ja: 'ミネソタ', zh: '明尼苏达', ko: '미네소타', ar: 'مينيسوتا',
+    hi: 'मिनेसोटा', tr: 'Minnesota', nl: 'Minnesota', pl: 'Minnesota', sv: 'Minnesota'
+  },
+  mississippi: {
+    es: 'Misisipi', fr: 'Mississippi', de: 'Mississippi', it: 'Mississippi', pt: 'Mississippi',
+    ru: 'Миссисипи', ja: 'ミシシッピ', zh: '密西西比', ko: '미시시피', ar: 'ميسيسيبي',
+    hi: 'मिसिसिपी', tr: 'Mississippi', nl: 'Mississippi', pl: 'Mississippi', sv: 'Mississippi'
+  },
+  missouri: {
+    es: 'Misuri', fr: 'Missouri', de: 'Missouri', it: 'Missouri', pt: 'Missouri',
+    ru: 'Миссури', ja: 'ミズーリ', zh: '密苏里', ko: '미주리', ar: 'ميزوري',
+    hi: 'मिज़ूरी', tr: 'Missouri', nl: 'Missouri', pl: 'Missouri', sv: 'Missouri'
+  },
+  montana: {
+    es: 'Montana', fr: 'Montana', de: 'Montana', it: 'Montana', pt: 'Montana',
+    ru: 'Монтана', ja: 'モンタナ', zh: '蒙大拿', ko: '몬태나', ar: 'مونتانا',
+    hi: 'मोंटाना', tr: 'Montana', nl: 'Montana', pl: 'Montana', sv: 'Montana'
+  },
+  nebraska: {
+    es: 'Nebraska', fr: 'Nebraska', de: 'Nebraska', it: 'Nebraska', pt: 'Nebraska',
+    ru: 'Небраска', ja: 'ネブラスカ', zh: '内布拉斯加', ko: '네브래스카', ar: 'نبراسكا',
+    hi: 'नेब्रास्का', tr: 'Nebraska', nl: 'Nebraska', pl: 'Nebraska', sv: 'Nebraska'
+  },
+  nevada: {
+    es: 'Nevada', fr: 'Nevada', de: 'Nevada', it: 'Nevada', pt: 'Nevada',
+    ru: 'Невада', ja: 'ネバダ', zh: '内华达', ko: '네바다', ar: 'نيفادا',
+    hi: 'नेवादा', tr: 'Nevada', nl: 'Nevada', pl: 'Nevada', sv: 'Nevada'
+  },
+  new_hampshire: {
+    es: 'Nuevo Hampshire', fr: 'New Hampshire', de: 'New Hampshire', it: 'New Hampshire', pt: 'Nova Hampshire',
+    ru: 'Нью-Гэмпшир', ja: 'ニューハンプシャー', zh: '新罕布什尔', ko: '뉴햄프셔', ar: 'نيو هامبشاير',
+    hi: 'न्यू हैम्पशायर', tr: 'New Hampshire', nl: 'New Hampshire', pl: 'New Hampshire', sv: 'New Hampshire'
+  },
+  new_jersey: {
+    es: 'Nueva Jersey', fr: 'New Jersey', de: 'New Jersey', it: 'New Jersey', pt: 'Nova Jersey',
+    ru: 'Нью-Джерси', ja: 'ニュージャージー', zh: '新泽西', ko: '뉴저지', ar: 'نيو جيرسي',
+    hi: 'न्यू जर्सी', tr: 'New Jersey', nl: 'New Jersey', pl: 'New Jersey', sv: 'New Jersey'
+  },
+  new_mexico: {
+    es: 'Nuevo México', fr: 'Nouveau-Mexique', de: 'New Mexico', it: 'Nuovo Messico', pt: 'Novo México',
+    ru: 'Нью-Мексико', ja: 'ニューメキシコ', zh: '新墨西哥', ko: '뉴멕시코', ar: 'نيو مكسيكو',
+    hi: 'न्यू मैक्सिको', tr: 'New Mexico', nl: 'New Mexico', pl: 'Nowy Meksyk', sv: 'New Mexico'
+  },
+  new_york: {
+    es: 'Nueva York', fr: 'New York', de: 'New York', it: 'New York', pt: 'Nova Iorque',
+    ru: 'Нью-Йорк', ja: 'ニューヨーク', zh: '纽约', ko: '뉴욕', ar: 'نيويورك',
+    hi: 'न्यूयॉर्क', tr: 'New York', nl: 'New York', pl: 'Nowy Jork', sv: 'New York'
+  },
+  north_carolina: {
+    es: 'Carolina del Norte', fr: 'Caroline du Nord', de: 'North Carolina', it: 'Carolina del Nord', pt: 'Carolina do Norte',
+    ru: 'Северная Каролина', ja: 'ノースカロライナ', zh: '北卡罗来纳', ko: '노스캐롤라이나', ar: 'كارولاينا الشمالية',
+    hi: 'उत्तरी कैरोलिना', tr: 'Kuzey Carolina', nl: 'North Carolina', pl: 'Karolina Północna', sv: 'North Carolina'
+  },
+  north_dakota: {
+    es: 'Dakota del Norte', fr: 'Dakota du Nord', de: 'North Dakota', it: 'Dakota del Nord', pt: 'Dakota do Norte',
+    ru: 'Северная Дакота', ja: 'ノースダコタ', zh: '北达科他', ko: '노스다코타', ar: 'داكوتا الشمالية',
+    hi: 'उत्तरी डकोटा', tr: 'Kuzey Dakota', nl: 'North Dakota', pl: 'Dakota Północna', sv: 'North Dakota'
+  },
+  ohio: {
+    es: 'Ohio', fr: 'Ohio', de: 'Ohio', it: 'Ohio', pt: 'Ohio',
+    ru: 'Огайо', ja: 'オハイオ', zh: '俄亥俄', ko: '오하이오', ar: 'أوهايو',
+    hi: 'ओहायो', tr: 'Ohio', nl: 'Ohio', pl: 'Ohio', sv: 'Ohio'
+  },
+  oklahoma: {
+    es: 'Oklahoma', fr: 'Oklahoma', de: 'Oklahoma', it: 'Oklahoma', pt: 'Oklahoma',
+    ru: 'Оклахома', ja: 'オクラホマ', zh: '俄克拉荷马', ko: '오클라호마', ar: 'أوكلاهوما',
+    hi: 'ओक्लाहोमा', tr: 'Oklahoma', nl: 'Oklahoma', pl: 'Oklahoma', sv: 'Oklahoma'
+  },
+  oregon: {
+    es: 'Oregón', fr: 'Oregon', de: 'Oregon', it: 'Oregon', pt: 'Oregon',
+    ru: 'Орегон', ja: 'オレゴン', zh: '俄勒冈', ko: '오리건', ar: 'أوريغون',
+    hi: 'ऑरेगन', tr: 'Oregon', nl: 'Oregon', pl: 'Oregon', sv: 'Oregon'
+  },
+  pennsylvania: {
+    es: 'Pensilvania', fr: 'Pennsylvanie', de: 'Pennsylvania', it: 'Pennsylvania', pt: 'Pensilvânia',
+    ru: 'Пенсильвания', ja: 'ペンシルベニア', zh: '宾夕法尼亚', ko: '펜실베이니아', ar: 'بنسلفانيا',
+    hi: 'पेन्सिलवेनिया', tr: 'Pennsylvania', nl: 'Pennsylvania', pl: 'Pensylwania', sv: 'Pennsylvania'
+  },
+  rhode_island: {
+    es: 'Rhode Island', fr: 'Rhode Island', de: 'Rhode Island', it: 'Rhode Island', pt: 'Rhode Island',
+    ru: 'Род-Айленд', ja: 'ロードアイランド', zh: '罗德岛', ko: '로드아일랜드', ar: 'رود آيلاند',
+    hi: 'रोड आइलैंड', tr: 'Rhode Island', nl: 'Rhode Island', pl: 'Rhode Island', sv: 'Rhode Island'
+  },
+  south_carolina: {
+    es: 'Carolina del Sur', fr: 'Caroline du Sud', de: 'South Carolina', it: 'Carolina del Sud', pt: 'Carolina do Sul',
+    ru: 'Южная Каролина', ja: 'サウスカロライナ', zh: '南卡罗来纳', ko: '사우스캐롤라이나', ar: 'كارولاينا الجنوبية',
+    hi: 'दक्षिण कैरोलिना', tr: 'Güney Carolina', nl: 'South Carolina', pl: 'Karolina Południowa', sv: 'South Carolina'
+  },
+  south_dakota: {
+    es: 'Dakota del Sur', fr: 'Dakota du Sud', de: 'South Dakota', it: 'Dakota del Sud', pt: 'Dakota do Sul',
+    ru: 'Южная Дакота', ja: 'サウスダコタ', zh: '南达科他', ko: '사우스다코타', ar: 'داكوتا الجنوبية',
+    hi: 'दक्षिण डकोटा', tr: 'Güney Dakota', nl: 'South Dakota', pl: 'Dakota Południowa', sv: 'South Dakota'
+  },
+  tennessee: {
+    es: 'Tennessee', fr: 'Tennessee', de: 'Tennessee', it: 'Tennessee', pt: 'Tennessee',
+    ru: 'Теннесси', ja: 'テネシー', zh: '田纳西', ko: '테네시', ar: 'تينيسي',
+    hi: 'टेनेसी', tr: 'Tennessee', nl: 'Tennessee', pl: 'Tennessee', sv: 'Tennessee'
+  },
+  texas: {
+    es: 'Texas', fr: 'Texas', de: 'Texas', it: 'Texas', pt: 'Texas',
+    ru: 'Техас', ja: 'テキサス', zh: '德克萨斯', ko: '텍사스', ar: 'تكساس',
+    hi: 'टेक्सास', tr: 'Teksas', nl: 'Texas', pl: 'Teksas', sv: 'Texas'
+  },
+  utah: {
+    es: 'Utah', fr: 'Utah', de: 'Utah', it: 'Utah', pt: 'Utah',
+    ru: 'Юта', ja: 'ユタ', zh: '犹他', ko: '유타', ar: 'يوتا',
+    hi: 'यूटा', tr: 'Utah', nl: 'Utah', pl: 'Utah', sv: 'Utah'
+  },
+  vermont: {
+    es: 'Vermont', fr: 'Vermont', de: 'Vermont', it: 'Vermont', pt: 'Vermont',
+    ru: 'Вермонт', ja: 'バーモント', zh: '佛蒙特', ko: '버몬트', ar: 'فيرمونت',
+    hi: 'वर्मोंट', tr: 'Vermont', nl: 'Vermont', pl: 'Vermont', sv: 'Vermont'
+  },
+  virginia: {
+    es: 'Virginia', fr: 'Virginie', de: 'Virginia', it: 'Virginia', pt: 'Virgínia',
+    ru: 'Виргиния', ja: 'バージニア', zh: '弗吉尼亚', ko: '버지니아', ar: 'فرجينيا',
+    hi: 'वर्जीनिया', tr: 'Virginia', nl: 'Virginia', pl: 'Wirginia', sv: 'Virginia'
+  },
+  washington: {
+    es: 'Washington', fr: 'Washington', de: 'Washington', it: 'Washington', pt: 'Washington',
+    ru: 'Вашингтон', ja: 'ワシントン', zh: '华盛顿', ko: '워싱턴', ar: 'واشنطن',
+    hi: 'वाशिंगटन', tr: 'Washington', nl: 'Washington', pl: 'Waszyngton', sv: 'Washington'
+  },
+  west_virginia: {
+    es: 'Virginia Occidental', fr: 'Virginie-Occidentale', de: 'West Virginia', it: 'Virginia Occidentale', pt: 'Virgínia Ocidental',
+    ru: 'Западная Виргиния', ja: 'ウェストバージニア', zh: '西弗吉尼亚', ko: '웨스트버지니아', ar: 'فرجينيا الغربية',
+    hi: 'पश्चिम वर्जीनिया', tr: 'Batı Virginia', nl: 'West Virginia', pl: 'Wirginia Zachodnia', sv: 'West Virginia'
+  },
+  wisconsin: {
+    es: 'Wisconsin', fr: 'Wisconsin', de: 'Wisconsin', it: 'Wisconsin', pt: 'Wisconsin',
+    ru: 'Висконсин', ja: 'ウィスコンシン', zh: '威斯康星', ko: '위스콘신', ar: 'ويسكونسن',
+    hi: 'विस्कॉन्सिन', tr: 'Wisconsin', nl: 'Wisconsin', pl: 'Wisconsin', sv: 'Wisconsin'
+  },
+  wyoming: {
+    es: 'Wyoming', fr: 'Wyoming', de: 'Wyoming', it: 'Wyoming', pt: 'Wyoming',
+    ru: 'Вайоминг', ja: 'ワイオミング', zh: '怀俄明', ko: '와이오밍', ar: 'وايومنغ',
+    hi: 'व्योमिंग', tr: 'Wyoming', nl: 'Wyoming', pl: 'Wyoming', sv: 'Wyoming'
+  }
+};
+
+// Get state name by language
+function getStateName(slug, originalName, langCode) {
+  if (langCode === 'en') return originalName;
+  
+  // If translation exists, return it
+  if (stateTranslations[slug] && stateTranslations[slug][langCode]) {
+    return stateTranslations[slug][langCode];
+  }
+  
+  // Return original name if no translation
+  return originalName;
+}
+
+// Update cards with translations
+function updateCards() {
+  if (typeof currentLang === 'undefined') return;
+  
+  document.querySelectorAll('.card').forEach(card => {
+    const slug = card.dataset.slug;
+    const originalName = card.dataset.originalName;
+    const stateCode = card.dataset.stateCode;
+    if (!slug || !originalName) return;
+    
+    const translatedName = getStateName(slug, originalName, currentLang);
+    
+    const codeElement = card.querySelector('.state-code');
+    const nameElement = card.querySelector('.state-name');
+    
+    if (codeElement) codeElement.textContent = stateCode;
+    if (nameElement) nameElement.textContent = translatedName;
+    
+    // Update search data
+    card.dataset.search = translatedName;
+  });
+}
+
+// Normalize function
+const norm = t =>
+  t
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[çğıöşü]/g, ch => ({ 'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u' }[ch]));
+
+// Current language
+let currentLang = 'en';
+
+// Detect browser language
+function detectLang(){
+  const saved = localStorage.getItem('lang');
+  if(saved && lang[saved]) return saved;
+  const browser = navigator.language.toLowerCase();
+  for(const code in lang){
+    if(browser.startsWith(code)) return code;
+  }
+  return 'en';
+}
+
+// Colorize title
+function colorizeTitle() {
+  const titleElement = document.getElementById('title');
+  if (!titleElement) return;
+  
+  const text = titleElement.textContent;
+  
+  // Separate emoji
+  const parts = text.split('📍');
+  const words = parts[0].trim().split(/\s+/);
+  
+  // Convert each word to colored span
+  let html = '';
+  words.forEach((word, index) => {
+    const colorIndex = index % 7;
+    html += `<span class="title-word word-${colorIndex}">${word}</span> `;
+  });
+  
+  // Add emoji
+  html += '<span class="title-emoji">📍</span>';
+  
+  titleElement.innerHTML = html;
+}
+
+// Set language
+function setLang(code){
+  currentLang = code;
+  const t = lang[code];
+  document.getElementById('title').textContent = t.title;
+  document.getElementById('search').placeholder = t.search;
+  document.getElementById('langFlag').textContent = t.flag;
+  document.getElementById('langName').textContent = t.name;
+  document.getElementById('worldButtonText').textContent = t.worldButton;
+  
+  const access = localStorage.getItem('duflat-access')==='granted';
+  const info = document.getElementById('info');
+  info.innerHTML = access ? t.premium : t.banner;
+  info.className = access ? 'info premium' : 'info';
+  
+  document.documentElement.lang = code;
+  localStorage.setItem('lang', code);
+  
+  document.querySelectorAll('.lang-item').forEach(i=>i.classList.toggle('active',i.dataset.lang===code));
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Update cards
+  updateCards();
+}
+
+// Create language menu
+function createLangMenu(){
+  const list = document.getElementById('langList');
+  for(const [code,data] of Object.entries(lang)){
+    const item = document.createElement('div');
+    item.className='lang-item';
+    item.dataset.lang = code;
+    item.innerHTML = `<span>${data.flag}</span><span>${data.name}</span>`;
+    item.onclick = ()=>{ setLang(code); toggleLang(false); };
+    list.appendChild(item);
+  }
+}
+
+// Toggle menu
+function toggleLang(force){
+  const list = document.getElementById('langList');
+  if(force===false){ list.classList.remove('show'); }
+  else{ list.classList.toggle('show'); }
+}
+
+// Page load
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('grid');
+  const search = document.getElementById('search');
+  const access = localStorage.getItem('duflat-access') === 'granted';
+  
+  createLangMenu();
+  setLang(detectLang());
+  
+  // Create cards
+  states.forEach(([slug, name, code]) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.slug = slug;
+    card.dataset.originalName = name;
+    card.dataset.stateCode = code;
+    
+    // Get translated name
+    const translatedName = getStateName(slug, name, currentLang);
+    card.dataset.search = translatedName;
+    
+    const locked = !access;
+    let cardContent = `<div class="state-code">${code}</div>`;
+    cardContent += `<div class="state-name">${translatedName}</div>`;
+    if(locked) {
+      cardContent += `<span class="lock-icon">🔒</span>`;
+    }
+    card.innerHTML = cardContent;
+    
+    card.onclick = () => {
+      if(access) {
+        location.href = `usa_${slug}.html`;
+      } else {
+        location.href = 'login.html';
+      }
+    };
+    
+    grid.appendChild(card);
+  });
+  
+  // Enhanced search with all languages and abbreviations
+  const stateSearchTerms = {
+    alabama: ['alabama', 'al', 'алабама', 'アラバマ', '阿拉巴马', '앨라배마'],
+    alaska: ['alaska', 'ak', 'аляска', 'アラスカ', '阿拉斯加', '알래스카', 'alasca'],
+    arizona: ['arizona', 'az', 'аризона', 'アリゾナ', '亚利桑那', '애리조나'],
+    arkansas: ['arkansas', 'ar', 'арканзас', 'アーカンソー', '阿肯色', '아칸소'],
+    california: ['california', 'ca', 'калифорния', 'カリフォルニア', '加利福尼亚', '캘리포니아', 'californie', 'kalifornien', 'califórnia'],
+    colorado: ['colorado', 'co', 'колорадо', 'コロラド', '科罗拉多', '콜로라도'],
+    connecticut: ['connecticut', 'ct', 'коннектикут', 'コネチカット', '康涅狄格', '코네티컷'],
+    delaware: ['delaware', 'de', 'делавэр', 'デラウェア', '特拉华', '델라웨어'],
+    florida: ['florida', 'fl', 'флорида', 'フロリダ', '佛罗里达', '플로리다', 'floride', 'flórida'],
+    georgia: ['georgia', 'ga', 'джорджия', 'ジョージア', '佐治亚', '조지아', 'géorgie', 'geórgia'],
+    hawaii: ['hawaii', 'hi', 'гавайи', 'ハワイ', '夏威夷', '하와이', 'hawaï', 'havaí'],
+    idaho: ['idaho', 'id', 'айдахо', 'アイダホ', '爱达荷', '아이다호'],
+    illinois: ['illinois', 'il', 'иллинойс', 'イリノイ', '伊利诺伊', '일리노이'],
+    indiana: ['indiana', 'in', 'индиана', 'インディアナ', '印第安纳', '인디애나'],
+    iowa: ['iowa', 'ia', 'айова', 'アイオワ', '爱荷华', '아이오와'],
+    kansas: ['kansas', 'ks', 'канзас', 'カンザス', '堪萨斯', '캔자스'],
+    kentucky: ['kentucky', 'ky', 'кентукки', 'ケンタッキー', '肯塔基', '켄터키'],
+    louisiana: ['louisiana', 'la', 'луизиана', 'ルイジアナ', '路易斯安那', '루이지애나', 'louisiane', 'luisiana'],
+    maine: ['maine', 'me', 'мэн', 'メイン', '缅因', '메인'],
+    maryland: ['maryland', 'md', 'мэриленд', 'メリーランド', '马里兰', '메릴랜드'],
+    massachusetts: ['massachusetts', 'ma', 'массачусетс', 'マサチューセッツ', '马萨诸塞', '매사추세츠'],
+    michigan: ['michigan', 'mi', 'мичиган', 'ミシガン', '密歇根', '미시간', 'míchigan'],
+    minnesota: ['minnesota', 'mn', 'миннесота', 'ミネソタ', '明尼苏达', '미네소타'],
+    mississippi: ['mississippi', 'ms', 'миссисипи', 'ミシシッピ', '密西西比', '미시시피', 'misisipi'],
+    missouri: ['missouri', 'mo', 'миссури', 'ミズーリ', '密苏里', '미주리', 'misuri'],
+    montana: ['montana', 'mt', 'монтана', 'モンタナ', '蒙大拿', '몬태나'],
+    nebraska: ['nebraska', 'ne', 'небраска', 'ネブラスカ', '内布拉斯加', '네브래스카'],
+    nevada: ['nevada', 'nv', 'невада', 'ネバダ', '内华达', '네바다'],
+    new_hampshire: ['new hampshire', 'nh', 'нью-гэмпшир', 'ニューハンプシャー', '新罕布什尔', '뉴햄프셔', 'nuevo hampshire', 'nova hampshire'],
+    new_jersey: ['new jersey', 'nj', 'нью-джерси', 'ニュージャージー', '新泽西', '뉴저지', 'nueva jersey', 'nova jersey'],
+    new_mexico: ['new mexico', 'nm', 'нью-мексико', 'ニューメキシコ', '新墨西哥', '뉴멕시코', 'nuevo méxico', 'novo méxico', 'nouveau-mexique', 'nuovo messico'],
+    new_york: ['new york', 'ny', 'нью-йорк', 'ニューヨーク', '纽约', '뉴욕', 'nueva york', 'nova iorque', 'nowy jork'],
+    north_carolina: ['north carolina', 'nc', 'северная каролина', 'ノースカロライナ', '北卡罗来纳', '노스캐롤라이나', 'carolina del norte', 'caroline du nord', 'carolina do norte', 'kuzey carolina'],
+    north_dakota: ['north dakota', 'nd', 'северная дакота', 'ノースダコタ', '北达科他', '노스다코타', 'dakota del norte', 'dakota du nord', 'dakota do norte', 'kuzey dakota'],
+    ohio: ['ohio', 'oh', 'огайо', 'オハイオ', '俄亥俄', '오하이오'],
+    oklahoma: ['oklahoma', 'ok', 'оклахома', 'オクラホマ', '俄克拉荷马', '오클라호마'],
+    oregon: ['oregon', 'or', 'орегон', 'オレゴン', '俄勒冈', '오리건', 'oregón'],
+    pennsylvania: ['pennsylvania', 'pa', 'пенсильвания', 'ペンシルベニア', '宾夕法尼亚', '펜실베이니아', 'pensilvania', 'pennsylvanie', 'pensilvânia', 'pensylwania'],
+    rhode_island: ['rhode island', 'ri', 'род-айленд', 'ロードアイランド', '罗德岛', '로드아일랜드'],
+    south_carolina: ['south carolina', 'sc', 'южная каролина', 'サウスカロライナ', '南卡罗来纳', '사우스캐롤라이나', 'carolina del sur', 'caroline du sud', 'carolina do sul', 'güney carolina'],
+    south_dakota: ['south dakota', 'sd', 'южная дакота', 'サウスダコタ', '南达科他', '사우스다코타', 'dakota del sur', 'dakota du sud', 'dakota do sul', 'güney dakota'],
+    tennessee: ['tennessee', 'tn', 'теннесси', 'テネシー', '田纳西', '테네시'],
+    texas: ['texas', 'tx', 'техас', 'テキサス', '德克萨斯', '텍사스', 'tejas', 'teksas'],
+    utah: ['utah', 'ut', 'юта', 'ユタ', '犹他', '유타'],
+    vermont: ['vermont', 'vt', 'вермонт', 'バーモント', '佛蒙特', '버몬트'],
+    virginia: ['virginia', 'va', 'виргиния', 'バージニア', '弗吉尼亚', '버지니아', 'virginie', 'virgínia', 'wirginia'],
+    washington: ['washington', 'wa', 'вашингтон', 'ワシントン', '华盛顿', '워싱턴', 'waszyngton'],
+    west_virginia: ['west virginia', 'wv', 'западная виргиния', 'ウェストバージニア', '西弗吉尼亚', '웨스트버지니아', 'virginia occidental', 'virginie-occidentale', 'virgínia ocidental', 'batı virginia', 'wirginia zachodnia'],
+    wisconsin: ['wisconsin', 'wi', 'висконсин', 'ウィスコンシン', '威斯康星', '위스콘신'],
+    wyoming: ['wyoming', 'wy', 'вайоминг', 'ワイオミング', '怀俄明', '와이오밍']
+  };
+  
+  // Add common USA search terms
+  const usaTerms = ['usa', 'us', 'united states', 'america', 'amerika', 'états-unis', 'estados unidos', 'сша', 'америка', 'アメリカ', '美国', '미국', 'abd', 'amerika birleşik devletleri', 'eeuu', 'eua', 'vs', 'vereinigte staaten', 'stati uniti'];
+  
+  // Search functionality
+  search.addEventListener('input', e => {
+    const v = norm(e.target.value);
+    document.getElementById('info').style.display = v ? 'none' : '';
+    
+    // Check if searching for USA in general
+    const isSearchingUSA = usaTerms.some(term => norm(term).includes(v));
+    
+    document.querySelectorAll('.card').forEach(c => {
+      const slug = c.dataset.slug;
+      const searchTerms = stateSearchTerms[slug] || [];
+      const translatedName = norm(c.dataset.search);
+      
+      // Show if matches USA general search, translated name, or any search term
+      const matches = isSearchingUSA || 
+                     translatedName.includes(v) || 
+                     searchTerms.some(term => norm(term).includes(v));
+      
+      c.style.display = matches ? '' : 'none';
+    });
+  });
+  
+  // Close dropdown on outside click
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.lang-select')) toggleLang(false);
+  });
+});
+</script>
+</body>
+</html>
