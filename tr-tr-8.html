@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Seyahat Araçları</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 176px;
+  --card-height: 209px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#d1d5db;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  z-index:-2;
+  pointer-events:none;
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:400;
+  margin-bottom:8px;
+  letter-spacing:0.06em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(1.3rem,2vw,1.8rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1;
+  opacity:0.9;
+  letter-spacing:0.04em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:hidden;
+  touch-action:manipulation;
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.95);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.8) 0%, 
+    rgba(253,230,138,0.6) 50%, 
+    rgba(254,243,199,0.7) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+}
+
+.card-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight:300;
+  font-size:22px;
+  color:#0f172a;
+  line-height:1.2;
+  word-break:break-word;
+  padding:24px 8px;
+  position:relative;
+  z-index:3;
+  background:transparent;
+  width:100%;
+  text-align:center;
+  letter-spacing:0.02em;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:400;
+}
+
+.card-index{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.5;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.75) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '→';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--primary);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.site-item:hover::after {
+  opacity: 0.7;
+  right: 20px;
+}
+
+.site-number {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.site-content {
+  position: relative;
+  z-index: 2;
+}
+
+.site-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  color: #003b95;
+}
+
+.site-description {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.process-csv-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+/* Info box */
+.info-box {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  font-size: 13px;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #0c4a6e;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 36px) / 3.08 * 1.1);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 176px;
+  }
+
+  .card-title{
+    font-size: 17px;
+    padding: 22px 5px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 15px;
+    padding: 20px 4px;
+  }
+
+  .card-index{
+    font-size: 11px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+  }
+
+  .site-number {
+    font-size: 13px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Seyahat Araçları</h1>
+        <p class="subtitle" id="subtitle">Seyahat için gerekli tüm uygulamalar</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Manzaralı Yerler',url:'https://tr81.tr/world.html'},
+  {title:'Konaklama',url:'tr-tr-1.html'},
+  {title:'Ulaşım',url:'tr-tr-2.html'},
+  {title:'Mutfak ve Lezzet',url:'tr-tr-3.html'},
+  {title:'Eğlence ve Özel Deneyimler',url:'tr-tr-4.html'},
+  {title:'Dijital Hizmetler',url:'tr-tr-5.html'},
+  {title:'Güvenlik ve Sigorta',url:'tr-tr-6.html'},
+  {title:'Finansal Hizmetler',url:'tr-tr-7.html'},
+  {title:'Eğitim ve Gelişim',url:'tr-tr-8.html',highlight:true},
+];
+
+// Sites data
+var sites = [
+  { name: 'tandem.net', url: 'https://tandem.net', description: 'Ana dili konuşan insanlarla dil pratiği yapabileceğiniz platform. 300\'den fazla dilde sesli ve görüntülü sohbet edebilirsiniz. Karşınızdaki kişi hatalarınızı düzeltir, böylece gerçek konuşma becerisi kazanırsınız. Dünyanın her yerinden dil partneri bulabilir, kültür alışverişi yapabilirsiniz.' },
+  { name: 'hellotalk.com', url: 'https://hellotalk.com', description: 'Yerli konuşucularla mesajlaşarak dil öğrenme uygulaması. Sesli mesaj gönderebilir, anlamadığınız kelimeleri anında çevirebilirsiniz. Moments özelliğiyle sosyal medya gibi paylaşım yapıp yorumlar alabilirsiniz. Hem dil öğrenir hem de dünya çapında arkadaşlar edinirsiniz.' },
+  { name: 'conversationexchange.com', url: 'https://conversationexchange.com', description: 'Ücretsiz dil partneri bulma sitesi. Yüz yüze buluşma veya e-posta arkadaşlığı seçenekleri var. Kendi şehrinizde yaşayan yabancılarla tanışıp kahve içerken pratik yapabilir veya uzaktaki kişilerle yazışarak dil geliştirebilirsiniz.' },
+  { name: 'speaky.com', url: 'https://speaky.com', description: '110\'dan fazla dilde anında sohbet arkadaşı bulma platformu. Video görüşme yapabilir, otomatik eşleşme özelliğiyle size uygun partnerleri bulabilirsiniz. Profillerde dil seviyeleri belirtildiği için kendi seviyenize uygun kişilerle pratik yaparsınız.' },
+  { name: 'babbel.com', url: 'https://babbel.com', description: 'Gerçek hayatta kullanacağınız diyaloglarla dil öğreten uygulama. Konuşma tanıma teknolojisi sayesinde telaffuzunuzu düzeltir. Günde sadece 10-15 dakika ayırarak dil öğrenebilirsiniz. Dersler kısa ve eğlenceli olduğu için sıkılmadan devam edersiniz.' },
+  { name: 'memrise.com', url: 'https://memrise.com', description: 'Yerli konuşucuların videolarıyla kelime öğrenme platformu. Bilimsel ezber teknikleri kullanarak öğrendiklerinizi kalıcı hafızaya yerleştirir. Oyun gibi tasarlanmış alıştırmalarla kelime dağarcığınızı genişletirsiniz.' },
+  { name: 'survivalcourses.com', url: 'https://survivalcourses.com', description: 'Gerçek hayatta kalma eğitimleri veren site. Doğada barınak yapımı, ateş yakma, ilk yardım gibi konularda pratik eğitimler alırsınız. Sertifikalı acil durum kurslarıyla kriz anlarında hayat kurtaracak beceriler kazanırsınız.' },
+  { name: 'bushcraftexpeditions.com', url: 'https://bushcraftexpeditions.com', description: 'Vahşi doğada yaşam becerileri öğreten kamp organizasyonu. Ateş yakma, yenilebilir bitki tanıma, su bulma gibi ilkel teknikleri uzmanlardan öğrenirsiniz. Unutulmaz doğa kamplarında gerçek deneyim kazanırsınız.' },
+  { name: 'creativelive.com', url: 'https://creativelive.com', description: 'Profesyonel fotoğrafçılık, tasarım ve iş kurma dersleri. Canlı yayınlarda uzmanlardan gerçek zamanlı geri bildirim alabilirsiniz. Yaratıcı sektörde kariyer yapmak isteyenler için pratik eğitimler sunar.' },
+  { name: 'masterclass.com', url: 'https://masterclass.com', description: 'Gordon Ramsay\'den yemek, Martin Scorsese\'den film yapımı gibi dünya starlarından dersler. Yıllık üyelikle 100\'den fazla premium içeriğe erişebilirsiniz. Her uzman kendi alanında en iyilerden biri olduğu için gerçek sırları öğrenirsiniz.' },
+  { name: 'khanacademy.org', url: 'https://khanacademy.org', description: 'Matematik, fen bilimleri ve sınav hazırlık için tamamen ücretsiz eğitim platformu. Kişiselleştirilmiş öğrenme panosuyla ilerlemenizi takip edebilirsiniz. Anlamadığınız konuları tekrar tekrar izleyebilir, alıştırmalarla pekiştirebilirsiniz.' },
+  { name: 'coursera.org', url: 'https://coursera.org', description: 'Stanford, Yale gibi dünyanın en iyi üniversitelerinden sertifikalı online programlar. Finansal destek seçeneği sayesinde maddi durumu iyi olmayanlar da kaliteli eğitime erişebilir. Bitirdiğiniz kursları özgeçmişinize ekleyebilirsiniz.' },
+  { name: 'ted.com', url: 'https://ted.com', description: '100\'den fazla dilde altyazılı 3400\'den fazla ilham verici konuşma. Bilim, teknoloji, sanat ve yaşamın her alanından uzmanların fikirlerini dinleyebilirsiniz. 18 dakikalık konuşmalar sayesinde kısa sürede yeni bakış açıları kazanırsınız.' },
+  { name: 'educationfirst.com', url: 'https://educationfirst.com', description: '50\'den fazla ülkede yurtdışı dil eğitimi ve staj programları düzenleyen kuruluş. Üniversite hazırlık programlarında dünya lideri. Hem dil öğrenir hem de farklı kültürleri tanıma fırsatı bulursunuz.' },
+  { name: 'goabroad.com', url: 'https://goabroad.com', description: 'Yurtdışı eğitim, gönüllülük ve staj fırsatlarını bir araya getiren rehber site. Burslu programları karşılaştırabilir, size en uygun seçeneği bulabilirsiniz. Kullanıcı yorumları sayesinde güvenilir programları seçersiniz.' },
+  { name: 'studyabroad.com', url: 'https://studyabroad.com', description: 'Uluslararası yaz okulları ve dil programlarını karşılaştırma platformu. Öğrenci yorumları okuyarak doğru seçim yapabilirsiniz. Farklı ülkelerdeki programların fiyatlarını ve içeriklerini kolayca karşılaştırırsınız.' },
+  { name: 'commisceo-global.com', url: 'https://commisceo-global.com', description: '200\'den fazla ülkenin iş kültürü rehberi. Toplantı kuralları, hediye verme gelenekleri, iş yemeği davranışları gibi kritik bilgiler bulursunuz. Yurtdışı iş görüşmelerinde veya toplantılarında hata yapmazsınız.' },
+  { name: 'culturecrossing.net', url: 'https://culturecrossing.net', description: 'Farklı kültürlerdeki tabular ve davranış kodlarını anlatan rehber. İş seyahatlerinizde sosyal hatalardan kaçınmanızı sağlar. Her ülkenin kendine özgü kurallarını öğrenip saygısızlık yapmazsınız.' },
+  { name: 'uavcoach.com', url: 'https://uavcoach.com', description: 'Resmi onaylı drone pilotluk eğitimi veren platform. Ticari lisans alabilir, işe yerleştirme desteği alabilirsiniz. Drone pilotu olarak kariyer yapmak isteyenler için kapsamlı eğitimler sunar.' },
+  { name: 'dronepilotgroundschool.com', url: 'https://dronepilotgroundschool.com', description: 'Sınav garantili drone pilotluk hazırlık kursu. Pratik testlerle kendinizi sınayabilir, ömür boyu güncellemelere erişebilirsiniz. Sınavı geçemezseniz paranızı geri alırsınız.' },
+  { name: 'coach.me', url: 'https://coach.me', description: 'Hedef takibi ve kişisel koçluk uygulaması. Alışkanlık oluşturma topluluğundan motivasyon desteği alırsınız. Günlük hedeflerinizi takip eder, başarılarınızı paylaşırsınız.' },
+  { name: 'mindvalley.com', url: 'https://mindvalley.com', description: 'Meditasyon, kişisel performans ve dönüşüm programları. Global toplulukla birlikte kişisel gelişim yolculuğuna çıkarsınız. Dünyanın en iyi kişisel gelişim uzmanlarından dersler alırsınız.' },
+  { name: 'escapethecity.org', url: 'https://escapethecity.org', description: 'Mevcut kariyerinizden memnun değilseniz alternatif fırsatlar sunan platform. Anlamlı işler ve sosyal girişim projeleri bulabilirsiniz. Hayatınızı değiştirecek kariyer fırsatlarını keşfedersiniz.' },
+  { name: 'udemy.com', url: 'https://udemy.com', description: '155.000\'den fazla kursla dünyanın en büyük online eğitim pazarı. Bir kez satın aldığınız kurslara ömür boyu erişebilirsiniz. Sık sık indirimler yapıldığı için uygun fiyata kaliteli eğitimler alırsınız.' },
+  { name: 'skillshare.com', url: 'https://skillshare.com', description: 'Yaratıcı beceriler için 30.000\'den fazla proje odaklı kurs. Topluluktan geri bildirim alarak gelişirsiniz. Tasarım, illüstrasyon, yazarlık gibi yaratıcı alanlarda beceri kazanırsınız.' },
+  { name: 'culturaldetective.com', url: 'https://culturaldetective.com', description: '100\'den fazla kültüre özel vaka çalışmalarıyla kültürlerarası iletişim eğitimi. Gerçek senaryolar üzerinden farklı kültürleri anlamayı öğrenirsiniz.' },
+  { name: 'duolingo.com', url: 'https://duolingo.com', description: 'Oyun gibi tasarlanmış ücretsiz dil öğrenme uygulaması. Günlük hedefler koyar, seriler oluşturursunuz. Hikayeler okuyarak, podcast dinleyerek eğlenceli şekilde dil öğrenirsiniz.' },
+  { name: 'busuu.com', url: 'https://busuu.com', description: 'Yapay zeka destekli geri bildirimlerle 12 dil öğrenebileceğiniz platform. Resmi sertifika alabilir, internet olmadan da ders çalışabilirsiniz. Konuşma alıştırmalarınız değerlendirilir.' },
+  { name: 'rosettastone.com', url: 'https://rosettastone.com', description: 'Bebeklerin ana dillerini öğrenme yöntemini kullanan 24 dil kursu. Konuşma tanıma teknolojisi ve canlı öğretmen dersleriyle hızlı ilerleme sağlarsınız. Resimlerle kelime öğrenirsiniz.' },
+  { name: 'mondly.com', url: 'https://mondly.com', description: 'Artırılmış gerçeklik ve sanal gerçeklik teknolojisiyle 41 dil öğrenme imkanı. Sohbet robotuyla pratik yapabilirsiniz. Günlük kısa egzersizlerle kalıcı öğrenme sağlarsınız.' },
+  { name: 'lingoda.com', url: 'https://lingoda.com', description: 'Ana dili konuşan öğretmenlerle günün her saati canlı ders alabileceğiniz platform. Resmi dil sertifikası garantisi verir. Küçük grup derslerinde diğer öğrencilerle pratik yaparsınız.' },
+  { name: 'preply.com', url: 'https://preply.com', description: '50.000\'den fazla öğretmenden birebir online ders alabileceğiniz platform. Deneme dersi alıp öğretmeni beğenirseniz devam edersiniz. Kendi programınıza uygun saatlerde ders ayarlarsınız.' },
+  { name: 'italki.com', url: 'https://italki.com', description: '150\'den fazla dilde anında ders rezervasyonu yapabileceğiniz site. Profesyonel öğretmen veya dil partneri seçebilirsiniz. Ders fiyatlarını karşılaştırıp bütçenize uygun öğretmen bulursunuz.' },
+  { name: 'cambly.com', url: 'https://cambly.com', description: 'Ana dili konuşan öğretmenlerle günün her saati görüntülü pratik yapabileceğiniz platform. Dersleri kaydedip sonra tekrar izleyebilirsiniz. Konuşma pratiğine odaklanmak isteyenler için ideal.' },
+  { name: 'verbling.com', url: 'https://verbling.com', description: '70\'den fazla dilde grup veya birebir ders alabileceğiniz platform. Kelime kartlarıyla pratik yapabilir, öğretmen profillerini inceleyip size uygun olanı seçebilirsiniz.' },
+  { name: 'fluentu.com', url: 'https://fluentu.com', description: 'Film fragmanları, haberler, müzik videoları gibi gerçek içeriklerle dil öğrenme platformu. Tıklanabilir altyazılar sayesinde anlamadığınız kelimeleri anında öğrenirsiniz. Her videodan sonra testlerle bilginizi pekiştirirsiniz.' },
+  { name: 'lingualia.com', url: 'https://lingualia.com', description: 'Yapay zeka destekli kişiselleştirilmiş dil dersleri. Öğrenme hızınıza göre ders içeriği ayarlanır. Sosyal öğrenme özelliğiyle diğer öğrencilerle yarışarak motivasyonunuzu artırırsınız.' },
+  { name: 'edx.org', url: 'https://edx.org', description: 'MIT ve Harvard gibi dünyanın en iyi üniversitelerinin ücretsiz ders platformu. MicroMasters programlarıyla kariyerinizde ilerleme sağlarsınız. Üniversite kredisi olarak sayılan dersler alabilirsiniz.' },
+  { name: 'futurelearn.com', url: 'https://futurelearn.com', description: 'İngiliz üniversitelerinden kısa ve sosyal odaklı kurslar. Tartışmalara katılarak diğer öğrencilerle fikir alışverişi yaparsınız. Her hafta yeni içerikler açılır, adım adım ilerlersiniz.' },
+  { name: 'linkedin.com/learning', url: 'https://linkedin.com/learning', description: 'LinkedIn profilinizle bağlantılı 16.000\'den fazla profesyonel kurs. Kariyer hedeflerinize özel öğrenme yolları önerir. Bitirdiğiniz kursları profilinizde gösterebilirsiniz.' },
+  { name: 'pluralsight.com', url: 'https://pluralsight.com', description: 'Teknoloji becerileri için özel tasarlanmış öğrenme platformu. Seviyenizi ölçen testlerle başlar, eksiklerinize göre ders önerir. İlerlemenizi takip ederek hangi konularda geliştiğinizi görürsünüz.' },
+  { name: 'datacamp.com', url: 'https://datacamp.com', description: 'Python, SQL, R gibi veri bilimi dillerini öğrenebileceğiniz platform. Gerçek veri setleri üzerinde pratik yaparak öğrenirsiniz. Tarayıcıda kod yazarak anında sonuç görürsünüz.' },
+  { name: 'codeacademy.com', url: 'https://codeacademy.com', description: '12 programlama dilinde yaparak öğrenme imkanı sunan platform. Kariyer yolları takip ederek işe hazır hale gelirsiniz. Projeler yaparak portfolyo oluşturursunuz.' },
+  { name: 'brilliant.org', url: 'https://brilliant.org', description: 'Günlük matematik ve bilim bulmacalarıyla problem çözme becerisi kazandıran site. Etkileşimli içeriklerle karmaşık konuları basit şekilde öğrenirsiniz. Her gün yeni problemlerle beyninizi çalıştırırsınız.' },
+  { name: 'domestika.org', url: 'https://domestika.org', description: 'Yaratıcı sektör profesyonellerinden proje bazlı dersler. Toplulukla portfolyonuzu geliştirirsiniz. İllüstrasyon, animasyon, el sanatları gibi yaratıcı becerileri adım adım öğrenirsiniz.' },
+  { name: 'shaw-academy.com', url: 'https://shaw-academy.com', description: 'Akredite diploma programları sunan online eğitim platformu. Canlı derslere katılabilir veya kayıtları izleyebilirsiniz. Uluslararası geçerliliği olan sertifikalar alırsınız.' },
+  { name: 'alison.com', url: 'https://alison.com', description: '3000\'den fazla ücretsiz sertifika ve diploma programı. İş hayatında kullanacağınız pratik beceriler öğrenirsiniz. Kurs sonunda sınav geçerek sertifika alırsınız.' },
+  { name: 'open.edu', url: 'https://open.edu', description: 'Open University\'nin 1000\'den fazla ücretsiz kursu. Akademik seviyede eğitim alıp sertifika kazanırsınız. Üniversite kalitesinde içeriklere ücretsiz erişirsiniz.' },
+  { name: 'class-central.com', url: 'https://class-central.com', description: '50.000\'den fazla online kursu tek yerden arayabileceğiniz arama motoru. Fiyat, süre ve kullanıcı puanlarını karşılaştırarak en uygun kursu bulursunuz. Farklı platformlardaki kursları tek yerden görürsünüz.' },
+  { name: 'ocw.mit.edu', url: 'https://ocw.mit.edu', description: 'MIT\'nin 2400\'den fazla açık ders materyali. Video dersler, sınav soruları ve laboratuvar kılavuzlarına ücretsiz erişim. Dünyanın en iyi teknik üniversitesinin tüm müfredatını inceleyebilirsiniz.' },
+];
+
+// Current language
+var currentLang = "tr";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px 12px;">' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
