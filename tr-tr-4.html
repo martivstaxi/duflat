@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Seyahat Araçları</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 176px;
+  --card-height: 209px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#d1d5db;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  z-index:-2;
+  pointer-events:none;
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:400;
+  margin-bottom:8px;
+  letter-spacing:0.06em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(1.3rem,2vw,1.8rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1;
+  opacity:0.9;
+  letter-spacing:0.04em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:hidden;
+  touch-action:manipulation;
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.95);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.8) 0%, 
+    rgba(253,230,138,0.6) 50%, 
+    rgba(254,243,199,0.7) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+}
+
+.card-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight:300;
+  font-size:22px;
+  color:#0f172a;
+  line-height:1.2;
+  word-break:break-word;
+  padding:24px 8px;
+  position:relative;
+  z-index:3;
+  background:transparent;
+  width:100%;
+  text-align:center;
+  letter-spacing:0.02em;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:400;
+}
+
+.card-index{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.5;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.75) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '→';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--primary);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.site-item:hover::after {
+  opacity: 0.7;
+  right: 20px;
+}
+
+.site-number {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.site-content {
+  position: relative;
+  z-index: 2;
+}
+
+.site-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  color: #003b95;
+}
+
+.site-description {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.process-csv-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+/* Info box */
+.info-box {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  font-size: 13px;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #0c4a6e;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 36px) / 3.08 * 1.1);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 176px;
+  }
+
+  .card-title{
+    font-size: 17px;
+    padding: 22px 5px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 15px;
+    padding: 20px 4px;
+  }
+
+  .card-index{
+    font-size: 11px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+  }
+
+  .site-number {
+    font-size: 13px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Seyahat Araçları</h1>
+        <p class="subtitle" id="subtitle">Seyahat için gerekli tüm uygulamalar</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Manzaralı Yerler',url:'https://tr81.tr/world.html'},
+  {title:'Konaklama',url:'tr-tr-1.html'},
+  {title:'Ulaşım',url:'tr-tr-2.html'},
+  {title:'Mutfak ve Lezzet',url:'tr-tr-3.html'},
+  {title:'Eğlence ve Özel Deneyimler',url:'tr-tr-4.html',highlight:true},
+  {title:'Dijital Hizmetler',url:'tr-tr-5.html'},
+  {title:'Güvenlik ve Sigorta',url:'tr-tr-6.html'},
+  {title:'Finansal Hizmetler',url:'tr-tr-7.html'},
+  {title:'Eğitim ve Gelişim',url:'tr-tr-8.html'},
+];
+
+// Sites data
+var sites = [
+  { name: 'viator.com', url: 'https://viator.com', description: 'Dünyanın her yerinden tur ve etkinlik rezervasyonu yapabileceğiniz platform. 300 binden fazla deneyim arasından seçim yapabilirsiniz. En güzel yanı, planınız değişirse 24 saat öncesine kadar ücretsiz iptal edebilmeniz. Telefonunuza gelen dijital biletle direkt tura katılabilirsiniz, kağıt bilet derdi yok.' },
+  { name: 'getyourguide.com', url: 'https://getyourguide.com', description: 'Yerel rehberlerle şehir turları ve aktiviteler için güvenilir platform. Son dakikada bile rezervasyon yapabilirsiniz. En iyi fiyat garantisi veriyor, daha ucuzunu bulursanız farkı ödüyorlar. Telefonunuzdaki biletle direkt giriş yaparsınız.' },
+  { name: 'musement.com', url: 'https://musement.com', description: 'Müze biletlerinden rehberli turlara kadar kültürel aktiviteler sunan site. Küçük gruplarla daha samimi turlar düzenliyorlar. Anında dijital bilet alıp hemen kullanabilirsiniz. Son dakika planları için harika.' },
+  { name: 'tourradar.com', url: 'https://tourradar.com', description: 'Çok günlü turları karşılaştırabileceğiniz platform. 2500\'den fazla tur şirketi tek yerde toplanmış. Tek başınıza da katılabilirsiniz, taksitle ödeme yapabilirsiniz. Detaylı filtrelerle tam size göre turu bulursunuz.' },
+  { name: 'klook.com', url: 'https://klook.com', description: 'Asya\'da seyahat edecekler için vazgeçilmez. 400 şehirde aktivite ve bilet satıyor. Anında onay alıyorsunuz, özel indirimler var. Kuyrukta beklemeden direkt girişler için harika.' },
+  { name: 'museumpass.com', url: 'https://museumpass.com', description: 'Şehirdeki tüm müzelere tek kartla giriş. 3-5 gün boyunca sınırsız müze gezebilirsiniz. Kuyruklarda beklemezsiniz, %50\'ye varan tasarruf sağlarsınız. Büyük şehirlerde çok karlı.' },
+  { name: 'tiqets.com', url: 'https://tiqets.com', description: 'Müze ve turistik yerlere anında dijital bilet. Telefonunuzdaki barkodu gösterip giriyorsunuz. Son dakika rezervasyonu yapabilirsiniz, bilet kuyruğu derdi yok.' },
+  { name: 'undercovertourist.com', url: 'https://undercovertourist.com', description: 'Disney ve Universal gibi tema parklarına indirimli bilet. Hangi günlerin kalabalık olduğunu gösteriyor, daha sakin günleri seçebilirsiniz. Otel ve bilet paketleriyle ekstra tasarruf.' },
+  { name: 'cruisecritic.com', url: 'https://cruisecritic.com', description: 'Gemi tatili seçmek için rehber site. Gerçek yolcu yorumları var, gemileri karşılaştırabilirsiniz. İndirimli fırsatları gösteriyor, hatta gemi arkadaşı bile bulabilirsiniz.' },
+  { name: 'cruiseline.com', url: 'https://cruiseline.com', description: 'Tüm gemi şirketlerinin fiyatlarını karşılaştıran site. Fiyat düştüğünde haber veriyor. Son dakika fırsatlarını ve kara turlu paketleri görebilirsiniz.' },
+  { name: 'vacationstogo.com', url: 'https://vacationstogo.com', description: 'Son dakika gemi tatilleri için harika. %82\'ye varan indirimler var. 90 gün içinde kalkacak gemileri gösteriyor. Tek kişilik kabin arayanlar için özel bilgiler sunuyor.' },
+  { name: 'contiki.com', url: 'https://contiki.com', description: '18-35 yaş arası gençler için grup turları. 50\'den fazla ülkede macera dolu seyahatler. Yeni insanlarla tanışırsınız, taksitle ödeme yapabilirsiniz. Eğlence garantili.' },
+  { name: 'safaribookings.com', url: 'https://safaribookings.com', description: 'Afrika safari turları için en kapsamlı site. 3700\'den fazla doğrulanmış turu karşılaştırabilirsiniz. Hangi ayın en iyi olduğunu gösteren araçları var.' },
+  { name: 'ski.com', url: 'https://ski.com', description: 'Kayak tatili için her şey dahil paketler. Otel, kayak bileti, ekipman kiralama hepsi bir arada. 350\'den fazla kayak merkezi seçeneği var, grup indirimleri yapıyorlar.' },
+  { name: 'snowtrex.com', url: 'https://snowtrex.com', description: 'Avrupa\'daki 500 kayak merkezinde uygun fiyatlı tatiller. Kayak bileti dahil paketler sunuyor. Fiyat garantisi var, detaylı pist bilgileriyle güvenle rezervasyon yaparsınız.' },
+  { name: 'bookyogaretreats.com', url: 'https://bookyogaretreats.com', description: 'Dünya çapında 6000\'den fazla yoga kampı. Öğretmenlerin deneyimlerini okuyabilirsiniz. Gerçek katılımcı yorumlarıyla doğru seçimi yaparsınız.' },
+  { name: 'retreatguru.com', url: 'https://retreatguru.com', description: 'Meditasyon, detoks ve dinlenme kampları için merkez. Bütçenize göre arama yapabilirsiniz. 2000\'den fazla program var, son dakika fırsatları sunuyor.' },
+  { name: 'intrepidtravel.com', url: 'https://intrepidtravel.com', description: 'En fazla 16 kişilik küçük gruplarla macera turları. Yerel rehberlerle gerçek deneyimler yaşarsınız. Çevreye zarar vermeyen, karbon dengeli seyahatler düzenliyorlar.' },
+  { name: 'gadventures.com', url: 'https://gadventures.com', description: '100 ülkede küçük grup maceraları. Depozito ödeyip ömür boyu kullanabilirsiniz. Yerel rehberlerle derinlemesine kültür tanıma fırsatı.' },
+  { name: 'setjetters.com', url: 'https://setjetters.com', description: 'Sevdiğiniz dizi ve filmlerin çekim yerlerine turlar. Game of Thrones, Harry Potter gibi yapımların gerçek mekanlarını gezebilirsiniz.' },
+  { name: 'movie-locations.com', url: 'https://movie-locations.com', description: 'Film çekim yerlerini gösteren kapsamlı veritabanı. Harita üzerinde gösteriyor, kendi turunuzu planlayabilirsiniz. Sinema severler için hazine.' },
+  { name: 'onlocationtours.com', url: 'https://onlocationtours.com', description: 'New York\'ta Friends, Sex and the City gibi dizilerin mekanlarına özel turlar. Eğlenceli rehberlerle şehri farklı gözle görürsünüz.' },
+  { name: 'darkskyfinder.com', url: 'https://darkskyfinder.com', description: 'Yıldızları en net görebileceğiniz yerleri bulan site. Işık kirliliği haritaları gösteriyor, hava durumu tahminleriyle kamp planı yapabilirsiniz.' },
+  { name: 'goldeneagleluxurytrains.com', url: 'https://goldeneagleluxurytrains.com', description: 'Trans Sibirya ve İpek Yolu\'nda lüks tren yolculukları. Her şey dahil, zarif vagonlarda unutulmaz deneyim.' },
+  { name: 'belmond.com', url: 'https://belmond.com', description: 'Efsanevi Orient Express dahil lüks tren seyahatleri. Özel hizmet, harika yemekler ve tarihi rotalarda zamanda yolculuk hissi.' },
+  { name: 'rockymountaineer.com', url: 'https://rockymountaineer.com', description: 'Kanada\'nın muhteşem dağlarında tren yolculuğu. Cam kubbeli vagonlardan manzarayı izlersiniz. Özel hazırlanmış yemeklerle vahşi yaşamı gözlemleme şansı.' },
+  { name: 'ghosttours.com', url: 'https://ghosttours.com', description: 'Gerçek hayalet hikayeleriyle dolu akşam yürüyüşleri. 30\'dan fazla tarihi şehirde düzenleniyor. Profesyonel anlatıcılardan esrarengiz olayları dinlersiniz.' },
+  { name: 'farhorizons.com', url: 'https://farhorizons.com', description: 'Üniversite hocaları rehberliğinde arkeoloji ve kültür turları. Normal turistlerin giremediği yerlere özel erişim. 25 yıllık deneyimle hazırlanmış benzersiz rotalar.' },
+  { name: 'andantetravels.com', url: 'https://andantetravels.com', description: 'Arkeolog veya tarihçilerle küçük grup keşifleri. Kazı alanlarına ve kapalı tarihi mekanlara özel giriş imkanı.' },
+  { name: 'sportstravel.com', url: 'https://sportstravel.com', description: 'Super Bowl, Dünya Kupası, Olimpiyatlar için komple paketler. VIP bilet, transfer, otel hepsi dahil. Büyük spor etkinliklerini yerinde yaşayın.' },
+  { name: 'yogatravel.com', url: 'https://yogatravel.com', description: 'Her seviyeye uygun yoga tatilleri. Doğa içinde, sağlıklı beslenme seçenekleriyle. İsteğe bağlı şifa terapileri de var.' },
+  { name: 'retreatfinder.com', url: 'https://retreatfinder.com', description: 'Binlerce dinlenme ve sağlık merkezini karşılaştıran site. Meditasyon, detoks, kişisel gelişim kampları. Tek kişilik odalar ve taksit seçenekleri mevcut.' },
+  { name: 'polarcruises.com', url: 'https://polarcruises.com', description: 'Kuzey ve Güney Kutbu gemi turları uzmanı. Penguenleri, kutup ayılarını yakından görürsünüz. Fotoğrafçılık odaklı turlar ve uzman doğa rehberleri.' },
+  { name: 'quarkexpeditions.com', url: 'https://quarkexpeditions.com', description: 'Küçük botlarla buzullar arasında Kutup keşifleri. Bilim insanları eşliğinde, 30 yıllık tecrübeyle güvenli maceralar.' },
+  { name: 'insideasiatours.com', url: 'https://insideasiatours.com', description: 'Asya\'da size özel hazırlanmış turlar. Gizli kalmış yerleri keşfedersiniz. Acil durumlarda 24 saat ulaşabilirsiniz.' },
+  { name: 'trackdays.com', url: 'https://trackdays.com', description: 'Gerçek yarış pistlerinde süper spor arabaları sürme fırsatı. Profesyonel pilotlardan ders alırsınız. Hediye olarak da verilebilir.' },
+  { name: 'drivingexperience.com', url: 'https://drivingexperience.com', description: 'Ferrari, Lamborghini sürün, tank kullanın veya ralli yapın. Ülke çapında farklı yerlerde adrenalin dolu deneyimler.' },
+  { name: 'balloonrides.com', url: 'https://balloonrides.com', description: 'Sıcak hava balonuyla gün doğumu uçuşları. Uçuş sonrası şampanya ikramı var. Hava kötüyse ücretsiz erteleme garantisi.' },
+  { name: 'dogsledding.com', url: 'https://dogsledding.com', description: 'Köpek kızaklarıyla karlı ormanlarda macera. Çok günlü turlar ve Kuzey Işıkları\'nı görme şansı. Gerçek kış deneyimi.' },
+  { name: 'adventures.is', url: 'https://adventures.is', description: 'İzlanda\'nın doğa harikalarını keşif. Buzul yürüyüşleri, buz mağaraları, kaplıcalar ve Kuzey Işıkları turları.' },
+  { name: 'surfholidays.com', url: 'https://surfholidays.com', description: 'Dünyanın en iyi sörf noktalarında tatiller. Her seviyeye uygun, eğitmen ve ekipman dahil paketler.' },
+  { name: 'booksurfcamps.com', url: 'https://booksurfcamps.com', description: '1500\'den fazla sörf kampını karşılaştırın. Yoga, parti gibi temalı seçenekler var. Size en uygun kampı kolayca bulursunuz.' },
+  { name: 'transsiberianexpress.com', url: 'https://transsiberianexpress.com', description: 'Lüks kabinlerde Trans Sibirya tren yolculuğu. Türkçe bilen rehberlerle tarihi durakları keşif. Konfor ve macera bir arada.' },
+  { name: 'contexttravel.com', url: 'https://contexttravel.com', description: 'Sanat tarihçisi veya arkeologlarla derinlemesine turlar. En fazla 6 kişilik gruplar, samimi ve özel deneyim.' },
+  { name: 'phototouradventures.com', url: 'https://phototouradventures.com', description: 'Profesyonel fotoğrafçılarla en güzel yerlere seyahatler. Fotoğraf dersleri, kompozisyon ipuçları ve harika kareler için ideal noktalar.' },
+  { name: 'nationalgeographic.com/expeditions', url: 'https://nationalgeographic.com/expeditions', description: 'National Geographic uzmanlarıyla keşifler. Fotoğrafçılar ve bilim insanları eşliğinde, özel alanlara erişimle eğitici seyahatler.' },
+  { name: 'bikehike.com', url: 'https://bikehike.com', description: 'Tek tatilde bisiklet, yürüyüş, kayak gibi birden fazla spor. Tüm ekipman ve rehberler dahil. Aktif tatil severler için ideal.' },
+  { name: 'nathab.com', url: 'https://nathab.com', description: 'Dünya Doğayı Koruma Vakfı işbirliğiyle vahşi yaşam turları. Biyolog rehberlerle, doğa koruma projelerini destekleyen seyahatler.' },
+  { name: 'festivalfinder.com', url: 'https://festivalfinder.com', description: 'Müzikten kültüre binlerce festivali keşfedin. Tarih, yer, bilet linkleri hepsi bir arada. Dünya çapında etkinlikleri planlayın.' },
+  { name: 'musicfestivalwizard.com', url: 'https://musicfestivalwizard.com', description: 'Dünyanın en iyi müzik festivalleri rehberi. Bilet satış linkleri, kamp bilgileri, hatırlatıcılar ve seyahat ipuçları tek yerde.' },
+];
+
+// Current language
+var currentLang = "tr";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px 12px;">' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
