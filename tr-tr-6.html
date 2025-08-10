@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Seyahat Araçları</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 176px;
+  --card-height: 209px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#d1d5db;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  z-index:-2;
+  pointer-events:none;
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:400;
+  margin-bottom:8px;
+  letter-spacing:0.06em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(1.3rem,2vw,1.8rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1;
+  opacity:0.9;
+  letter-spacing:0.04em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:hidden;
+  touch-action:manipulation;
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.95);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.8) 0%, 
+    rgba(253,230,138,0.6) 50%, 
+    rgba(254,243,199,0.7) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+}
+
+.card-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight:300;
+  font-size:22px;
+  color:#0f172a;
+  line-height:1.2;
+  word-break:break-word;
+  padding:24px 8px;
+  position:relative;
+  z-index:3;
+  background:transparent;
+  width:100%;
+  text-align:center;
+  letter-spacing:0.02em;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:400;
+}
+
+.card-index{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.5;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.75) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '→';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--primary);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.site-item:hover::after {
+  opacity: 0.7;
+  right: 20px;
+}
+
+.site-number {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.site-content {
+  position: relative;
+  z-index: 2;
+}
+
+.site-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  color: #003b95;
+}
+
+.site-description {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.process-csv-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+/* Info box */
+.info-box {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  font-size: 13px;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #0c4a6e;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 36px) / 3.08 * 1.1);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 176px;
+  }
+
+  .card-title{
+    font-size: 17px;
+    padding: 22px 5px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 15px;
+    padding: 20px 4px;
+  }
+
+  .card-index{
+    font-size: 11px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+  }
+
+  .site-number {
+    font-size: 13px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Seyahat Araçları</h1>
+        <p class="subtitle" id="subtitle">Seyahat için gerekli tüm uygulamalar</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Manzaralı Yerler',url:'https://tr81.tr/world.html'},
+  {title:'Konaklama',url:'tr-tr-1.html'},
+  {title:'Ulaşım',url:'tr-tr-2.html'},
+  {title:'Mutfak ve Lezzet',url:'tr-tr-3.html'},
+  {title:'Eğlence ve Özel Deneyimler',url:'tr-tr-4.html'},
+  {title:'Dijital Hizmetler',url:'tr-tr-5.html'},
+  {title:'Güvenlik ve Sigorta',url:'tr-tr-6.html',highlight:true},
+  {title:'Finansal Hizmetler',url:'tr-tr-7.html'},
+  {title:'Eğitim ve Gelişim',url:'tr-tr-8.html'},
+];
+
+// Sites data
+var sites = [
+  { name: 'worldnomads.com', url: 'https://worldnomads.com', description: 'Macera severler için özel tasarlanmış seyahat sigortası platformu. 150 ülkede geçerli sigortalar sunuyor, böylece nereye giderseniz gidin korunursunuz. En güzel özelliği seyahat sırasında sigortanızı uzatabilmeniz' },
+  { name: 'safetywing.com', url: 'https://safetywing.com', description: 'Dijital göçebeler ve uzun süreli gezginler için tasarlanmış sağlık sigortası. Aylık 37 dolardan başlayan fiyatlarla 175 ülkede geçerli kapsama sunuyor. Netflix gibi aylık abonelik sistemiyle çalışıyor, istediğiniz zaman başlatıp durdurabilirsiniz. Vize başvuruları için gerekli sigorta belgelerini anında alabilirsiniz. Kendi ülkenizde bile 30 güne kadar koruma sağlıyor. COVID-19 tedavisini de kapsıyor.' },
+  { name: 'allianztravelinsurance.com', url: 'https://allianztravelinsurance.com', description: 'Dünya çapında güvenilir seyahat sigortası sağlayıcısı. Seyahat iptali durumunda paranızı geri alabilirsiniz. Medikal tahliye hizmeti ile acil durumlarda ülkenize veya uygun bir hastaneye naklinizi sağlıyor. 24 saat ulaşabileceğiniz yardım hattı ile dil bariyeri yaşamadan destek alırsınız. Bagaj kaybı ve gecikmeleri için tazminat ödüyor. Aile planları ile tüm aileyi tek poliçede sigortalayabilirsiniz.' },
+  { name: 'travelguard.com', url: 'https://travelguard.com', description: 'AIG güvencesiyle kapsamlı seyahat sigortası ve acil yardım hizmetleri. Bagajınız kaybolursa veya zarar görürse tazminat alırsınız. Uçuş gecikmeleri için otel ve yemek masraflarınız karşılanıyor. Acil durumlarda nakit avans alabileceğiniz özellik hayat kurtarıcı olabiliyor. Concierge hizmeti ile restoran rezervasyonlarından bilet ayırtmaya kadar her konuda yardım alabilirsiniz.' },
+  { name: 'insuremytrip.com', url: 'https://insuremytrip.com', description: 'Seyahat sigortası karşılaştırma platformu. 21 farklı sigorta şirketinden aynı anda teklif alarak en uygun fiyatı bulursunuz. Filtreleme özellikleri ile tam ihtiyacınıza uygun sigortayı seçebilirsiniz. Uzman danışmanlar telefonda ücretsiz yardım sağlıyor. En iyi fiyat garantisi veriyor' },
+  { name: 'sos.eu', url: 'https://sos.eu', description: 'Avrupa\'da acil durumlarda hayat kurtaran mobil uygulama. Tek tuşla bulunduğunuz ülkenin acil servislerini arayabilirsiniz. GPS konumunuzu otomatik paylaşarak yardım ekiplerinin sizi hızlıca bulmasını sağlar. Her ülkenin acil numaralarını (polis, ambulans, itfaiye) gösterir. Çevrimdışı çalışıyor, internet bağlantısı gerektirmiyor.' },
+  { name: 'nordvpn.com', url: 'https://nordvpn.com', description: 'Güvenli internet erişimi sağlayan VPN hizmeti. 60 ülkede sunucuları var, böylece coğrafi kısıtlamaları aşabilirsiniz. Halka açık WiFi kullanırken verilerinizi şifreler ve güvende tutar. Tek hesapla 6 cihazda aynı anda kullanabilirsiniz. Reklam ve zararlı yazılım engelleyici özellikleri var. Hızlı bağlantı ile video izlerken yavaşlama yaşamazsınız.' },
+  { name: 'expressvpn.com', url: 'https://expressvpn.com', description: 'Premium VPN hizmeti. 94 ülkede sunucu seçeneği ile dünyanın her yerinden içeriğe erişebilirsiniz. 7/24 canlı destek ile sorunlarınıza anında çözüm bulursunuz. 30 gün para iade garantisi sayesinde risk almadan deneyebilirsiniz. Hız kaybı minimum seviyede, HD video izleyebilirsiniz. Tüm cihazlarınız için uygulamaları mevcut.' },
+  { name: 'surfshark.com', url: 'https://surfshark.com', description: 'Bütçe dostu VPN çözümü. Sınırsız cihazda kullanabilirsiniz, tüm aile tek hesaptan faydalanır. CleanWeb özelliği ile reklamları, takip kodlarını ve zararlı siteleri engeller. Çift VPN özelliği ile ekstra güvenlik sağlar. Uygun fiyatına rağmen premium özellikleri eksik değil. Kill switch özelliği ile VPN bağlantısı kesilirse interneti otomatik keser.' },
+  { name: 'airhelp.com', url: 'https://airhelp.com', description: 'Uçuş sorunları için tazminat alma platformu. 600 Euro\'ya kadar tazminat hakkınızı kolayca alabilirsiniz. Başarılı olmazlarsa ücret ödemezsiniz. 87 ülkede geçerli, hangi havayolu olursa olsun başvuru yapabilirsiniz. 3 yıl geriye dönük haklarınızı talep edebilirsiniz. Tüm yasal süreci sizin yerinize yürütüyorlar.' },
+  { name: 'flightright.com', url: 'https://flightright.com', description: 'Geciken ve iptal olan uçuşlar için tazminat uzmanı. 3 yıl öncesine kadar olan uçuşlarınız için başvuru yapabilirsiniz. Avukatlar tüm süreci yönetiyor, mahkemeye gitmenize gerek kalmıyor. Sadece tazminat aldığınızda komisyon ödüyorsunuz. Online form ile 2 dakikada başvuru tamamlanıyor.' },
+  { name: 'claimcompass.eu', url: 'https://claimcompass.eu', description: 'Uçuş tazminat haklarınızı otomatik değerlendiren platform. %98 başarı oranına sahip. Mahkeme masraflarını karşılıyorlar, risk almanıza gerek yok. Uçuş bilgilerinizi girerek hemen hakkınızı öğrenebilirsiniz. Tazminatınızı aldıktan sonra komisyon kesiyorlar.' },
+  { name: 'sitata.com', url: 'https://sitata.com', description: 'Gerçek zamanlı seyahat güvenliği takip sistemi. Gideceğiniz yerde hastalık salgını varsa anında haberdar olursunuz. Güvenlik tehditleri için anlık bildirimler gönderiyor. Her ülkenin acil durum iletişim bilgilerini sağlıyor. Seyahat sigortası entegrasyonu ile kapsamlı koruma sunuyor.' },
+  { name: 'geosure.com', url: 'https://geosure.com', description: 'Sokak bazında güvenlik puanlama uygulaması. Gideceğiniz mahallenin gece ve gündüz güvenlik skorunu görebilirsiniz. LGBTQ bireylere yönelik güvenlik değerlendirmesi yapıyor. Sağlık ve tıbbi güvenlik skorları veriyor. Yerel uzmanların değerlendirmeleriyle hazırlanmış veriler sunuyor.' },
+  { name: 'surviveware.com', url: 'https://surviveware.com', description: 'Profesyonel ilk yardım ve hayatta kalma kitleri. Su geçirmez çantalarda organize edilmiş malzemeler sunuyor. Kompakt tasarımı ile sırt çantanızda kolayca taşıyabilirsiniz. FDA onaylı tıbbi malzemeler kullanıyor. Deprem, sel gibi afetlerde ihtiyacınız olan her şeyi içeriyor.' },
+  { name: 'mymedic.com', url: 'https://mymedic.com', description: 'Uzmanlar tarafından tasarlanmış ilk yardım kitleri. Modüler sistem ile ihtiyacınıza göre özelleştirebilirsiniz. Travma kitleri ciddi yaralanmalarda hayat kurtarıcı olabiliyor. Ücretsiz eğitim videoları ile nasıl kullanacağınızı öğrenirsiniz. Askeri standartlarda dayanıklı çantalar kullanıyor.' },
+  { name: 'lifestraw.com', url: 'https://lifestraw.com', description: 'Kişisel su filtresi ve arıtma çözümleri. %99.9 oranında bakteri ve parazitleri temizliyor. Kimyasal kullanmadan sadece filtreleme ile çalışıyor. 1000 litre su temizleme kapasitesi ile uzun süre kullanabilirsiniz. Nehir, göl gibi kaynaklardan güvenle su içebilirsiniz.' },
+  { name: 'grayl.com', url: 'https://grayl.com', description: 'Taşınabilir su arıtma şişeleri. 15 saniyede kirli suyu içilebilir hale getiriyor. Virüsleri bile temizleyebiliyor. 55 ülkede test edilmiş ve onaylanmış. Tek kartuş ile 65 galon su temizleyebilirsiniz. Şişe tasarımı sayesinde her yerde kullanımı kolay.' },
+  { name: 'sawyer.com', url: 'https://sawyer.com', description: 'Yüksek performanslı su filtreleme sistemleri. 100.000 galon ömür ile neredeyse ömür boyu kullanabilirsiniz. Geri yıkama özelliği ile filtreyi temizleyip performansını korursunuz. Sadece 2 oz ağırlığında, ultralight gezginler için ideal. Pet şişelere takılabilen modelleri var.' },
+  { name: 'iqair.com', url: 'https://iqair.com', description: 'Gerçek zamanlı hava kalitesi takip platformu. PM2.5 seviyelerini anlık görebilirsiniz. Sağlığınıza göre özelleştirilmiş tavsiyeler alırsınız. 5 günlük hava kalitesi tahminleri sunuyor. Dışarı çıkmak için en uygun saatleri gösteriyor.' },
+  { name: 'purpleair.com', url: 'https://purpleair.com', description: 'Topluluk tabanlı hava kalitesi haritası. Gerçek zamanlı sensör verileri ile sokağınızdaki hava kalitesini görebilirsiniz. Yangın dumanı takibi ile risk altındaki bölgeleri tespit eder. Kendi sensörünüzü kurarak topluluğa katkıda bulunabilirsiniz.' },
+  { name: 'breezometer.com', url: 'https://breezometer.com', description: 'Detaylı hava kalitesi ve polen tahminleri. Sokak bazında hassas bilgi sağlıyor. Astım ve alerji hastaları için özel sağlık tavsiyeleri veriyor. API erişimi ile uygulamanıza entegre edebilirsiniz. Saatlik tahminler ile gün içi planlamanızı yapabilirsiniz.' },
+  { name: 'volcano.si.edu', url: 'https://volcano.si.edu', description: 'Küresel volkan aktivite takip sistemi. Aktif volkanları gerçek zamanlı izleyebilirsiniz. Patlama geçmişi ve risk analizleri sunuyor. Uyarı seviyelerini takip ederek güvenli seyahat planlayabilirsiniz. Bilimsel verilerle desteklenmiş güvenilir bilgiler.' },
+  { name: 'earthquake.usgs.gov', url: 'https://earthquake.usgs.gov', description: 'ABD Jeoloji Araştırmaları deprem bilgi sistemi. Son depremleri gerçek zamanlı haritada görebilirsiniz. Büyüklük ve derinlik tahminleri yapıyor. Deprem hazırlık rehberleri ile güvende kalmanızı sağlıyor. Bildirim sistemi ile bölgenizdeki depremlerden haberdar olursunuz.' },
+  { name: 'emsc-csem.org', url: 'https://emsc-csem.org', description: 'Avrupa-Akdeniz bölgesi sismik aktivite merkezi. Son depremleri anında listeler. Tanık raporları ile depremin hissedildiği yerleri görebilirsiniz. Hasar tahminleri ve tsunami uyarıları sağlıyor. Mobil uygulaması ile anlık bildirimler alabilirsiniz.' },
+  { name: 'quakefeed.com', url: 'https://quakefeed.com', description: 'Deprem takip ve uyarı sistemi. Dünya genelindeki depremleri gerçek zamanlı gösteriyor. Bildirim ayarları ile sadece ilgilendiğiniz bölgeleri takip edebilirsiniz. Geçmiş deprem verilerini inceleyebilirsiniz. Basit arayüzü ile hızlıca bilgi alırsınız.' },
+  { name: 'commonpass.org', url: 'https://commonpass.org', description: 'Dijital sağlık pasaportu platformu. Aşı sertifikalarınızı güvenli şekilde saklayabilirsiniz. QR kod ile havalimanlarında hızlı geçiş yaparsınız. Gizlilik odaklı, verilerinizi korur. Dünya genelinde kabul görüyor.' },
+  { name: 'clear.com', url: 'https://clear.com', description: 'Biyometrik kimlik doğrulama sistemi. Havalimanlarında kuyruksuz, hızlı geçiş sağlıyor. Stadyum ve etkinliklerde de kullanabilirsiniz. Göz ve parmak izi ile saniyeler içinde kimlik doğrulama. TSA PreCheck ile entegre çalışıyor.' },
+  { name: 'icecontact.com', url: 'https://icecontact.com', description: 'Acil durum iletişim bilgisi saklama servisi. QR kod ile acil durumda size ulaşılmasını sağlar. Tıbbi bilgilerinizi, kan grubunuzu, alerjilerinizi ekleyebilirsiniz. 24 saat erişilebilir, internet gerektirmez. Kask, telefon veya çantanıza yapıştırabilirsiniz.' },
+  { name: 'emergencyid.net', url: 'https://emergencyid.net', description: 'Tıbbi kimlik ürünleri. Bileklik, kolye ve kart seçenekleri sunuyor. Kronik hastalıklarınızı, kullandığınız ilaçları yazabilirsiniz. Su geçirmez modelleri ile yüzerken bile takabilirsiniz. Acil durum personeli tarafından tanınan standart semboller kullanıyor.' },
+  { name: 'pacsafe.com', url: 'https://pacsafe.com', description: 'Hırsızlığa karşı dayanıklı seyahat çantaları. Çelik tel örgü ile kesilmeye karşı korumalı. RFID engelleyici cepler ile kredi kartlarınız güvende. Kilitlenebilir fermuarlar ile içerik güvenliği sağlıyor. Hafif olmasına rağmen son derece dayanıklı.' },
+  { name: 'travelon.com', url: 'https://travelon.com', description: 'Güvenli seyahat aksesuarları. Kesik geçirmez kayışlar ile çantanızın kesilmesini önler. Gizli para ve pasaport cepleri ile değerli eşyalarınızı saklarsınız. RFID engelleyici teknoloji ile kartlarınız korunur. Şık tasarımları ile dikkat çekmez.' },
+  { name: 'lewis-n-clark.com', url: 'https://lewis-n-clark.com', description: 'Kapsamlı seyahat güvenlik ürünleri. TSA onaylı kilitler ile bavullarınızı güvende tutarsınız. Gizli para kemerleri ile nakitinizi güvenle taşırsınız. Bagaj takip cihazları ile kayıp valizlerinizi bulabilirsiniz. Organizasyon çantaları ile eşyalarınızı düzenli tutarsınız.' },
+  { name: 'visalist.io', url: 'https://visalist.io', description: 'Vize gereksinimi sorgulama platformu. 195 ülke için güncel vize bilgileri sunuyor. Pasaportunuzun gücünü görebilir, kaç ülkeye vizesiz gidebileceğinizi öğrenirsiniz. Vize başvuru süreçleri hakkında detaylı bilgi veriyor. Sürekli güncellenen veritabanı ile güvenilir bilgi alırsınız.' },
+  { name: 'passportindex.org', url: 'https://passportindex.org', description: 'Pasaport gücü sıralama platformu. Pasaportunuzla kaç ülkeye vizesiz gidebileceğinizi gösterir. Farklı pasaportları karşılaştırabilirsiniz. İnteraktif dünya haritası ile görsel sunum yapar. Vize politikalarındaki değişiklikleri takip edebilirsiniz.' },
+  { name: 'visadb.io', url: 'https://visadb.io', description: 'Detaylı vize politikaları veritabanı. İkili ülke anlaşmalarını inceleyebilirsiniz. Tarihsel vize verilerini görebilirsiniz. API erişimi ile kendi uygulamanıza entegre edebilirsiniz. Araştırmacılar için kapsamlı veri seti sunuyor.' },
+  { name: 'teladoc.com', url: 'https://teladoc.com', description: 'Online doktor görüşme platformu. 7/24 doktora ulaşabilir, video görüşme yapabilirsiniz. Reçete yazma yetkisi var, ilaçlarınızı eczaneden alabilirsiniz. Uzman doktorlara da erişim sağlıyor. Sigorta şirketleri ile anlaşmalı çalışıyor.' },
+  { name: 'amwell.com', url: 'https://amwell.com', description: 'Sanal sağlık hizmetleri platformu. Acil tıbbi durumlar için anında doktor bağlantısı kurar. Ruh sağlığı uzmanları ile terapi seansları yapabilirsiniz. Çocuk doktorları da mevcut. Sigorta kapsamında hizmet alabilirsiz.' },
+  { name: 'travel.state.gov', url: 'https://travel.state.gov', description: 'ABD Dışişleri Bakanlığı seyahat uyarıları. Ülkeleri risk seviyelerine göre sınıflandırıyor. Konsolosluk ve büyükelçilik iletişim bilgileri sunuyor. STEP programı ile acil durumlarda size ulaşılmasını sağlar. Güncel güvenlik bilgileri paylaşıyor.' },
+  { name: 'smartraveller.gov.au', url: 'https://smartraveller.gov.au', description: 'Avustralya hükümeti seyahat tavsiyeleri. Detaylı risk değerlendirmeleri yapıyor. Seyahat sigortası konusunda kapsamlı öneriler sunuyor. Kayıt sistemi ile vatandaşlarını takip ediyor. Yerel yasalar ve kültür hakkında bilgi veriyor.' },
+  { name: 'gov.uk/foreign-travel-advice', url: 'https://gov.uk/foreign-travel-advice', description: 'İngiltere hükümeti seyahat uyarıları. Ülke bazında güncel risk değerlendirmeleri yapıyor. Terör tehdidi seviyelerini belirtiyor. Sağlık riskleri ve aşı gereksinimleri hakkında bilgi veriyor. Doğal afet uyarıları paylaşıyor.' },
+  { name: 'trustpilot.com', url: 'https://trustpilot.com', description: 'Online şirket güvenilirlik kontrolü. Gerçek müşteri yorumları ile şirketleri değerlendirebilirsiniz. Sahte yorumları tespit eden algoritmalar kullanıyor. Dolandırıcılık uyarıları yapıyor. Şirket yanıtlarını da görebilirsiniz.' },
+  { name: 'scamadviser.com', url: 'https://scamadviser.com', description: 'Web sitesi güvenlik kontrolü. Sahte ve dolandırıcı siteleri tespit ediyor. Risk skoru vererek güvenilirlik değerlendirmesi yapıyor. Alan adı yaşını ve sahibini gösteriyor. Kullanıcı yorumları ile destekleniyor.' },
+  { name: 'haveibeenpwned.com', url: 'https://haveibeenpwned.com', description: 'E-posta güvenlik kontrol servisi. E-postanızın veri ihlallerinde sızdırılıp sızdırılmadığını kontrol eder. Hangi sitelerde verilerinizin ele geçirildiğini gösterir. Şifre güvenliği kontrolü yapar. Yeni ihlaller için uyarı bildirimleri gönderir.' },
+  { name: 'lastpass.com', url: 'https://lastpass.com', description: 'Güvenli şifre yönetim platformu. Tüm şifrelerinizi tek yerde güvenle saklarsınız. Otomatik form doldurma ile hızlı giriş yaparsınız. Güvenli notlar ve kredi kartı bilgileri saklayabilirsiniz. Şifre paylaşma özelliği ile güvenli paylaşım yaparsınız.' },
+  { name: '1password.com', url: 'https://1password.com', description: 'Premium şifre yöneticisi. Seyahat modu ile sınır geçişlerinde hassas verileri gizler. Aile üyeleri ile güvenli paylaşım yapabilirsiniz. İki faktörlü doğrulama ile ekstra güvenlik sağlar. Watchtower özelliği ile güvenlik açıklarını takip eder.' },
+  { name: 'dashlane.com', url: 'https://dashlane.com', description: 'Kapsamlı dijital güvenlik çözümü. Şifre yönetimi yanında VPN hizmeti de sunuyor. Karanlık web takibi ile bilgilerinizin satılıp satılmadığını kontrol eder. Otomatik şifre değiştirme özelliği ile güvenliği artırır. Kimlik hırsızlığı sigortası içeriyor.' },
+  { name: 'norton.com', url: 'https://norton.com', description: 'Komple güvenlik paketi. Virüs koruması, kimlik hırsızlığı koruması ve VPN bir arada. Çocuk güvenliği özellikleri ile aile koruması sağlar. Bulut yedekleme ile verilerinizi korur. 60 gün para iade garantisi sunuyor.' },
+  { name: 'malwarebytes.com', url: 'https://malwarebytes.com', description: 'Gelişmiş kötü amaçlı yazılım koruması. Gerçek zamanlı koruma ile tehditleri anında engeller. Tarayıcı koruması ile zararlı siteleri bloklar. Hızlı tarama özelliği ile sistem performansını etkilemez. Ransomware koruması ile dosyalarınızı güvende tutar.' },
+  { name: 'prey.io', url: 'https://prey.io', description: 'Çalınan cihaz takip ve koruma sistemi. GPS ile cihazınızın yerini bulabilirsiniz. Uzaktan kilitleme ile hırsızın kullanmasını engellersiniz. Alarm çaldırma özelliği ile cihazınızı bulmanıza yardımcı olur. Uzaktan veri silme ile özel bilgilerinizi korursunuz. Kamera ile hırsızın fotoğrafını çekebilirsiniz.' },
+];
+
+// Current language
+var currentLang = "tr";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px 12px;">' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
