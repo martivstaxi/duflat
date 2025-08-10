@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Travel Tools</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 176px;
+  --card-height: 209px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#d1d5db;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  z-index:-2;
+  pointer-events:none;
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:400;
+  margin-bottom:8px;
+  letter-spacing:0.06em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(1.3rem,2vw,1.8rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1;
+  opacity:0.9;
+  letter-spacing:0.04em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:hidden;
+  touch-action:manipulation;
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.95);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.8) 0%, 
+    rgba(253,230,138,0.6) 50%, 
+    rgba(254,243,199,0.7) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+}
+
+.card-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight:300;
+  font-size:22px;
+  color:#0f172a;
+  line-height:1.2;
+  word-break:break-word;
+  padding:24px 8px;
+  position:relative;
+  z-index:3;
+  background:transparent;
+  width:100%;
+  text-align:center;
+  letter-spacing:0.02em;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:400;
+}
+
+.card-index{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.5;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.75) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '→';
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--primary);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.site-item:hover::after {
+  opacity: 0.7;
+  right: 20px;
+}
+
+.site-number {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.site-content {
+  position: relative;
+  z-index: 2;
+}
+
+.site-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  color: #003b95;
+}
+
+.site-description {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+  margin: 0;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.process-csv-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+/* Info box */
+.info-box {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  font-size: 13px;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #0c4a6e;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 36px) / 3.08 * 1.1);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 176px;
+  }
+
+  .card-title{
+    font-size: 17px;
+    padding: 22px 5px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 15px;
+    padding: 20px 4px;
+  }
+
+  .card-index{
+    font-size: 11px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+  }
+
+  .site-number {
+    font-size: 13px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Travel Tools</h1>
+        <p class="subtitle" id="subtitle">All the apps you need for travel</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Scenic Spots',url:'https://tr81.tr/world.html'},
+  {title:'Accommodation',url:'en-en-1.html'},
+  {title:'Transportation',url:'en-en-2.html'},
+  {title:'Food & Dining',url:'en-en-3.html'},
+  {title:'Entertainment & Experiences',url:'en-en-4.html'},
+  {title:'Digital Services',url:'en-en-5.html'},
+  {title:'Safety & Insurance',url:'en-en-6.html',highlight:true},
+  {title:'Money Matters',url:'en-en-7.html'},
+  {title:'Learning & Growth',url:'en-en-8.html'},
+];
+
+// Sites data
+var sites = [
+  { name: 'worldnomads.com', url: 'https://worldnomads.com', description: 'Travel insurance built for adventurers. Works in 150 countries so you\'re covered wherever you go. Best part - you can extend your insurance while you\'re still traveling.' },
+  { name: 'safetywing.com', url: 'https://safetywing.com', description: 'Health insurance for digital nomads and long-term travelers. Starts at just $37 per month, covers 175 countries. Works like Netflix - monthly subscription you can start and stop anytime. Get visa documents instantly. Even covers you in your home country for up to 30 days. COVID-19 treatment included.' },
+  { name: 'allianztravelinsurance.com', url: 'https://allianztravelinsurance.com', description: 'Trusted travel insurance worldwide. Get your money back if you cancel your trip. Medical evacuation gets you home or to a proper hospital in emergencies. 24-hour helpline with no language barriers. Compensation for lost or delayed baggage. Family plans cover everyone with one policy.' },
+  { name: 'travelguard.com', url: 'https://travelguard.com', description: 'Complete travel insurance and emergency assistance by AIG. Get paid if your bags go missing or get damaged. Hotel and meal costs covered for flight delays. Cash advances in emergencies can be a lifesaver. Concierge service helps with everything from dinner reservations to ticket bookings.' },
+  { name: 'insuremytrip.com', url: 'https://insuremytrip.com', description: 'Travel insurance comparison site. Get quotes from 21 different companies at once to find the best price. Filter to find exactly what you need. Free help from experts over the phone. Best price guarantee.' },
+  { name: 'sos.eu', url: 'https://sos.eu', description: 'Emergency app that saves lives in Europe. One button calls local emergency services. Automatically shares your GPS location so help finds you fast. Shows emergency numbers (police, ambulance, fire) for each country. Works offline, no internet needed.' },
+  { name: 'nordvpn.com', url: 'https://nordvpn.com', description: 'VPN for safe internet access. Servers in 60 countries to bypass geographic blocks. Encrypts your data on public WiFi. One account works on 6 devices at once. Blocks ads and malware. Fast connection for smooth video streaming.' },
+  { name: 'expressvpn.com', url: 'https://expressvpn.com', description: 'Premium VPN service. 94 countries to choose from for accessing content anywhere. 24/7 live support solves problems instantly. 30-day money-back guarantee to try risk-free. Minimal speed loss, watch HD videos smoothly. Apps for all your devices.' },
+  { name: 'surfshark.com', url: 'https://surfshark.com', description: 'Budget-friendly VPN. Use on unlimited devices - whole family on one account. CleanWeb blocks ads, trackers, and malicious sites. Double VPN for extra security. Great features despite the low price. Kill switch cuts internet if VPN drops.' },
+  { name: 'airhelp.com', url: 'https://airhelp.com', description: 'Get compensation for flight problems. Claim up to €600 easily. No fee if they don\'t win. Works in 87 countries with any airline. Claim flights up to 3 years old. They handle all the legal stuff for you.' },
+  { name: 'flightright.com', url: 'https://flightright.com', description: 'Experts in compensation for delayed and canceled flights. Claim flights up to 3 years back. Lawyers handle everything, no court visits needed. Only pay commission when you get paid. Online form takes 2 minutes.' },
+  { name: 'claimcompass.eu', url: 'https://claimcompass.eu', description: 'Automatic flight compensation calculator. 98% success rate. They cover court costs, zero risk for you. Enter flight details to know your rights instantly. Commission only after you get paid.' },
+  { name: 'sitata.com', url: 'https://sitata.com', description: 'Real-time travel safety tracker. Get alerts about disease outbreaks at your destination. Instant notifications for security threats. Emergency contact info for every country. Travel insurance integration for complete protection.' },
+  { name: 'geosure.com', url: 'https://geosure.com', description: 'Street-level safety scoring app. See day and night safety scores for neighborhoods. LGBTQ safety ratings included. Health and medical safety scores. Data from local experts.' },
+  { name: 'surviveware.com', url: 'https://surviveware.com', description: 'Professional first aid and survival kits. Waterproof bags keep everything organized. Compact design fits easily in your backpack. FDA-approved medical supplies. Everything you need for earthquakes, floods, and disasters.' },
+  { name: 'mymedic.com', url: 'https://mymedic.com', description: 'First aid kits designed by experts. Modular system to customize for your needs. Trauma kits can save lives in serious injuries. Free training videos show you how to use everything. Military-grade durable bags.' },
+  { name: 'lifestraw.com', url: 'https://lifestraw.com', description: 'Personal water filters and purification. Removes 99.9% of bacteria and parasites. No chemicals, just filtering. 1000 liters capacity lasts ages. Drink safely from rivers and lakes.' },
+  { name: 'grayl.com', url: 'https://grayl.com', description: 'Portable water purification bottles. Clean dirty water in 15 seconds. Even removes viruses. Tested and approved in 55 countries. One cartridge purifies 65 gallons. Bottle design makes it easy to use anywhere.' },
+  { name: 'sawyer.com', url: 'https://sawyer.com', description: 'High-performance water filtration. 100,000 gallon lifetime - basically lasts forever. Backwash feature cleans filter to maintain performance. Only 2 oz weight, perfect for ultralight travelers. Models that attach to plastic bottles.' },
+  { name: 'iqair.com', url: 'https://iqair.com', description: 'Real-time air quality tracking. See PM2.5 levels instantly. Get personalized health recommendations. 5-day air quality forecasts. Shows best times to go outside.' },
+  { name: 'purpleair.com', url: 'https://purpleair.com', description: 'Community-based air quality map. Real-time sensor data shows air quality on your street. Tracks wildfire smoke in at-risk areas. Set up your own sensor to help the community.' },
+  { name: 'breezometer.com', url: 'https://breezometer.com', description: 'Detailed air quality and pollen forecasts. Street-level precision information. Special health advice for asthma and allergy sufferers. API access to integrate in your apps. Hourly forecasts for daily planning.' },
+  { name: 'volcano.si.edu', url: 'https://volcano.si.edu', description: 'Global volcano activity tracker. Monitor active volcanoes in real-time. Eruption history and risk analysis. Check alert levels for safe travel planning. Reliable scientific data.' },
+  { name: 'earthquake.usgs.gov', url: 'https://earthquake.usgs.gov', description: 'US Geological Survey earthquake info. See recent earthquakes on real-time map. Magnitude and depth estimates. Earthquake prep guides keep you safe. Notifications for earthquakes in your area.' },
+  { name: 'emsc-csem.org', url: 'https://emsc-csem.org', description: 'Euro-Mediterranean seismic activity center. Lists recent earthquakes instantly. See witness reports showing where quakes were felt. Damage estimates and tsunami warnings. Mobile app for instant notifications.' },
+  { name: 'quakefeed.com', url: 'https://quakefeed.com', description: 'Earthquake tracking and alert system. Shows global earthquakes in real-time. Set notifications for only the regions you care about. Browse historical earthquake data. Simple interface for quick info.' },
+  { name: 'commonpass.org', url: 'https://commonpass.org', description: 'Digital health passport platform. Store vaccination certificates securely. QR code for fast airport processing. Privacy-focused, protects your data. Accepted worldwide.' },
+  { name: 'clear.com', url: 'https://clear.com', description: 'Biometric identity verification. Skip lines at airports with fast lanes. Works at stadiums and events too. Eye and fingerprint verification in seconds. Integrates with TSA PreCheck.' },
+  { name: 'icecontact.com', url: 'https://icecontact.com', description: 'Emergency contact storage service. QR code helps people reach you in emergencies. Add medical info, blood type, allergies. Available 24/7, no internet needed. Stick on helmet, phone, or bag.' },
+  { name: 'emergencyid.net', url: 'https://emergencyid.net', description: 'Medical ID products. Bracelets, necklaces, and card options. List chronic conditions and medications. Waterproof models for swimming. Standard symbols recognized by emergency personnel.' },
+  { name: 'pacsafe.com', url: 'https://pacsafe.com', description: 'Anti-theft travel bags. Steel mesh prevents cutting. RFID blocking pockets protect credit cards. Lockable zippers secure contents. Lightweight but extremely durable.' },
+  { name: 'travelon.com', url: 'https://travelon.com', description: 'Secure travel accessories. Slash-proof straps prevent bag cutting. Hidden money and passport pockets for valuables. RFID blocking technology protects cards. Stylish designs don\'t attract attention.' },
+  { name: 'lewis-n-clark.com', url: 'https://lewis-n-clark.com', description: 'Complete travel security products. TSA-approved locks keep luggage safe. Money belts for carrying cash securely. Luggage trackers help find lost bags. Organization pouches keep everything tidy.' },
+  { name: 'visalist.io', url: 'https://visalist.io', description: 'Visa requirement checker. Current visa info for 195 countries. See your passport power and visa-free destinations. Detailed visa application processes. Constantly updated database for reliable info.' },
+  { name: 'passportindex.org', url: 'https://passportindex.org', description: 'Passport power rankings. Shows how many countries you can visit visa-free. Compare different passports. Interactive world map visualization. Track visa policy changes.' },
+  { name: 'visadb.io', url: 'https://visadb.io', description: 'Detailed visa policy database. Research bilateral country agreements. View historical visa data. API access for app integration. Comprehensive dataset for researchers.' },
+  { name: 'teladoc.com', url: 'https://teladoc.com', description: 'Online doctor consultation platform. Reach doctors 24/7 via video calls. Can prescribe medication you pick up at pharmacy. Access to specialist doctors. Works with insurance companies.' },
+  { name: 'amwell.com', url: 'https://amwell.com', description: 'Virtual health services platform. Instant doctor connection for urgent medical issues. Mental health therapy sessions available. Pediatricians on call. Insurance coverage available.' },
+  { name: 'travel.state.gov', url: 'https://travel.state.gov', description: 'US State Department travel warnings. Countries classified by risk levels. Embassy and consulate contact info. STEP program for emergency contact. Current security updates.' },
+  { name: 'smartraveller.gov.au', url: 'https://smartraveller.gov.au', description: 'Australian government travel advice. Detailed risk assessments. Comprehensive travel insurance recommendations. Registration system tracks citizens. Info on local laws and culture.' },
+  { name: 'gov.uk/foreign-travel-advice', url: 'https://gov.uk/foreign-travel-advice', description: 'UK government travel warnings. Country-specific current risk assessments. Terror threat levels indicated. Health risks and vaccination requirements. Natural disaster warnings.' },
+  { name: 'trustpilot.com', url: 'https://trustpilot.com', description: 'Online company reliability checker. Real customer reviews to evaluate businesses. Algorithms detect fake reviews. Fraud warnings. See company responses too.' },
+  { name: 'scamadviser.com', url: 'https://scamadviser.com', description: 'Website security checker. Detects fake and scam sites. Risk score for reliability assessment. Shows domain age and owner. Backed by user reviews.' },
+  { name: 'haveibeenpwned.com', url: 'https://haveibeenpwned.com', description: 'Email security check service. Check if your email was leaked in data breaches. Shows which sites compromised your data. Password security check. Alert notifications for new breaches.' },
+  { name: 'lastpass.com', url: 'https://lastpass.com', description: 'Secure password management platform. Store all passwords safely in one place. Auto-fill for quick logins. Save secure notes and credit card info. Password sharing feature for secure sharing.' },
+  { name: '1password.com', url: 'https://1password.com', description: 'Premium password manager. Travel mode hides sensitive data at borders. Secure sharing with family members. Two-factor authentication for extra security. Watchtower tracks security vulnerabilities.' },
+  { name: 'dashlane.com', url: 'https://dashlane.com', description: 'Complete digital security solution. Password management plus VPN service. Dark web monitoring checks if your info is being sold. Automatic password changer increases security. Identity theft insurance included.' },
+  { name: 'norton.com', url: 'https://norton.com', description: 'Complete security package. Virus protection, identity theft protection, and VPN combined. Parental controls for family protection. Cloud backup protects your data. 60-day money-back guarantee.' },
+  { name: 'malwarebytes.com', url: 'https://malwarebytes.com', description: 'Advanced malware protection. Real-time protection blocks threats instantly. Browser protection blocks harmful sites. Fast scanning doesn\'t slow your system. Ransomware protection keeps files safe.' },
+  { name: 'prey.io', url: 'https://prey.io', description: 'Stolen device tracking and protection. Find your device with GPS. Remote lock prevents thieves from using it. Sound alarm helps locate device. Remote wipe protects private info. Take photos of thief with camera.' },
+];
+
+// Current language
+var currentLang = "en";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px 12px;">' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
