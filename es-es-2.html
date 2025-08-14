@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Herramientas de Viaje</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 240px;
+  --card-height: 110px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background:#fefce8;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: 
+    linear-gradient(135deg, #fef3c7 0%, #ddd6fe 25%, #e0e7ff 50%, #ccfbf1 75%, #fef3c7 100%);
+  background-size: 200% 200%;
+  animation: subtleShift 30s ease infinite;
+  z-index:-2;
+  pointer-events:none;
+}
+
+@keyframes subtleShift {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: 
+    radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at center right, rgba(129, 140, 248, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at center left, rgba(52, 211, 153, 0.06) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+.bg-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(196, 181, 253, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, rgba(254, 215, 170, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 60% 60%, rgba(167, 243, 208, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 40% 40%, rgba(165, 180, 252, 0.08) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+.bg-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      60deg,
+      transparent,
+      transparent 100px,
+      rgba(255, 255, 255, 0.03) 100px,
+      rgba(255, 255, 255, 0.03) 101px,
+      transparent 101px,
+      transparent 200px
+    );
+  pointer-events: none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:700;
+  margin-bottom:8px;
+  letter-spacing:-0.02em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:clamp(1.1rem,1.8vw,1.4rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1.2;
+  opacity:0.9;
+  letter-spacing:-0.01em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  overflow:hidden;
+  touch-action:manipulation;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  padding: 20px;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.98);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.9) 0%, 
+    rgba(253,230,138,0.7) 50%, 
+    rgba(254,243,199,0.8) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.2),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow:
+      0 8px 32px rgba(245,158,11,0.2),
+      inset 0 2px 4px rgba(255,255,255,0.9),
+      inset 0 -2px 4px rgba(245,158,11,0.1);
+  }
+  to {
+    box-shadow:
+      0 12px 40px rgba(245,158,11,0.35),
+      inset 0 2px 4px rgba(255,255,255,0.9),
+      inset 0 -2px 4px rgba(245,158,11,0.15);
+  }
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.card-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.card-title{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight:500;
+  font-size:18px;
+  color:#0f172a;
+  line-height:1.3;
+  word-break:break-word;
+  letter-spacing:-0.01em;
+  transition: color 0.3s ease;
+  text-transform: capitalize;
+  flex: 1;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:500;
+}
+
+.card-index{
+  position:absolute;
+  top:12px;
+  right:12px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.4;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.5);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.card:hover .card-index {
+  opacity: 0.6;
+  background: rgba(255,255,255,0.7);
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.95) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 2px solid rgba(255,255,255,1);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.06),
+    inset 0 2px 4px rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(0,0,0,0.03);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+  overflow: visible;
+}
+
+/* Left side line for each site item */
+.site-item::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 35px;
+  bottom: 35px;
+  width: 3px;
+  border-radius: 2px;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+/* Line colors matching site name colors */
+.site-item:nth-child(21n+1)::before { background: #6366f1; }
+.site-item:nth-child(21n+2)::before { background: #3b82f6; }
+.site-item:nth-child(21n+3)::before { background: #0891b2; }
+.site-item:nth-child(21n+4)::before { background: #059669; }
+.site-item:nth-child(21n+5)::before { background: #16a34a; }
+.site-item:nth-child(21n+6)::before { background: #65a30d; }
+.site-item:nth-child(21n+7)::before { background: #ca8a04; }
+.site-item:nth-child(21n+8)::before { background: #ea580c; }
+.site-item:nth-child(21n+9)::before { background: #dc2626; }
+.site-item:nth-child(21n+10)::before { background: #e11d48; }
+.site-item:nth-child(21n+11)::before { background: #db2777; }
+.site-item:nth-child(21n+12)::before { background: #c026d3; }
+.site-item:nth-child(21n+13)::before { background: #a21caf; }
+.site-item:nth-child(21n+14)::before { background: #9333ea; }
+.site-item:nth-child(21n+15)::before { background: #7c3aed; }
+.site-item:nth-child(21n+16)::before { background: #6d28d9; }
+.site-item:nth-child(21n+17)::before { background: #4f46e5; }
+.site-item:nth-child(21n+18)::before { background: #0ea5e9; }
+.site-item:nth-child(21n+19)::before { background: #10b981; }
+.site-item:nth-child(21n+20)::before { background: #84cc16; }
+.site-item:nth-child(21n+21)::before { background: #6366f1; }
+
+.site-item:hover::before {
+  opacity: 1;
+  width: 4px;
+  left: 24px;
+}
+
+/* 21 Harmonious Color Gradients - Light & Vibrant Palette */
+
+.site-item:nth-child(21n+1) .site-name { color: #6366f1; }
+.site-item:nth-child(21n+2) .site-name { color: #3b82f6; }
+.site-item:nth-child(21n+3) .site-name { color: #0891b2; }
+.site-item:nth-child(21n+4) .site-name { color: #059669; }
+.site-item:nth-child(21n+5) .site-name { color: #16a34a; }
+.site-item:nth-child(21n+6) .site-name { color: #65a30d; }
+.site-item:nth-child(21n+7) .site-name { color: #ca8a04; }
+.site-item:nth-child(21n+8) .site-name { color: #ea580c; }
+.site-item:nth-child(21n+9) .site-name { color: #dc2626; }
+.site-item:nth-child(21n+10) .site-name { color: #e11d48; }
+.site-item:nth-child(21n+11) .site-name { color: #db2777; }
+.site-item:nth-child(21n+12) .site-name { color: #c026d3; }
+.site-item:nth-child(21n+13) .site-name { color: #a21caf; }
+.site-item:nth-child(21n+14) .site-name { color: #9333ea; }
+.site-item:nth-child(21n+15) .site-name { color: #7c3aed; }
+.site-item:nth-child(21n+16) .site-name { color: #6d28d9; }
+.site-item:nth-child(21n+17) .site-name { color: #4f46e5; }
+.site-item:nth-child(21n+18) .site-name { color: #0ea5e9; }
+.site-item:nth-child(21n+19) .site-name { color: #10b981; }
+.site-item:nth-child(21n+20) .site-name { color: #84cc16; }
+.site-item:nth-child(21n+21) .site-name { color: #6366f1; }
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.2),
+    0 4px 12px rgba(0,0,0,0.1),
+    inset 0 2px 4px rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(0,0,0,0.03);
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.98) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '▶';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 100%);
+  transition: all 0.3s ease;
+  opacity: 0.9;
+  border-radius: 50%;
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.08),
+    inset 0 1px 2px rgba(255,255,255,0.8);
+  z-index: 3;
+}
+
+.site-item:hover::after {
+  width: 45px;
+  height: 45px;
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 100%);
+  box-shadow: 
+    0 6px 20px rgba(0,0,0,0.12),
+    inset 0 1px 2px rgba(255,255,255,0.9);
+}
+
+/* Arrow colors matching site name colors */
+.site-item:nth-child(21n+1)::after { color: #6366f1; }
+.site-item:nth-child(21n+2)::after { color: #3b82f6; }
+.site-item:nth-child(21n+3)::after { color: #0891b2; }
+.site-item:nth-child(21n+4)::after { color: #059669; }
+.site-item:nth-child(21n+5)::after { color: #16a34a; }
+.site-item:nth-child(21n+6)::after { color: #65a30d; }
+.site-item:nth-child(21n+7)::after { color: #ca8a04; }
+.site-item:nth-child(21n+8)::after { color: #ea580c; }
+.site-item:nth-child(21n+9)::after { color: #dc2626; }
+.site-item:nth-child(21n+10)::after { color: #e11d48; }
+.site-item:nth-child(21n+11)::after { color: #db2777; }
+.site-item:nth-child(21n+12)::after { color: #c026d3; }
+.site-item:nth-child(21n+13)::after { color: #a21caf; }
+.site-item:nth-child(21n+14)::after { color: #9333ea; }
+.site-item:nth-child(21n+15)::after { color: #7c3aed; }
+.site-item:nth-child(21n+16)::after { color: #6d28d9; }
+.site-item:nth-child(21n+17)::after { color: #4f46e5; }
+.site-item:nth-child(21n+18)::after { color: #0ea5e9; }
+.site-item:nth-child(21n+19)::after { color: #10b981; }
+.site-item:nth-child(21n+20)::after { color: #84cc16; }
+.site-item:nth-child(21n+21)::after { color: #6366f1; }
+
+/* Gradient arrow colors matching card colors - with more opacity */
+.site-item:nth-child(21n+1)::after { 
+  background: linear-gradient(135deg, rgba(165, 180, 252, 0.95) 0%, rgba(199, 210, 254, 0.5) 50%, rgba(199, 210, 254, 0.3) 100%);
+  color: #6366f1;
+}
+
+.site-number {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 300;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-stretch: condensed;
+  opacity: 0.7;
+  letter-spacing: -0.5px;
+  z-index: 2;
+  background: none;
+  padding: 0;
+  line-height: 1;
+  min-width: 15px;
+  text-align: center;
+}
+
+/* Number colors matching line colors */
+.site-item:nth-child(21n+1) .site-number { color: #6366f1; }
+.site-item:nth-child(21n+2) .site-number { color: #3b82f6; }
+.site-item:nth-child(21n+3) .site-number { color: #0891b2; }
+.site-item:nth-child(21n+4) .site-number { color: #059669; }
+.site-item:nth-child(21n+5) .site-number { color: #16a34a; }
+.site-item:nth-child(21n+6) .site-number { color: #65a30d; }
+.site-item:nth-child(21n+7) .site-number { color: #ca8a04; }
+.site-item:nth-child(21n+8) .site-number { color: #ea580c; }
+.site-item:nth-child(21n+9) .site-number { color: #dc2626; }
+.site-item:nth-child(21n+10) .site-number { color: #e11d48; }
+.site-item:nth-child(21n+11) .site-number { color: #db2777; }
+.site-item:nth-child(21n+12) .site-number { color: #c026d3; }
+.site-item:nth-child(21n+13) .site-number { color: #a21caf; }
+.site-item:nth-child(21n+14) .site-number { color: #9333ea; }
+.site-item:nth-child(21n+15) .site-number { color: #7c3aed; }
+.site-item:nth-child(21n+16) .site-number { color: #6d28d9; }
+.site-item:nth-child(21n+17) .site-number { color: #4f46e5; }
+.site-item:nth-child(21n+18) .site-number { color: #0ea5e9; }
+.site-item:nth-child(21n+19) .site-number { color: #10b981; }
+.site-item:nth-child(21n+20) .site-number { color: #84cc16; }
+.site-item:nth-child(21n+21) .site-number { color: #6366f1; }
+
+.site-content {
+  position: relative;
+  z-index: 2;
+  padding-left: 15px;
+}
+
+.site-name {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  transition: all 0.3s ease;
+}
+
+.site-description {
+  font-size: 19px;
+  line-height: 1.5;
+  color: #1e293b;
+  margin: 0;
+  transition: color 0.3s ease;
+  font-weight: 400;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.005em;
+  font-stretch: condensed;
+  transform: scaleY(1.05);
+  transform-origin: left center;
+}
+
+.site-item:hover .site-description {
+  color: #0f172a;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 24px) / 2.2);
+  }
+
+  /* Mobilde kartların kaybolma sorununu çöz */
+  .cards-container {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .card {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 100px;
+    padding: 15px;
+  }
+
+  .card-content {
+    gap: 12px;
+  }
+
+  .card-icon {
+    font-size: 24px;
+  }
+
+  .card-title{
+    font-size: 16px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 14px;
+  }
+
+  .card-index{
+    font-size: 10px;
+    top: 8px;
+    right: 8px;
+    padding: 1px 6px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+    margin-right: 0;
+    position: relative;
+  }
+
+  /* Adjust line position for mobile */
+  .site-item::before {
+    left: 22px;
+    top: 30px;
+    bottom: 30px;
+    width: 2px;
+  }
+
+  .site-item:hover::before {
+    width: 3px;
+    left: 21px;
+  }
+  
+  .site-content {
+    padding-left: 12px;
+  }
+
+  .site-item::after {
+    content: '▶';
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    right: 10px;
+    top: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 100%);
+    transition: all 0.3s ease;
+    opacity: 0.9;
+    border-radius: 50%;
+    box-shadow: 
+      0 4px 12px rgba(0,0,0,0.08),
+      inset 0 1px 2px rgba(255,255,255,0.8);
+    z-index: 3;
+  }
+
+  .site-item:hover::after {
+    width: 38px;
+    height: 38px;
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 100%);
+    box-shadow: 
+      0 6px 16px rgba(0,0,0,0.1),
+      inset 0 1px 2px rgba(255,255,255,0.9);
+  }
+  
+  /* Mobile arrow colors matching site name colors */
+  .site-item:nth-child(21n+1)::after { color: #6366f1; }
+  .site-item:nth-child(21n+2)::after { color: #3b82f6; }
+  .site-item:nth-child(21n+3)::after { color: #0891b2; }
+  .site-item:nth-child(21n+4)::after { color: #059669; }
+  .site-item:nth-child(21n+5)::after { color: #16a34a; }
+  .site-item:nth-child(21n+6)::after { color: #65a30d; }
+  .site-item:nth-child(21n+7)::after { color: #ca8a04; }
+  .site-item:nth-child(21n+8)::after { color: #ea580c; }
+  .site-item:nth-child(21n+9)::after { color: #dc2626; }
+  .site-item:nth-child(21n+10)::after { color: #e11d48; }
+  .site-item:nth-child(21n+11)::after { color: #db2777; }
+  .site-item:nth-child(21n+12)::after { color: #c026d3; }
+  .site-item:nth-child(21n+13)::after { color: #a21caf; }
+  .site-item:nth-child(21n+14)::after { color: #9333ea; }
+  .site-item:nth-child(21n+15)::after { color: #7c3aed; }
+  .site-item:nth-child(21n+16)::after { color: #6d28d9; }
+  .site-item:nth-child(21n+17)::after { color: #4f46e5; }
+  .site-item:nth-child(21n+18)::after { color: #0ea5e9; }
+  .site-item:nth-child(21n+19)::after { color: #10b981; }
+  .site-item:nth-child(21n+20)::after { color: #84cc16; }
+  .site-item:nth-child(21n+21)::after { color: #6366f1; }
+
+  .sites-container {
+    padding: 0 20px 0 20px;
+  }
+
+  .site-number {
+    font-size: 18px;
+    font-weight: 300;
+    top: 50%;
+    left: 1px;
+    transform: translateY(-50%);
+    background: none;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.7;
+    min-width: 14px;
+    text-align: center;
+  }
+  
+  /* Mobile number colors matching line colors */
+  .site-item:nth-child(21n+1) .site-number { color: #6366f1; }
+  .site-item:nth-child(21n+2) .site-number { color: #3b82f6; }
+  .site-item:nth-child(21n+3) .site-number { color: #0891b2; }
+  .site-item:nth-child(21n+4) .site-number { color: #059669; }
+  .site-item:nth-child(21n+5) .site-number { color: #16a34a; }
+  .site-item:nth-child(21n+6) .site-number { color: #65a30d; }
+  .site-item:nth-child(21n+7) .site-number { color: #ca8a04; }
+  .site-item:nth-child(21n+8) .site-number { color: #ea580c; }
+  .site-item:nth-child(21n+9) .site-number { color: #dc2626; }
+  .site-item:nth-child(21n+10) .site-number { color: #e11d48; }
+  .site-item:nth-child(21n+11) .site-number { color: #db2777; }
+  .site-item:nth-child(21n+12) .site-number { color: #c026d3; }
+  .site-item:nth-child(21n+13) .site-number { color: #a21caf; }
+  .site-item:nth-child(21n+14) .site-number { color: #9333ea; }
+  .site-item:nth-child(21n+15) .site-number { color: #7c3aed; }
+  .site-item:nth-child(21n+16) .site-number { color: #6d28d9; }
+  .site-item:nth-child(21n+17) .site-number { color: #4f46e5; }
+  .site-item:nth-child(21n+18) .site-number { color: #0ea5e9; }
+  .site-item:nth-child(21n+19) .site-number { color: #10b981; }
+  .site-item:nth-child(21n+20) .site-number { color: #84cc16; }
+  .site-item:nth-child(21n+21) .site-number { color: #6366f1; }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    font-stretch: condensed;
+    transform: scaleY(1.05);
+    transform-origin: left center;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Herramientas de Viaje</h1>
+        <p class="subtitle" id="subtitle">Todas las aplicaciones que necesitas para viajar</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Lugares Escénicos',url:'https://tr81.tr/world.html'},
+  {title:'Alojamiento',url:'es-es-1.html'},
+  {title:'Transporte',url:'es-es-2.html',highlight:true},
+  {title:'Comida y Gastronomía',url:'es-es-3.html'},
+  {title:'Entretenimiento y Experiencias',url:'es-es-4.html'},
+  {title:'Servicios Digitales',url:'es-es-5.html'},
+  {title:'Seguridad y Seguros',url:'es-es-6.html'},
+  {title:'Servicios Financieros',url:'es-es-7.html'},
+  {title:'Educación y Desarrollo',url:'es-es-8.html'},
+];
+
+// Sites data
+var sites = [
+  { name: 'skyscanner.com', url: 'https://skyscanner.com', description: 'Compara precios de vuelos de todas las aerolíneas en una sola pantalla. Con fechas flexibles ves los días más baratos del mes. Te avisa cuando bajan los precios si pones una alerta. Te lleva directo a la web de la aerolínea, sin comisiones extra. Muestra el precio real con equipaje incluido y puedes filtrar según tu presupuesto.' },
+  { name: 'momondo.com', url: 'https://momondo.com', description: 'Buscador inteligente que encuentra chollos combinando diferentes aerolíneas. Ahorra hasta un 50% volando con una aerolínea a la ida y otra a la vuelta. Su predictor de precios te dice si comprar ya o esperar. El calendario con colores te muestra de un vistazo qué días son más baratos.' },
+  { name: 'kayak.com', url: 'https://kayak.com', description: 'Busca vuelos, hoteles y coches de alquiler en más de 100 sitios a la vez. Muestra el precio final con tasas de equipaje para que no te lleves sorpresas. Si reservas para un grupo, puedes ajustar las preferencias de cada uno. El predictor de precios te ayuda a decidir cuándo comprar.' },
+  { name: 'kiwi.com', url: 'https://kiwi.com', description: 'Buscador creativo que encuentra rutas baratas que no verás en otros sitios. Combina aerolíneas diferentes creando conexiones virtuales. Si pierdes tu vuelo, su garantía te consigue otro billete. Con búsquedas de ciudad oculta y multiciudad ahorras hasta un 50%.' },
+  { name: 'trainline.com', url: 'https://trainline.com', description: 'Compara todos los trenes y buses de Europa en un solo sitio. El billete móvil va directo a tu teléfono y subes al tren sin más. Seguimiento en tiempo real para ver retrasos. Reserva con antelación y pilla grandes descuentos.' },
+  { name: 'omio.com', url: 'https://omio.com', description: 'Combina avión, tren y bus en un solo billete para viajar por Europa. Planifica viajes puerta a puerta sin preocuparte por las conexiones. Filtra por más rápido, más barato o más cómodo. Todos tus billetes en una sola app.' },
+  { name: 'rome2rio.com', url: 'https://rome2rio.com', description: 'Te muestra en el mapa todas las formas de ir de un sitio a otro. Compara avión, tren, bus, ferry e incluso alquiler de coches por precio y tiempo. Indicaciones detalladas en más de 160 países. Encuentra rutas hasta entre pueblos pequeños.' },
+  { name: 'blablacar.com', url: 'https://blablacar.com', description: 'Viaja barato entre ciudades compartiendo gastos de gasolina. Ves perfiles de conductores, opiniones y puntuación de confianza. Se usa por toda Europa. Viajas por la mitad de lo que cuesta un billete de bus.' },
+  { name: 'autoeurope.com', url: 'https://autoeurope.com', description: 'Alquiler de coches fiable en 20.000 ubicaciones. Atención al cliente en español para resolver cualquier problema. Cancelación gratis y garantía del mejor precio. Precios transparentes sin sorpresas de última hora.' },
+  { name: 'rentalcars.com', url: 'https://rentalcars.com', description: 'Compara más de 900 empresas de alquiler en 60.000 ubicaciones. Atención al cliente 24/7 todos los días. Cancelación gratis sin cargos extra. Muestra precios claros con seguro de daños incluido.' },
+  { name: 'discovercars.com', url: 'https://discovercars.com', description: 'Garantiza que no hay cargos ocultos en el alquiler. Muestra precios con seguro completo, descuentos de hasta el 70%. Reservas en 2 minutos con su interfaz súper fácil. Lee opiniones reales de clientes.' },
+  { name: 'turo.com', url: 'https://turo.com', description: 'Alquila coches directamente a sus dueños. Coches de lujo, deportivos o clásicos un 35% más baratos que en empresas tradicionales. Seguro incluido y puedes chatear con los propietarios. Hasta puedes alquilar coches de tu barrio.' },
+  { name: 'flixbus.com', url: 'https://flixbus.com', description: 'Buses a más de 2.500 destinos en Europa y América. WiFi gratis, enchufes y asientos amplios. Equipaje extra permitido, viajes ecológicos. Subes directo con el billete móvil.' },
+  { name: 'busbud.com', url: 'https://busbud.com', description: 'Compara billetes de bus en más de 80 países. Billetes móviles con soporte 24 horas. Garantía del precio más bajo. Llega hasta pueblos pequeños.' },
+  { name: 'obilet.com', url: 'https://obilet.com', description: 'Todas las compañías de bus y vuelos de Turquía en una plataforma. Pago seguro, billetes electrónicos al instante. Aprovecha ofertas especiales. Elige tu asiento.' },
+  { name: 'enuygun.com', url: 'https://enuygun.com', description: 'Encuentra los vuelos, buses y hoteles más baratos de Turquía. Gana puntos con cada reserva para usar después. No te pierdas ofertas exclusivas. Pago a plazos disponible.' },
+  { name: 'turna.com', url: 'https://turna.com', description: 'Gana millas aéreas con reservas de vuelos y hoteles. Soporte 24/7 todos los días. Cancelación flexible y planes de pago especiales. Ventajas para clientes corporativos.' },
+  { name: 'directferries.com', url: 'https://directferries.com', description: 'Compara 3.962 rutas de ferry en todo el mundo. Lleva tu coche a bordo, reserva camarotes. Billetes electrónicos al instante. Descuentos para grupos y ofertas especiales.' },
+  { name: 'ferryhopper.com', url: 'https://ferryhopper.com', description: 'Ferries entre islas griegas con mapas visuales. Sugerencias de rutas especiales para saltar entre islas. Reserva rápida con billetes móviles. Compara qué ferry es mejor.' },
+  { name: 'eaglerider.com', url: 'https://eaglerider.com', description: 'Alquiler de motos incluyendo Harley-Davidson. Tours guiados, alquiler de solo ida disponible. Casco y equipamiento incluidos. Sugerencias de rutas y asistencia en carretera.' },
+  { name: 'roadsurfer.com', url: 'https://roadsurfer.com', description: 'Alquiler de furgonetas camper modernas en Europa. Equipo de camping incluido, puedes hacer trayectos de solo ida. Asistencia en carretera 24 horas. Ofertas para festivales y eventos.' },
+  { name: 'indiecampers.com', url: 'https://indiecampers.com', description: 'Alquiler de campers y paquetes de road trip en Europa y América. Ofertas para festivales con soporte 24 horas. Rutas divertidas sugeridas. Ropa de cama y utensilios de cocina incluidos.' },
+  { name: 'camperdays.com', url: 'https://camperdays.com', description: 'Compara precios de alquiler de campers en más de 30 países. Soporte en español, garantía del mejor precio. Descuentos por reserva anticipada. Opciones de seguro disponibles.' },
+  { name: 'outdoorsy.com', url: 'https://outdoorsy.com', description: 'Alquila directamente a propietarios de autocaravanas. Gran selección desde modelos de lujo hasta clásicos. Seguro y asistencia en carretera incluidos. Chatea con los propietarios.' },
+  { name: 'kiwitaxi.com', url: 'https://kiwitaxi.com', description: 'Traslados desde el aeropuerto en 140 países. Precio fijo, el conductor te espera. Soporte 24 horas, transporte seguro. Servicios extra como sillas de bebé.' },
+  { name: 'uber.com', url: 'https://uber.com', description: 'App para pedir coche en más de 70 países. Ves el precio antes de ir, lees valoraciones del conductor. Pagas sin efectivo. Comparte tu viaje en directo.' },
+  { name: 'bolt.eu', url: 'https://bolt.eu', description: 'Servicio de coches rápido y económico en Europa. Precios transparentes, tiempos de espera cortos. Campañas con descuentos. También alquila bicis y patinetes.' },
+  { name: 'parkwhiz.com', url: 'https://parkwhiz.com', description: 'Reserva parking en aeropuertos y centros urbanos. Hasta 50% de descuento, entrada y salida garantizadas. Pago online fácil. Abonos mensuales disponibles.' },
+  { name: 'justpark.com', url: 'https://justpark.com', description: 'Alquila plazas de parking sin usar de particulares por poco dinero. Parking diario o mensual en zonas céntricas. Reserva garantizada, no se puede cancelar. Encuentra parking cerca de estadios y eventos.' },
+  { name: 'parkopedia.com', url: 'https://parkopedia.com', description: 'Información en tiempo real de 50 millones de plazas en 75 países. Muestra precios y disponibilidad. Funciona con navegadores, reserva fácil. Muestra normas de aparcamiento en la calle.' },
+  { name: 'moorings.com', url: 'https://moorings.com', description: 'Alquiler de yates de lujo en más de 20 destinos. Opciones con o sin patrón. Sugerencias de rutas de crucero azul. Cursos de vela y programas de certificación.' },
+  { name: 'clickandboat.com', url: 'https://clickandboat.com', description: 'Plataforma con 30.000 barcos para alquilar. Alquiler diario o semanal. Servicio con patrón incluido, seguro proporcionado. Reserva instantánea disponible.' },
+  { name: 'getmyboat.com', url: 'https://getmyboat.com', description: 'Alquiler de motos de agua, yates o barcos en 184 países. Reserva instantánea para planes de última hora. Tours de pesca y eventos privados. Descuentos para grupos.' },
+  { name: 'donkey.bike', url: 'https://donkey.bike', description: 'Alquiler de bicis sin estación en ciudades europeas. Abres y cierras las bicis con la app. Pagas por minuto. Tours en grupo y paseos guiados.' },
+  { name: 'plugshare.com', url: 'https://plugshare.com', description: 'Mapa con estaciones de carga para coches eléctricos. Más de 300.000 puntos. Ves opiniones y fotos de usuarios. Filtra y comprueba disponibilidad.' },
+  { name: 'flightconnections.com', url: 'https://flightconnections.com', description: 'Mapa visual de rutas de vuelo directo de aerolíneas. Opciones de aeropuertos alternativos. Análisis de conexiones. Ves qué ciudades tienen vuelos directos.' },
+  { name: 'citymapper.com', url: 'https://citymapper.com', description: 'Muestra rutas de transporte público, bici y patinete en ciudades. Información en tiempo real, alertas de parada. Descarga mapas offline. Muestra rutas accesibles.' },
+  { name: 'moovit.com', url: 'https://moovit.com', description: 'Guía de transporte público en más de 3.200 ciudades. Notificaciones de llegada a paradas. Planifica rutas accesibles. Funciona sin conexión.' },
+  { name: 'hopper.com', url: 'https://hopper.com', description: 'La IA predice cuándo comprar billetes. Te avisa cuando bajan los precios. Ahorra hasta un 40%. También predice precios de hoteles y coches de alquiler.' },
+  { name: 'skiplagged.com', url: 'https://skiplagged.com', description: 'Billetes de ciudad oculta con 50% de descuento en vuelos con escala. Solo para viajeros con equipaje de mano. Las aerolíneas lo odian pero es legal.' },
+  { name: 'roadtrippers.com', url: 'https://roadtrippers.com', description: 'App para planificar road trips por América. Muestra atracciones naturales y museos en tu ruta. Opciones de alojamiento. Calcula gastos de gasolina.' },
+  { name: 'waze.com', url: 'https://waze.com', description: 'Navegación en directo con apoyo de la comunidad. Avisos de tráfico, accidentes, controles policiales. Muestra precios de gasolineras. Sugiere rutas alternativas.' },
+  { name: 'tollguru.com', url: 'https://tollguru.com', description: 'Calcula peajes en América y Europa. Muestra costes de combustible. Encuentra rutas alternativas gratis. Te ayuda a planificar tu presupuesto.' },
+  { name: 'viamichelin.com', url: 'https://viamichelin.com', description: 'Planificación de rutas con guías Michelin. Calcula consumo de combustible y peajes. Sugerencias de rutas verdes. Muestra restaurantes con estrellas en el mapa.' },
+  { name: 'gasbuddy.com', url: 'https://gasbuddy.com', description: 'Encuentra las gasolineras más baratas en tu ruta. Precios actualizados por la comunidad. Gana puntos para descuentos. Consejos para ahorrar combustible.' },
+  { name: 'bikemap.net', url: 'https://bikemap.net', description: 'Contiene 9 millones de rutas ciclistas. Analiza perfiles de desnivel. Navegación offline. Graba y comparte tus propias rutas.' },
+  { name: 'ridewithgps.com', url: 'https://ridewithgps.com', description: 'Planificación de rutas ciclistas y organización de salidas en grupo. Mapas de calor que muestran carreteras populares. Seguimiento en directo para que tus amigos te sigan.' },
+  { name: 'seatfrog.com', url: 'https://seatfrog.com', description: 'Oportunidad de mejorar tu billete de avión o tren en el último momento. Puja por Business o Primera Clase. Experiencias de lujo con hasta 70% de descuento.' },
+];
+
+// Current language
+var currentLang = "es";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  var icons = ["🌎", "🏨", "✈️", "🍽️", "🎸", "📱", "🛡️", "💳", "🎓"];
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div class="card-content">' +
+      '<span class="card-icon">' + icons[i] + '</span>' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
