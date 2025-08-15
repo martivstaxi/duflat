@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Công cụ Du lịch</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 240px;
+  --card-height: 110px;
+  --card-gap: 14px;
+  --mobile-card-width: calc((100vw - 32px - 24px) / 3.5);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background:#fefce8;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: 
+    linear-gradient(135deg, #fef3c7 0%, #ddd6fe 25%, #e0e7ff 50%, #ccfbf1 75%, #fef3c7 100%);
+  background-size: 200% 200%;
+  animation: subtleShift 30s ease infinite;
+  z-index:-2;
+  pointer-events:none;
+}
+
+@keyframes subtleShift {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: 
+    radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at center right, rgba(129, 140, 248, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at center left, rgba(52, 211, 153, 0.06) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+.bg-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(196, 181, 253, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 80% 20%, rgba(254, 215, 170, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 60% 60%, rgba(167, 243, 208, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 40% 40%, rgba(165, 180, 252, 0.08) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+.bg-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      60deg,
+      transparent,
+      transparent 100px,
+      rgba(255, 255, 255, 0.03) 100px,
+      rgba(255, 255, 255, 0.03) 101px,
+      transparent 101px,
+      transparent 200px
+    );
+  pointer-events: none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Language Selector === */
+.lang-select{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:100;
+  transform:translateZ(0);
+}
+
+.lang-btn{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:14px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 16px rgba(99,102,241,.06);
+  transition:transform .2s ease;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-btn:active{
+  transform:scale(0.95);
+}
+
+.lang-list{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(139,92,246,.12);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(99,102,241,.12);
+  max-height:320px;
+  overflow-y:auto;
+  display:none;
+  min-width:160px;
+  transform:translateZ(0);
+}
+
+.lang-list.show{
+  display:block;
+  animation:fadeIn .2s ease;
+}
+
+.lang-item{
+  padding:10px 16px;
+  cursor:pointer;
+  transition:background-color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:14px;
+  color:#475569;
+  touch-action:manipulation;
+}
+
+.lang-item:active{
+  background:rgba(139,92,246,.12);
+}
+
+.lang-item.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:#fff;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:700;
+  margin-bottom:8px;
+  letter-spacing:-0.02em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size:clamp(1.1rem,1.8vw,1.4rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1.2;
+  opacity:0.9;
+  letter-spacing:-0.01em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0 0 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll Buttons for Desktop */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.scroll-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+}
+
+.scroll-btn.prev {
+  left: -60px;
+}
+
+.scroll-btn.next {
+  right: -60px;
+}
+
+@media (min-width: 769px) {
+  .scroll-btn {
+    display: flex;
+  }
+  
+  .cards-wrapper {
+    padding: 0 80px;
+  }
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  overflow:hidden;
+  touch-action:manipulation;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  padding: 20px;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.card:active{
+  transform:scale(0.98);
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.9) 0%, 
+    rgba(253,230,138,0.7) 50%, 
+    rgba(254,243,199,0.8) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.2),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow:
+      0 8px 32px rgba(245,158,11,0.2),
+      inset 0 2px 4px rgba(255,255,255,0.9),
+      inset 0 -2px 4px rgba(245,158,11,0.1);
+  }
+  to {
+    box-shadow:
+      0 12px 40px rgba(245,158,11,0.35),
+      inset 0 2px 4px rgba(255,255,255,0.9),
+      inset 0 -2px 4px rgba(245,158,11,0.15);
+  }
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.card-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.card-title{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight:500;
+  font-size:18px;
+  color:#0f172a;
+  line-height:1.3;
+  word-break:break-word;
+  letter-spacing:-0.01em;
+  transition: color 0.3s ease;
+  text-transform: capitalize;
+  flex: 1;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:500;
+}
+
+.card-index{
+  position:absolute;
+  top:12px;
+  right:12px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.4;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.5);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.card:hover .card-index {
+  opacity: 0.6;
+  background: rgba(255,255,255,0.7);
+}
+
+/* === Sites Section === */
+.sites-section {
+  width: 100%;
+  padding: 20px 0 40px 0;
+}
+
+.sites-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.site-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.95) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 2px solid rgba(255,255,255,1);
+  border-radius: 20px;
+  padding: 35px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.06),
+    inset 0 2px 4px rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(0,0,0,0.03);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateZ(0);
+  will-change: transform;
+  overflow: visible;
+}
+
+/* Left side line for each site item */
+.site-item::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 35px;
+  bottom: 35px;
+  width: 3px;
+  border-radius: 2px;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+/* Line colors matching site name colors */
+.site-item:nth-child(21n+1)::before { background: #6366f1; }
+.site-item:nth-child(21n+2)::before { background: #3b82f6; }
+.site-item:nth-child(21n+3)::before { background: #0891b2; }
+.site-item:nth-child(21n+4)::before { background: #059669; }
+.site-item:nth-child(21n+5)::before { background: #16a34a; }
+.site-item:nth-child(21n+6)::before { background: #65a30d; }
+.site-item:nth-child(21n+7)::before { background: #ca8a04; }
+.site-item:nth-child(21n+8)::before { background: #ea580c; }
+.site-item:nth-child(21n+9)::before { background: #dc2626; }
+.site-item:nth-child(21n+10)::before { background: #e11d48; }
+.site-item:nth-child(21n+11)::before { background: #db2777; }
+.site-item:nth-child(21n+12)::before { background: #c026d3; }
+.site-item:nth-child(21n+13)::before { background: #a21caf; }
+.site-item:nth-child(21n+14)::before { background: #9333ea; }
+.site-item:nth-child(21n+15)::before { background: #7c3aed; }
+.site-item:nth-child(21n+16)::before { background: #6d28d9; }
+.site-item:nth-child(21n+17)::before { background: #4f46e5; }
+.site-item:nth-child(21n+18)::before { background: #0ea5e9; }
+.site-item:nth-child(21n+19)::before { background: #10b981; }
+.site-item:nth-child(21n+20)::before { background: #84cc16; }
+.site-item:nth-child(21n+21)::before { background: #6366f1; }
+
+.site-item:hover::before {
+  opacity: 1;
+  width: 4px;
+  left: 24px;
+}
+
+/* 21 Harmonious Color Gradients - Light & Vibrant Palette */
+
+.site-item:nth-child(21n+1) .site-name { color: #6366f1; }
+.site-item:nth-child(21n+2) .site-name { color: #3b82f6; }
+.site-item:nth-child(21n+3) .site-name { color: #0891b2; }
+.site-item:nth-child(21n+4) .site-name { color: #059669; }
+.site-item:nth-child(21n+5) .site-name { color: #16a34a; }
+.site-item:nth-child(21n+6) .site-name { color: #65a30d; }
+.site-item:nth-child(21n+7) .site-name { color: #ca8a04; }
+.site-item:nth-child(21n+8) .site-name { color: #ea580c; }
+.site-item:nth-child(21n+9) .site-name { color: #dc2626; }
+.site-item:nth-child(21n+10) .site-name { color: #e11d48; }
+.site-item:nth-child(21n+11) .site-name { color: #db2777; }
+.site-item:nth-child(21n+12) .site-name { color: #c026d3; }
+.site-item:nth-child(21n+13) .site-name { color: #a21caf; }
+.site-item:nth-child(21n+14) .site-name { color: #9333ea; }
+.site-item:nth-child(21n+15) .site-name { color: #7c3aed; }
+.site-item:nth-child(21n+16) .site-name { color: #6d28d9; }
+.site-item:nth-child(21n+17) .site-name { color: #4f46e5; }
+.site-item:nth-child(21n+18) .site-name { color: #0ea5e9; }
+.site-item:nth-child(21n+19) .site-name { color: #10b981; }
+.site-item:nth-child(21n+20) .site-name { color: #84cc16; }
+.site-item:nth-child(21n+21) .site-name { color: #6366f1; }
+
+.site-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.2),
+    0 4px 12px rgba(0,0,0,0.1),
+    inset 0 2px 4px rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(0,0,0,0.03);
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.98) 100%);
+}
+
+.site-item:active {
+  transform: scale(0.98);
+}
+
+.site-item::after {
+  content: '▶';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 100%);
+  transition: all 0.3s ease;
+  opacity: 0.9;
+  border-radius: 50%;
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.08),
+    inset 0 1px 2px rgba(255,255,255,0.8);
+  z-index: 3;
+}
+
+.site-item:hover::after {
+  width: 45px;
+  height: 45px;
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 100%);
+  box-shadow: 
+    0 6px 20px rgba(0,0,0,0.12),
+    inset 0 1px 2px rgba(255,255,255,0.9);
+}
+
+/* Arrow colors matching site name colors */
+.site-item:nth-child(21n+1)::after { color: #6366f1; }
+.site-item:nth-child(21n+2)::after { color: #3b82f6; }
+.site-item:nth-child(21n+3)::after { color: #0891b2; }
+.site-item:nth-child(21n+4)::after { color: #059669; }
+.site-item:nth-child(21n+5)::after { color: #16a34a; }
+.site-item:nth-child(21n+6)::after { color: #65a30d; }
+.site-item:nth-child(21n+7)::after { color: #ca8a04; }
+.site-item:nth-child(21n+8)::after { color: #ea580c; }
+.site-item:nth-child(21n+9)::after { color: #dc2626; }
+.site-item:nth-child(21n+10)::after { color: #e11d48; }
+.site-item:nth-child(21n+11)::after { color: #db2777; }
+.site-item:nth-child(21n+12)::after { color: #c026d3; }
+.site-item:nth-child(21n+13)::after { color: #a21caf; }
+.site-item:nth-child(21n+14)::after { color: #9333ea; }
+.site-item:nth-child(21n+15)::after { color: #7c3aed; }
+.site-item:nth-child(21n+16)::after { color: #6d28d9; }
+.site-item:nth-child(21n+17)::after { color: #4f46e5; }
+.site-item:nth-child(21n+18)::after { color: #0ea5e9; }
+.site-item:nth-child(21n+19)::after { color: #10b981; }
+.site-item:nth-child(21n+20)::after { color: #84cc16; }
+.site-item:nth-child(21n+21)::after { color: #6366f1; }
+
+/* Gradient arrow colors matching card colors - with more opacity */
+.site-item:nth-child(21n+1)::after { 
+  background: linear-gradient(135deg, rgba(165, 180, 252, 0.95) 0%, rgba(199, 210, 254, 0.5) 50%, rgba(199, 210, 254, 0.3) 100%);
+  color: #6366f1;
+}
+
+.site-number {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 300;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-stretch: condensed;
+  opacity: 0.7;
+  letter-spacing: -0.5px;
+  z-index: 2;
+  background: none;
+  padding: 0;
+  line-height: 1;
+  min-width: 15px;
+  text-align: center;
+}
+
+/* Number colors matching line colors */
+.site-item:nth-child(21n+1) .site-number { color: #6366f1; }
+.site-item:nth-child(21n+2) .site-number { color: #3b82f6; }
+.site-item:nth-child(21n+3) .site-number { color: #0891b2; }
+.site-item:nth-child(21n+4) .site-number { color: #059669; }
+.site-item:nth-child(21n+5) .site-number { color: #16a34a; }
+.site-item:nth-child(21n+6) .site-number { color: #65a30d; }
+.site-item:nth-child(21n+7) .site-number { color: #ca8a04; }
+.site-item:nth-child(21n+8) .site-number { color: #ea580c; }
+.site-item:nth-child(21n+9) .site-number { color: #dc2626; }
+.site-item:nth-child(21n+10) .site-number { color: #e11d48; }
+.site-item:nth-child(21n+11) .site-number { color: #db2777; }
+.site-item:nth-child(21n+12) .site-number { color: #c026d3; }
+.site-item:nth-child(21n+13) .site-number { color: #a21caf; }
+.site-item:nth-child(21n+14) .site-number { color: #9333ea; }
+.site-item:nth-child(21n+15) .site-number { color: #7c3aed; }
+.site-item:nth-child(21n+16) .site-number { color: #6d28d9; }
+.site-item:nth-child(21n+17) .site-number { color: #4f46e5; }
+.site-item:nth-child(21n+18) .site-number { color: #0ea5e9; }
+.site-item:nth-child(21n+19) .site-number { color: #10b981; }
+.site-item:nth-child(21n+20) .site-number { color: #84cc16; }
+.site-item:nth-child(21n+21) .site-number { color: #6366f1; }
+
+.site-content {
+  position: relative;
+  z-index: 2;
+  padding-left: 15px;
+}
+
+.site-name {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  transition: all 0.3s ease;
+}
+
+.site-description {
+  font-size: 19px;
+  line-height: 1.5;
+  color: #1e293b;
+  margin: 0;
+  transition: color 0.3s ease;
+  font-weight: 400;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.005em;
+  font-stretch: condensed;
+  transform: scaleY(1.05);
+  transform-origin: left center;
+}
+
+.site-item:hover .site-description {
+  color: #0f172a;
+}
+
+/* === Editor Panel === */
+.editor-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  z-index: 2000;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.editor-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editor-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.category-selector {
+  margin-bottom: 30px;
+}
+
+.category-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-option {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-option:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.sites-input-section {
+  margin-bottom: 30px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.site-input-group {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.site-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.site-number-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.remove-site-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-field.large {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.add-site-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.close-btn {
+  background: #64748b;
+  color: white;
+}
+
+.editor-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  font-size: 28px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.6);
+}
+
+/* File input styles */
+.file-input-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  :root {
+    --card-gap: 12px;
+    --mobile-card-width: calc((100vw - 32px - 24px) / 2.2);
+  }
+
+  /* Mobilde kartların kaybolma sorununu çöz */
+  .cards-container {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .card {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  /* Language-specific adjustments for mobile - Extended for 40 languages */
+  html[lang="es"] .header, html[lang="ru"] .header, html[lang="fr"] .header,
+  html[lang="de"] .header, html[lang="pt"] .header, html[lang="nl"] .header,
+  html[lang="pl"] .header, html[lang="sv"] .header, html[lang="no"] .header,
+  html[lang="da"] .header, html[lang="fi"] .header, html[lang="cs"] .header,
+  html[lang="uk"] .header, html[lang="ro"] .header, html[lang="el"] .header,
+  html[lang="hu"] .header, html[lang="th"] .header, html[lang="vi"] .header,
+  html[lang="id"] .header, html[lang="ms"] .header, html[lang="bn"] .header,
+  html[lang="tl"] .header, html[lang="hr"] .header, html[lang="he"] .header,
+  html[lang="fa"] .header, html[lang="ca"] .header, html[lang="sk"] .header,
+  html[lang="ur"] .header, html[lang="it"] .header, html[lang="ja"] .header,
+  html[lang="zh"] .header, html[lang="ar"] .header, html[lang="hi"] .header,
+  html[lang="ko"] .header, html[lang="hak"] .header, html[lang="arz"] .header,
+  html[lang="wuu"] .header, html[lang="yue"] .header {
+    padding: 65px 10px 15px;
+  }
+
+  html[lang="es"] .title, html[lang="ru"] .title, html[lang="fr"] .title,
+  html[lang="de"] .title, html[lang="pt"] .title, html[lang="nl"] .title,
+  html[lang="pl"] .title, html[lang="sv"] .title, html[lang="no"] .title,
+  html[lang="da"] .title, html[lang="fi"] .title, html[lang="cs"] .title,
+  html[lang="uk"] .title, html[lang="ro"] .title, html[lang="el"] .title,
+  html[lang="hu"] .title, html[lang="th"] .title, html[lang="vi"] .title,
+  html[lang="id"] .title, html[lang="ms"] .title, html[lang="bn"] .title,
+  html[lang="tl"] .title, html[lang="hr"] .title, html[lang="he"] .title,
+  html[lang="fa"] .title, html[lang="ca"] .title, html[lang="sk"] .title,
+  html[lang="ur"] .title, html[lang="it"] .title, html[lang="ja"] .title,
+  html[lang="zh"] .title, html[lang="ar"] .title, html[lang="hi"] .title,
+  html[lang="ko"] .title, html[lang="hak"] .title, html[lang="arz"] .title,
+  html[lang="wuu"] .title, html[lang="yue"] .title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    line-height: 0.95;
+  }
+
+  html[lang="es"] .subtitle, html[lang="ru"] .subtitle, html[lang="fr"] .subtitle,
+  html[lang="de"] .subtitle, html[lang="pt"] .subtitle, html[lang="nl"] .subtitle,
+  html[lang="pl"] .subtitle, html[lang="sv"] .subtitle, html[lang="no"] .subtitle,
+  html[lang="da"] .subtitle, html[lang="fi"] .subtitle, html[lang="cs"] .subtitle,
+  html[lang="uk"] .subtitle, html[lang="ro"] .subtitle, html[lang="el"] .subtitle,
+  html[lang="hu"] .subtitle, html[lang="th"] .subtitle, html[lang="vi"] .subtitle,
+  html[lang="id"] .subtitle, html[lang="ms"] .subtitle, html[lang="bn"] .subtitle,
+  html[lang="tl"] .subtitle, html[lang="hr"] .subtitle, html[lang="he"] .subtitle,
+  html[lang="fa"] .subtitle, html[lang="ca"] .subtitle, html[lang="sk"] .subtitle,
+  html[lang="ur"] .subtitle, html[lang="it"] .subtitle, html[lang="ja"] .subtitle,
+  html[lang="zh"] .subtitle, html[lang="ar"] .subtitle, html[lang="hi"] .subtitle,
+  html[lang="ko"] .subtitle, html[lang="hak"] .subtitle, html[lang="arz"] .subtitle,
+  html[lang="wuu"] .subtitle, html[lang="yue"] .subtitle {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.1;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height: 100px;
+    padding: 15px;
+  }
+
+  .card-content {
+    gap: 12px;
+  }
+
+  .card-icon {
+    font-size: 24px;
+  }
+
+  .card-title{
+    font-size: 16px;
+  }
+
+  /* Language-specific card title adjustments - Extended for 40 languages */
+  html[lang="es"] .card-title, html[lang="ru"] .card-title,
+  html[lang="fr"] .card-title, html[lang="de"] .card-title,
+  html[lang="nl"] .card-title, html[lang="pl"] .card-title,
+  html[lang="sv"] .card-title, html[lang="no"] .card-title,
+  html[lang="da"] .card-title, html[lang="fi"] .card-title,
+  html[lang="cs"] .card-title, html[lang="uk"] .card-title,
+  html[lang="ro"] .card-title, html[lang="el"] .card-title,
+  html[lang="hu"] .card-title, html[lang="th"] .card-title,
+  html[lang="vi"] .card-title, html[lang="id"] .card-title,
+  html[lang="ms"] .card-title, html[lang="bn"] .card-title,
+  html[lang="tl"] .card-title, html[lang="hr"] .card-title,
+  html[lang="he"] .card-title, html[lang="fa"] .card-title,
+  html[lang="ca"] .card-title, html[lang="sk"] .card-title,
+  html[lang="ur"] .card-title, html[lang="it"] .card-title,
+  html[lang="ja"] .card-title, html[lang="zh"] .card-title,
+  html[lang="ar"] .card-title, html[lang="hi"] .card-title,
+  html[lang="ko"] .card-title, html[lang="hak"] .card-title,
+  html[lang="arz"] .card-title, html[lang="wuu"] .card-title,
+  html[lang="yue"] .card-title {
+    font-size: 14px;
+  }
+
+  .card-index{
+    font-size: 10px;
+    top: 8px;
+    right: 8px;
+    padding: 1px 6px;
+  }
+
+  .site-item {
+    padding: 30px 22px;
+    min-height: 171px;
+    margin-right: 0;
+    position: relative;
+  }
+
+  /* Adjust line position for mobile */
+  .site-item::before {
+    left: 22px;
+    top: 30px;
+    bottom: 30px;
+    width: 2px;
+  }
+
+  .site-item:hover::before {
+    width: 3px;
+    left: 21px;
+  }
+  
+  .site-content {
+    padding-left: 12px;
+  }
+
+  .site-item::after {
+    content: '▶';
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    right: 10px;
+    top: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 100%);
+    transition: all 0.3s ease;
+    opacity: 0.9;
+    border-radius: 50%;
+    box-shadow: 
+      0 4px 12px rgba(0,0,0,0.08),
+      inset 0 1px 2px rgba(255,255,255,0.8);
+    z-index: 3;
+  }
+
+  .site-item:hover::after {
+    width: 38px;
+    height: 38px;
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 100%);
+    box-shadow: 
+      0 6px 16px rgba(0,0,0,0.1),
+      inset 0 1px 2px rgba(255,255,255,0.9);
+  }
+  
+  /* Mobile arrow colors matching site name colors */
+  .site-item:nth-child(21n+1)::after { color: #6366f1; }
+  .site-item:nth-child(21n+2)::after { color: #3b82f6; }
+  .site-item:nth-child(21n+3)::after { color: #0891b2; }
+  .site-item:nth-child(21n+4)::after { color: #059669; }
+  .site-item:nth-child(21n+5)::after { color: #16a34a; }
+  .site-item:nth-child(21n+6)::after { color: #65a30d; }
+  .site-item:nth-child(21n+7)::after { color: #ca8a04; }
+  .site-item:nth-child(21n+8)::after { color: #ea580c; }
+  .site-item:nth-child(21n+9)::after { color: #dc2626; }
+  .site-item:nth-child(21n+10)::after { color: #e11d48; }
+  .site-item:nth-child(21n+11)::after { color: #db2777; }
+  .site-item:nth-child(21n+12)::after { color: #c026d3; }
+  .site-item:nth-child(21n+13)::after { color: #a21caf; }
+  .site-item:nth-child(21n+14)::after { color: #9333ea; }
+  .site-item:nth-child(21n+15)::after { color: #7c3aed; }
+  .site-item:nth-child(21n+16)::after { color: #6d28d9; }
+  .site-item:nth-child(21n+17)::after { color: #4f46e5; }
+  .site-item:nth-child(21n+18)::after { color: #0ea5e9; }
+  .site-item:nth-child(21n+19)::after { color: #10b981; }
+  .site-item:nth-child(21n+20)::after { color: #84cc16; }
+  .site-item:nth-child(21n+21)::after { color: #6366f1; }
+
+  .sites-container {
+    padding: 0 20px 0 20px;
+  }
+
+  .site-number {
+    font-size: 18px;
+    font-weight: 300;
+    top: 50%;
+    left: 1px;
+    transform: translateY(-50%);
+    background: none;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.7;
+    min-width: 14px;
+    text-align: center;
+  }
+  
+  /* Mobile number colors matching line colors */
+  .site-item:nth-child(21n+1) .site-number { color: #6366f1; }
+  .site-item:nth-child(21n+2) .site-number { color: #3b82f6; }
+  .site-item:nth-child(21n+3) .site-number { color: #0891b2; }
+  .site-item:nth-child(21n+4) .site-number { color: #059669; }
+  .site-item:nth-child(21n+5) .site-number { color: #16a34a; }
+  .site-item:nth-child(21n+6) .site-number { color: #65a30d; }
+  .site-item:nth-child(21n+7) .site-number { color: #ca8a04; }
+  .site-item:nth-child(21n+8) .site-number { color: #ea580c; }
+  .site-item:nth-child(21n+9) .site-number { color: #dc2626; }
+  .site-item:nth-child(21n+10) .site-number { color: #e11d48; }
+  .site-item:nth-child(21n+11) .site-number { color: #db2777; }
+  .site-item:nth-child(21n+12) .site-number { color: #c026d3; }
+  .site-item:nth-child(21n+13) .site-number { color: #a21caf; }
+  .site-item:nth-child(21n+14) .site-number { color: #9333ea; }
+  .site-item:nth-child(21n+15) .site-number { color: #7c3aed; }
+  .site-item:nth-child(21n+16) .site-number { color: #6d28d9; }
+  .site-item:nth-child(21n+17) .site-number { color: #4f46e5; }
+  .site-item:nth-child(21n+18) .site-number { color: #0ea5e9; }
+  .site-item:nth-child(21n+19) .site-number { color: #10b981; }
+  .site-item:nth-child(21n+20) .site-number { color: #84cc16; }
+  .site-item:nth-child(21n+21) .site-number { color: #6366f1; }
+
+  .site-name {
+    font-size: 25px;
+    margin-bottom: 12px;
+  }
+
+  .site-description {
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    font-stretch: condensed;
+    transform: scaleY(1.05);
+    transform-origin: left center;
+  }
+
+  .editor-panel {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .editor-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Công cụ Du lịch</h1>
+        <p class="subtitle" id="subtitle">Tất cả các ứng dụng bạn cần để du lịch</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-btn prev" onclick="scrollCards('prev')">‹</button>
+          <div class="cards-container" id="cardsContainer"></div>
+          <button class="scroll-btn next" onclick="scrollCards('next')">›</button>
+        </div>
+      </div>
+
+      <!-- Sites List -->
+      <div class="sites-section" id="sitesSection">
+        <div class="sites-container" id="sitesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories with language-specific URLs
+var categories = [
+  {title:'Địa điểm Phong cảnh',url:'https://tr81.tr/world.html'},
+  {title:'Chỗ ở',url:'vi-vi-1.html'},
+  {title:'Giao thông',url:'vi-vi-2.html'},
+  {title:'Ẩm thực',url:'vi-vi-3.html'},
+  {title:'Giải trí và Trải nghiệm',url:'vi-vi-4.html'},
+  {title:'Dịch vụ Kỹ thuật số',url:'vi-vi-5.html'},
+  {title:'An toàn và Bảo hiểm',url:'vi-vi-6.html'},
+  {title:'Dịch vụ Tài chính',url:'vi-vi-7.html',highlight:true},
+  {title:'Giáo dục và Phát triển',url:'vi-vi-8.html'},
+];
+
+// Sites data
+var sites = [
+  { name: 'wise.com', url: 'https://wise.com', description: 'Gửi tiền ra nước ngoài rẻ nhất. Tỷ giá thật, không phí ẩn như ngân hàng. Mở tài khoản với 55 loại tiền khác nhau. Chuyển tiền ngay lập tức đến hơn 80 quốc gia. Có số tài khoản địa phương để nhận tiền như người bản xứ.' },
+  { name: 'revolut.com', url: 'https://revolut.com', description: 'Ngân hàng số ngay trên điện thoại. Đổi tiền không mất phí, tỷ giá thật trừ cuối tuần. Mua bán tiền mã hóa dễ dàng. Tự động theo dõi chi tiêu và giúp lập ngân sách. Vào phòng chờ sân bay miễn phí và bảo hiểm du lịch.' },
+  { name: 'xe.com', url: 'https://xe.com', description: 'Cách dễ nhất để xem tỷ giá. Xem tỷ giá trực tiếp và biểu đồ lịch sử. Báo động khi tỷ giá đạt mục tiêu của bạn. Gửi tiền đến 130+ quốc gia rẻ hơn ngân hàng.' },
+  { name: 'travala.com', url: 'https://travala.com', description: 'Đặt khách sạn bằng Bitcoin và tiền mã hóa khác. 2 triệu khách sạn để chọn. Trả bằng token AVA của họ được giảm thêm 15%.' },
+  { name: 'awardwallet.com', url: 'https://awardwallet.com', description: 'Xem tất cả điểm thưởng trên một màn hình. Tự động theo dõi dặm bay, điểm khách sạn, thẻ tín dụng. Cảnh báo trước khi điểm hết hạn để không mất.' },
+  { name: 'thepointsguy.com', url: 'https://thepointsguy.com', description: 'Hướng dẫn nhận thưởng thẻ tín dụng và mẹo du lịch. So sánh bonus đăng ký thẻ. Theo dõi khuyến mãi chuyển dặm và thông báo cho bạn.' },
+  { name: 'simplyduty.com', url: 'https://simplyduty.com', description: 'Tính thuế hải quan cả phí vận chuyển. Cho biết không được mang gì vào mỗi nước. Giải thích luật nhập khẩu từng quốc gia.' },
+  { name: 'coinbase.com', url: 'https://coinbase.com', description: 'Sàn uy tín mua bán hơn 100 loại tiền mã hóa. Nhận coin miễn phí khi xem video học tập. Tạo ví riêng để giữ coin an toàn.' },
+  { name: 'crypto.com', url: 'https://crypto.com', description: 'Gửi tiền mã hóa để nhận lãi. Thẻ kim loại hoàn tiền đến 8%. Có chợ NFT riêng, vào phòng chờ sân bay miễn phí.' },
+  { name: 'creditcards.com/travel', url: 'https://creditcards.com/travel', description: 'So sánh thẻ tín dụng du lịch cạnh nhau. Xem phí hằng năm, quyền vào phòng chờ và bonus chào mừng. Đăng ký trực tiếp qua web.' },
+  { name: 'nerdwallet.com/travel-credit-cards', url: 'https://nerdwallet.com/travel-credit-cards', description: 'Gợi ý thẻ du lịch tốt nhất theo chi tiêu của bạn. Tính giá trị thật của dặm và điểm. Đánh giá từ người dùng giúp chọn thẻ lời nhất.' },
+  { name: 'n26.com', url: 'https://n26.com', description: 'Mở tài khoản ngân hàng số miễn phí trong 5 phút. Thông báo ngay khi có giao dịch. Tạo hũ tiết kiệm cho mục tiêu khác nhau. Không phí giao dịch quốc tế.' },
+  { name: 'monzo.com', url: 'https://monzo.com', description: 'Ngân hàng thông minh tự sắp xếp chi tiêu. Đặt giới hạn ngân sách và nhận cảnh báo. Tạo heo đất cho các mục tiêu. Chi tiêu nước ngoài với tỷ giá thật.' },
+  { name: 'bunq.com', url: 'https://bunq.com', description: 'Có số tài khoản địa phương cho 31 nước châu Âu trong vài giây. Trồng cây mỗi khi chi 100 Euro. Kèm thẻ du lịch đa tiền tệ.' },
+  { name: 'travelspend.app', url: 'https://travelspend.app', description: 'Theo dõi ngân sách du lịch nhiều loại tiền. Phân tích chi tiêu theo tỷ giá thực. Đặt giới hạn chi tiêu hằng ngày.' },
+  { name: 'paypal.com', url: 'https://paypal.com', description: 'Thanh toán an toàn ở 200+ quốc gia. Bảo vệ người mua giữ tiền an toàn. Trả góp 4 đợt, mua sắm với 25 loại tiền.' },
+  { name: 'skrill.com', url: 'https://skrill.com', description: 'Gửi tiền nước ngoài phí thấp. Mua bán tiền mã hóa. Thẻ ảo có hoàn tiền. Mở tài khoản 40 loại tiền khác nhau.' },
+  { name: 'neteller.com', url: 'https://neteller.com', description: 'Chuyển ví điện tử tức thì. VIP được hoàn tiền đến 0.5%. Thẻ trả trước dùng được 200+ quốc gia.' },
+  { name: 'payoneer.com', url: 'https://payoneer.com', description: 'Tài khoản đa tiền tệ hoàn hảo cho freelancer. Nhận thanh toán số lượng lớn từ Amazon, eBay. Chuyển tiền ngân hàng toàn cầu.' },
+  { name: 'klarna.com', url: 'https://klarna.com', description: 'Mua ngay trả sau. Chia 4 đợt không lãi suất. Trả lại miễn phí trong 30 ngày. Dùng được ở 250,000+ cửa hàng.' },
+  { name: 'afterpay.com', url: 'https://afterpay.com', description: 'Mua sắm trả 4 đợt bằng nhau không phí phụ. Duyệt ngay lập tức. Dùng được với 100,000+ thương hiệu.' },
+  { name: 'affirm.com', url: 'https://affirm.com', description: 'Xem kế hoạch trả góp trước khi mua. Chọn trả góp 3 đến 36 tháng. Không phí ẩn, dùng được cả khi tín dụng kém.' },
+  { name: 'chime.com', url: 'https://chime.com', description: 'Tài khoản ngân hàng miễn phí, nhận lương sớm 2 ngày. Làm tròn mua hàng để tiết kiệm tự động. Không phí thấu chi.' },
+  { name: 'moneygram.com', url: 'https://moneygram.com', description: 'Nhận tiền mặt trong vài phút tại 350,000 điểm. Thanh toán hóa đơn, nạp ví di động. Theo dõi giao dịch.' },
+  { name: 'remitly.com', url: 'https://remitly.com', description: 'Chuyển tiền giá rẻ cho người nhập cư. Giao nhanh đảm bảo trong vài phút. Lần đầu miễn phí.' },
+  { name: 'worldremit.com', url: 'https://worldremit.com', description: 'Gửi tiền ngay đến 130+ quốc gia qua ngân hàng, tiền mặt hoặc ví di động. Hỗ trợ 70 loại tiền. 3 lần đầu miễn phí.' },
+  { name: 'azimo.com', url: 'https://azimo.com', description: 'Chuyển tiền phí thấp đến 200+ quốc gia. Chuyển số lượng lớn cho doanh nghiệp. Đảm bảo giá trên app.' },
+  { name: 'currencyfair.com', url: 'https://currencyfair.com', description: 'Đổi tiền với người dùng khác theo tỷ giá bạn đặt. Tiết kiệm 85% so với ngân hàng. Chuyển 20+ loại tiền.' },
+  { name: 'ofx.com', url: 'https://ofx.com', description: 'Tỷ giá cố định và không phí cho chuyển tiền lớn. Hỗ trợ khách hàng 24 giờ. 55 loại tiền, giải pháp riêng cho doanh nghiệp.' },
+  { name: 'paysend.com', url: 'https://paysend.com', description: 'Gửi tiền toàn cầu chỉ cần số thẻ người nhận. Phí cố định 1.5 Euro ở 100+ quốc gia. Chuyển tức thì 24/7.' },
+  { name: 'ria.com', url: 'https://ria.com', description: 'Nhận tiền mặt tại 490,000 điểm. Đảm bảo tỷ giá thấp nhất. Gửi đến 160 quốc gia bằng thẻ tín dụng.' },
+  { name: 'xoom.com', url: 'https://xoom.com', description: 'Chuyển ngay đến 160+ quốc gia do PayPal hỗ trợ. Thanh toán hóa đơn, nạp ví di động, nhận tiền mặt.' },
+  { name: 'sendwave.com', url: 'https://sendwave.com', description: 'Chuyển tiền không phí đến châu Phi và châu Á. Nạp ví di động tức thì. 5,000+ điểm nhận tiền.' },
+  { name: 'bankrate.com', url: 'https://bankrate.com', description: 'So sánh thẻ tín dụng, vay thế chấp và tài khoản tiết kiệm. Công cụ lập kế hoạch hưu trí và dự đoán lãi suất.' },
+  { name: 'nerdwallet.com', url: 'https://nerdwallet.com', description: 'Gợi ý sản phẩm tài chính phù hợp với bạn. Máy tính giá trị điểm. Bảng so sánh dễ hiểu để tìm ưu đãi tốt nhất.' },
+  { name: 'transfergo.com', url: 'https://transfergo.com', description: 'Gửi tiền đến châu Âu trong 30 giây. Rẻ hơn ngân hàng 90%. Điểm nhận tiền mặt ở 50+ quốc gia.' },
+  { name: 'travelex.com', url: 'https://travelex.com', description: 'Đặt ngoại tệ 70+ loại. Giao tận nhà hoặc nhận ở sân bay. Thẻ du lịch miễn phí và khóa tỷ giá.' },
+  { name: 'fairfx.com', url: 'https://fairfx.com', description: 'Thẻ du lịch nạp theo tỷ giá thật. Mua sắm nước ngoài không phí và rút ATM. Kiểm tra số dư trên app.' },
+  { name: 'caxton.io', url: 'https://caxton.io', description: 'Thẻ du lịch hỗ trợ 15 loại tiền. Rút ATM miễn phí. Nạp tiền ngay và khóa tỷ giá.' },
+  { name: 'currensea.com', url: 'https://currensea.com', description: 'Dùng thẻ ngân hàng hiện tại ở nước ngoài không phí. Tỷ giá thật. Tính năng tiết kiệm tự động.' },
+  { name: 'monese.com', url: 'https://monese.com', description: 'Mở tài khoản ngân hàng châu Âu trong 2 phút chỉ cần ID. Hỗ trợ 14 ngôn ngữ. Chuyển tiền châu Âu miễn phí và thẻ ảo không giới hạn.' },
+  { name: 'starlingbank.com', url: 'https://starlingbank.com', description: 'Chi tiêu nước ngoài không phí. Tạo hũ tiết kiệm tự động. Tài khoản doanh nghiệp đa tiền tệ cho xuất khẩu.' },
+  { name: 'tide.co', url: 'https://tide.co', description: 'Ngân hàng số cho doanh nghiệp nhỏ. Cấp thẻ cho nhân viên. Báo cáo chi phí tự động. Kết nối phần mềm kế toán.' },
+  { name: 'qonto.com', url: 'https://qonto.com', description: 'Tài khoản doanh nghiệp tích hợp 100+ công cụ kế toán châu Âu. Đặt giới hạn thẻ nhân viên. Thông báo tức thì và quản lý hóa đơn.' },
+  { name: 'pleo.io', url: 'https://pleo.io', description: 'Giải pháp thẻ chi tiêu công ty thông minh. Tự nhận diện biên lai và tạo báo cáo chi phí. Kiểm soát ngân sách thời gian thực.' },
+];
+
+// Current language
+var currentLang = "vi";
+
+// Scroll cards function
+function scrollCards(direction) {
+  var container = document.getElementById("cardsContainer");
+  var scrollAmount = 200;
+  if (direction === "prev") {
+    container.scrollLeft -= scrollAmount;
+  } else {
+    container.scrollLeft += scrollAmount;
+  }
+}
+
+// Colorize title
+function colorizeTitle() {
+  var titleElement = document.getElementById("title");
+  if (!titleElement) return;
+  var titleText = titleElement.textContent;
+  var firstPart, secondPart;
+  var words = titleText.split(" ");
+  if (words.length >= 2) {
+    firstPart = words[0];
+    secondPart = words.slice(1).join(" ");
+  } else {
+    firstPart = titleText;
+    secondPart = "";
+  }
+  if (secondPart) {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span> <span class="pedia-part">' + secondPart + '</span>';
+  } else {
+    titleElement.innerHTML = '<span class="travel-part">' + firstPart + '</span>';
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function() {
+  var container = document.getElementById("cardsContainer");
+  var sitesContainer = document.getElementById("sitesContainer");
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  var icons = ["🌎", "🏨", "✈️", "🍽️", "🎸", "📱", "🛡️", "💳", "🎓"];
+  for(var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var card = document.createElement("div");
+    card.className = cat.highlight ? "card highlight" : "card";
+    card.innerHTML = '<span class="card-index">' + (i + 1) + '</span>' +
+      '<div class="card-content">' +
+      '<span class="card-icon">' + icons[i] + '</span>' +
+      '<div class="card-title">' + cat.title + '</div></div>';
+    (function(url) {
+      card.onclick = function() { location.href = url; };
+    })(cat.url);
+    container.appendChild(card);
+  }
+  
+  // Create site cards
+  for(var j = 0; j < sites.length; j++) {
+    var site = sites[j];
+    var siteCard = document.createElement("div");
+    siteCard.className = "site-item";
+    siteCard.innerHTML = '<span class="site-number">' + (j + 1) + '</span>' +
+      '<div class="site-content">' +
+      '<h3 class="site-name">' + site.name + '</h3>' +
+      '<p class="site-description">' + site.description + '</p></div>';
+    (function(url) {
+      siteCard.onclick = function() { window.open(url, "_blank"); };
+    })(site.url);
+    sitesContainer.appendChild(siteCard);
+  }
+});
+</script>
+</body>
+</html>
