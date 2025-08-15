@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="ms">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Reis Tools</title>
+<title>Alat Perjalanan</title>
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1270,8 +1270,8 @@ body{
   <div class="main-wrapper">
     <div class="container">
       <div class="header">
-        <h1 class="title" id="title">Reis Tools</h1>
-        <p class="subtitle" id="subtitle">Alle apps die je nodig hebt om te reizen</p>
+        <h1 class="title" id="title">Alat Perjalanan</h1>
+        <p class="subtitle" id="subtitle">Semua aplikasi yang anda perlukan untuk melancong</p>
       </div>
 
       <!-- Cards Section -->
@@ -1293,56 +1293,56 @@ body{
 <script>
 // Categories with language-specific URLs
 var categories = [
-  {title:'Schilderachtige Plekken',url:'https://tr81.tr/world.html'},
-  {title:'Accommodatie',url:'nl-nl-1.html'},
-  {title:'Vervoer',url:'nl-nl-2.html'},
-  {title:'Eten & Dineren',url:'nl-nl-3.html'},
-  {title:'Entertainment & Ervaringen',url:'nl-nl-4.html'},
-  {title:'Digitale Diensten',url:'nl-nl-5.html',highlight:true},
-  {title:'Veiligheid & Verzekering',url:'nl-nl-6.html'},
-  {title:'Financiële Diensten',url:'nl-nl-7.html'},
-  {title:'Onderwijs & Ontwikkeling',url:'nl-nl-8.html'},
+  {title:'Tempat Menarik',url:'https://tr81.tr/world.html'},
+  {title:'Penginapan',url:'ms-ms-1.html'},
+  {title:'Pengangkutan',url:'ms-ms-2.html'},
+  {title:'Makanan & Santapan',url:'ms-ms-3.html'},
+  {title:'Hiburan & Pengalaman',url:'ms-ms-4.html'},
+  {title:'Perkhidmatan Digital',url:'ms-ms-5.html',highlight:true},
+  {title:'Keselamatan & Insurans',url:'ms-ms-6.html'},
+  {title:'Perkhidmatan Kewangan',url:'ms-ms-7.html'},
+  {title:'Pendidikan & Pembangunan',url:'ms-ms-8.html'},
 ];
 
 // Sites data
 var sites = [
-  { name: 'lonelyplanet.com', url: 'https://lonelyplanet.com', description: '全世界嘅旅遊指南都搵得到。教你去啲遊客唔識嘅隱世地方。下載落手機就算冇網都用得。睇下本地人平時去邊度食飯玩樂。每個城市嘅最新價錢同交通資料都有。' },
-  { name: 'tripsavvy.com', url: 'https://tripsavvy.com', description: '專業旅遊規劃建議。了解當地文化免得做錯嘢尷尬。教你點樣按預算plan行程。精明旅客必睇嘅安全貼士。每個地方幾時去最正都話你知。' },
-  { name: 'seat61.com', url: 'https://seat61.com', description: '火車迷必睇嘅終極指南。歐洲去到亞洲嘅火車路線講到好詳細。幾時買飛、喺邊買、點買都教埋你。唔同火車公司嘅價錢比較。點解搭火車好過搭飛機同最靚嘅風景路線。' },
-  { name: 'nomadlist.com', url: 'https://nomadlist.com', description: '專為digital nomad而設嘅城市指南。比較生活費、網速、治安同天氣。計下喺邊度住需要幾多錢。同全世界嘅數碼遊牧民族connect。最好嘅cafe同共享工作空間都列晒出嚟。' },
-  { name: 'inyourpocket.com', url: 'https://inyourpocket.com', description: '歐洲城市詳細指南。下載咗冇網都用得。即時睇到而家有咩活動同節日。發掘遊客miss咗嘅本地好去處。每個城市嘅公共交通資料同地圖。' },
-  { name: 'surfline.com', url: 'https://surfline.com', description: '滑浪愛好者嘅浪況預報。睇全世界滑浪點嘅即時webcam。浪高、風速風向預測都有。潮汐時間同最佳滑浪時段。唔同程度都搵到適合嘅海灘。' },
-  { name: 'atlasobscura.com', url: 'https://atlasobscura.com', description: '發掘啲奇奇怪怪冇人知嘅地方。有神秘故事嘅歷史遺址。古怪博物館同隱藏景點。每個地方都有詳細故事同點去嘅方法。仲可以加你自己發現嘅地方。' },
-  { name: 'alltrails.com', url: 'https://alltrails.com', description: '行山踩單車路線指南。按難度篩選路線。下載GPS地圖offline用。睇其他行山友嘅相同評論。每條路線嘅距離、高度同時間都有預算。' },
-  { name: 'komoot.com', url: 'https://komoot.com', description: '戶外活動路線規劃。度身訂造踩單車、行山、跑步路線。語音導航offline都用得。靚景位有相睇。同朋友分享路線。' },
-  { name: 'gaiagps.com', url: 'https://gaiagps.com', description: '詳細地形圖同GPS追蹤。冇網都用到地圖。自己整路線仲save得。顯示海拔、斜度同地形資料。標記營地同水源位置。' },
-  { name: 'withlocals.com', url: 'https://withlocals.com', description: '同當地人connect體驗真正嘅local文化。去local屋企煮飯食餐住家菜。私人導遊帶你去啲隱世角落。度身訂造活動。參加當地節日同活動。' },
-  { name: 'likealocalguide.com', url: 'https://likealocalguide.com', description: '完全避開遊客陷阱。睇下本地人真係去邊。發掘啲冇咁出名但好靚嘅地方。每個城市嘅生活貼士。邊區最適合住。' },
-  { name: 'spottedbylocals.com', url: 'https://spottedbylocals.com', description: '當地居民嘅最新推介。遊客唔知嘅街坊cafe同酒吧。小型精品店同手作店。每月更新城市指南。本地活動同演唱會。' },
-  { name: 'ivisa.com', url: 'https://ivisa.com', description: '網上搞掂簽證申請。所有簽證嘢online處理。專家幫你check文件話你知缺咩。追蹤申請進度。趕時間可以加急服務。' },
-  { name: 'visahq.com', url: 'https://visahq.com', description: '護照簽證問題快速解決。幫你book領事館appointment。協助準備申請文件。緊急情況特快處理。話你知邊本證件去到邊度。' },
-  { name: 'joinsherpa.com', url: 'https://joinsherpa.com', description: '追蹤最新旅遊限制。即時睇到邊個國家有咩規定。列出簽證要求同需要文件。一步步教你申請。檢測同疫苗要求都update住。' },
-  { name: 'tripit.com', url: 'https://tripit.com', description: '所有旅行計劃放埋一齊。自動整理機票酒店租車email。同日曆sync仲有提醒。航班延誤同登機閘口更改通知。安全儲存旅行文件。' },
-  { name: 'wanderlog.com', url: 'https://wanderlog.com', description: '行程規劃app。喺地圖mark低想去嘅地方。計budget同記錄開支。所有預訂放埋一度。同朋友一齊plan。' },
-  { name: '360cities.net', url: 'https://360cities.net', description: '360度全景相探索世界。用VR眼鏡遊覽地方。鳥瞰同地面全景都睇到。上載自己嘅360相。喺屋企虛擬參觀歷史遺址。' },
-  { name: 'audiotours.com', url: 'https://audiotours.com', description: '參觀博物館同城市時戴住耳機聽專業導賞。下載咗offline冇網都聽得。GPS自動播放合適內容唔使睇電話。自己控制節奏想幾時休息都得。' },
-  { name: 'onebag.com', url: 'https://onebag.com', description: '教你點樣一個背囊遊世界。揀袋到衫物搭配全部都有。學識執行李技巧同整理方法。活躍論壇即時答問題分享經驗。' },
-  { name: 'atmosfair.de', url: 'https://atmosfair.de', description: '計算同抵銷飛行碳排放。睇你嘅碳足跡再支持環保項目平衡返。資助認證嘅植林或再生能源投資。提供可持續旅遊選擇同環保交通建議。' },
-  { name: 'deepl.com', url: 'https://deepl.com', description: 'AI翻譯自然流暢。識得context翻譯俗語同文化用語。PDF同Word文件翻譯唔會亂晒格式。商業書信都信得過嘅質素。' },
-  { name: 'maps.me', url: 'https://maps.me', description: '完全offline嘅地圖導航app。連行山徑小路都顯示晒。bookmark心水地方加筆記。唔使data都有turn-by-turn導航。' },
-  { name: 'apple.com/airtag', url: 'https://apple.com/airtag', description: '智能追蹤器幫你搵返貴重物品。機場掉失行李用Find My網絡輕鬆搵返。電池用到成年幾。Lost Mode顯示你嘅聯絡資料俾拾到嘅人。' },
-  { name: 'weather.com', url: 'https://weather.com', description: '即時天氣追蹤同可靠預報。每小時變化幫你plan好一日。雨雲雷達睇住雲層移動。惡劣天氣警報保你安全。' },
-  { name: 'windy.com', url: 'https://windy.com', description: '機師同水手都信嘅專業氣象平台。風雨溫度層疊喺動畫地圖睇。比較唔同預報模型搵最準確預測。全球webcam睇即時天氣。' },
-  { name: 'accuweather.com', url: 'https://accuweather.com', description: 'MinuteCast功能逐分鐘預報落雨。RealFeel技術話你知體感溫度著咩衫好。花粉同流感地圖保護健康。90日長期預報方便旅行規劃。' },
-  { name: 'polarsteps.com', url: 'https://polarsteps.com', description: '自動追蹤旅程整成視覺日記。GPS記錄路線喺世界地圖標記地方。相片配對位置講你嘅故事。製作專業旅遊相簿。' },
-  { name: 'vsco.co', url: 'https://vsco.co', description: '專業攝影師愛用嘅進階編輯app。菲林風格濾鏡同精準調整。儲存預設統一相片風格。喺攝影社群分享作品。' },
-  { name: 'snapseed.com', url: 'https://snapseed.com', description: 'Google嘅免費專業修圖app。選擇性編輯只改相片某部分。處理RAW格式相片。透視校正同HDR效果整靚啲相。' },
-  { name: 'splitwise.com', url: 'https://splitwise.com', description: '團體旅行分錢好簡單。自動計邊個欠邊個幾多。支援唔同貨幣國際旅行都用得。月尾整詳細開支報告。' },
-  { name: 'timeanddate.com', url: 'https://timeanddate.com', description: '解決世界時間時區混亂嘅平台。搵唔同時區適合開會時間。日出日落時間充分利用日光。追蹤各國公眾假期方便旅行規劃。' },
+  { name: 'lonelyplanet.com', url: 'https://lonelyplanet.com', description: 'Reisgidsen voor elke uithoek van de wereld. Vind plekken waar toeristen niet komen. Download gidsen op je telefoon en gebruik ze offline. Ontdek waar locals echt eten en uitgaan. Check actuele prijzen en vervoersinfo voor elke stad.' },
+  { name: 'tripsavvy.com', url: 'https://tripsavvy.com', description: 'Slimme tips voor je reisplanning. Leer over lokale cultuur zodat je geen blunders maakt. Laat zien hoe je trips plant voor elk budget. Veiligheidstips voor slimme reizigers. Beste tijd om elke bestemming te bezoeken.' },
+  { name: 'seat61.com', url: 'https://seat61.com', description: 'Dé gids voor treinliefhebbers. Elke treinroute van Europa tot Azië uitgelegd. Wanneer, waar en hoe je tickets koopt. Vergelijk prijzen tussen treinmaatschappijen. Waarom treinen beter zijn dan vliegtuigen en de mooiste routes.' },
+  { name: 'nomadlist.com', url: 'https://nomadlist.com', description: 'Stadsgids voor thuiswerkers. Vergelijk kosten, internetsnelheid, veiligheid en weer voor elke stad. Hoeveel geld je nodig hebt om overal comfortabel te leven. Maak contact met digitale nomaden wereldwijd. Beste cafés en werkplekken.' },
+  { name: 'inyourpocket.com', url: 'https://inyourpocket.com', description: 'Complete gidsen voor Europese steden. Download en gebruik zonder internet. Actuele evenementen en festivals die nu gebeuren. Ontdek lokale plekken die toeristen missen. OV-info en kaarten voor elke stad.' },
+  { name: 'surfline.com', url: 'https://surfline.com', description: 'Golfvoorspellingen voor surfers. Bekijk live webcams van surfspots wereldwijd. Check golfhoogte, windsnelheid en richting. Getijdentijden en beste surfmomenten. Stranden voor elk niveau.' },
+  { name: 'atlasobscura.com', url: 'https://atlasobscura.com', description: 'Ontdek bizarre en wonderlijke plekken buiten de gebaande paden. Historische plaatsen met mysterieuze verhalen. Vreemde musea en verborgen attracties die niemand kent. Uitgebreide verhalen en routebeschrijvingen. Voeg je eigen ontdekkingen toe.' },
+  { name: 'alltrails.com', url: 'https://alltrails.com', description: 'Gids voor wandel- en fietsroutes. Filter routes op moeilijkheidsgraad. Download GPS-kaarten voor offline gebruik. Bekijk foto\'s en reviews van andere wandelaars. Afstand, hoogte en tijdsinschatting voor elke route.' },
+  { name: 'komoot.com', url: 'https://komoot.com', description: 'Routeplanning voor buitenactiviteiten. Maakt routes op maat voor fietsen, wandelen, hardlopen. Spraaknavigatie werkt offline. Toont mooie uitzichtpunten met foto\'s. Deel routes met vrienden.' },
+  { name: 'gaiagps.com', url: 'https://gaiagps.com', description: 'Gedetailleerde terreinkaarten en GPS-tracking. Kaarten werken zonder internet. Maak en bewaar je eigen routes. Toont hoogte, helling en terreininfo. Markeert campings en waterbronnen.' },
+  { name: 'withlocals.com', url: 'https://withlocals.com', description: 'Maak contact met locals voor echte ervaringen. Kook met lokale families thuis. Privétours door verborgen stadshoekjes. Op maat gemaakte activiteiten voor jou. Doe mee met lokale festivals en evenementen.' },
+  { name: 'likealocalguide.com', url: 'https://likealocalguide.com', description: 'Skip toeristenvallen compleet. Laat zien waar locals echt naartoe gaan. Ontdek onpopulaire maar mooie plekken. Leeftips van locals voor elke stad. Welke wijken het beste zijn om te verblijven.' },
+  { name: 'spottedbylocals.com', url: 'https://spottedbylocals.com', description: 'Actuele tips van bewoners. Buurtcafés en bars waar geen toeristen komen. Kleine boetiekjes en handgemaakte winkels. Maandelijks bijgewerkte stadsgidsen. Lokale evenementen en concerten.' },
+  { name: 'ivisa.com', url: 'https://ivisa.com', description: 'Online platform dat visumaanvragen makkelijk maakt. Regel al je visumzaken online. Experts checken je documenten en zeggen wat er mist. Volg je aanvraagstatus. Snelle service voor spoedvisa.' },
+  { name: 'visahq.com', url: 'https://visahq.com', description: 'Snelle oplossingen voor paspoort- en visumproblemen. Ze boeken ambassade-afspraken voor je. Helpen met aanvraagdocumenten. Express verwerking voor noodgevallen. Laat zien welke landen je kunt bezoeken met welke documenten.' },
+  { name: 'joinsherpa.com', url: 'https://joinsherpa.com', description: 'Houdt actuele reisbeperkingen bij. Check direct welk land welke regels heeft. Lijst met visumvereisten en benodigde documenten. Stap-voor-stap aanvraagproces. Houdt test- en vaccinatievereisten bij.' },
+  { name: 'tripit.com', url: 'https://tripit.com', description: 'Al je reisplannen op één plek. Sorteert automatisch je vlucht-, hotel- en autohuurmails. Synchroniseert met kalender en stuurt herinneringen. Waarschuwingen voor vertragingen en gatewisselingen. Bewaart reisdocumenten veilig.' },
+  { name: 'wanderlog.com', url: 'https://wanderlog.com', description: 'App voor reisplanning. Markeer plekken op de kaart die je wilt bezoeken. Bereken budget en houd uitgaven bij. Bewaar alle reserveringen op één plek. Plan samen met vrienden.' },
+  { name: '360cities.net', url: 'https://360cities.net', description: 'Verken de wereld met 360-graden panoramafoto\'s. Bekijk plekken met VR-headsets. Bekijk steden van bovenaf en vanaf de grond. Upload je eigen 360-foto\'s. Bezoek historische plekken virtueel vanuit huis.' },
+  { name: 'audiotours.com', url: 'https://audiotours.com', description: 'Professionele audiogidsen in je oortjes tijdens het verkennen van musea en steden. Download tours offline, geen internet nodig. GPS triggert automatisch het juiste verhaal op je locatie, dus je hoeft niet naar je telefoon te kijken. Ga in je eigen tempo en pauzeer wanneer je wilt, anders dan groepstours.' },
+  { name: 'onebag.com', url: 'https://onebag.com', description: 'Laat zien hoe je de wereld rondreist met één rugzak. Van de ideale tas kiezen tot kledingcombinaties. Leer paktechnieken en organisatiemethoden van ervaren reizigers. Actieve forumcommunity beantwoordt vragen direct en deelt ervaringen.' },
+  { name: 'atmosfair.de', url: 'https://atmosfair.de', description: 'Bereken en compenseer de milieu-impact van je vlucht. Zie je CO2-voetafdruk en compenseer door groene projecten te steunen. Draag bij aan gecertificeerde boomplantprojecten of hernieuwbare energie. Krijg duurzame reisalternatieven en klimaatvriendelijke vervoerssuggesties.' },
+  { name: 'deepl.com', url: 'https://deepl.com', description: 'AI-vertaling voor natuurlijke, vloeiende resultaten. Begrijpt context om uitdrukkingen en culturele dingen goed te vertalen. Vertaal PDF\'s en Word-documenten zonder opmaak te verpesten. Betrouwbare kwaliteit voor zakelijke correspondentie.' },
+  { name: 'maps.me', url: 'https://maps.me', description: 'Volledig offline kaarten- en navigatie-app. Toont alles inclusief wandelpaden en voetpaden. Markeer favoriete plekken en voeg notities toe. Stap-voor-stap navigatie zonder data te gebruiken.' },
+  { name: 'apple.com/airtag', url: 'https://apple.com/airtag', description: 'Slimme tracker om je spullen precies te vinden. Vind verloren bagage op vliegvelden via Find My netwerk. Ongeveer 1 jaar batterijduur voor betrouwbare tracking. Toont je contactinfo aan wie het vindt in Lost Mode.' },
+  { name: 'weather.com', url: 'https://weather.com', description: 'Real-time weer volgen en betrouwbare voorspellingen. Zie veranderingen per uur om dagelijkse plannen te optimaliseren. Bekijk wolkenbewegingen live op regenradar. Blijf veilig met waarschuwingen voor zwaar weer.' },
+  { name: 'windy.com', url: 'https://windy.com', description: 'Professioneel meteorologieplatform vertrouwd door piloten en zeilers. Zie wind-, regen- en temperatuurlagen op geanimeerde kaarten. Vergelijk verschillende voorspellingsmodellen voor nauwkeurigste voorspellingen. Bekijk real-time weer via webcams wereldwijd.' },
+  { name: 'accuweather.com', url: 'https://accuweather.com', description: 'MinuteCast geeft minuut-voor-minuut neerslagvoorspellingen. RealFeel technologie toont hoe warm het echt aanvoelt voor betere outfitkeuzes. Pollen- en griepkaarten beschermen je gezondheid. 90-dagen voorspelling voor reisplanning.' },
+  { name: 'polarsteps.com', url: 'https://polarsteps.com', description: 'Volgt automatisch je reis en maakt een visueel dagboek. GPS registreert je route en markeert plekken op de wereldkaart. Koppelt foto\'s aan locaties om je verhaal te vertellen. Maak professionele reisboeken.' },
+  { name: 'vsco.co', url: 'https://vsco.co', description: 'Geavanceerde bewerkingsapp favoriet bij professionele fotografen. Film-look filters en precieze aanpassingen voor artistieke foto\'s. Bewaar je eigen presets en pas consistente stijl toe op alle foto\'s. Deel werk in inspirerende fotocommunity.' },
+  { name: 'snapseed.com', url: 'https://snapseed.com', description: 'Google\'s gratis professionele fotobewerkingsapp. Selectief bewerken om alleen specifieke delen van foto\'s te veranderen. Bewerk RAW-formaat foto\'s. Perspectiefcorrectie en HDR-effecten voor geweldige beelden.' },
+  { name: 'splitwise.com', url: 'https://splitwise.com', description: 'Maakt uitgaven delen makkelijk op groepsreizen. Berekent automatisch wie wie hoeveel schuldig is. Ondersteunt verschillende valuta voor internationale reizen. Maakt gedetailleerde uitgavenrapporten aan het eind van de maand.' },
+  { name: 'timeanddate.com', url: 'https://timeanddate.com', description: 'Compleet platform dat wereldtijd en tijdzoneverwarring oplost. Vind geschikte vergadertijden in verschillende tijdzones. Zie zonsopgang/ondergang om daglicht maximaal te benutten. Check feestdagen van landen voor reisplanning.' },
 ];
 
 // Current language
-var currentLang = "nl";
+var currentLang = "ms";
 
 // Scroll cards function
 function scrollCards(direction) {
