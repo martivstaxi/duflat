@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sitemap Oluşturucu - duflat.com</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #f5f5f5;
+}
+h1 {
+  color: #333;
+  text-align: center;
+}
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+button {
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover {
+  background: #45a049;
+}
+#output {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  font-size: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.success {
+  background: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  text-align: center;
+  display: none;
+}
+.info {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+#fileInfo {
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🗺️ Sitemap XML Oluşturucu</h1>
+  
+  <div class="info">
+    <strong>📌 Domain:</strong> https://duflat.com<br>
+    <strong>📄 CSV Formatı:</strong> Her satırda bir sayfa adı (örn: adana.html)
+  </div>
+
+  <input type="file" id="csvFile" accept=".csv,.txt">
+  <div id="fileInfo"></div>
+  
+  <select id="changefreq">
+    <option value="daily">Günlük (daily)</option>
+    <option value="weekly" selected>Haftalık (weekly)</option>
+    <option value="monthly">Aylık (monthly)</option>
+    <option value="yearly">Yıllık (yearly)</option>
+  </select>
+  
+  <input type="number" id="priority" value="0.8" min="0" max="1" step="0.1" placeholder="Öncelik (0-1)">
+  
+  <button onclick="generateSitemap()">📋 Sitemap Oluştur ve Kopyala</button>
+  <button onclick="downloadXML()" style="background:#2196F3; display:none;" id="downloadBtn">💾 XML İndir</button>
+  
+  <div class="success" id="successMsg">✅ Sitemap panoya kopyalandı!</div>
+  
+  <div id="output"></div>
+</div>
+
+<script>
+let urlList = [];
+let xmlContent = '';
+const DOMAIN = 'https://duflat.com';
+
+// Dosya yükleme
+document.getElementById('csvFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const text = event.target.result;
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    
+    urlList = [];
+    
+    // Her satırı işle
+    lines.forEach(line => {
+      // Virgül, noktalı virgül veya tab ile ayrılmış olabilir
+      let page = line.split(/[,;\t]/)[0].trim();
+      
+      // Tırnak işaretlerini temizle
+      page = page.replace(/["']/g, '');
+      
+      // Boş değilse ekle
+      if (page) {
+        // Eğer sadece sayfa adı varsa (http ile başlamıyorsa)
+        if (!page.startsWith('http')) {
+          // Domain'i ekle
+          const url = DOMAIN + '/' + page;
+          urlList.push(url);
+        } else {
+          // Zaten tam URL ise direkt ekle
+          urlList.push(page);
+        }
+      }
+    });
+    
+    document.getElementById('fileInfo').innerHTML = 
+      `✅ ${file.name} yüklendi - ${urlList.length} URL bulundu`;
+    
+    // Önizleme göster
+    showPreview();
+  };
+  
+  reader.readAsText(file);
+});
+
+// Önizleme
+function showPreview() {
+  if (urlList.length === 0) return;
+  
+  let preview = 'URL Listesi:\n';
+  preview += '─'.repeat(50) + '\n';
+  urlList.slice(0, 10).forEach((url, i) => {
+    preview += `${i+1}. ${url}\n`;
+  });
+  if (urlList.length > 10) {
+    preview += `... ve ${urlList.length - 10} URL daha\n`;
+  }
+  
+  document.getElementById('output').textContent = preview;
+}
+
+// Sitemap oluştur
+function generateSitemap() {
+  if (urlList.length === 0) {
+    alert('Lütfen önce CSV dosyası yükleyin!');
+    return;
+  }
+  
+  const changefreq = document.getElementById('changefreq').value;
+  const priority = document.getElementById('priority').value;
+  const today = new Date().toISOString().split('T')[0];
+  
+  // XML oluştur
+  xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xmlContent += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  
+  urlList.forEach(url => {
+    xmlContent += '  <url>\n';
+    xmlContent += `    <loc>${url}</loc>\n`;
+    xmlContent += `    <lastmod>${today}</lastmod>\n`;
+    xmlContent += `    <changefreq>${changefreq}</changefreq>\n`;
+    xmlContent += `    <priority>${priority}</priority>\n`;
+    xmlContent += '  </url>\n';
+  });
+  
+  xmlContent += '</urlset>';
+  
+  // Panoya kopyala
+  copyToClipboard(xmlContent);
+  
+  // XML'i göster
+  document.getElementById('output').textContent = xmlContent;
+  
+  // İndirme butonunu göster
+  document.getElementById('downloadBtn').style.display = 'block';
+}
+
+// Panoya kopyala
+function copyToClipboard(text) {
+  // Modern yöntem
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showSuccess();
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+// Yedek kopyalama yöntemi
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  
+  try {
+    document.execCommand('copy');
+    showSuccess();
+  } catch (err) {
+    alert('Kopyalama başarısız! XML\'i manuel olarak kopyalayın.');
+  }
+  
+  document.body.removeChild(textarea);
+}
+
+// Başarı mesajı
+function showSuccess() {
+  const msg = document.getElementById('successMsg');
+  msg.style.display = 'block';
+  setTimeout(() => {
+    msg.style.display = 'none';
+  }, 3000);
+}
+
+// XML indir
+function downloadXML() {
+  if (!xmlContent) return;
+  
+  const blob = new Blob([xmlContent], { type: 'text/xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sitemap.xml';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
