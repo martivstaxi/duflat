@@ -560,21 +560,60 @@
             background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
         }
         
-        /* New hover animation for arrows - pulse and rotate */
+        /* New hover animation for arrows - bounce and glow */
         .site-item:hover .action-arrow {
-            animation: pulseRotate 0.6s ease;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            animation: bounceGlow 0.5s ease;
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0,0,0,0.2),
+                0 0 30px rgba(99,102,241,0.3);
         }
         
-        @keyframes pulseRotate {
+        @keyframes bounceGlow {
             0% {
-                transform: scale(1) rotate(0deg);
+                transform: translateY(0) scale(1);
             }
-            50% {
-                transform: scale(1.2) rotate(180deg);
+            30% {
+                transform: translateY(-8px) scale(1.15);
+            }
+            60% {
+                transform: translateY(-3px) scale(1.05);
             }
             100% {
-                transform: scale(1) rotate(360deg);
+                transform: translateY(-3px) scale(1);
+            }
+        }
+        
+        /* Add ripple effect on hover */
+        .action-arrow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+        
+        .site-item:hover .action-arrow::before {
+            transform: translate(-50%, -50%) scale(1.8);
+            opacity: 0;
+            animation: rippleOut 0.6s ease;
+        }
+        
+        @keyframes rippleOut {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.8);
+                opacity: 0;
             }
         }
         
@@ -589,7 +628,7 @@
             background: linear-gradient(
                 45deg,
                 transparent 30%,
-                rgba(255,255,255,0.4) 50%,
+                rgba(255,255,255,0.5) 50%,
                 transparent 70%
             );
             transform: translateX(-100%);
