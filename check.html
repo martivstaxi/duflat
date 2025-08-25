@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Seyahat Araçları</title>
+
+<!-- Immediate Language Detection -->
+<script>
+(function() {
+  // Supported languages with file mappings
+  const supportedLanguages = {
+    'tr': 'tr-tr-1.html',
+    'en': 'en-en-1.html',
+    'de': 'de-de-1.html',
+    'fr': 'fr-fr-1.html',
+    'es': 'es-es-1.html',
+    'it': 'it-it-1.html',
+    'pt': 'pt-pt-1.html',
+    'ru': 'ru-ru-1.html',
+    'ja': 'ja-ja-1.html',
+    'zh': 'zh-zh-1.html',
+    'ar': 'ar-ar-1.html',
+    'hi': 'hi-hi-1.html',
+    'ko': 'ko-ko-1.html',
+    'nl': 'nl-nl-1.html',
+    'pl': 'pl-pl-1.html',
+    'sv': 'sv-sv-1.html',
+    'no': 'no-no-1.html',
+    'da': 'da-da-1.html',
+    'fi': 'fi-fi-1.html',
+    'cs': 'cs-cs-1.html',
+    'uk': 'uk-uk-1.html',
+    'ro': 'ro-ro-1.html',
+    'el': 'el-el-1.html',
+    'hu': 'hu-hu-1.html',
+    'th': 'th-th-1.html',
+    'vi': 'vi-vi-1.html',
+    'id': 'id-id-1.html',
+    'ms': 'ms-ms-1.html',
+    'bn': 'bn-bn-1.html',
+    'tl': 'tl-tl-1.html',
+    'hr': 'hr-hr-1.html',
+    'he': 'he-he-1.html',
+    'fa': 'fa-fa-1.html',
+    'ca': 'ca-ca-1.html',
+    'sk': 'sk-sk-1.html',
+    'ur': 'ur-ur-1.html',
+    'hak': 'hak-hak-1.html',
+    'arz': 'arz-arz-1.html',
+    'wuu': 'wuu-wuu-1.html',
+    'yue': 'yue-yue-1.html'
+  };
+
+  // Detect browser language
+  const browserLang = navigator.language || navigator.userLanguage;
+  const langCode = browserLang.toLowerCase().split('-')[0];
+  
+  // Special cases for Chinese variants
+  let detectedLang = langCode;
+  if (browserLang.toLowerCase().includes('hak')) detectedLang = 'hak';
+  else if (browserLang.toLowerCase().includes('yue')) detectedLang = 'yue';
+  else if (browserLang.toLowerCase().includes('wuu')) detectedLang = 'wuu';
+  
+  // Redirect based on language
+  if (supportedLanguages[detectedLang]) {
+    // If language is supported, redirect to that language page
+    window.location.replace(supportedLanguages[detectedLang]);
+    return;
+  } else {
+    // If language is not supported, redirect to English as default
+    window.location.replace('en-en.html');
+    return;
+  }
+})();
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* === Variables === */
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --secondary:#8b5cf6;
+  --accent:#f59e0b;
+  --text-primary:#1e293b;
+  --text-secondary:#475569;
+  --text-muted:#64748b;
+  --card-width: 180px;
+  --card-height: 220px;
+  --card-gap: 16px;
+  --mobile-card-width: calc((100vw - 32px - 16px) / 3);
+}
+
+/* === Reset === */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#d1d5db;
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* === Main Container === */
+.main-wrapper {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Background === */
+.bg-image{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  z-index:-2;
+  pointer-events:none;
+}
+
+.bg-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(255,255,255,0.2) 100%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* === Container === */
+.container{
+  position:relative;
+  z-index:1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* === Header === */
+.header{
+  padding:80px 16px 20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  flex-shrink: 0;
+}
+
+.title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(3rem,4.5vw,4.5rem);
+  font-weight:400;
+  margin-bottom:8px;
+  letter-spacing:0.06em;
+  line-height:0.9;
+  text-transform:uppercase;
+}
+
+.subtitle{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:clamp(1.3rem,2vw,1.8rem);
+  font-weight:400;
+  color:#334155;
+  margin-top:4px;
+  line-height:1;
+  opacity:0.9;
+  letter-spacing:0.04em;
+}
+
+.travel-part{
+  color:#0f172a;
+  font-weight:400;
+}
+
+.pedia-part{
+  color:#92400e;
+  font-weight:400;
+}
+
+/* === Cards Section === */
+.cards-section{
+  padding: 20px 0;
+  position: relative;
+  width: 100%;
+}
+
+.cards-wrapper{
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.cards-container{
+  display: flex;
+  gap: var(--card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cards-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* === Cards === */
+.card{
+  flex: 0 0 var(--card-width);
+  height: var(--card-height);
+  background:linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+  position:relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  overflow:hidden;
+  touch-action:manipulation;
+  transform:translateZ(0);
+  will-change:transform;
+}
+
+.card:active{
+  transform:scale(0.95);
+}
+
+.card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:linear-gradient(135deg, 
+    transparent 0%, 
+    rgba(255,255,255,0.1) 45%, 
+    rgba(255,255,255,0.3) 50%, 
+    rgba(255,255,255,0.1) 55%, 
+    transparent 100%);
+  transform:translateX(-100%);
+  transition:transform 0.6s ease;
+  z-index:2;
+}
+
+.card.highlight{
+  background:linear-gradient(135deg, 
+    rgba(254,243,199,0.8) 0%, 
+    rgba(253,230,138,0.6) 50%, 
+    rgba(254,243,199,0.7) 100%);
+  backdrop-filter:blur(16px) saturate(200%);
+  -webkit-backdrop-filter:blur(16px) saturate(200%);
+  border:1px solid rgba(245,158,11,0.6);
+  box-shadow:
+    0 8px 32px rgba(245,158,11,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(245,158,11,0.1);
+}
+
+.card-bg{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-size:cover;
+  background-position:center;
+  z-index:1;
+  opacity:0.03;
+  pointer-events:none;
+  mix-blend-mode:multiply;
+}
+
+.card-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight:300;
+  font-size:20px;
+  color:#0f172a;
+  line-height:1.2;
+  word-break:break-word;
+  padding:24px 6px;
+  position:relative;
+  z-index:3;
+  background:transparent;
+  width:100%;
+  text-align:center;
+  letter-spacing:0.02em;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+
+.card.highlight .card-title{
+  color:#92400e;
+  font-weight:400;
+}
+
+.card-index{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:11px;
+  font-weight:600;
+  color:#64748b;
+  opacity:0.5;
+  letter-spacing:0.5px;
+  z-index:2;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.card.highlight .card-index{
+  color:#d97706;
+  opacity:0.7;
+  font-weight:700;
+}
+
+/* Card-specific colors */
+.card:nth-child(2) .card-title { color: #9a3412; }
+.card:nth-child(3) .card-title { color: #991b1b; }
+.card:nth-child(4) .card-title { color: #9f1239; }
+.card:nth-child(5) .card-title { color: #86198f; }
+.card:nth-child(6) .card-title { color: #6b21a8; }
+.card:nth-child(7) .card-title { color: #5b21b6; }
+.card:nth-child(8) .card-title { color: #4338ca; }
+.card:nth-child(9) .card-title { color: #1d4ed8; }
+
+.card:nth-child(2) .card-index { color: #9a3412; opacity: 0.7; }
+.card:nth-child(3) .card-index { color: #991b1b; opacity: 0.7; }
+.card:nth-child(4) .card-index { color: #9f1239; opacity: 0.7; }
+.card:nth-child(5) .card-index { color: #86198f; opacity: 0.7; }
+.card:nth-child(6) .card-index { color: #6b21a8; opacity: 0.7; }
+.card:nth-child(7) .card-index { color: #5b21b6; opacity: 0.7; }
+.card:nth-child(8) .card-index { color: #4338ca; opacity: 0.7; }
+.card:nth-child(9) .card-index { color: #1d4ed8; opacity: 0.7; }
+
+/* === Scroll Indicators === */
+.scroll-indicator{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:40px;
+  height:40px;
+  background:rgba(255,255,255,0.3);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.4);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  z-index:10;
+  opacity:0.8;
+}
+
+.scroll-indicator:hover{
+  background:rgba(255,255,255,0.5);
+  transform:translateY(-50%) scale(1.1);
+  opacity:1;
+}
+
+.scroll-indicator.left{
+  left:-20px;
+}
+
+.scroll-indicator.right{
+  right:-20px;
+}
+
+.scroll-indicator svg{
+  width:20px;
+  height:20px;
+  stroke:#475569;
+  stroke-width:2;
+  fill:none;
+}
+
+.scroll-indicator.disabled{
+  opacity:0.3;
+  cursor:not-allowed;
+}
+
+/* === Scroll Hint === */
+.scroll-hint{
+  text-align:center;
+  padding:20px;
+  font-size:13px;
+  color:#64748b;
+  opacity:0.7;
+  transition:opacity 0.5s ease;
+  margin-top: auto;
+}
+
+/* === Mobile Styles === */
+@media(max-width:768px){
+  :root {
+    --card-gap: 8px;
+    --mobile-card-width: calc((100vw - 32px - 16px) / 3);
+  }
+
+  .container{
+    min-height:100vh;
+  }
+
+  .header{
+    padding:70px 16px 15px;
+  }
+
+  .title{
+    font-size:2.2rem;
+  }
+
+  .subtitle{
+    font-size:1rem;
+    margin-top:8px;
+  }
+
+  .cards-section{
+    padding:10px 0;
+  }
+
+  .cards-wrapper{
+    padding:0 16px;
+  }
+
+  .card{
+    flex: 0 0 var(--mobile-card-width);
+    height:160px;
+    border-radius:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+
+  .card-title{
+    font-size:15px;
+    padding:20px 5px;
+    font-weight:300;
+  }
+
+  .card-index{
+    font-size:9px;
+    top:8px;
+    right:8px;
+  }
+
+  .scroll-indicator{
+    display:none;
+  }
+
+  .scroll-hint{
+    font-size:12px;
+    padding:15px;
+  }
+}
+
+@media(max-width:480px){
+  :root {
+    --mobile-card-width: calc((100vw - 24px - 12px) / 3);
+    --card-gap: 6px;
+  }
+
+  .cards-wrapper{
+    padding:0 12px;
+  }
+
+  .card{
+    height:140px;
+    border-radius:12px;
+  }
+
+  .card-title{
+    font-size:13px;
+    padding:16px 4px;
+    font-weight:400;
+  }
+
+  .card-index{
+    font-size:8px;
+  }
+}
+
+/* Desktop specific */
+@media(min-width:769px){
+  .card:hover{
+    transform:translateY(-4px);
+    box-shadow:
+      0 16px 48px rgba(0,0,0,0.12),
+      inset 0 2px 4px rgba(255,255,255,0.9),
+      inset 0 -2px 4px rgba(0,0,0,0.05);
+  }
+
+  .card:hover::before{
+    transform:translateX(100%);
+  }
+
+  .card:hover .card-bg{
+    opacity:0.05;
+  }
+
+  /* Scroll fade effect */
+  .cards-container::after{
+    content:'';
+    position:absolute;
+    right:0;
+    top:0;
+    bottom:0;
+    width:60px;
+    background:linear-gradient(90deg, transparent, #d1d5db);
+    pointer-events:none;
+    opacity:0.6;
+    transition:opacity 0.3s ease;
+  }
+
+  .cards-container.scrolled-end::after{
+    opacity:0;
+  }
+}
+
+/* === Animations === */
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *{
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+  <!-- Background elements -->
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Main scrollable wrapper -->
+  <div class="main-wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="title" id="title">Seyahat Araçları</h1>
+        <p class="subtitle" id="subtitle">Seyahat için gerekli tüm uygulamalar burada</p>
+      </div>
+
+      <!-- Cards Section -->
+      <div class="cards-section">
+        <div class="cards-wrapper">
+          <button class="scroll-indicator left disabled" id="scrollLeft">
+            <svg viewBox="0 0 24 24">
+              <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="cards-container" id="cardsContainer">
+            <!-- Cards will be inserted here by JavaScript -->
+          </div>
+
+          <button class="scroll-indicator right" id="scrollRight">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scroll Hint -->
+      <div class="scroll-hint" id="scrollHint">
+        ← Tüm kategorileri görmek için yana kaydırın →
+      </div>
+    </div>
+  </div>
+
+<script>
+// Categories
+const categories = [
+  {title:'Manzaralı Yerler',url:'world.html'},
+  {title:'Konaklama',url:'2.html',highlight:true},
+  {title:'Ulaşım',url:'3.html'},
+  {title:'Mutfak ve Lezzet',url:'4.html'},
+  {title:'Eğlence ve Özel Deneyimler',url:'5.html'},
+  {title:'Dijital Hizmetler',url:'6.html'},
+  {title:'Güvenlik ve Sigorta',url:'7.html'},
+  {title:'Finansal Hizmetler',url:'8.html'},
+  {title:'Eğitim ve Gelişim',url:'9.html'}
+];
+
+// Colorize title
+function colorizeTitle() {
+  const titleElement = document.getElementById('title');
+  if (!titleElement) return;
+  
+  titleElement.innerHTML = '<span class="travel-part">Seyahat</span> <span class="pedia-part">Araçları</span>';
+}
+
+// Scroll handlers
+function handleScroll() {
+  const container = document.getElementById('cardsContainer');
+  const scrollLeft = document.getElementById('scrollLeft');
+  const scrollRight = document.getElementById('scrollRight');
+  
+  // Check if scrolled to start
+  if (container.scrollLeft <= 0) {
+    scrollLeft.classList.add('disabled');
+  } else {
+    scrollLeft.classList.remove('disabled');
+  }
+  
+  // Check if scrolled to end
+  if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 1) {
+    scrollRight.classList.add('disabled');
+    container.classList.add('scrolled-end');
+  } else {
+    scrollRight.classList.remove('disabled');
+    container.classList.remove('scrolled-end');
+  }
+}
+
+// Page load
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('cardsContainer');
+  
+  // Colorize title
+  colorizeTitle();
+  
+  // Create cards
+  categories.forEach((cat, index) => {
+    const card = document.createElement('div');
+    card.className = cat.highlight ? 'card highlight' : 'card';
+    
+    let cardContent = `<span class="card-index">${index + 1}</span>`;
+    cardContent += `<div class="card-bg"></div>`;
+    cardContent += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px 12px;">`;
+    cardContent += `<div class="card-title">${cat.title}</div>`;
+    cardContent += `</div>`;
+    
+    card.innerHTML = cardContent;
+    
+    card.addEventListener('click', () => {
+      location.href = cat.url;
+    });
+    
+    container.appendChild(card);
+  });
+  
+  // Scroll button handlers (desktop only)
+  const scrollLeftBtn = document.getElementById('scrollLeft');
+  const scrollRightBtn = document.getElementById('scrollRight');
+  
+  if(scrollLeftBtn && scrollRightBtn) {
+    scrollLeftBtn.addEventListener('click', () => {
+      container.scrollBy({ left: -200, behavior: 'smooth' });
+    });
+    
+    scrollRightBtn.addEventListener('click', () => {
+      container.scrollBy({ left: 200, behavior: 'smooth' });
+    });
+  }
+  
+  // Monitor scroll position
+  container.addEventListener('scroll', handleScroll);
+  handleScroll(); // Initial check
+  
+  // Hide scroll hint after first interaction
+  container.addEventListener('scroll', () => {
+    const hint = document.getElementById('scrollHint');
+    if (hint && hint.style.opacity !== '0') {
+      hint.style.opacity = '0';
+    }
+  }, { once: true });
+  
+  // Touch support for mobile
+  let isDown = false;
+  let startX;
+  let scrollLeftPos;
+  
+  container.addEventListener('mousedown', (e) => {
+    isDown = true;
+    container.style.cursor = 'grabbing';
+    startX = e.pageX - container.offsetLeft;
+    scrollLeftPos = container.scrollLeft;
+  });
+  
+  container.addEventListener('mouseleave', () => {
+    isDown = false;
+    container.style.cursor = 'grab';
+  });
+  
+  container.addEventListener('mouseup', () => {
+    isDown = false;
+    container.style.cursor = 'grab';
+  });
+  
+  container.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - startX) * 2;
+    container.scrollLeft = scrollLeftPos - walk;
+  });
+});
+
+// Handle orientation change
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+  }, 100);
+});
+</script>
+</body>
+</html>
