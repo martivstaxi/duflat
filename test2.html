@@ -552,9 +552,11 @@
 </head>
 <body>
     <div id="map"></div>
-    <div class="info-panel">
-        <strong>📍${locations.length} konum</strong>
-    </div>
+    <a href="https://tr81.tr/world.html" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="info-panel">
+            <strong>📍 ${locations.length} konum</strong>
+        </div>
+    </a>
     <script>
         const map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
