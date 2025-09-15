@@ -42,7 +42,6 @@
             text-decoration: none;
             font-size: 13px; /* Yazı boyutunu küçülttük */
             text-align: center;
-            width: 100%;
             border: 1px solid #ccc; /* İnce bir çerçeve ekledik */
             transition: background-color 0.3s;
         }
@@ -54,9 +53,11 @@
 </head>
 <body>
     <div id="map"></div>
-    <div class="info-panel">
-        <strong>📍 Toplam 3 konum</strong>
-    </div>
+    <a href="https://tr81.tr/world.html" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="info-panel">
+            <strong>📍 3 konum</strong>
+        </div>
+    </a>
     <script>
         const map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
