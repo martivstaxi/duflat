@@ -3,91 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps Konum Editörü</title>
+    <title>Konum Haritası - 3 Nokta</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         #map { height: 100vh; width: 100%; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .custom-popup {
+            min-width: 200px;
+        }
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .popup-coords {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .popup-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+        }
+        .popup-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
     </style>
 </head>
 <body>
-    <input type="file" id="csvFile" accept=".csv">
     <div id="map"></div>
-
+    <div class="info-panel">
+        <strong>📍 Toplam 3 konum</strong>
+    </div>
     <script>
         const map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-
-        let markers = [];
-
-        function extractCoordinates(url) {
-            if (!url) return null;
-            const patterns = [
-                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
-                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /q=(-?\d+\.\d+),(-?\d+\.\d+)/
-            ];
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match) {
-                    const lat = parseFloat(match[1]);
-                    const lng = parseFloat(match[2]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        return { lat, lng };
-                    }
-                }
-            }
-            return null;
-        }
-
-        document.getElementById('csvFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            Papa.parse(file, {
-                complete: function(results) {
-                    markers.forEach(m => map.removeLayer(m));
-                    markers = [];
-                    let validLocations = 0;
-
-                    results.data.forEach(row => {
-                        const name = row[0]; // A sütunu -> isim
-                        const url = row[1];  // B sütunu -> link
-                        if (name && url && url.includes("google.com/maps")) {
-                            const coords = extractCoordinates(url);
-                            if (coords) {
-                                const marker = L.circleMarker([coords.lat, coords.lng], {
-                                    radius: 6,
-                                    fillColor: '#ff4444',
-                                    color: '#ffffff',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.8
-                                }).addTo(map);
-
-                                marker.bindPopup(
-                                    `<b>${name}</b><br><a href="${url}" target="_blank">Google Maps'te Aç</a>`
-                                );
-                                markers.push(marker);
-                                validLocations++;
-                            }
-                        }
-                    });
-
-                    if (markers.length > 0) {
-                        const group = L.featureGroup(markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                    } else {
-                        alert("Hiç geçerli konum bulunamadı.");
-                    }
-                }
-            });
+        
+        const locations = [{"lat":38.2159702,"lng":30.3327314,"name":"Mahen Lavanta Bahçesi","url":"https://www.google.com/maps/place/Mahen+Lavanta+Bah%C3%A7esi/@38.2159702,30.3327314,17z/data=!3m1!4b1!4m6!3m5!1s0x14c5e582856b42bf:0xac3b28fc9b240285!8m2!3d38.2159702!4d30.3353063!16s%2Fg%2F11gy2j0nq1?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.9993713,"lng":29.8880487,"name":"Akyarma Köyü Lavanta Bahçesi","url":"https://www.google.com/maps/place/Akyarma+K%C3%B6y%C3%BC+Lavanta+Bah%C3%A7esi/@37.9993713,29.8880487,17z/data=!3m1!4b1!4m6!3m5!1s0x14c665ab410f651b:0x4335a4f20fc4c122!8m2!3d37.9993713!4d29.8906236!16s%2Fg%2F11hzpn4b79?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.817,"lng":29.8804251,"name":"Acıgöl","url":"https://www.google.com/maps/place/37%C2%B049'01.2%22N+29%C2%B052'58.8%22E/@37.817,29.8804251,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.817!4d29.883?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"}];
+        const markers = [];
+        
+        locations.forEach(loc => {
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                radius: 8,
+                fillColor: '#ff4444',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+            
+            const popupContent = `
+                <div class="custom-popup">
+                    <div class="popup-title">${loc.name}</div>
+                    <div class="popup-coords">
+                        Lat: ${loc.lat.toFixed(6)}<br>
+                        Lng: ${loc.lng.toFixed(6)}
+                    </div>
+                    <a href="${loc.url}" target="_blank" class="popup-button">
+                        🗺️ Google Maps'te Aç
+                    </a>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            markers.push(marker);
         });
+        
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
     </script>
 </body>
 </html>
