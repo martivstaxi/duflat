@@ -3,49 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps Konum Haritası</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <title>Google Maps Konum Editörü</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
     </style>
 </head>
 <body>
+    <input type="file" id="csvFile" accept=".csv">
     <div id="map"></div>
-    
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
     <script>
-        // Harita oluşturma
         const map = L.map('map').setView([20, 0], 2);
-        
-        // OpenStreetMap katmanı ekleme
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-        
-        // Noktaları ekleme
-        const markers = [{"lat":38.0862809,"lng":29.1189548},{"lat":37.9993713,"lng":29.8880487},{"lat":38.0944793,"lng":29.1396638},{"lat":38.1903725,"lng":31.3023747},{"lat":37.7005086,"lng":29.8712698},{"lat":37.8382287,"lng":30.285285},{"lat":37.8954339,"lng":30.9205853},{"lat":40.6948267,"lng":30.2866221},{"lat":39.1456797,"lng":34.1557661},{"lat":38.2159702,"lng":30.3327314},{"lat":38.6406358,"lng":34.8296156},{"lat":38.420078,"lng":43.262908},{"lat":39.2776594,"lng":26.6109369},{"lat":37.845911,"lng":30.2579621},{"lat":40.993715,"lng":37.8227961},{"lat":40.995348,"lng":39.7256521},{"lat":37.523556,"lng":28.5768651},{"lat":37.817,"lng":29.8804251}];
-        
-        markers.forEach(coord => {
-            L.circleMarker([coord.lat, coord.lng], {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.7,
-                radius: 5
-            }).addTo(map);
-        });
-        
-        // Tüm noktaları kapsayacak şekilde görünümü ayarla
-        if (markers.length > 0) {
-            const group = L.featureGroup(markers.map(coord => L.marker([coord.lat, coord.lng])));
-            map.fitBounds(group.getBounds().pad(0.1));
+
+        let markers = [];
+
+        function extractCoordinates(url) {
+            if (!url) return null;
+            const patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /q=(-?\d+\.\d+),(-?\d+\.\d+)/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
+            }
+            return null;
         }
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                complete: function(results) {
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+                    let validLocations = 0;
+
+                    results.data.forEach(row => {
+                        const name = row[0]; // A sütunu -> isim
+                        const url = row[1];  // B sütunu -> link
+                        if (name && url && url.includes("google.com/maps")) {
+                            const coords = extractCoordinates(url);
+                            if (coords) {
+                                const marker = L.circleMarker([coords.lat, coords.lng], {
+                                    radius: 6,
+                                    fillColor: '#ff4444',
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                }).addTo(map);
+
+                                marker.bindPopup(
+                                    `<b>${name}</b><br><a href="${url}" target="_blank">Google Maps'te Aç</a>`
+                                );
+                                markers.push(marker);
+                                validLocations++;
+                            }
+                        }
+                    });
+
+                    if (markers.length > 0) {
+                        const group = L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    } else {
+                        alert("Hiç geçerli konum bulunamadı.");
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
