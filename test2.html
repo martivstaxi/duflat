@@ -1,117 +1,624 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Map Editor</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #map { height: 90vh; width: 100%; }
-    #controls { padding: 10px; background: #f8f8f8; display: flex; gap: 10px; }
-    button { padding: 6px 12px; border: none; background: #0078ff; color: white; cursor: pointer; border-radius: 4px; }
-    button:hover { background: #005fcc; }
-    input[type=file] { display: none; }
-    label { padding: 6px 12px; border: none; background: #28a745; color: white; cursor: pointer; border-radius: 4px; }
-    label:hover { background: #1f7a33; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Editörü</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .format-info {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .format-info strong {
+            color: #667eea;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-wrapper label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: 500;
+        }
+        
+        .file-input-wrapper label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-export:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stats-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .map-container {
+            flex: 1;
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: white;
+            position: relative;
+        }
+        
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .notification.active {
+            display: block;
+        }
+        
+        .notification.error {
+            background: #f44336;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .custom-popup {
+            min-width: 200px;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .popup-coords {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .popup-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .popup-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+        
+        .marker-custom {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .marker-custom:hover {
+            transform: scale(1.2);
+        }
+    </style>
 </head>
 <body>
+    <div class="header">
+        <div class="container">
+            <h1>🗺️ Google Maps Konum Editörü</h1>
+            <p class="subtitle">CSV dosyasından Google Maps linklerini yükleyin ve harita üzerinde görüntüleyin</p>
+            
+            <div class="format-info">
+                <strong>📋 CSV Format:</strong> 
+                A sütunu: Konum Adı | B sütunu: Google Maps Linki
+                <br>
+                <small>💡 İpucu: Kırmızı noktalara tıklayarak konumu Google Maps'te açabilirsiniz</small>
+            </div>
+            
+            <div class="controls">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFile" accept=".csv">
+                    <label for="csvFile">📁 CSV Dosyası Yükle</label>
+                </div>
+                <button class="btn btn-export" id="exportBtn" disabled>
+                    📤 HTML Olarak Export Et
+                </button>
+                <button class="btn btn-clear" id="clearBtn" disabled>
+                    🗑️ Temizle
+                </button>
+                <div class="stats">
+                    <div class="stats-icon">📍</div>
+                    <span id="locationCount">0 konum yüklendi</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Konumlar işleniyor...</p>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
 
-<div id="controls">
-  <label for="fileInput">📂 Konum Yükle (CSV)</label>
-  <input type="file" id="fileInput" accept=".csv" />
-  <button id="exportBtn">⬇️ Export HTML</button>
-</div>
-
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-// Harita oluştur
-const map = L.map('map').setView([20, 0], 2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-}).addTo(map);
-
-let markers = [];
-
-// Google Maps linklerinden lat/lng çıkarma
-function extractLatLng(url) {
-  try {
-    // örnek: @-20.1428081,28.4232472,17z
-    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (match) {
-      return [parseFloat(match[1]), parseFloat(match[2])];
-    }
-  } catch (e) {
-    console.error("Hatalı link:", url);
-  }
-  return null;
-}
-
-// CSV dosyası yükleme
-document.getElementById("fileInput").addEventListener("change", function(evt) {
-  const file = evt.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split("\n");
-    lines.forEach(line => {
-      const url = line.trim();
-      if (!url) return;
-      const coords = extractLatLng(url);
-      if (coords) {
-        const marker = L.circleMarker(coords, {
-          radius: 6,
-          color: "red",
-          fillColor: "red",
-          fillOpacity: 0.8
+    <script>
+        // Harita başlatma
+        const map = L.map('map').setView([37.0662, 37.3833], 6); // Gaziantep merkez
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-        markers.push({lat: coords[0], lng: coords[1]});
-      }
-    });
-    if (markers.length > 0) {
-      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
-      map.fitBounds(bounds);
-    }
-  };
-  reader.readAsText(file);
-});
-
-// Export HTML butonu
-document.getElementById("exportBtn").addEventListener("click", function() {
-  let htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
+        
+        let markers = [];
+        let locations = [];
+        
+        // Google Maps URL'den koordinat çıkarma
+        function extractCoordinates(url) {
+            if (!url) return null;
+            
+            // Farklı Google Maps URL formatlarını kontrol et
+            const patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,  // @lat,lng formatı
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng formatı
+                /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/, // place/.../@ formatı
+                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng formatı
+                /q=(-?\d+\.\d+),(-?\d+\.\d+)/, // q=lat,lng formatı
+                /dir\/[^\/]+\/(-?\d+\.\d+),(-?\d+\.\d+)/, // directions formatı
+                /data=[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/ // data=...@ formatı
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2] || match[1].split(',')[1]);
+                    
+                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        return { lat, lng };
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        // Haritayı temizle
+        function clearMap() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            locations = [];
+            updateStats();
+            document.getElementById('exportBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+        }
+        
+        // İstatistikleri güncelle
+        function updateStats() {
+            document.getElementById('locationCount').textContent = `${locations.length} konum yüklendi`;
+        }
+        
+        // Bildirim göster
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification active' + (isError ? ' error' : '');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+        
+        // CSV dosyası yükleme
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('loading').classList.add('active');
+            clearMap();
+            
+            Papa.parse(file, {
+                complete: function(results) {
+                    let validLocations = 0;
+                    let invalidLocations = 0;
+                    
+                    results.data.forEach((row, index) => {
+                        // İlk satır başlık olabilir, kontrol et
+                        if (index === 0 && row[0] && row[0].toLowerCase().includes('konum') || row[0].toLowerCase().includes('name')) {
+                            return; // Başlık satırını atla
+                        }
+                        
+                        // A sütunu: Konum adı, B sütunu: Google Maps linki
+                        const locationName = row[0] ? row[0].trim() : '';
+                        const url = row[1] ? row[1].trim() : '';
+                        
+                        if (url && url.includes('google.com/maps')) {
+                            const coords = extractCoordinates(url);
+                            if (coords) {
+                                // Konum adı yoksa varsayılan ad kullan
+                                const name = locationName || `Konum ${validLocations + 1}`;
+                                
+                                locations.push({
+                                    lat: coords.lat,
+                                    lng: coords.lng,
+                                    name: name,
+                                    url: url
+                                });
+                                
+                                // Haritaya marker ekle
+                                const marker = L.circleMarker([coords.lat, coords.lng], {
+                                    radius: 8,
+                                    fillColor: '#ff4444',
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.8,
+                                    className: 'marker-custom'
+                                }).addTo(map);
+                                
+                                // Popup içeriği oluştur (tıklanabilir link ile)
+                                const popupContent = `
+                                    <div class="custom-popup">
+                                        <div class="popup-title">${name}</div>
+                                        <div class="popup-coords">
+                                            Lat: ${coords.lat.toFixed(6)}<br>
+                                            Lng: ${coords.lng.toFixed(6)}
+                                        </div>
+                                        <a href="${url}" target="_blank" class="popup-button">
+                                            🗺️ Google Maps'te Aç
+                                        </a>
+                                    </div>
+                                `;
+                                
+                                marker.bindPopup(popupContent);
+                                
+                                // Marker'a tıklama eventi ekle (direkt Google Maps'te açmak için)
+                                marker.on('click', function(e) {
+                                    // Popup açılsın
+                                    e.target.openPopup();
+                                });
+                                
+                                markers.push(marker);
+                                validLocations++;
+                            } else {
+                                invalidLocations++;
+                                console.log('Koordinat çıkarılamadı:', url);
+                            }
+                        } else if (url) {
+                            invalidLocations++;
+                            console.log('Geçersiz Google Maps linki:', url);
+                        }
+                    });
+                    
+                    document.getElementById('loading').classList.remove('active');
+                    
+                    if (validLocations > 0) {
+                        // Tüm markerları gösterecek şekilde haritayı ayarla
+                        const group = L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                        
+                        document.getElementById('exportBtn').disabled = false;
+                        document.getElementById('clearBtn').disabled = false;
+                        
+                        let message = `✅ ${validLocations} konum başarıyla yüklendi`;
+                        if (invalidLocations > 0) {
+                            message += ` (${invalidLocations} geçersiz satır atlandı)`;
+                        }
+                        showNotification(message);
+                    } else {
+                        showNotification('❌ Geçerli konum bulunamadı. CSV formatını kontrol edin.', true);
+                    }
+                    
+                    updateStats();
+                },
+                error: function(error) {
+                    document.getElementById('loading').classList.remove('active');
+                    showNotification('❌ Dosya okuma hatası: ' + error.message, true);
+                }
+            });
+        });
+        
+        // HTML Export
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (locations.length === 0) {
+                showNotification('❌ Export edilecek konum yok', true);
+                return;
+            }
+            
+            const htmlContent = `<!DOCTYPE html>
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Exported Map</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style> #map { height: 100vh; width: 100%; margin:0; } </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konum Haritası - ${locations.length} Nokta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .custom-popup {
+            min-width: 200px;
+        }
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .popup-coords {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .popup-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+        }
+        .popup-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+    </style>
 </head>
 <body>
-  <div id="map"></div>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"><\/script>
-  <script>
-    const map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
-    const markers = ${JSON.stringify(markers)};
-    markers.forEach(m => {
-      L.circleMarker([m.lat, m.lng], {radius:6,color:"red",fillColor:"red",fillOpacity:0.8}).addTo(map);
-    });
-    if (markers.length>0){
-      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
-      map.fitBounds(bounds);
-    }
-  <\/script>
+    <div id="map"></div>
+    <div class="info-panel">
+        <strong>📍 Toplam ${locations.length} konum</strong>
+    </div>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const locations = ${JSON.stringify(locations)};
+        const markers = [];
+        
+        locations.forEach(loc => {
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                radius: 8,
+                fillColor: '#ff4444',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+            
+            const popupContent = \`
+                <div class="custom-popup">
+                    <div class="popup-title">\${loc.name}</div>
+                    <div class="popup-coords">
+                        Lat: \${loc.lat.toFixed(6)}<br>
+                        Lng: \${loc.lng.toFixed(6)}
+                    </div>
+                    <a href="\${loc.url}" target="_blank" class="popup-button">
+                        🗺️ Google Maps'te Aç
+                    </a>
+                </div>
+            \`;
+            
+            marker.bindPopup(popupContent);
+            markers.push(marker);
+        });
+        
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    <\/script>
 </body>
 </html>`;
-
-  navigator.clipboard.writeText(htmlContent).then(() => {
-    alert("Exported HTML panoya kopyalandı!");
-  });
-});
-</script>
+            
+            // HTML dosyası olarak indir
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `harita-${locations.length}-konum.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('✅ HTML dosyası indirildi!');
+        });
+        
+        // Temizle butonu
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Tüm konumları temizlemek istediğinizden emin misiniz?')) {
+                clearMap();
+                document.getElementById('csvFile').value = '';
+                showNotification('🗑️ Harita temizlendi');
+            }
+        });
+    </script>
 </body>
 </html>
