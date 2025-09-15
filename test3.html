@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Görselleştirici</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3367D6;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #map {
+            height: 500px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .success {
+            color: #0f9d58;
+        }
+        .error {
+            color: #db4437;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Maps Konum Görselleştirici</h1>
+        
+        <div class="info">
+            <p>Bu araç, CSV dosyasındaki Google Maps linklerini harita üzerinde kırmızı noktalarla gösterir.</p>
+            <p>CSV dosyanız her satırda bir Google Maps linki içermelidir.</p>
+        </div>
+        
+        <div class="controls">
+            <input type="file" id="csvFile" accept=".csv" style="display: none;">
+            <button id="uploadBtn">Konum Yükle</button>
+            <button id="exportBtn" disabled>HTML Olarak Dışa Aktar</button>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Harita oluşturma
+        const map = L.map('map').setView([20, 0], 2);
+        
+        // OpenStreetMap katmanı ekleme
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Noktaları saklamak için layer group
+        const markers = L.layerGroup().addTo(map);
+        
+        // Durum mesajı gösterme fonksiyonu
+        function showStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'status error' : 'status success';
+            
+            // 5 saniye sonra mesajı temizle
+            setTimeout(() => {
+                statusElement.textContent = '';
+                statusElement.className = 'status';
+            }, 5000);
+        }
+        
+        // Google Maps linkinden koordinatları çıkarma
+        function extractCoordinatesFromUrl(url) {
+            try {
+                // URL'den enlem ve boylamı çıkarmak için regex
+                const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+                const match = url.match(regex);
+                
+                if (match && match.length >= 3) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    return { lat, lng };
+                }
+                
+                // Alternatif format için kontrol
+                const altRegex = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+                const altMatch = url.match(altRegex);
+                
+                if (altMatch && altMatch.length >= 3) {
+                    const lat = parseFloat(altMatch[1]);
+                    const lng = parseFloat(altMatch[2]);
+                    return { lat, lng };
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Koordinat çıkarılırken hata:', error);
+                return null;
+            }
+        }
+        
+        // CSV dosyasını işleme
+        function processCSV(content) {
+            const lines = content.split(/\r\n|\n/);
+            const coordinates = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const coords = extractCoordinatesFromUrl(line);
+                    if (coords) {
+                        coordinates.push(coords);
+                    } else {
+                        console.warn(`Satır ${i+1} geçerli koordinat içermiyor: ${line}`);
+                    }
+                }
+            }
+            
+            return coordinates;
+        }
+        
+        // Haritaya noktaları ekleme
+        function addMarkersToMap(coordinates) {
+            // Önce mevcut noktaları temizle
+            markers.clearLayers();
+            
+            // Yeni noktaları ekle
+            coordinates.forEach(coord => {
+                L.circleMarker([coord.lat, coord.lng], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.7,
+                    radius: 5
+                }).addTo(markers);
+            });
+            
+            // Harita görünümünü tüm noktaları kapsayacak şekilde ayarla
+            if (coordinates.length > 0) {
+                const group = new L.featureGroup(markers.getLayers());
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+            
+            // Dışa aktarma butonunu etkinleştir
+            document.getElementById('exportBtn').disabled = coordinates.length === 0;
+            
+            showStatus(`${coordinates.length} konum haritaya eklendi.`);
+        }
+        
+        // HTML dışa aktarma
+        function exportHTML() {
+            const markersData = [];
+            markers.getLayers().forEach(layer => {
+                markersData.push({
+                    lat: layer.getLatLng().lat,
+                    lng: layer.getLatLng().lng
+                });
+            });
+            
+            const htmlTemplate = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Haritası</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"><\/script>
+    <script>
+        // Harita oluşturma
+        const map = L.map('map').setView([20, 0], 2);
+        
+        // OpenStreetMap katmanı ekleme
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Noktaları ekleme
+        const markers = ${JSON.stringify(markersData)};
+        
+        markers.forEach(coord => {
+            L.circleMarker([coord.lat, coord.lng], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.7,
+                radius: 5
+            }).addTo(map);
+        });
+        
+        // Tüm noktaları kapsayacak şekilde görünümü ayarla
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers.map(coord => L.marker([coord.lat, coord.lng])));
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    <\/script>
+</body>
+</html>`;
+            
+            // HTML içeriğini panoya kopyala
+            navigator.clipboard.writeText(htmlTemplate).then(() => {
+                showStatus('HTML kodu panoya kopyalandı!');
+            }).catch(err => {
+                console.error('Panoya kopyalama hatası:', err);
+                showStatus('Panoya kopyalama başarısız. Konsolu kontrol edin.', true);
+            });
+        }
+        
+        // Olay dinleyicileri
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            document.getElementById('csvFile').click();
+        });
+        
+        document.getElementById('csvFile').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target.result;
+                        const coordinates = processCSV(content);
+                        addMarkersToMap(coordinates);
+                    } catch (error) {
+                        console.error('Dosya işleme hatası:', error);
+                        showStatus('Dosya işlenirken hata oluştu.', true);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        document.getElementById('exportBtn').addEventListener('click', exportHTML);
+    </script>
+</body>
+</html>
