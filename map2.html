@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exported Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style> #map { height: 100vh; width: 100%; margin:0; } </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+    const markers = [{"lat":38.0862809,"lng":29.1189548},{"lat":37.9993713,"lng":29.8880487},{"lat":38.0944793,"lng":29.1396638},{"lat":38.1903725,"lng":31.3023747},{"lat":37.7005086,"lng":29.8712698},{"lat":37.8382287,"lng":30.285285},{"lat":37.8954339,"lng":30.9205853},{"lat":40.6948267,"lng":30.2866221},{"lat":39.1456797,"lng":34.1557661},{"lat":38.2159702,"lng":30.3327314},{"lat":38.6406358,"lng":34.8296156},{"lat":38.420078,"lng":43.262908},{"lat":39.2776594,"lng":26.6109369},{"lat":37.845911,"lng":30.2579621},{"lat":40.993715,"lng":37.8227961},{"lat":40.995348,"lng":39.7256521},{"lat":37.523556,"lng":28.5768651},{"lat":37.817,"lng":29.8804251}];
+    markers.forEach(m => {
+      L.circleMarker([m.lat, m.lng], {radius:6,color:"red",fillColor:"red",fillOpacity:0.8}).addTo(map);
+    });
+    if (markers.length>0){
+      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
+      map.fitBounds(bounds);
+    }
+  </script>
+</body>
+</html>
