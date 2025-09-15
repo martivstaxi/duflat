@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Map Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #map { height: 90vh; width: 100%; }
+    #controls { padding: 10px; background: #f8f8f8; display: flex; gap: 10px; }
+    button { padding: 6px 12px; border: none; background: #0078ff; color: white; cursor: pointer; border-radius: 4px; }
+    button:hover { background: #005fcc; }
+    input[type=file] { display: none; }
+    label { padding: 6px 12px; border: none; background: #28a745; color: white; cursor: pointer; border-radius: 4px; }
+    label:hover { background: #1f7a33; }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <label for="fileInput">📂 Konum Yükle (CSV)</label>
+  <input type="file" id="fileInput" accept=".csv" />
+  <button id="exportBtn">⬇️ Export HTML</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// Harita oluştur
+const map = L.map('map').setView([20, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+}).addTo(map);
+
+let markers = [];
+
+// Google Maps linklerinden lat/lng çıkarma
+function extractLatLng(url) {
+  try {
+    // örnek: @-20.1428081,28.4232472,17z
+    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      return [parseFloat(match[1]), parseFloat(match[2])];
+    }
+  } catch (e) {
+    console.error("Hatalı link:", url);
+  }
+  return null;
+}
+
+// CSV dosyası yükleme
+document.getElementById("fileInput").addEventListener("change", function(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split("\n");
+    lines.forEach(line => {
+      const url = line.trim();
+      if (!url) return;
+      const coords = extractLatLng(url);
+      if (coords) {
+        const marker = L.circleMarker(coords, {
+          radius: 6,
+          color: "red",
+          fillColor: "red",
+          fillOpacity: 0.8
+        }).addTo(map);
+        markers.push({lat: coords[0], lng: coords[1]});
+      }
+    });
+    if (markers.length > 0) {
+      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
+      map.fitBounds(bounds);
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Export HTML butonu
+document.getElementById("exportBtn").addEventListener("click", function() {
+  let htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exported Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style> #map { height: 100vh; width: 100%; margin:0; } </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"><\/script>
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+    const markers = ${JSON.stringify(markers)};
+    markers.forEach(m => {
+      L.circleMarker([m.lat, m.lng], {radius:6,color:"red",fillColor:"red",fillOpacity:0.8}).addTo(map);
+    });
+    if (markers.length>0){
+      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
+      map.fitBounds(bounds);
+    }
+  <\/script>
+</body>
+</html>`;
+
+  navigator.clipboard.writeText(htmlContent).then(() => {
+    alert("Exported HTML panoya kopyalandı!");
+  });
+});
+</script>
+</body>
+</html>
