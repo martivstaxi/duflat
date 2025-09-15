@@ -151,6 +151,7 @@ document.getElementById('csvFile').addEventListener('change', function(e){
     skipEmptyLines: true,
     worker: true,
     encoding: 'UTF-8',
+    delimiter: ";", // <-- Türkçe Excel için gerekli
     complete: function(results) {
       console.log('PapaParse sonuç satır:', results.data.length);
       const rows = results.data;
