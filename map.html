@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konum Haritası - 18 Nokta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <strong>📍 Toplam 18 konum</strong>
+    </div>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const locations = [{"lat":38.0862809,"lng":29.1189548,"name":"AKSOY LAVANTA BAHÇELERİ","url":"https://www.google.com/maps/place/AKSOY+LAVANTA+BAH%C3%87ELER%C4%B0/@38.0862809,29.1189548,17z/data=!4m7!3m6!1s0x14c70b2bdebd9aa9:0x93def8a2d2bc7812!8m2!3d38.0860903!4d29.1214017!15sCipBa3NveSBMYXZhbnRhIEJhaMOnZWxlcmkgRGVuaXpsaSBQYW11a2thbGWSAQpkdWRlX3JhbmNoqgFiCg0vZy8xMXE5MWJkNmozEAEyHxABIhtdANwxdLUWRDmh6hBqeJgsvrv7vuq36y3YNE4yLhACIipha3NveSBsYXZhbnRhIGJhaMOnZWxlcmkgZGVuaXpsaSBwYW11a2thbGXgAQA!16s%2Fg%2F11q91bd6j3?entry=tts&g_ep=EgoyMDI1MDUyOC4wIPu8ASoASAFQAw%3D%3D&skid=699d610b-9659-4a8f-9dc8-0a993b1c18d4"},{"lat":37.9993713,"lng":29.8880487,"name":"Akyarma Köyü Lavanta Bahçesi","url":"https://www.google.com/maps/place/Akyarma+K%C3%B6y%C3%BC+Lavanta+Bah%C3%A7esi/@37.9993713,29.8880487,17z/data=!3m1!4b1!4m6!3m5!1s0x14c665ab410f651b:0x4335a4f20fc4c122!8m2!3d37.9993713!4d29.8906236!16s%2Fg%2F11hzpn4b79?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.0944793,"lng":29.1396638,"name":"Gözler lavanta bahçeleri","url":"https://www.google.com/maps/place/G%C3%B6zler+lavanta+bah%C3%A7eleri/@38.0944793,29.1396638,17z/data=!3m1!4b1!4m6!3m5!1s0x14c7098e3a5d16ad:0x38973be0315db2dc!8m2!3d38.0944793!4d29.1422387!16s%2Fg%2F11rs9pbkpb?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.1903725,"lng":31.3023747,"name":"Kozluçay Lavanta Bahçesi","url":"https://www.google.com/maps/place/Kozlu%C3%A7ay+Lavanta+Bah%C3%A7esi/@38.1903725,31.3023747,17z/data=!3m1!4b1!4m6!3m5!1s0x14cff3bc6973e6ab:0xa8a23dcbff10f976!8m2!3d38.1903725!4d31.3049496!16s%2Fg%2F11h_f63dy1?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.7005086,"lng":29.8712698,"name":"Akçaköy Lavanta Deresi","url":"https://www.google.com/maps/place/Ak%C3%A7ak%C3%B6y+Lavanta+Deresi/@37.7005086,29.8712698,17z/data=!3m1!4b1!4m6!3m5!1s0x14c6933def2e7825:0x2157ffdf34d43d4c!8m2!3d37.7005086!4d29.8738447!16s%2Fg%2F11fmdz4z55?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.8382287,"lng":30.285285,"name":"Mon Jardin Lavanta Bahçeleri","url":"https://www.google.com/maps/place/Mon+Jardin+Lavanta+Bah%C3%A7eleri/@37.8382287,30.285285,17z/data=!3m1!4b1!4m6!3m5!1s0x14c5d3f5dc7521f9:0x579b8799919e4f16!8m2!3d37.8382287!4d30.2878599!16s%2Fg%2F11rglv9vgp?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.8954339,"lng":30.9205853,"name":"Laventa Gül Bahçeleri","url":"https://www.google.com/maps/place/Laventa+G%C3%BCl+Bah%C3%A7eleri/@37.8954339,30.9205853,17z/data=!3m1!4b1!4m6!3m5!1s0x14c50be73f972f25:0x4f7ce59e3b4bbf69!8m2!3d37.8954339!4d30.9231602!16s%2Fg%2F11pb837c6h?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.6948267,"lng":30.2866221,"name":"Natürköy Seyir Terasi","url":"https://www.google.com/maps/place/Nat%C3%BCrk%C3%B6y+Seyir+Terasi/@40.6948267,30.2866221,17z/data=!3m1!4b1!4m6!3m5!1s0x14ccaf0478bca7bd:0xb034c804f11e56ed!8m2!3d40.6948267!4d30.289197!16s%2Fg%2F11cp7jdp2k?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":39.1456797,"lng":34.1557661,"name":"Seyir Cafe Kırşehir","url":"https://www.google.com/maps/place/Seyir+Cafe+K%C4%B1r%C5%9Fehir/@39.1456797,34.1557661,17z/data=!3m1!4b1!4m6!3m5!1s0x14d5738d92ba524f:0x274623a0e84fc848!8m2!3d39.1456797!4d34.158341!16s%2Fg%2F11rsqwq4rh?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.2159702,"lng":30.3327314,"name":"Mahen Lavanta Bahçesi","url":"https://www.google.com/maps/place/Mahen+Lavanta+Bah%C3%A7esi/@38.2159702,30.3327314,17z/data=!3m1!4b1!4m6!3m5!1s0x14c5e582856b42bf:0xac3b28fc9b240285!8m2!3d38.2159702!4d30.3353063!16s%2Fg%2F11gy2j0nq1?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.6406358,"lng":34.8296156,"name":"Aşıklar Tepesi","url":"https://www.google.com/maps/place/A%C5%9F%C4%B1klar+Tepesi/@38.6406358,34.8296156,17z/data=!3m1!4b1!4m6!3m5!1s0x152a6948446906e5:0x9be3ab4843f577bc!8m2!3d38.6406358!4d34.8321905!16s%2Fg%2F11v5r_dllz?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.420078,"lng":43.262908,"name":"Edremit Kız Kalesi","url":"https://www.google.com/maps/place/Edremit+K%C4%B1z+Kalesi/@38.420078,43.262908,17z/data=!3m1!4b1!4m6!3m5!1s0x400d88291692b969:0xeb7836bb39da9f0c!8m2!3d38.420078!4d43.2654829!16s%2Fg%2F113h38_05?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":39.2776594,"lng":26.6109369,"name":"Tuz Gölü","url":"https://www.google.com/maps/place/Tuz+G%C3%B6l%C3%BC/@39.2776594,26.6109369,16z/data=!3m1!4b1!4m6!3m5!1s0x14ba7098ece0aed1:0x402f7b288a9a5391!8m2!3d39.2777224!4d26.6155362!16s%2Fg%2F1tgmmpz4?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.845911,"lng":30.2579621,"name":"37°50'45.3\"N 30°15'37.9\"E","url":"https://www.google.com/maps/place/37%C2%B050'45.3%22N+30%C2%B015'37.9%22E/@37.845911,30.2579621,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.845911!4d30.260537?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.993715,"lng":37.8227961,"name":"40°59'37.4\"N 37°49'31.3\"E","url":"https://www.google.com/maps/place/40%C2%B059'37.4%22N+37%C2%B049'31.3%22E/@40.993715,37.8227961,17z/data=!3m1!4b1!4m4!3m3!8m2!3d40.993715!4d37.825371?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.995348,"lng":39.7256521,"name":"40°59'43.3\"N 39°43'41.6\"E","url":"https://www.google.com/maps/place/40%C2%B059'43.3%22N+39%C2%B043'41.6%22E/@40.995348,39.7256521,17z/data=!3m1!4b1!4m4!3m3!8m2!3d40.995348!4d39.728227?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.523556,"lng":28.5768651,"name":"37°31'24.8\"N 28°34'46.0\"E","url":"https://www.google.com/maps/place/37%C2%B031'24.8%22N+28%C2%B034'46.0%22E/@37.523556,28.5768651,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.523556!4d28.57944?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.817,"lng":29.8804251,"name":"37°49'01.2\"N 29°52'58.8\"E","url":"https://www.google.com/maps/place/37%C2%B049'01.2%22N+29%C2%B052'58.8%22E/@37.817,29.8804251,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.817!4d29.883?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"}];
+        const markers = [];
+        
+        locations.forEach(loc => {
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                radius: 6,
+                fillColor: '#ff4444',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+            
+            marker.bindPopup('<b>' + loc.name + '</b><br>Lat: ' + loc.lat.toFixed(6) + '<br>Lng: ' + loc.lng.toFixed(6));
+            markers.push(marker);
+        });
+        
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    </script>
+</body>
+</html>
