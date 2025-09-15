@@ -1,361 +1,127 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Google Maps Konum Editörü — Fixed</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-<style>
-  :root{--bg1:#667eea;--bg2:#764ba2}
-  *{box-sizing:border-box}
-  body{font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;min-height:100vh;
-    background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#222;display:flex;flex-direction:column}
-  .header{background:rgba(255,255,255,0.95);padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.12)}
-  .container{max-width:1400px;margin:0 auto}
-  h1{font-size:20px;margin:0 0 6px}
-  .subtitle{color:#555;margin-bottom:12px;font-size:13px}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .file-input-wrapper{position:relative;overflow:hidden;display:inline-block}
-  .file-input-wrapper input[type=file]{position:absolute;left:-9999px}
-  .btn{padding:10px 16px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
-  .btn-upload{background:linear-gradient(135deg,#6dd5ed,#2193b0);color:#fff}
-  .btn-export{background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff}
-  .btn-clear{background:#ff6b6b;color:#fff}
-  .stats{background:#fff;padding:8px 12px;border-radius:10px;display:inline-flex;gap:8px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-  .map-container{flex:1;margin:18px; border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.18); background:#fff; position:relative}
-  #map{width:100%;height:72vh}
-  .loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:18px;border-radius:10px;display:none;z-index:1200;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
-  .loading.active{display:block}
-  .notification{position:fixed;right:18px;bottom:18px;background:#4caf50;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:2000}
-  .notification.error{background:#f44336}
-  .progress{font-size:13px;color:#444;margin-top:6px}
-  @media(max-width:720px){ #map{height:64vh} .controls{flex-direction:column;align-items:flex-start} }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Editörü</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { margin:0; font-family:Arial, sans-serif; }
+        #map { height: 100vh; width:100%; }
+        .custom-marker {
+            background: #ff4444;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
-  <div class="header">
-    <div class="container">
-      <h1>🗺️ Google Maps Konum Editörü — Düzeltildi</h1>
-      <p class="subtitle">CSV yükle → linklerden koordinat çıkar → dünya haritasında kırmızı noktalar koy → Export HTML</p>
-      <div class="controls">
-        <div class="file-input-wrapper">
-          <input id="csvFile" type="file" accept=".csv,text/csv" />
-          <label for="csvFile" class="btn btn-upload">📁 CSV Dosyası Yükle</label>
-        </div>
-
-        <button id="exportBtn" class="btn btn-export" disabled>📤 Export HTML</button>
-        <button id="clearBtn" class="btn btn-clear" disabled>🗑️ Temizle</button>
-
-        <div class="stats" id="stats">
-          <div>📍</div>
-          <div id="locationCount">0 konum yüklendi</div>
-        </div>
-      </div>
-      <div style="margin-top:8px;color:#222;font-size:13px">
-        <span style="opacity:0.9">Beklenen CSV formatı:</span>
-        <code style="background:#fff;padding:4px 8px;border-radius:6px;margin-left:8px">Name,GoogleMapsLink</code>
-        <span style="margin-left:12px;opacity:0.8">veya tek sütun: sadece link</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="map-container">
+    <h2>📁 CSV Yükle</h2>
+    <input type="file" id="csvFile" accept=".csv">
+    <button id="exportBtn">📤 Export HTML</button>
     <div id="map"></div>
-    <div class="loading" id="loading"><div style="font-weight:700">Konumlar işleniyor...</div><div class="progress" id="progressText">0 / 0</div></div>
-  </div>
 
-  <div class="notification" id="notification"></div>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-<script>
-/* ========== Map başlat ========== */
-const map = L.map('map', { preferCanvas: true }).setView([20,0], 2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+        let markers = [];
+        let locations = [];
 
-let markers = [];
-let locations = []; // {name, url, lat, lng}
-
-/* UI elemanları */
-const loadingEl = document.getElementById('loading');
-const progressText = document.getElementById('progressText');
-const notifyEl = document.getElementById('notification');
-const exportBtn = document.getElementById('exportBtn');
-const clearBtn = document.getElementById('clearBtn');
-
-function showLoading(on){
-  loadingEl.classList.toggle('active', !!on);
-}
-function showNotification(msg, isError=false){
-  notifyEl.textContent = msg;
-  notifyEl.className = 'notification' + (isError? ' error' : '');
-  notifyEl.style.display = 'block';
-  setTimeout(()=> notifyEl.style.display = 'none', 3500);
-}
-function updateStats(){ document.getElementById('locationCount').textContent = `${locations.length} konum yüklendi`; }
-
-/* ========== Çok güçlü koordinat çıkarıcı ========== */
-function extractCoordinates(url){
-  if(!url || typeof url !== 'string') return null;
-  const u = url.trim();
-
-  // 1) @lat,lng (en yaygın)
-  let m = u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-
-  // 2) !3dLAT!4dLNG
-  m = u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-
-  // 3) ll=lat,lng veya q=lat,lng (query param)
-  m = u.match(/[?&](?:ll|q)=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-
-  // 4) /@lat,lng,zoomz şeklinde
-  m = u.match(/\/@(-?\d+\.\d+),(-?\d+\.\d+),\d/);
-  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-
-  // 5) link içinde 3d/4d farklı sırada olabilir, genel tüm float'ları yakala ve sondan bak
-  const floats = u.match(/-?\d+\.\d+/g);
-  if(floats && floats.length >= 2){
-    // sondan başlayarak çiftler kontrol edelim (sonlara yakın koordinat olma olasılığı yüksek)
-    for(let i = floats.length - 2; i >= 0; i--){
-      const a = parseFloat(floats[i]);
-      const b = parseFloat(floats[i+1]);
-      if(Math.abs(a) <= 90 && Math.abs(b) <= 180){
-        return {lat: a, lng: b};
-      }
-    }
-    // fallback: ilk çift
-    const a = parseFloat(floats[0]), b = parseFloat(floats[1]);
-    if(Math.abs(a) <= 90 && Math.abs(b) <= 180) return {lat:a,lng:b};
-  }
-
-  return null;
-}
-
-/* ========== CSV okuma + parçalayıp işleme (batch) ========== */
-document.getElementById('csvFile').addEventListener('change', function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  console.log('CSV yüklendi:', file.name, file.size);
-
-  showLoading(true);
-  progressText.textContent = '0 / 0';
-  exportBtn.disabled = true;
-  clearBtn.disabled = true;
-
-  Papa.parse(file, {
-    skipEmptyLines: true,
-    worker: true,
-    encoding: 'UTF-8',
-    delimiter: ";", // <-- Türkçe Excel için gerekli
-    complete: function(results) {
-      console.log('PapaParse sonuç satır:', results.data.length);
-      const rows = results.data;
-      // temizle önceki markerlar
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
-      locations = [];
-      updateStats();
-
-      // batch işlemi ile UI kilitlenmiyor
-      const total = rows.length;
-      let index = 0;
-      const BATCH = 200; // iyileştirebilirsin
-
-      function processChunk(){
-        const end = Math.min(index + BATCH, total);
-        for(let i=index;i<end;i++){
-          const rawRow = rows[i];
-          // normalleştir
-          const row = (rawRow instanceof Array) ? rawRow.map(c => (typeof c === 'string' ? c.trim() : c)) : [String(rawRow).trim()];
-          if(row.length === 0) continue;
-          // temiz (BOM vs)
-          if(row[0]) row[0] = row[0].replace(/^\uFEFF/, '');
-
-          // determine name & url
-          let name = '';
-          let url = '';
-
-          if(row.length === 1){
-            // tek hücre: muhtemelen link veya "name,link" yanlışlıkla tek hücre kalmış
-            const cell = row[0];
-            if(cell.includes('google.com/maps') || cell.includes('maps.google')){
-              url = cell;
-            } else {
-              // virgülle ayrılmış olabilir (ör: "Name,https://...")
-              const parts = cell.split(',');
-              // son parçada link arayıp bul
-              for(let p = parts.length - 1; p >= 0; p--){
-                if(parts[p].includes('google.com/maps') || parts[p].includes('maps.google')){
-                  url = parts[p].trim();
-                  name = parts.slice(0,p).join(',').trim();
-                  break;
-                }
-              }
-              // eğer hala link yok ama ilk parçada link gibi şey varsa ters dene
-              if(!url && parts[0].includes('http')) url = parts[0].trim();
-            }
-          } else {
-            // iki veya daha fazla sütun: ilk -> isim, ikinci -> link
-            name = row[0] || '';
-            url = row[1] || '';
-            // bazen Excel semikolonla export etmiş olabilir; PapaParse genelde doğru ayırır ama burada kontrol
-            if(typeof url === 'string' && !url.includes('google.com') && url.includes(';')){
-              const parts = url.split(';');
-              url = parts.find(p => p.includes('google.com')) || parts[0];
-            }
-          }
-
-          if(!url && row[0] && row[0].includes('google.com/maps')) url = row[0];
-
-          if(!url) {
-            // atla
-            continue;
-          }
-
-          const coords = extractCoordinates(url);
-          if(!coords) {
-            // bazı linkler farklı formatta olabilir; atla
-            continue;
-          }
-
-          if(!name) {
-            // name yoksa url içinden dene place/... kısmını eşle
-            let m = url.match(/\/place\/([^\/\@]+)/);
-            if(m) name = decodeURIComponent(m[1].replace(/\+/g,' '));
-            else {
-              // maps/search/NAME
-              m = url.match(/\/maps\/search\/([^\/\?]+)/);
-              if(m) name = decodeURIComponent(m[1].replace(/\+/g,' '));
-              else name = `Konum ${locations.length + 1}`;
-            }
-          }
-
-          const loc = { name: String(name), url: String(url), lat: coords.lat, lng: coords.lng };
-          locations.push(loc);
-
-          // marker ekle
-          try {
-            const marker = L.circleMarker([coords.lat, coords.lng], {
-              radius: 6, fillColor: '#ff4444', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.9
-            }).addTo(map);
-            marker.bindPopup(`<b>${escapeHtml(loc.name)}</b><br>Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}<br><a href="${loc.url}" target="_blank" rel="noopener">Google Maps'te Aç</a>`);
-            markers.push(marker);
-          } catch (err) {
-            console.warn('Marker ekleme hatası:', err);
-          }
-        } // for chunk
-
-        index = end;
-        progressText.textContent = `${index} / ${total}`;
-        // küçük gecikme ile sonraki chunk
-        if(index < total){
-          setTimeout(processChunk, 10);
-        } else {
-          // tamamlandı
-          showLoading(false);
-          updateStats();
-          if(markers.length > 0){
-            try {
-              const group = L.featureGroup(markers);
-              map.fitBounds(group.getBounds().pad(0.05));
-            } catch(e){ /* ignore */ }
-            exportBtn.disabled = false;
-            clearBtn.disabled = false;
-            showNotification(`✅ ${locations.length} konum yüklendi (toplam satır: ${total}).`);
-          } else {
-            showNotification('❌ Hiç geçerli konum bulunamadı. CSV içeriğini kontrol edin.', true);
-          }
-          console.log('İşlenen konumlar:', locations.length, 'markers:', markers.length);
+        // Koordinat çıkarıcı
+        function extractCoordinates(url){
+            if(!url) return null;
+            let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if(m) return {lat:parseFloat(m[1]), lng:parseFloat(m[2])};
+            m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            if(m) return {lat:parseFloat(m[1]), lng:parseFloat(m[2])};
+            return null;
         }
-      } // processChunk
 
-      // start
-      progressText.textContent = `0 / ${total}`;
-      processChunk();
-    },
-    error: function(err){
-      showLoading(false);
-      showNotification('Dosya okuma hatası: ' + err.message, true);
-      console.error(err);
-    }
-  });
-});
+        document.getElementById("csvFile").addEventListener("change", e=>{
+            const file = e.target.files[0];
+            if(!file) return;
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            locations = [];
 
-/* ========== Export butonu ========== */
-exportBtn.addEventListener('click', function(){
-  if(locations.length === 0){ showNotification('Export edilecek konum yok', true); return; }
-  const payload = JSON.stringify(locations);
-  const html = buildExportHTML(payload, locations.length);
-  // panoya kopyala
-  navigator.clipboard?.writeText(html).then(()=> {
-    showNotification('✅ HTML kodu panoya kopyalandı!');
-  }).catch(()=> {
-    // izin yoksa indir
-    const blob = new Blob([html], {type: 'text/html'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `harita-${locations.length}-konum.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showNotification('✅ HTML dosyası indirildi!');
-  });
-});
+            Papa.parse(file, {
+                delimiter: ";", // CSV Türkçe Excel için
+                skipEmptyLines: true,
+                complete: function(results){
+                    results.data.forEach((row,i)=>{
+                        const name = row[0];   // A1 = isim
+                        const url  = row[1];   // A2 = link
+                        const coords = extractCoordinates(url);
+                        if(coords){
+                            locations.push({name, url, lat:coords.lat, lng:coords.lng});
 
-/* ========== Temizle butonu ========== */
-clearBtn.addEventListener('click', function(){
-  if(!confirm('Tüm konumları temizlemek istediğinizden emin misiniz?')) return;
-  markers.forEach(m=> map.removeLayer(m));
-  markers = [];
-  locations = [];
-  document.getElementById('csvFile').value = '';
-  updateStats();
-  exportBtn.disabled = true;
-  clearBtn.disabled = true;
-  showNotification('Harita temizlendi');
-});
+                            const marker = L.circleMarker([coords.lat, coords.lng], {
+                                radius: 6, fillColor:"red", color:"#fff", weight:2, opacity:1, fillOpacity:0.9
+                            }).addTo(map);
 
-/* ========== Export HTML oluşturucu ========== */
-function buildExportHTML(locationsJson, count){
-  return `<!doctype html>
+                            marker.on("click", ()=>{ window.open(url, "_blank"); });
+                            markers.push(marker);
+                        }
+                    });
+
+                    if(markers.length>0){
+                        const group = L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    } else {
+                        alert("Hiç geçerli konum bulunamadı!");
+                    }
+                }
+            });
+        });
+
+        // Export butonu
+        document.getElementById("exportBtn").addEventListener("click", ()=>{
+            if(locations.length===0){ alert("Konum yok!"); return; }
+
+            const htmlContent = `
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Harita — ${count} Konum</title>
+<meta charset="UTF-8">
+<title>Exported Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>html,body,#map{height:100%;margin:0;padding:0}#map{width:100%}</style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+<style>body{margin:0;}#map{height:100vh;}</style>
 </head>
 <body>
 <div id="map"></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const map = L.map('map').setView([20,0],2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution: '© OpenStreetMap contributors' }).addTo(map);
-const locations = ${locationsJson};
-const markers = [];
-for(const loc of locations){
-  const m = L.circleMarker([loc.lat, loc.lng], { radius:6, fillColor:'#ff4444', color:'#fff', weight:2, opacity:1, fillOpacity:0.9 }).addTo(map);
-  m.bindPopup('<b>' + escapeHtml(loc.name) + '</b><br>Lat: ' + loc.lat.toFixed(6) + '<br>Lng: ' + loc.lng.toFixed(6) + '<br><a href="' + loc.url + '" target="_blank" rel="noopener">Google Maps\\'te Aç</a>');
-  markers.push(m);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap contributors'
+}).addTo(map);
+const locations = ${JSON.stringify(locations)};
+let markers=[];
+locations.forEach(loc=>{
+    const m = L.circleMarker([loc.lat, loc.lng],{
+        radius:6, fillColor:"red", color:"#fff", weight:2, opacity:1, fillOpacity:0.9
+    }).addTo(map);
+    m.on("click", ()=>{ window.open(loc.url, "_blank"); });
+    markers.push(m);
+});
+if(markers.length>0){
+    const g = L.featureGroup(markers);
+    map.fitBounds(g.getBounds().pad(0.1));
 }
-if(markers.length>0){ const g = L.featureGroup(markers); map.fitBounds(g.getBounds().pad(0.05)); }
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]; }); }
-</script>
+<\/script>
 </body>
 </html>`;
-}
-
-/* ========== Küçük güvenlik yardımcıları ========== */
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]; }); }
-
-</script>
+            navigator.clipboard.writeText(htmlContent);
+            alert("✅ HTML kodu panoya kopyalandı!");
+        });
+    </script>
 </body>
 </html>
