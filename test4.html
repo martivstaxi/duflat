@@ -3,241 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV'den Haritaya Konum Aktarma Editörü</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script>
-
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        #map {
-            height: 100%; /* Haritanın esnek olmasını sağlar */
-            flex-grow: 1; /* Kalan tüm alanı kaplar */
-            border-top: 2px solid #ccc;
-        }
-        .controls {
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .instructions {
-            background-color: #fffbe6;
-            border: 1px solid #ffe58f;
-            padding: 15px;
-            margin: 0 15px 15px 15px;
-            border-radius: 5px;
-        }
-        h1 {
-            margin: 0 15px 10px 15px;
-            font-size: 1.5em;
-        }
-        button {
-            padding: 10px 15px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        #status {
-            font-style: italic;
-            color: #555;
-        }
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-        }
-        .file-input-wrapper .btn {
-            border: 1px solid gray;
-            color: gray;
-            background-color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="controls">
-        <h1>Harita Konum Editörü</h1>
-        <input type="file" id="csvFile" accept=".csv" style="display: none;">
-        <button id="loadButton">1. CSV Dosyası Yükle</button>
-        <button id="exportButton" disabled>2. HTML Olarak Dışa Aktar</button>
-        <span id="status">Lütfen bir CSV dosyası seçin.</span>
-    </div>
-    <div class="instructions">
-        <strong>Nasıl Kullanılır:</strong>
-        <ol>
-            <li><strong>CSV Dosya Formatı:</strong> Sütun başlıkları `latitude` ve `longitude` olan bir CSV dosyası hazırlayın. Alternatif olarak, standart Google Haritalar linklerini içeren `url` başlıklı bir sütun da kullanabilirsiniz.</li>
-            <li><strong>Yükleme:</strong> "CSV Dosyası Yükle" butonuna tıklayıp dosyanızı seçin. Konumlar haritada kırmızı noktalarla işaretlenecektir.</li>
-            <li><strong>Dışa Aktarma:</strong> "HTML Olarak Dışa Aktar" butonuna tıkladığınızda, sadece haritayı ve işaretli noktaları içeren HTML kodu panonuza kopyalanacaktır. Bu kodu bir `.html` dosyasına yapıştırarak kaydedebilir ve paylaşabilirsiniz.</li>
-        </ol>
-    </div>
-    <div id="map"></div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const map = L.map('map').setView([20, 0], 2); // Dünya haritasını ortala
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            const loadButton = document.getElementById('loadButton');
-            const exportButton = document.getElementById('exportButton');
-            const csvFileInput = document.getElementById('csvFile');
-            const statusDiv = document.getElementById('status');
-            
-            let locations = [];
-            let markerLayer = L.layerGroup().addTo(map);
-
-            loadButton.addEventListener('click', () => {
-                csvFileInput.click();
-            });
-
-            csvFileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) {
-                    return;
-                }
-                
-                statusDiv.textContent = 'Dosya okunuyor...';
-                
-                Papa.parse(file, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        markerLayer.clearLayers();
-                        locations = [];
-                        let loadedCount = 0;
-                        let skippedCount = 0;
-
-                        results.data.forEach(row => {
-                            let lat, lon;
-
-                            if (row.latitude && row.longitude) {
-                                lat = parseFloat(row.latitude);
-                                lon = parseFloat(row.longitude);
-                            } else if (row.url && row.url.includes('@')) {
-                                // Google Maps URL'inden koordinatları ayrıştırmaya çalış
-                                const match = row.url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-                                if (match && match.length >= 3) {
-                                    lat = parseFloat(match[1]);
-                                    lon = parseFloat(match[2]);
-                                }
-                            }
-                            
-                            if (!isNaN(lat) && !isNaN(lon)) {
-                                locations.push([lat, lon]);
-                                L.marker([lat, lon]).addTo(markerLayer);
-                                loadedCount++;
-                            } else {
-                                skippedCount++;
-                            }
-                        });
-
-                        if (locations.length > 0) {
-                            const bounds = L.latLngBounds(locations);
-                            map.fitBounds(bounds, { padding: [50, 50] });
-                            exportButton.disabled = false;
-                            statusDiv.textContent = `${loadedCount} konum başarıyla yüklendi. ${skippedCount > 0 ? skippedCount + ' satır geçersiz olduğu için atlandı.' : ''}`;
-                        } else {
-                            exportButton.disabled = true;
-                            statusDiv.textContent = 'Geçerli konum bulunamadı. Lütfen CSV dosyanızın formatını kontrol edin.';
-                        }
-                    },
-                    error: function(err, file) {
-                        statusDiv.textContent = `Hata: ${err}`;
-                        exportButton.disabled = true;
-                    }
-                });
-            });
-
-            exportButton.addEventListener('click', () => {
-                if (locations.length === 0) {
-                    alert("Dışa aktarılacak konum bulunmuyor.");
-                    return;
-                }
-
-                const generatedHtml = createExportHtml(locations);
-                navigator.clipboard.writeText(generatedHtml).then(() => {
-                    statusDiv.textContent = 'HTML kodu panoya kopyalandı! Bu kodu bir .html dosyasına yapıştırıp kaydedebilirsiniz.';
-                }, (err) => {
-                    statusDiv.textContent = 'Panoya kopyalama başarısız oldu: ' + err;
-                });
-            });
-
-            function createExportHtml(locationsData) {
-                const locationsJsonString = JSON.stringify(locationsData);
-
-                return `<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Kaydedilmiş Konumlar Haritası</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Editörü</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
     </style>
 </head>
 <body>
+    <input type="file" id="csvFile" accept=".csv">
     <div id="map"></div>
+
     <script>
-        const map = L.map('map');
+        const map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        const locations = ${locationsJsonString};
-        
-        const markerLayer = L.layerGroup().addTo(map);
+        let markers = [];
 
-        locations.forEach(location => {
-            L.marker(location).addTo(markerLayer);
-        });
-
-        if (locations.length > 0) {
-            const bounds = L.latLngBounds(locations);
-            map.fitBounds(bounds, { padding: [50, 50] });
-        } else {
-            map.setView([20, 0], 2);
-        }
-    <\/script>
-</body>
-</html>`;
+        function extractCoordinates(url) {
+            if (!url) return null;
+            const patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /q=(-?\d+\.\d+),(-?\d+\.\d+)/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
             }
+            return null;
+        }
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                complete: function(results) {
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+                    let validLocations = 0;
+
+                    results.data.forEach(row => {
+                        const name = row[0]; // A sütunu -> isim
+                        const url = row[1];  // B sütunu -> link
+                        if (name && url && url.includes("google.com/maps")) {
+                            const coords = extractCoordinates(url);
+                            if (coords) {
+                                const marker = L.circleMarker([coords.lat, coords.lng], {
+                                    radius: 6,
+                                    fillColor: '#ff4444',
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                }).addTo(map);
+
+                                marker.bindPopup(
+                                    `<b>${name}</b><br><a href="${url}" target="_blank">Google Maps'te Aç</a>`
+                                );
+                                markers.push(marker);
+                                validLocations++;
+                            }
+                        }
+                    });
+
+                    if (markers.length > 0) {
+                        const group = L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    } else {
+                        alert("Hiç geçerli konum bulunamadı.");
+                    }
+                }
+            });
         });
     </script>
 </body>
