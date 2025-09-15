@@ -35,14 +35,16 @@
         }
         .popup-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
+            background-color: #f0f0f0; /* Açık gri arka plan */
+            color: #333; /* Koyu renk yazı */
+            padding: 6px 12px; /* Buton boyutunu küçülttük */
+            border-radius: 5px;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px; /* Yazı boyutunu küçülttük */
             text-align: center;
             width: 100%;
+            border: 1px solid #ccc; /* İnce bir çerçeve ekledik */
+            transition: background-color 0.3s;
         }
         .popup-button:hover {
             transform: translateY(-1px);
@@ -82,7 +84,7 @@
                         Lng: ${loc.lng.toFixed(6)}
                     </div>
                     <a href="${loc.url}" target="_blank" class="popup-button">
-                        🗺️ Google Maps'te Aç
+                        🗺 Google Maps
                     </a>
                 </div>
             `;
