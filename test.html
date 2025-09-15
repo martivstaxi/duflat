@@ -1,273 +1,498 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Şehir Rehberi</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-      overflow-y: auto;
-      background-color: #f5f5f5;
-    }
-    .info-banner {
-      font-size: 18px;
-      color: #444;
-      max-width: 1000px;
-      text-align: left;
-      line-height: 1.5;
-      font-weight: 500;
-      background-color: rgba(255, 255, 255, 0.9);
-      padding: 12px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      z-index: 100;
-      margin: 30px auto;
-    }
-    .info-banner a {
-      color: #0077cc;
-      text-decoration: underline;
-      font-weight: bold;
-    }
-    
-    h1 {
-      font-size: 26px;
-      margin-top: 30px;
-      margin-bottom: 30px;
-    }
-    
-    .city-header {
-      font-size: 26px;
-      background: #0077cc;
-      color: white;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 1000px;
-      margin: 40px auto 30px auto;
-    }
-    
-    .city-section {
-      margin-bottom: 30px;
-      background-color: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    .city-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .city-title {
-      margin: 0;
-      font-size: 20px;
-      color: #0077cc;
-    }
-    
-    .city-photos {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 5px 0;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    
-    .city-photos::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .photo-card {
-      flex: 0 0 auto;
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      scroll-snap-align: start;
-      background-color: white;
-      position: relative;
-    }
-    
-    .photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .back-link {
-      margin-top: 30px;
-      margin-bottom: 30px;
-      display: inline-block;
-      color: #0077cc;
-      text-decoration: none;
-    }
-    
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    
-    .location-link {
-      text-decoration: underline;
-      color: #0077cc;
-      display: flex;
-      align-items: center;
-    }
-    
-    .location-link:hover {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-    }
-    
-    .click-icon {
-      margin-right: 5px;
-      display: inline-block;
-    }
-    
-    .click-icon::before {
-      content: "➤";
-      display: inline-block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Konum Editörü</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-wrapper label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: 500;
+        }
+        
+        .file-input-wrapper label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-export:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stats-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .map-container {
+            flex: 1;
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: white;
+            position: relative;
+        }
+        
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .notification.active {
+            display: block;
+        }
+        
+        .notification.error {
+            background: #f44336;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .custom-marker {
+            background: #ff4444;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
-  <h1>📸 Şehir Rehberi</h1>
-
-  <h1 class="city-header">📸 İstanbul</h1>
-
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Beylerbeyi+Saray%C4%B1%2C+Istanbul)" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Beylerbeyi Sarayı 📍
-        </a>
-      </h2>
+    <div class="header">
+        <div class="container">
+            <h1>🗺️ Google Maps Konum Editörü</h1>
+            <p class="subtitle">CSV dosyasından Google Maps linklerini yükleyin ve harita üzerinde görüntüleyin</p>
+            <div class="controls">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFile" accept=".csv">
+                    <label for="csvFile">📁 CSV Dosyası Yükle</label>
+                </div>
+                <button class="btn btn-export" id="exportBtn" disabled>
+                    📤 HTML Olarak Export Et
+                </button>
+                <button class="btn btn-clear" id="clearBtn" disabled>
+                    🗑️ Temizle
+                </button>
+                <div class="stats">
+                    <div class="stats-icon">📍</div>
+                    <span id="locationCount">0 konum yüklendi</span>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div class="city-photos">
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217063/1_u8ar2e.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/2_gyzdeh.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746217062/3_chrb2l.jpg" alt="Beylerbeyi Sarayı">
-      </div>
-    </div>
-  </div>
-
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Ulus+29%2C+Istanbul)" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Ulus 29 Restaurant 📍
-        </a>
-      </h2>
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Konumlar işleniyor...</p>
+        </div>
     </div>
     
-    <div class="city-photos">
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/1_bsnaxy.jpg" alt="Ulus 29 Restaurant">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215671/2_shhiti.jpg" alt="Ulus 29 Restaurant">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746215670/3_zioqis.jpg" alt="Ulus 29 Restaurant">
-      </div>
-    </div>
-  </div>
+    <div class="notification" id="notification"></div>
 
-  <div class="city-section">
-    <div class="city-header">
-      <h2 class="city-title">
-        <a href="https://maps.google.com/?q=Aydos+Tepesi%2C+Istanbul)" target="_blank" class="location-link">
-          <span class="click-icon"></span>
-          Aydos Tepesi 📍
-        </a>
-      </h2>
-    </div>
-    
-    <div class="city-photos">
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/3_emcsil.jpg" alt="Aydos Tepesi">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746194198/2_mtmfwc.jpg" alt="Aydos Tepesi">
-      </div>
-      <div class="photo-card">
-        <img src="https://res.cloudinary.com/dnkrwesdr/image/upload/v1746187861/1_rpziw7.jpg" alt="Aydos Tepesi">
-      </div>
-    </div>
-  </div>
-
-  <div class="info-banner" dir="auto">You are currently viewing the free demo version of our website. You can access up to 3 locations in this version. To unlock all locations, please visit <a href="https://www.duflat.com">➤ duflat.com</a> and purchase access.</div>
-
-
-  <p><a href="https://www.duflat.com" class="back-link">← www.duflat.com</a></p>
-
-  <script>
-    // Dil kontrolü ve bilgi mesajını ayarla
-    function setLanguageMessage() {
-      const messages = {
-        'tr': 'Şu anda web sitemizin ücretsiz demo sürümünü görüntülüyorsunuz. Bu sürümde en fazla 3 konuma erişebilirsiniz. Tüm konumlara ulaşmak için <a href="https://www.duflat.com">➤ duflat.com</a> adresini ziyaret edin ve erişim hakkı satın alarak giriş yapın.',
-        'en': 'You are currently viewing the free demo version of our website. You can access up to 3 locations in this version. To unlock all locations, please visit <a href="https://www.duflat.com">➤ duflat.com</a> and purchase access.',
-        'zh': '您当前正在浏览我们网站的免费演示版本。在此版本中，您最多可以访问 3 个位置。要解锁所有位置，请访问 <a href="https://www.duflat.com">➤ duflat.com</a> 并购买访问权限。',
-        'hi': 'आप वर्तमान में हमारी वेबसाइट का मुफ्त डेमो संस्करण देख रहे हैं। इस संस्करण में आप अधिकतम 3 स्थानों तक पहुंच सकते हैं। सभी स्थानों को अनलॉक करने के लिए कृपया <a href="https://www.duflat.com">➤ duflat.com</a> पर जाएं और एक्सेस खरीदें।',
-        'es': 'Actualmente estás viendo la versión demo gratuita de nuestro sitio web. En esta versión puedes acceder a un máximo de 3 ubicaciones. Para desbloquear todas las ubicaciones, visita <a href="https://www.duflat.com">➤ duflat.com</a> y compra el acceso.',
-        'fr': 'Vous consultez actuellement la version démo gratuite de notre site web. Dans cette version, vous pouvez accéder à un maximum de 3 emplacements. Pour débloquer tous les emplacements, veuillez visiter <a href="https://www.duflat.com">➤ duflat.com</a> et acheter l\'accès.',
-        'ar': 'أنت تشاهد حالياً النسخة التجريبية المجانية من موقعنا الإلكتروني. يمكنك الوصول إلى 3 مواقع كحد أقصى في هذه النسخة. للوصول إلى جميع المواقع، يرجى زيارة <a href="https://www.duflat.com">➤ duflat.com</a> وشراء حق الوصول.',
-        'de': 'Sie sehen derzeit die kostenlose Demoversion unserer Website. In dieser Version können Sie auf maximal 3 Standorte zugreifen. Um alle Standorte freizuschalten, besuchen Sie bitte <a href="https://www.duflat.com">➤ duflat.com</a> und kaufen Sie den Zugang.',
-        'ru': 'Вы просматриваете бесплатную демонстрационную версию нашего сайта. В этой версии доступно не более 3 локаций. Чтобы открыть доступ ко всем локациям, посетите <a href="https://www.duflat.com">➤ duflat.com</a> и приобретите доступ.',
-        'pt': 'Você está visualizando a versão demo gratuita do nosso site. Nesta versão, é possível acessar até 3 locais. Para desbloquear todos os locais, visite <a href="https://www.duflat.com">➤ duflat.com</a> e adquira o acesso.',
-        'id': 'Anda sedang melihat versi demo gratis dari situs web kami. Dalam versi ini, Anda dapat mengakses maksimal 3 lokasi. Untuk membuka semua lokasi, silakan kunjungi <a href="https://www.duflat.com">➤ duflat.com</a> dan beli aksesnya.',
-        'ja': '現在、当社ウェブサイトの無料デモ版をご覧いただいています。このバージョンでは最大3か所までアクセスできます。すべての場所にアクセスするには、<a href="https://www.duflat.com">➤ duflat.com</a> にアクセスし、アクセス権を購入してください。',
-        'ko': '현재 당사 웹사이트의 무료 데모 버전을 보고 계십니다. 이 버전에서는 최대 3개의 위치에 접근할 수 있습니다. 모든 위치를 이용하려면 <a href="https://www.duflat.com">➤ duflat.com</a>을 방문해 접근 권한을 구매하세요.',
-        'fa': 'شما در حال مشاهده نسخه دمو رایگان وب‌سایت ما هستید. در این نسخه می‌توانید حداکثر به ۳ مکان دسترسی داشته باشید. برای دسترسی به تمام مکان‌ها، لطفاً به <a href="https://www.duflat.com">➤ duflat.com</a> مراجعه کرده و دسترسی خریداری کنید.',
-        'it': 'Stai visualizzando la versione demo gratuita del nostro sito web. In questa versione puoi accedere a un massimo di 3 località. Per sbloccare tutte le località, visita <a href="https://www.duflat.com">➤ duflat.com</a> e acquista l\'accesso.',
-        'pl': 'Obecnie przeglądasz bezpłatną wersję demonstracyjną naszej strony internetowej. W tej wersji możesz uzyskać dostęp maksymalnie do 3 lokalizacji. Aby odblokować wszystkie lokalizacje, odwiedź <a href="https://www.duflat.com">➤ duflat.com</a> i wykup dostęp.'
-      };
-
-      // Tarayıcı dilini al
-      let browserLang = navigator.language || navigator.userLanguage;
-      browserLang = browserLang.split('-')[0]; // Örn: 'en-US' -> 'en'
-
-      // Mesajı belirle
-      let messageToShow = messages[browserLang];
-      if (!messageToShow) {
-        messageToShow = messages['en'];
-      }
-      
-      // Sağdan sola yazılan diller için ayar
-      const rtlLangs = ['ar', 'fa'];
-      if (rtlLangs.includes(browserLang)) {
-        document.querySelectorAll('.info-banner').forEach(banner => {
-          banner.setAttribute('dir', 'rtl');
+    <script>
+        // Harita başlatma
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        let markers = [];
+        let locations = [];
+        
+        // Google Maps URL'den koordinat çıkarma
+        function extractCoordinates(url) {
+            if (!url) return null;
+            
+            // Farklı Google Maps URL formatlarını kontrol et
+            const patterns = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,  // @lat,lng formatı
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng formatı
+                /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/, // place/.../@ formatı
+                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng formatı
+                /q=(-?\d+\.\d+),(-?\d+\.\d+)/ // q=lat,lng formatı
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2] || match[1].split(',')[1]);
+                    
+                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        return { lat, lng };
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        // Haritayı temizle
+        function clearMap() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            locations = [];
+            updateStats();
+            document.getElementById('exportBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+        }
+        
+        // İstatistikleri güncelle
+        function updateStats() {
+            document.getElementById('locationCount').textContent = `${locations.length} konum yüklendi`;
+        }
+        
+        // Bildirim göster
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification active' + (isError ? ' error' : '');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+        
+        // CSV dosyası yükleme
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('loading').classList.add('active');
+            clearMap();
+            
+            Papa.parse(file, {
+                complete: function(results) {
+                    let validLocations = 0;
+                    let invalidLocations = 0;
+                    
+                    results.data.forEach((row, index) => {
+                        // Her satırdaki ilk hücreyi Google Maps linki olarak kabul et
+                        const url = row[0];
+                        if (url && typeof url === 'string' && url.includes('google.com/maps')) {
+                            const coords = extractCoordinates(url);
+                            if (coords) {
+                                // Konum adını çıkarmaya çalış
+                                const placeMatch = url.match(/place\/([^\/\@]+)/);
+                                const placeName = placeMatch ? decodeURIComponent(placeMatch[1].replace(/\+/g, ' ')) : `Konum ${validLocations + 1}`;
+                                
+                                locations.push({
+                                    lat: coords.lat,
+                                    lng: coords.lng,
+                                    name: placeName,
+                                    url: url
+                                });
+                                
+                                // Haritaya marker ekle
+                                const marker = L.circleMarker([coords.lat, coords.lng], {
+                                    radius: 6,
+                                    fillColor: '#ff4444',
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                }).addTo(map);
+                                
+                                marker.bindPopup(`<b>${placeName}</b><br>Lat: ${coords.lat.toFixed(6)}<br>Lng: ${coords.lng.toFixed(6)}`);
+                                markers.push(marker);
+                                validLocations++;
+                            } else {
+                                invalidLocations++;
+                            }
+                        }
+                    });
+                    
+                    document.getElementById('loading').classList.remove('active');
+                    
+                    if (validLocations > 0) {
+                        // Tüm markerları gösterecek şekilde haritayı ayarla
+                        const group = L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                        
+                        document.getElementById('exportBtn').disabled = false;
+                        document.getElementById('clearBtn').disabled = false;
+                        
+                        let message = `✅ ${validLocations} konum başarıyla yüklendi`;
+                        if (invalidLocations > 0) {
+                            message += ` (${invalidLocations} geçersiz link atlandı)`;
+                        }
+                        showNotification(message);
+                    } else {
+                        showNotification('❌ Geçerli konum bulunamadı', true);
+                    }
+                    
+                    updateStats();
+                },
+                error: function(error) {
+                    document.getElementById('loading').classList.remove('active');
+                    showNotification('❌ Dosya okuma hatası: ' + error.message, true);
+                }
+            });
         });
-      }
-      
-      // Tüm mesaj alanlarına uygula
-      document.querySelectorAll('.info-banner').forEach(banner => {
-        banner.innerHTML = messageToShow;
-      });
-    }
-
-    // Sayfa yüklendiğinde dil mesajını ayarla
-    setLanguageMessage();
-  </script>
+        
+        // HTML Export
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (locations.length === 0) {
+                showNotification('❌ Export edilecek konum yok', true);
+                return;
+            }
+            
+            const htmlContent = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konum Haritası - ${locations.length} Nokta</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <strong>📍 Toplam ${locations.length} konum</strong>
+    </div>
+    <script>
+        const map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const locations = ${JSON.stringify(locations)};
+        const markers = [];
+        
+        locations.forEach(loc => {
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                radius: 6,
+                fillColor: '#ff4444',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+            
+            marker.bindPopup('<b>' + loc.name + '</b><br>Lat: ' + loc.lat.toFixed(6) + '<br>Lng: ' + loc.lng.toFixed(6));
+            markers.push(marker);
+        });
+        
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    <\/script>
+</body>
+</html>`;
+            
+            // HTML'i panoya kopyala
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                showNotification('✅ HTML kodu panoya kopyalandı!');
+            }).catch(() => {
+                // Alternatif yöntem: Blob ve download
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `harita-${locations.length}-konum.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification('✅ HTML dosyası indirildi!');
+            });
+        });
+        
+        // Temizle butonu
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Tüm konumları temizlemek istediğinizden emin misiniz?')) {
+                clearMap();
+                document.getElementById('csvFile').value = '';
+                showNotification('🗑️ Harita temizlendi');
+            }
+        });
+    </script>
 </body>
 </html>
