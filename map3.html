@@ -3,100 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konum Haritası - 18 Nokta</title>
+    <title>Konum Haritası - 3 Nokta</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         #map { height: 100vh; width: 100%; }
-        .info-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .custom-popup {
-            min-width: 200px;
-        }
-        .popup-title {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        .popup-coords {
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-        .popup-button {
-            display: inline-block;
-            background-color: #f0f0f0; /* Açık gri arka plan */
-            color: #333; /* Koyu renk yazı */
-            padding: 6px 12px; /* Buton boyutunu küçülttük */
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 13px; /* Yazı boyutunu küçülttük */
-            text-align: center;
-            border: 1px solid #ccc; /* İnce bir çerçeve ekledik */
-            transition: background-color 0.3s;
-        }
-        .popup-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
-        }
+        .custom-popup { min-width: 280px; max-width: 400px; }
+        .popup-title { font-weight: bold; font-size: 18px; margin-bottom: 10px; color: #10b981; }
+        .popup-coords { color: #666; font-size: 12px; margin-bottom: 12px; }
+        .popup-photos { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .popup-photo { width: 80px; height: 80px; border-radius: 8px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .popup-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .popup-button { display: block; background: #667eea; color: white; padding: 8px 14px; border-radius: 5px; text-decoration: none; font-size: 13px; text-align: center; border: none; }
+        .photo-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .modal-content { position: relative; max-width: 90vw; max-height: 90vh; }
+        .modal-image { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
+        .modal-close { position: absolute; top: -40px; right: 0; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <a href="https://tr81.tr/world.html" target="_blank" style="text-decoration: none; color: inherit;">
-        <div class="info-panel">
-            <strong>👉 18📍</strong>
-        </div>
-    </a>
+    <div class="photo-modal" id="photoModal">
+        <div class="modal-content"><button class="modal-close" id="modalCloseBtn">✕</button><img class="modal-image" id="modalImage" src=""></div>
+    </div>
     <script>
-        const map = L.map('map').setView([20, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        const locations = [{"lat":38.0862809,"lng":29.1189548,"name":"Aksoy Lavanta Bahçeleri","url":"https://www.google.com/maps/place/AKSOY+LAVANTA+BAH%C3%87ELER%C4%B0/@38.0862809,29.1189548,17z/data=!4m7!3m6!1s0x14c70b2bdebd9aa9:0x93def8a2d2bc7812!8m2!3d38.0860903!4d29.1214017!15sCipBa3NveSBMYXZhbnRhIEJhaMOnZWxlcmkgRGVuaXpsaSBQYW11a2thbGWSAQpkdWRlX3JhbmNoqgFiCg0vZy8xMXE5MWJkNmozEAEyHxABIhtdANwxdLUWRDmh6hBqeJgsvrv7vuq36y3YNE4yLhACIipha3NveSBsYXZhbnRhIGJhaMOnZWxlcmkgZGVuaXpsaSBwYW11a2thbGXgAQA!16s%2Fg%2F11q91bd6j3?entry=tts&g_ep=EgoyMDI1MDUyOC4wIPu8ASoASAFQAw%3D%3D&skid=699d610b-9659-4a8f-9dc8-0a993b1c18d4"},{"lat":37.9993713,"lng":29.8880487,"name":"Akyarma Köyü Lavanta Bahçesi","url":"https://www.google.com/maps/place/Akyarma+K%C3%B6y%C3%BC+Lavanta+Bah%C3%A7esi/@37.9993713,29.8880487,17z/data=!3m1!4b1!4m6!3m5!1s0x14c665ab410f651b:0x4335a4f20fc4c122!8m2!3d37.9993713!4d29.8906236!16s%2Fg%2F11hzpn4b79?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.0944793,"lng":29.1396638,"name":"Gözler Lavanta Bahçeleri","url":"https://www.google.com/maps/place/G%C3%B6zler+lavanta+bah%C3%A7eleri/@38.0944793,29.1396638,17z/data=!3m1!4b1!4m6!3m5!1s0x14c7098e3a5d16ad:0x38973be0315db2dc!8m2!3d38.0944793!4d29.1422387!16s%2Fg%2F11rs9pbkpb?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.1903725,"lng":31.3023747,"name":"Kozluçay Lavanta Bahçesi","url":"https://www.google.com/maps/place/Kozlu%C3%A7ay+Lavanta+Bah%C3%A7esi/@38.1903725,31.3023747,17z/data=!3m1!4b1!4m6!3m5!1s0x14cff3bc6973e6ab:0xa8a23dcbff10f976!8m2!3d38.1903725!4d31.3049496!16s%2Fg%2F11h_f63dy1?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.7005086,"lng":29.8712698,"name":"Akçaköy Lavanta Deresi","url":"https://www.google.com/maps/place/Ak%C3%A7ak%C3%B6y+Lavanta+Deresi/@37.7005086,29.8712698,17z/data=!3m1!4b1!4m6!3m5!1s0x14c6933def2e7825:0x2157ffdf34d43d4c!8m2!3d37.7005086!4d29.8738447!16s%2Fg%2F11fmdz4z55?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.8382287,"lng":30.285285,"name":"Mon Jardin Lavanta Bahçeleri","url":"https://www.google.com/maps/place/Mon+Jardin+Lavanta+Bah%C3%A7eleri/@37.8382287,30.285285,17z/data=!3m1!4b1!4m6!3m5!1s0x14c5d3f5dc7521f9:0x579b8799919e4f16!8m2!3d37.8382287!4d30.2878599!16s%2Fg%2F11rglv9vgp?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.8954339,"lng":30.9205853,"name":"Lavanta ve Gül Bahçeleri (Eğirdir)","url":"https://www.google.com/maps/place/Laventa+G%C3%BCl+Bah%C3%A7eleri/@37.8954339,30.9205853,17z/data=!3m1!4b1!4m6!3m5!1s0x14c50be73f972f25:0x4f7ce59e3b4bbf69!8m2!3d37.8954339!4d30.9231602!16s%2Fg%2F11pb837c6h?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.6948267,"lng":30.2866221,"name":"Sapanca Seyir Terası","url":"https://www.google.com/maps/place/Nat%C3%BCrk%C3%B6y+Seyir+Terasi/@40.6948267,30.2866221,17z/data=!3m1!4b1!4m6!3m5!1s0x14ccaf0478bca7bd:0xb034c804f11e56ed!8m2!3d40.6948267!4d30.289197!16s%2Fg%2F11cp7jdp2k?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":39.1456797,"lng":34.1557661,"name":"Seyir Tepesi (Kalehöyük)","url":"https://www.google.com/maps/place/Seyir+Cafe+K%C4%B1r%C5%9Fehir/@39.1456797,34.1557661,17z/data=!3m1!4b1!4m6!3m5!1s0x14d5738d92ba524f:0x274623a0e84fc848!8m2!3d39.1456797!4d34.158341!16s%2Fg%2F11rsqwq4rh?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.2159702,"lng":30.3327314,"name":"Mahen Lavanta Bahçesi","url":"https://www.google.com/maps/place/Mahen+Lavanta+Bah%C3%A7esi/@38.2159702,30.3327314,17z/data=!3m1!4b1!4m6!3m5!1s0x14c5e582856b42bf:0xac3b28fc9b240285!8m2!3d38.2159702!4d30.3353063!16s%2Fg%2F11gy2j0nq1?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.6406358,"lng":34.8296156,"name":"Göreme Aşıklar Tepesi (Sunset Point)","url":"https://www.google.com/maps/place/A%C5%9F%C4%B1klar+Tepesi/@38.6406358,34.8296156,17z/data=!3m1!4b1!4m6!3m5!1s0x152a6948446906e5:0x9be3ab4843f577bc!8m2!3d38.6406358!4d34.8321905!16s%2Fg%2F11v5r_dllz?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":38.420078,"lng":43.262908,"name":"Edremit Kız Kalesi Seyir Tepesi","url":"https://www.google.com/maps/place/Edremit+K%C4%B1z+Kalesi/@38.420078,43.262908,17z/data=!3m1!4b1!4m6!3m5!1s0x400d88291692b969:0xeb7836bb39da9f0c!8m2!3d38.420078!4d43.2654829!16s%2Fg%2F113h38_05?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":39.2776594,"lng":26.6109369,"name":"Ayvalık Tuzla Gölü (Badavut)","url":"https://www.google.com/maps/place/Tuz+G%C3%B6l%C3%BC/@39.2776594,26.6109369,16z/data=!3m1!4b1!4m6!3m5!1s0x14ba7098ece0aed1:0x402f7b288a9a5391!8m2!3d39.2777224!4d26.6155362!16s%2Fg%2F1tgmmpz4?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.845911,"lng":30.2579621,"name":"Kuyucak Lavanta Köyü","url":"https://www.google.com/maps/place/37%C2%B050'45.3%22N+30%C2%B015'37.9%22E/@37.845911,30.2579621,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.845911!4d30.260537?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.993715,"lng":37.8227961,"name":"Boztepe Seyir Noktası","url":"https://www.google.com/maps/place/40%C2%B059'37.4%22N+37%C2%B049'31.3%22E/@40.993715,37.8227961,17z/data=!3m1!4b1!4m4!3m3!8m2!3d40.993715!4d37.825371?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":40.995348,"lng":39.7256521,"name":"Boztepe Manzara Tepesi","url":"https://www.google.com/maps/place/40%C2%B059'43.3%22N+39%C2%B043'41.6%22E/@40.995348,39.7256521,17z/data=!3m1!4b1!4m4!3m3!8m2!3d40.995348!4d39.728227?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.523556,"lng":28.5768651,"name":"Arapapıştı Kanyonu Seyir Tepesi","url":"https://www.google.com/maps/place/37%C2%B031'24.8%22N+28%C2%B034'46.0%22E/@37.523556,28.5768651,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.523556!4d28.57944?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"},{"lat":37.817,"lng":29.8804251,"name":"Acıgöl","url":"https://www.google.com/maps/place/37%C2%B049'01.2%22N+29%C2%B052'58.8%22E/@37.817,29.8804251,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.817!4d29.883?entry=ttu&g_ep=EgoyMDI1MDUyOC4wIKXMDSoASAFQAw%3D%3D"}];
+        const map = L.map('map').setView([39.92, 32.85], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const locations = [{"lat":41.0231409,"lng":28.9779927,"name":"The Peninsula Istanbul","url":"https://www.google.com/maps/place/The+Peninsula+Istanbul/@41.0231409,28.9779927,17z/data=!4m9!3m8!1s0x14cab99991d0cb9b:0x2d35f8700a5c9161!5m2!4m1!1i2!8m2!3d41.0230125!4d28.9779274!16s%2Fg%2F11tbvb6d04?entry=ttu&g_ep=EgoyMDI1MDYwMi4wIKXMDSoASAFQAw%3D%3D","photos":["https://res.cloudinary.com/dnkrwesdr/image/upload/v1749139987/1_vmtmxh.jpg","https://res.cloudinary.com/dnkrwesdr/image/upload/v1749139987/2_q87sh0.jpg","https://res.cloudinary.com/dnkrwesdr/image/upload/v1749139988/3_kgnzpa.jpg"]},{"lat":41.1356459,"lng":28.7620189,"name":"Şamlar Tabiat Parkı","url":"https://www.google.com/maps/place/%C5%9Eamlar+Nature+Park/@41.1356459,28.7620189,17z/data=!4m6!3m5!1s0x14caa92dc2af299d:0xc8698d4f49416a77!8m2!3d41.1356459!4d28.7620189!16s%2Fg%2F1w9p5dq7?entry=ttu&g_ep=EgoyMDI1MDYwMi4wIKXMDSoASAFQAw%3D%3D","photos":["https://res.cloudinary.com/dnkrwesdr/image/upload/v1749137810/1_ntpwbw.jpg","https://res.cloudinary.com/dnkrwesdr/image/upload/v1749137810/2_ypwmf5.jpg","https://res.cloudinary.com/dnkrwesdr/image/upload/v1749137810/3_ustra5.jpg"]},{"lat":41.1417792,"lng":29.8735867,"name":"Ağva Kilimli Kayalıklar","url":"https://www.google.com/maps/place/A%C4%9Fva+Kilimli+Cliffs/@41.1417792,29.8735867,18z/data=!4m14!1m7!3m6!1s0x409e3bf088bc8283:0x4cd480de847530d8!2sAgva+Kilimli+Bay!8m2!3d41.141991!4d29.8726855!16s%2Fg%2F11fx950yb5!3m5!1s0x409e3bf099e203df:0xa7c059899795c389!8m2!3d41.1417792!4d29.8735867!16s%2Fg%2F11fy4298s6?entry=ttu&g_ep=EgoyMDI1MDYwMi4wIKXMDSoASAFQAw%3D%3D","photos":["https://res.cloudinary.com/din1xe7cr/image/upload/v1749123875/image_2_xqokgv.jpg","https://res.cloudinary.com/din1xe7cr/image/upload/v1749123875/1_doup2q.jpg","https://res.cloudinary.com/din1xe7cr/image/upload/v1749123876/photo_2025-06-05_14-37-20_khiyos.jpg"]}];
         const markers = [];
         
+        function openPhotoModal(url) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+        function closePhotoModal() {
+            document.getElementById('photoModal').style.display = 'none';
+        }
+        document.getElementById('photoModal').addEventListener('click', closePhotoModal);
+        document.getElementById('modalCloseBtn').addEventListener('click', closePhotoModal);
+        document.addEventListener('keydown', (e) => e.key === 'Escape' && closePhotoModal());
+
         locations.forEach(loc => {
-            const marker = L.circleMarker([loc.lat, loc.lng], {
-                radius: 8,
-                fillColor: '#ff4444',
-                color: '#ffffff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-            
-            const popupContent = `
-                <div class="custom-popup">
-                    <div class="popup-title">${loc.name}</div>
-                    <div class="popup-coords">
-                        Lat: ${loc.lat.toFixed(6)}<br>
-                        Lng: ${loc.lng.toFixed(6)}
-                    </div>
-                    <a href="${loc.url}" target="_blank" class="popup-button">
-                        🗺 Google Maps
-                    </a>
-                </div>
-            `;
-            
-            marker.bindPopup(popupContent);
+            let photosHtml = '';
+            if (loc.photos && loc.photos.length > 0) {
+                photosHtml = '<div class="popup-photos">';
+                loc.photos.forEach(photo => {
+                    photosHtml += `<div class="popup-photo" onclick="openPhotoModal('${photo}')"><img src="${photo}" alt="${loc.name}"></div>`;
+                });
+                photosHtml += '</div>';
+            }
+            const popupContent = `<div class="custom-popup"><div class="popup-title">${loc.name}</div><div class="popup-coords">Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}</div>${photosHtml}<a href="${loc.url}" target="_blank" class="popup-button">Google Maps'te Aç</a></div>`;
+            const marker = L.circleMarker([loc.lat, loc.lng], { radius: 8, fillColor: '#ff4444', color: '#fff', weight: 2, fillOpacity: 0.8 }).bindPopup(popupContent).addTo(map);
             markers.push(marker);
         });
-        
         if (markers.length > 0) {
-            const group = L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.1));
+            map.fitBounds(L.featureGroup(markers).getBounds().pad(0.1));
         }
     </script>
 </body>
