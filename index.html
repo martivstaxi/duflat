@@ -33,9 +33,106 @@
             background: var(--bg-white);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
-        /* Header - Профессиональный и минималистичный */
+        /* Loading Animation */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-logo {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Header */
         header {
             background: var(--bg-white);
             padding: 20px 0;
@@ -44,6 +141,18 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid #e5e7eb;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .header-container {
@@ -66,6 +175,11 @@
             font-weight: 700;
             letter-spacing: 0.5px;
             color: var(--primary-color);
+            transition: color 0.3s ease;
+        }
+
+        .logo-text:hover {
+            color: var(--accent-gold);
         }
 
         .logo-subtitle {
@@ -76,32 +190,15 @@
             font-weight: 600;
         }
 
-        .header-contact {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-        }
-
-        .header-phone {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-decoration: none;
-            letter-spacing: 0.3px;
-        }
-
-        .header-hours {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        /* Hero Section - Элегантный и профессиональный */
+        /* Hero Section */
         .hero {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            padding: 80px 20px 70px;
+            padding: 100px 20px 80px;
             position: relative;
             overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
         }
 
         .hero::before {
@@ -113,6 +210,29 @@
             bottom: 0;
             background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgba(255,255,255,0.03)"/></svg>') repeat;
             opacity: 0.3;
+            animation: pattern-move 20s linear infinite;
+        }
+
+        @keyframes pattern-move {
+            to { transform: translate(100px, 100px); }
+        }
+
+        /* Floating shapes */
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(201,169,97,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
         }
 
         .hero-container {
@@ -122,48 +242,49 @@
             z-index: 1;
         }
 
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.15);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            color: rgba(255,255,255,0.95);
-            font-weight: 600;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
         .hero h1 {
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             letter-spacing: -0.5px;
             line-height: 1.2;
+            animation: fadeInUp 0.8s ease 0.2s both;
         }
 
         .hero-subtitle {
-            font-size: 20px;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 10px;
-            font-weight: 500;
+            font-size: 22px;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 15px;
+            font-weight: 600;
+            animation: fadeInUp 0.8s ease 0.5s both;
         }
 
         .hero-description {
-            font-size: 16px;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 35px;
-            max-width: 600px;
-            line-height: 1.6;
+            font-size: 17px;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 40px;
+            max-width: 650px;
+            line-height: 1.7;
+            animation: fadeInUp 0.8s ease 0.8s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-actions {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s both;
         }
 
         .btn {
@@ -175,11 +296,31 @@
             font-size: 16px;
             font-weight: 600;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: all 0.3s ease;
             border: none;
             cursor: pointer;
             white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-primary {
@@ -190,8 +331,8 @@
 
         .btn-primary:hover {
             background: #d4b56f;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(201,169,97,0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(201,169,97,0.5);
         }
 
         .btn-secondary {
@@ -204,61 +345,56 @@
         .btn-secondary:hover {
             background: rgba(255,255,255,0.25);
             border-color: rgba(255,255,255,0.5);
+            transform: translateY(-3px);
         }
 
-        /* Trust Indicators - Показатели доверия */
-        .trust-section {
-            background: var(--bg-white);
-            padding: 50px 20px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .trust-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             text-align: center;
+            animation: bounce 2s infinite;
+            cursor: pointer;
         }
 
-        .trust-item {
-            padding: 20px;
-        }
-
-        .trust-number {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-            line-height: 1;
-        }
-
-        .trust-label {
+        .scroll-indicator span {
+            display: block;
+            color: rgba(255,255,255,0.8);
             font-size: 14px;
-            color: var(--text-gray);
+            margin-bottom: 10px;
             font-weight: 500;
         }
 
-        /* Advantages Section - Преимущества */
+        .scroll-arrow {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* Advantages */
         .advantages {
-            padding: 70px 20px;
+            padding: 80px 20px;
             background: var(--bg-light);
         }
 
         .section-header {
             text-align: center;
-            max-width: 700px;
-            margin: 0 auto 50px;
-        }
-
-        .section-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--accent-gold);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 12px;
+            margin-bottom: 50px;
         }
 
         .section-title {
@@ -266,263 +402,242 @@
             font-weight: 800;
             color: var(--text-dark);
             margin-bottom: 15px;
-            letter-spacing: -0.5px;
-        }
-
-        .section-description {
-            font-size: 17px;
-            color: var(--text-gray);
-            line-height: 1.7;
         }
 
         .advantages-grid {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
         }
 
         .advantage-card {
             background: var(--bg-white);
-            padding: 35px 30px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            border: 1px solid #e5e7eb;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
         }
 
         .advantage-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-4px);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            border-color: var(--accent-gold);
         }
 
         .advantage-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
+            font-size: 48px;
             margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .advantage-card:hover .advantage-icon {
+            transform: scale(1.2) rotate(5deg);
         }
 
         .advantage-title {
-            font-size: 19px;
+            font-size: 20px;
             font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 10px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
         }
 
         .advantage-text {
-            font-size: 15px;
             color: var(--text-gray);
+            font-size: 15px;
             line-height: 1.6;
         }
 
-        /* Brands Section */
+        /* Brands */
         .brands {
-            padding: 70px 20px;
+            padding: 80px 20px;
             background: var(--bg-white);
         }
 
         .brands-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .brands-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .brand-card {
-            background: var(--bg-light);
-            padding: 50px 30px;
-            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
             text-align: center;
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transition: transform 0.5s ease;
+        }
+
+        .brand-card:hover::before {
+            transform: translate(25%, 25%);
         }
 
         .brand-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-4px);
+            transform: translateY(-10px) rotate(-2deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
         .brand-logo {
             font-size: 42px;
             font-weight: 900;
-            color: var(--primary-color);
-            letter-spacing: 1px;
+            color: white;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
 
-        .brand-subtitle {
-            font-size: 13px;
-            color: var(--text-light);
-            margin-top: 8px;
-            font-weight: 600;
-        }
-
-        /* Services Section */
-        .services {
-            padding: 70px 20px;
-            background: var(--primary-color);
-            color: #ffffff;
-        }
-
-        .services-grid {
-            max-width: 1200px;
-            margin: 40px auto 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-
-        .service-item {
-            background: rgba(255,255,255,0.08);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-        }
-
-        .service-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
-            opacity: 0.9;
-        }
-
-        .service-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #ffffff;
-        }
-
-        .service-text {
-            font-size: 15px;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.6;
+        .brand-card:hover .brand-logo {
+            color: var(--accent-gold);
+            transform: scale(1.1);
         }
 
         /* Contact Section */
         .contact-section {
-            padding: 70px 20px;
+            padding: 80px 20px;
             background: var(--bg-light);
         }
 
         .contact-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
-            margin-top: 40px;
         }
 
         .contact-card {
             background: var(--bg-white);
-            padding: 35px 30px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            border-left: 4px solid var(--accent-gold);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
         }
 
         .contact-icon {
-            font-size: 28px;
-            margin-bottom: 15px;
+            font-size: 42px;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-card:hover .contact-icon {
+            transform: scale(1.15) rotate(-10deg);
         }
 
         .contact-label {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--text-light);
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 10px;
-            font-weight: 600;
+            margin-bottom: 12px;
         }
 
         .contact-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .contact-value a {
             color: var(--primary-color);
             text-decoration: none;
-            transition: color 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .contact-value a:hover {
-            color: var(--secondary-color);
+            color: var(--accent-gold);
+            transform: scale(1.05);
         }
 
-        .contact-info {
-            font-size: 14px;
-            color: var(--text-gray);
-            margin-top: 8px;
-        }
-
-        /* Location Section */
+        /* Location */
         .location {
-            padding: 70px 20px;
+            padding: 80px 20px;
             background: var(--bg-white);
         }
 
         .location-container {
-            max-width: 800px;
-            margin: 40px auto 0;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .location-card {
-            background: var(--bg-light);
-            padding: 50px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
             text-align: center;
-            border: 2px solid #e5e7eb;
+            color: white;
+            transition: all 0.4s ease;
+        }
+
+        .location-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
         }
 
         .location-icon {
-            font-size: 56px;
+            font-size: 52px;
             margin-bottom: 20px;
+            animation: bounce-location 2s ease infinite;
+        }
+
+        @keyframes bounce-location {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .location-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
         }
 
         .location-address {
             font-size: 18px;
-            color: var(--text-gray);
-            line-height: 1.7;
-            margin-bottom: 25px;
-        }
-
-        .location-hours {
-            display: inline-block;
-            background: var(--bg-white);
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: var(--text-dark);
-            font-weight: 600;
+            opacity: 0.9;
         }
 
         /* Footer */
         footer {
-            background: #0f1419;
-            color: rgba(255,255,255,0.7);
+            background: var(--text-dark);
+            color: rgba(255,255,255,0.8);
             padding: 50px 20px 30px;
         }
 
@@ -530,46 +645,45 @@
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 40px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .footer-section h3 {
-            color: #ffffff;
+            color: white;
             font-size: 16px;
             font-weight: 700;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 15px;
         }
 
-        .footer-section p, .footer-section a {
-            font-size: 14px;
-            line-height: 2;
+        .footer-section a {
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             display: block;
-            transition: color 0.3s ease;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .footer-section a:hover {
             color: var(--accent-gold);
+            transform: translateX(5px);
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 15px;
         }
 
         .footer-bottom {
             text-align: center;
             padding-top: 30px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 13px;
             color: rgba(255,255,255,0.5);
-        }
-
-        .footer-logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 15px;
+            font-size: 14px;
         }
 
         /* Fixed WhatsApp Button */
@@ -577,35 +691,34 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #25d366 0%, #20c55a 100%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 6px 24px rgba(37,211,102,0.4);
-            z-index: 999;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
             text-decoration: none;
+            z-index: 999;
             transition: all 0.3s ease;
+            animation: pulse-btn 2s ease infinite;
         }
 
         .fixed-call-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 32px rgba(37,211,102,0.5);
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
         }
 
-        /* Responsive Design */
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+            50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7); }
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .header-contact {
-                display: none;
-            }
-
-            .hero {
-                padding: 60px 20px 50px;
-            }
-
             .hero h1 {
                 font-size: 32px;
             }
@@ -614,25 +727,15 @@
                 font-size: 18px;
             }
 
-            .hero-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
+            .hero-description {
+                font-size: 15px;
             }
 
             .section-title {
                 font-size: 28px;
             }
 
-            .trust-container {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-            }
-
-            .advantages-grid,
-            .services-grid {
+            .advantages-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -640,23 +743,21 @@
                 grid-template-columns: 1fr;
             }
 
-            .location-card {
-                padding: 35px 25px;
+            .contact-container {
+                grid-template-columns: 1fr;
             }
 
             .footer-container {
                 grid-template-columns: 1fr;
                 gap: 30px;
             }
-        }
 
-        @media (min-width: 1200px) {
-            .hero h1 {
-                font-size: 52px;
-            }
-
-            .hero-subtitle {
-                font-size: 22px;
+            .fixed-call-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 20px;
             }
         }
 
@@ -674,6 +775,14 @@
 </head>
 <body>
 
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">КОМА АВТО</div>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header>
         <div class="header-container">
@@ -689,50 +798,54 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <h1>КОМА АВТО — надёжный поставщик запчастей для KIA и Hyundai</h1>
+            <h1>КОМА АВТО</h1>
+            <p class="hero-subtitle">Надёжный поставщик запчастей для KIA и Hyundai</p>
             <p class="hero-description">
-                Работаем напрямую с проверенными производителями.<br>
-                Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
+                Работаем напрямую с проверенными производителями. Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
             </p>
             <div class="hero-actions">
                 <a href="tel:+77771723377" class="btn btn-primary">
-                    📞 Связаться с нами
+                    📞 Связаться
                 </a>
-                <a href="https://instagram.com/komaauto.parts" class="btn btn-secondary" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">
+                <a href="https://instagram.com/seoul_korea_almaty" class="btn btn-secondary" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">
                     📷 Instagram
                 </a>
             </div>
+        </div>
+        <div class="scroll-indicator" onclick="document.querySelector('.advantages').scrollIntoView({behavior: 'smooth'})">
+            <span>Узнать больше</span>
+            <div class="scroll-arrow">↓</div>
         </div>
     </section>
 
     <!-- Advantages -->
     <section class="advantages">
-        <div class="section-header">
+        <div class="section-header fade-in">
             <h2 class="section-title">Почему выбирают нас</h2>
         </div>
         <div class="advantages-grid">
-            <div class="advantage-card">
+            <div class="advantage-card scale-in">
                 <div class="advantage-icon">✓</div>
                 <h3 class="advantage-title">Оригинальные запчасти</h3>
                 <p class="advantage-text">
                     Работаем с проверенными производителями
                 </p>
             </div>
-            <div class="advantage-card">
+            <div class="advantage-card scale-in" style="transition-delay: 0.1s">
                 <div class="advantage-icon">⚡</div>
                 <h3 class="advantage-title">Оперативная отгрузка</h3>
                 <p class="advantage-text">
                     Большой ассортимент в наличии
                 </p>
             </div>
-            <div class="advantage-card">
+            <div class="advantage-card scale-in" style="transition-delay: 0.2s">
                 <div class="advantage-icon">🛡️</div>
                 <h3 class="advantage-title">Гарантия качества</h3>
                 <p class="advantage-text">
                     Официальная гарантия на все детали
                 </p>
             </div>
-            <div class="advantage-card">
+            <div class="advantage-card scale-in" style="transition-delay: 0.3s">
                 <div class="advantage-icon">👨‍🔧</div>
                 <h3 class="advantage-title">Поддержка</h3>
                 <p class="advantage-text">
@@ -745,14 +858,14 @@
     <!-- Brands -->
     <section class="brands">
         <div class="brands-container">
-            <div class="section-header">
+            <div class="section-header fade-in">
                 <h2 class="section-title">Наши бренды</h2>
             </div>
             <div class="brands-grid">
-                <div class="brand-card">
+                <div class="brand-card slide-in-left">
                     <div class="brand-logo">KIA</div>
                 </div>
-                <div class="brand-card">
+                <div class="brand-card slide-in-right">
                     <div class="brand-logo">HYUNDAI</div>
                 </div>
             </div>
@@ -761,11 +874,11 @@
 
     <!-- Contact Section -->
     <section class="contact-section">
-        <div class="section-header">
+        <div class="section-header fade-in">
             <h2 class="section-title">Контакты</h2>
         </div>
         <div class="contact-container">
-            <div class="contact-card">
+            <div class="contact-card scale-in">
                 <div class="contact-icon">📞</div>
                 <div class="contact-label">Телефоны</div>
                 <div class="contact-value">
@@ -775,18 +888,18 @@
                     <a href="tel:+77078383086">+7 707 838 30 86</a>
                 </div>
             </div>
-            <div class="contact-card">
+            <div class="contact-card scale-in" style="transition-delay: 0.1s">
                 <div class="contact-icon">✉️</div>
                 <div class="contact-label">Email</div>
                 <div class="contact-value">
                     <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
                 </div>
             </div>
-            <div class="contact-card">
+            <div class="contact-card scale-in" style="transition-delay: 0.2s">
                 <div class="contact-icon">📱</div>
                 <div class="contact-label">Instagram</div>
                 <div class="contact-value">
-                    <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">@komaauto.parts</a>
+                    <a href="https://instagram.com/seoul_korea_almaty" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">@seoul_korea_almaty</a>
                 </div>
             </div>
         </div>
@@ -794,11 +907,11 @@
 
     <!-- Location -->
     <section class="location">
-        <div class="section-header">
+        <div class="section-header fade-in">
             <h2 class="section-title">Адрес</h2>
         </div>
         <div class="location-container">
-            <div class="location-card">
+            <div class="location-card fade-in">
                 <div class="location-icon">📍</div>
                 <h3 class="location-title">ТЦ Car City</h3>
                 <p class="location-address">4 ярус</p>
@@ -827,7 +940,7 @@
             </div>
             <div class="footer-section">
                 <h3>Соцсети</h3>
-                <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">Instagram</a>
+                <a href="https://instagram.com/seoul_korea_almaty" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">Instagram</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -835,50 +948,87 @@
         </div>
     </footer>
 
-    <!-- Fixed Call Button -->
     <!-- Fixed WhatsApp Button -->
     <a href="https://wa.me/77771723377" class="fixed-call-btn" aria-label="WhatsApp" onclick="openWhatsApp(event)">
         📞
     </a>
 
     <script>
+        // Loading Screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelector('.loading-screen').classList.add('hidden');
+            }, 1000);
+        });
+
+        // Scroll Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right, .scale-in');
+            animatedElements.forEach(el => observer.observe(el));
+        });
+
+        // Instagram Function
         function openInstagram(event, username) {
             event.preventDefault();
             
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
             if (isMobile) {
-                // Mobilde önce Instagram uygulamasını aç
                 const appUrl = `instagram://user?username=${username}`;
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = appUrl;
                 document.body.appendChild(iframe);
                 
-                // 2 saniye sonra iframe'i kaldır
                 setTimeout(() => {
                     document.body.removeChild(iframe);
                 }, 2000);
             } else {
-                // Masaüstünde yeni sekmede aç
                 window.open(`https://instagram.com/${username}`, '_blank');
             }
         }
 
+        // WhatsApp Function
         function openWhatsApp(event) {
             event.preventDefault();
             
-            const phoneNumber = '77771723377'; // Ülke kodu ile birlikte
+            const phoneNumber = '77771723377';
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
             if (isMobile) {
-                // Mobilde WhatsApp uygulamasını aç
                 window.location.href = `whatsapp://send?phone=${phoneNumber}`;
             } else {
-                // Masaüstünde WhatsApp Web aç
                 window.open(`https://wa.me/${phoneNumber}`, '_blank');
             }
         }
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 
 </body>
