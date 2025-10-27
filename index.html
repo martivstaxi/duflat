@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOMA AUTO PARTS — Автозапчасти для KIA и Hyundai</title>
+    <title>KOMA AUTO PARTS — Запчасти KIA & Hyundai</title>
     <style>
         * {
             margin: 0;
@@ -12,472 +12,430 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #2c3e50;
-            overflow-x: hidden;
+            color: #1a1a1a;
+            background: #f5f5f5;
         }
 
-        /* Header */
+        /* Header - простой и понятный */
         header {
-            background: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            background: #fff;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .logo {
-            font-size: 26px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header-phone {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #667eea;
-            font-weight: 600;
-            text-decoration: none;
-            font-size: 18px;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 120px 30px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .hero-content {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
+        /* Hero - крупно и ясно */
+        .hero {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            padding: 60px 20px;
+            text-align: center;
+            color: #fff;
         }
 
         .hero h1 {
-            font-size: 56px;
-            margin-bottom: 20px;
+            font-size: 36px;
             font-weight: 800;
-            line-height: 1.2;
+            margin-bottom: 10px;
         }
 
         .hero-subtitle {
-            font-size: 24px;
-            margin-bottom: 15px;
+            font-size: 18px;
+            margin-bottom: 30px;
             opacity: 0.95;
-            font-weight: 300;
         }
 
-        .hero-description {
-            font-size: 18px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-            line-height: 1.8;
-        }
-
-        .cta-buttons {
+        /* Кнопки - большие для удобства */
+        .action-buttons {
             display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: white;
-            color: #667eea;
-            padding: 18px 40px;
-            text-decoration: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,0.15);
-            color: white;
-            padding: 18px 40px;
-            text-decoration: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-3px);
-        }
-
-        /* Info Cards */
-        .info-section {
-            padding: 80px 30px;
-            background: #f8f9fd;
-        }
-
-        .container {
-            max-width: 1200px;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
             margin: 0 auto;
         }
 
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .info-card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(102, 126, 234, 0.1);
-        }
-
-        .info-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15);
-        }
-
-        .card-icon {
-            font-size: 50px;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-
-        .info-card h3 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: #667eea;
+        .btn-large {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 30px;
+            font-size: 18px;
             font-weight: 700;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: transform 0.2s;
         }
 
-        .info-card p {
-            color: #5a6c7d;
-            line-height: 1.8;
-            font-size: 16px;
+        .btn-large:active {
+            transform: scale(0.97);
         }
 
-        /* Brands Section */
-        .brands-section {
-            padding: 100px 30px;
-            background: white;
-            text-align: center;
+        .btn-call {
+            background: #fff;
+            color: #2193b0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: #fff;
+        }
+
+        /* Преимущества - карточки */
+        .benefits {
+            padding: 40px 20px;
+            background: #fff;
         }
 
         .section-title {
-            font-size: 42px;
-            margin-bottom: 60px;
-            color: #2c3e50;
-            font-weight: 800;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #000;
         }
 
-        .brands-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 100px;
-            flex-wrap: wrap;
-        }
-
-        .brand-item {
-            font-size: 72px;
-            font-weight: 900;
-            color: #667eea;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-            cursor: default;
-        }
-
-        .brand-item:hover {
-            transform: scale(1.1);
-            color: #764ba2;
-        }
-
-        /* Contact Section */
-        .contact-section {
-            padding: 100px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            margin-top: 60px;
-        }
-
-        .contact-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .contact-card:hover {
-            background: rgba(255,255,255,0.15);
-            transform: translateY(-5px);
-        }
-
-        .contact-icon {
-            font-size: 40px;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .contact-card h3 {
-            font-size: 20px;
+        .benefit-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 16px;
             margin-bottom: 15px;
-            font-weight: 600;
-            opacity: 0.9;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .contact-card p {
+        .benefit-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .benefit-content h3 {
             font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .benefit-content p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Бренды - простые большие логотипы */
+        .brands {
+            padding: 40px 20px;
+            background: #f5f5f5;
+            text-align: center;
+        }
+
+        .brands-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .brand-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            font-size: 28px;
+            font-weight: 900;
+            color: #2193b0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Контакты - крупно и удобно */
+        .contacts {
+            padding: 40px 20px;
+            background: #fff;
+        }
+
+        .contact-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2193b0;
+        }
+
+        .contact-box h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
             font-weight: 600;
-            line-height: 1.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .contact-card a {
-            color: white;
+        .contact-box p {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .contact-box a {
+            color: #2193b0;
             text-decoration: none;
-            transition: opacity 0.3s ease;
+            font-weight: 700;
         }
 
-        .contact-card a:hover {
-            opacity: 0.8;
+        /* Карта - если нужна */
+        .map-container {
+            padding: 40px 20px;
+            background: #f5f5f5;
+        }
+
+        .map-box {
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .map-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .map-box h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        .map-box p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
         }
 
         /* Footer */
         footer {
-            background: #2c3e50;
-            color: white;
-            padding: 40px 30px;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 30px 20px;
             text-align: center;
         }
 
         footer p {
+            font-size: 14px;
             opacity: 0.8;
-            font-size: 15px;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* Кнопка быстрого звонка */
+        .floating-call {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 999;
+            text-decoration: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Адаптивность для планшетов */
+        @media (min-width: 600px) {
             .hero h1 {
-                font-size: 36px;
-            }
-
-            .hero-subtitle {
-                font-size: 20px;
-            }
-
-            .hero-description {
-                font-size: 16px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .btn-primary, .btn-secondary {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .brands-container {
-                gap: 50px;
-            }
-
-            .brand-item {
                 font-size: 48px;
             }
 
-            .section-title {
-                font-size: 32px;
+            .action-buttons {
+                flex-direction: row;
+                max-width: 600px;
+            }
+
+            .brands-grid {
+                max-width: 500px;
+                gap: 20px;
+            }
+
+            .benefit-card {
+                max-width: 600px;
+                margin: 0 auto 15px;
             }
         }
 
-        /* Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+        /* Для больших экранов */
+        @media (min-width: 900px) {
+            .hero {
+                padding: 80px 20px;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            .hero h1 {
+                font-size: 56px;
+            }
+
+            .benefits, .contacts, .map-container {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            .brands-grid {
+                max-width: 600px;
+                gap: 30px;
+            }
+
+            .brand-box {
+                padding: 40px;
+                font-size: 36px;
             }
         }
 
-        .hero-content {
-            animation: fadeInUp 0.8s ease;
+        /* Улучшенная читаемость */
+        ::selection {
+            background: #6dd5ed;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        <div class="header-content">
-            <div class="logo">KOMA AUTO PARTS</div>
-            <a href="tel:+77771723377" class="header-phone">
-                📱 +7 777 172 33 77
-            </a>
-        </div>
+        <div class="logo">KOMA AUTO PARTS</div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>KOMA AUTO PARTS</h1>
-            <div class="hero-subtitle">Магазин автозапчастей</div>
-            <p class="hero-description">Надёжный поставщик оригинальных запчастей для KIA и Hyundai. Работаем напрямую с проверенными производителями.</p>
-            <div class="cta-buttons">
-                <a href="tel:+77771723377" class="btn-primary">
-                    📞 Позвонить сейчас
-                </a>
-                <a href="https://instagram.com/komaauto.parts" class="btn-secondary" target="_blank">
-                    📷 Instagram
-                </a>
+        <h1>KIA & HYUNDAI</h1>
+        <p class="hero-subtitle">Оригинальные запчасти</p>
+        
+        <div class="action-buttons">
+            <a href="tel:+77771723377" class="btn-large btn-call">
+                📞 Позвонить
+            </a>
+            <a href="https://instagram.com/komaauto.parts" class="btn-large btn-instagram" target="_blank">
+                📷 Instagram
+            </a>
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section class="benefits">
+        <h2 class="section-title">Почему мы?</h2>
+        
+        <div class="benefit-card">
+            <div class="benefit-icon">✅</div>
+            <div class="benefit-content">
+                <h3>Оригинал</h3>
+                <p>Только официальные запчасти с гарантией</p>
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-icon">⚡</div>
+            <div class="benefit-content">
+                <h3>В наличии</h3>
+                <p>Большой склад, быстрая отгрузка</p>
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-icon">💰</div>
+            <div class="benefit-content">
+                <h3>Выгодно</h3>
+                <p>Прямые поставки от производителей</p>
+            </div>
+        </div>
+
+        <div class="benefit-card">
+            <div class="benefit-icon">🔧</div>
+            <div class="benefit-content">
+                <h3>Помощь в подборе</h3>
+                <p>Опытные консультанты подберут нужное</p>
             </div>
         </div>
     </section>
 
-    <!-- Info Cards -->
-    <section class="info-section">
-        <div class="container">
-            <div class="cards-grid">
-                <div class="info-card">
-                    <span class="card-icon">✅</span>
-                    <h3>Оригинальные запчасти</h3>
-                    <p>Работаем только с официальными поставщиками. Гарантия качества на все товары.</p>
-                </div>
-                <div class="info-card">
-                    <span class="card-icon">🚚</span>
-                    <h3>Быстрая доставка</h3>
-                    <p>Оперативная отгрузка и доставка по городу. Большой ассортимент в наличии.</p>
-                </div>
-                <div class="info-card">
-                    <span class="card-icon">💰</span>
-                    <h3>Выгодные цены</h3>
-                    <p>Конкурентные цены благодаря прямым поставкам от производителей.</p>
-                </div>
-                <div class="info-card">
-                    <span class="card-icon">🤝</span>
-                    <h3>Профессиональная консультация</h3>
-                    <p>Поможем подобрать нужные запчасти и ответим на все вопросы.</p>
-                </div>
-            </div>
+    <!-- Бренды -->
+    <section class="brands">
+        <h2 class="section-title">Наши бренды</h2>
+        <div class="brands-grid">
+            <div class="brand-box">KIA</div>
+            <div class="brand-box">HYUNDAI</div>
         </div>
     </section>
 
-    <!-- Brands -->
-    <section class="brands-section">
-        <h2 class="section-title">Специализируемся на брендах</h2>
-        <div class="brands-container">
-            <div class="brand-item">KIA</div>
-            <div class="brand-item">HYUNDAI</div>
+    <!-- Контакты -->
+    <section class="contacts">
+        <h2 class="section-title">Контакты</h2>
+        
+        <div class="contact-box">
+            <h3>Телефоны</h3>
+            <p>
+                <a href="tel:+77771723377">+7 777 172 33 77</a>
+            </p>
+            <p>
+                <a href="tel:+77078383086">+7 707 838 30 86</a>
+            </p>
+        </div>
+
+        <div class="contact-box">
+            <h3>Email</h3>
+            <p>
+                <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+            </p>
+        </div>
+
+        <div class="contact-box">
+            <h3>Instagram</h3>
+            <p>
+                <a href="https://instagram.com/komaauto.parts" target="_blank">@komaauto.parts</a>
+            </p>
         </div>
     </section>
 
-    <!-- Contact -->
-    <section class="contact-section">
-        <div class="container">
-            <h2 class="section-title" style="color: white;">Свяжитесь с нами</h2>
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <span class="contact-icon">📱</span>
-                    <h3>Телефоны</h3>
-                    <p>
-                        <a href="tel:+77771723377">+7 777 172 33 77</a><br>
-                        <a href="tel:+77078383086">+7 707 838 30 86</a>
-                    </p>
-                </div>
-                <div class="contact-card">
-                    <span class="contact-icon">✉️</span>
-                    <h3>Email</h3>
-                    <p>
-                        <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
-                    </p>
-                </div>
-                <div class="contact-card">
-                    <span class="contact-icon">📍</span>
-                    <h3>Адрес</h3>
-                    <p>ТЦ. «Car City»<br>4 ярус</p>
-                </div>
-                <div class="contact-card">
-                    <span class="contact-icon">📷</span>
-                    <h3>Instagram</h3>
-                    <p>
-                        <a href="https://instagram.com/komaauto.parts" target="_blank">@komaauto.parts</a>
-                    </p>
-                </div>
-            </div>
+    <!-- Адрес -->
+    <section class="map-container">
+        <div class="map-box">
+            <div class="map-icon">📍</div>
+            <h3>Наш адрес</h3>
+            <p>ТЦ Car City<br>4 ярус</p>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 KOMA AUTO PARTS. Все права защищены.</p>
-            <p style="margin-top: 10px;">Надёжный партнёр в мире автозапчастей KIA и Hyundai</p>
-        </div>
+        <p>© 2025 KOMA AUTO PARTS</p>
+        <p style="margin-top: 10px; opacity: 0.6;">Надёжные запчасти для вашего авто</p>
     </footer>
+
+    <!-- Плавающая кнопка звонка -->
+    <a href="tel:+77771723377" class="floating-call">📞</a>
+
 </body>
 </html>
