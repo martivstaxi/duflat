@@ -246,7 +246,7 @@
             font-size: 48px;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             letter-spacing: -0.5px;
             line-height: 1.2;
             animation: fadeInUp 0.8s ease 0.2s both;
@@ -254,19 +254,21 @@
 
         .hero-subtitle {
             font-size: 22px;
-            color: rgba(255,255,255,0.95);
+            color: #ffffff;
             margin-bottom: 15px;
             font-weight: 600;
+            line-height: 1.4;
             animation: fadeInUp 0.8s ease 0.5s both;
+            letter-spacing: -0.01em;
         }
 
         .hero-description {
-            font-size: 17px;
-            color: rgba(255,255,255,0.85);
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
             margin-bottom: 40px;
-            max-width: 650px;
-            line-height: 1.7;
-            animation: fadeInUp 0.8s ease 0.8s both;
+            max-width: 600px;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s ease 0.4s both;
         }
 
         @keyframes fadeInUp {
@@ -281,9 +283,10 @@
         }
 
         .hero-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 720px;
             animation: fadeInUp 0.8s ease 0.6s both;
         }
 
@@ -291,8 +294,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 16px 32px;
+            gap: 8px;
+            padding: 18px 24px;
             font-size: 16px;
             font-weight: 600;
             text-decoration: none;
@@ -303,6 +306,8 @@
             white-space: nowrap;
             position: relative;
             overflow: hidden;
+            min-height: 56px;
+            line-height: 1.2;
         }
 
         .btn::before {
@@ -720,144 +725,48 @@
         /* Responsive */
         @media (max-width: 768px) {
             .hero {
-                padding: 60px 20px 50px;
-                min-height: 85vh;
+                padding: 80px 20px 60px;
             }
 
             .hero h1 {
-                font-size: 28px;
-                margin-bottom: 15px;
+                font-size: 32px;
             }
 
             .hero-subtitle {
-                font-size: 16px;
-                margin-bottom: 12px;
+                font-size: 18px;
             }
 
             .hero-description {
-                font-size: 14px;
-                line-height: 1.6;
-                margin-bottom: 30px;
-            }
-
-            .btn {
-                padding: 14px 24px;
                 font-size: 15px;
-                width: 100%;
-                justify-content: center;
             }
 
             .hero-actions {
-                flex-direction: column;
-                width: 100%;
+                grid-template-columns: 1fr;
                 gap: 12px;
+                max-width: 100%;
             }
 
-            .scroll-indicator {
-                bottom: 20px;
-            }
-
-            .scroll-indicator span {
-                font-size: 12px;
-            }
-
-            .scroll-arrow {
-                width: 25px;
-                height: 25px;
-                font-size: 16px;
+            .btn {
+                width: 100%;
+                padding: 16px 20px;
+                font-size: 15px;
+                min-height: 54px;
             }
 
             .section-title {
-                font-size: 24px;
-            }
-
-            .advantages {
-                padding: 50px 15px;
-            }
-
-            .section-header {
-                margin-bottom: 35px;
+                font-size: 28px;
             }
 
             .advantages-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .advantage-card {
-                padding: 30px 20px;
-            }
-
-            .advantage-icon {
-                font-size: 40px;
-                margin-bottom: 15px;
-            }
-
-            .advantage-title {
-                font-size: 18px;
-                margin-bottom: 10px;
-            }
-
-            .advantage-text {
-                font-size: 14px;
-            }
-
-            .brands {
-                padding: 50px 15px;
             }
 
             .brands-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .brand-card {
-                padding: 40px 30px;
-            }
-
-            .brand-logo {
-                font-size: 32px;
-            }
-
-            .contact-section {
-                padding: 50px 15px;
             }
 
             .contact-container {
                 grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .contact-card {
-                padding: 30px 20px;
-            }
-
-            .contact-icon {
-                font-size: 36px;
-            }
-
-            .contact-value a {
-                font-size: 15px;
-            }
-
-            .location {
-                padding: 50px 15px;
-            }
-
-            .location-card {
-                padding: 40px 25px;
-            }
-
-            .location-icon {
-                font-size: 44px;
-            }
-
-            .location-title {
-                font-size: 24px;
-            }
-
-            .location-address {
-                font-size: 16px;
             }
 
             .footer-container {
@@ -865,69 +774,42 @@
                 gap: 30px;
             }
 
-            .footer-section {
-                text-align: center;
-            }
-
             .fixed-call-btn {
-                width: 55px;
-                height: 55px;
+                width: 56px;
+                height: 56px;
                 font-size: 24px;
                 bottom: 20px;
                 right: 20px;
-            }
-
-            .header-container {
-                padding: 0 15px;
-            }
-
-            .logo-text {
-                font-size: 20px;
-            }
-
-            .logo-subtitle {
-                font-size: 10px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 24px;
-            }
-
-            .hero-subtitle {
-                font-size: 15px;
-            }
-
-            .hero-description {
-                font-size: 13px;
-            }
-
-            .btn {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-
-            .section-title {
-                font-size: 22px;
-            }
-
-            .advantage-card {
-                padding: 25px 18px;
-            }
-
-            .advantage-icon {
-                font-size: 36px;
-            }
-
-            .brand-logo {
-                font-size: 28px;
             }
         }
 
         /* Smooth Scroll */
         html {
             scroll-behavior: smooth;
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 14px 18px;
+                min-height: 50px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
         }
 
         /* Selection Color */
@@ -942,7 +824,7 @@
     <!-- Loading Screen -->
     <div class="loading-screen">
         <div class="loading-content">
-            <div class="loading-logo">КОМА АВТО</div>
+            <div class="loading-logo">KOMA AUTO PARTS</div>
             <div class="loading-spinner"></div>
         </div>
     </div>
@@ -952,7 +834,7 @@
         <div class="header-container">
             <div class="logo-section">
                 <div>
-                    <div class="logo-text">КОМА АВТО</div>
+                    <div class="logo-text">KOMA AUTO PARTS</div>
                     <div class="logo-subtitle">Запчасти KIA & Hyundai</div>
                 </div>
             </div>
@@ -962,17 +844,20 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <h1>КОМА АВТО</h1>
-            <p class="hero-subtitle">Надёжный поставщик запчастей для KIA и Hyundai</p>
+            <h1>Запчасти KIA и Hyundai</h1>
+            <p class="hero-subtitle">Надёжный поставщик оригинальных запчастей</p>
             <p class="hero-description">
                 Работаем напрямую с проверенными производителями. Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
             </p>
             <div class="hero-actions">
                 <a href="tel:+77771723377" class="btn btn-primary">
-                    📞 Связаться
+                    📞 Свяжитесь с нами
                 </a>
                 <a href="https://instagram.com/seoul_korea_almaty" class="btn btn-secondary" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">
                     📷 Instagram
+                </a>
+                <a href="https://2gis.kz/almaty/search/%D0%A2%D0%A6%20Car%20City%204%20%D1%8F%D1%80%D1%83%D1%81%20/firm/70000001018022676/76.822281%2C43.238852?m=76.893175%2C43.218377%2F11.72" class="btn btn-secondary" target="_blank">
+                    📍 Локация
                 </a>
             </div>
         </div>
@@ -1063,7 +948,7 @@
                 <div class="contact-icon">📱</div>
                 <div class="contact-label">Instagram</div>
                 <div class="contact-value">
-                    <a href="https://instagram.com/seoul_korea_almaty" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">@seoul_korea_almaty</a>
+                    <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">@komaauto.parts</a>
                 </div>
             </div>
         </div>
@@ -1087,7 +972,7 @@
     <footer>
         <div class="footer-container">
             <div class="footer-section">
-                <div class="footer-logo">КОМА АВТО</div>
+                <div class="footer-logo">KOMA AUTO PARTS</div>
                 <p>
                     Надёжный поставщик запчастей<br>для KIA и Hyundai
                 </p>
@@ -1104,11 +989,11 @@
             </div>
             <div class="footer-section">
                 <h3>Соцсети</h3>
-                <a href="https://instagram.com/seoul_korea_almaty" target="_blank" onclick="openInstagram(event, 'seoul_korea_almaty')">Instagram</a>
+                <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">Instagram</a>
             </div>
         </div>
         <div class="footer-bottom">
-            © 2025 КОМА АВТО
+            © 2025 KOMA AUTO PARTS
         </div>
     </footer>
 
