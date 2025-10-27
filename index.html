@@ -3,8 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOMA AUTO PARTS — Запчасти KIA & Hyundai</title>
+    <title>КОМА АВТО — Запчасти KIA и Hyundai</title>
+    <meta name="description" content="Надёжный поставщик запчастей для KIA и Hyundai. Работаем напрямую с проверенными производителями.">
     <style>
+        :root {
+            --primary-color: #1a4d7a;
+            --secondary-color: #2c5f8d;
+            --accent-gold: #c9a961;
+            --text-dark: #1a1a1a;
+            --text-gray: #4a4a4a;
+            --text-light: #6a6a6a;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,430 +27,859 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #1a1a1a;
-            background: #f5f5f5;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-white);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Header - простой и понятный */
+        /* Header - Профессиональный и минималистичный */
         header {
-            background: #fff;
-            padding: 15px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--bg-white);
+            padding: 20px 0;
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .logo {
-            font-size: 20px;
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-text {
+            font-size: 22px;
             font-weight: 700;
-            color: #000;
-            text-align: center;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
         }
 
-        /* Hero - крупно и ясно */
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        .header-contact {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .header-phone {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            letter-spacing: 0.3px;
+        }
+
+        .header-hours {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Hero Section - Элегантный и профессиональный */
         .hero {
-            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
-            padding: 60px 20px;
-            text-align: center;
-            color: #fff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 80px 20px 70px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgba(255,255,255,0.03)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.95);
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .hero h1 {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 800;
-            margin-bottom: 10px;
+            color: #ffffff;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
         }
 
         .hero-subtitle {
-            font-size: 18px;
-            margin-bottom: 30px;
-            opacity: 0.95;
+            font-size: 20px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 10px;
+            font-weight: 500;
         }
 
-        /* Кнопки - большие для удобства */
-        .action-buttons {
+        .hero-description {
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 35px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
             display: flex;
-            flex-direction: column;
             gap: 15px;
-            max-width: 400px;
-            margin: 0 auto;
+            flex-wrap: wrap;
         }
 
-        .btn-large {
-            display: flex;
+        .btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 18px 30px;
-            font-size: 18px;
-            font-weight: 700;
+            gap: 10px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
             text-decoration: none;
-            border-radius: 12px;
-            transition: transform 0.2s;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
-        .btn-large:active {
-            transform: scale(0.97);
+        .btn-primary {
+            background: var(--accent-gold);
+            color: var(--text-dark);
+            box-shadow: 0 4px 14px rgba(201,169,97,0.4);
         }
 
-        .btn-call {
-            background: #fff;
-            color: #2193b0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .btn-primary:hover {
+            background: #d4b56f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201,169,97,0.5);
         }
 
-        .btn-instagram {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            color: #fff;
+        .btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
         }
 
-        /* Преимущества - карточки */
-        .benefits {
-            padding: 40px 20px;
-            background: #fff;
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* Trust Indicators - Показатели доверия */
+        .trust-section {
+            background: var(--bg-white);
+            padding: 50px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .trust-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            text-align: center;
+        }
+
+        .trust-item {
+            padding: 20px;
+        }
+
+        .trust-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .trust-label {
+            font-size: 14px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        /* Advantages Section - Преимущества */
+        .advantages {
+            padding: 70px 20px;
+            background: var(--bg-light);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 50px;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
         }
 
         .section-title {
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #000;
-        }
-
-        .benefit-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 16px;
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--text-dark);
             margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-description {
+            font-size: 17px;
+            color: var(--text-gray);
+            line-height: 1.7;
+        }
+
+        .advantages-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .advantage-card {
+            background: var(--bg-white);
+            padding: 35px 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+
+        .advantage-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+
+        .advantage-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 20px;
         }
 
-        .benefit-icon {
-            font-size: 32px;
-            flex-shrink: 0;
-        }
-
-        .benefit-content h3 {
-            font-size: 18px;
+        .advantage-title {
+            font-size: 19px;
             font-weight: 700;
-            margin-bottom: 5px;
-            color: #000;
+            color: var(--text-dark);
+            margin-bottom: 10px;
         }
 
-        .benefit-content p {
+        .advantage-text {
             font-size: 15px;
-            color: #666;
-            line-height: 1.5;
+            color: var(--text-gray);
+            line-height: 1.6;
         }
 
-        /* Бренды - простые большие логотипы */
+        /* Brands Section */
         .brands {
-            padding: 40px 20px;
-            background: #f5f5f5;
-            text-align: center;
+            padding: 70px 20px;
+            background: var(--bg-white);
+        }
+
+        .brands-container {
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .brands-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            max-width: 400px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
         }
 
-        .brand-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 16px;
-            font-size: 28px;
-            font-weight: 900;
-            color: #2193b0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        /* Контакты - крупно и удобно */
-        .contacts {
-            padding: 40px 20px;
-            background: #fff;
-        }
-
-        .contact-box {
-            background: #f8f9fa;
-            padding: 20px;
+        .brand-card {
+            background: var(--bg-light);
+            padding: 50px 30px;
             border-radius: 12px;
-            margin-bottom: 15px;
-            border-left: 4px solid #2193b0;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
         }
 
-        .contact-box h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
+        .brand-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+
+        .brand-logo {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 8px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .contact-box p {
+        /* Services Section */
+        .services {
+            padding: 70px 20px;
+            background: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .services-grid {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .service-item {
+            background: rgba(255,255,255,0.08);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .service-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .service-title {
             font-size: 18px;
             font-weight: 700;
-            color: #000;
+            margin-bottom: 10px;
+            color: #ffffff;
         }
 
-        .contact-box a {
-            color: #2193b0;
-            text-decoration: none;
-            font-weight: 700;
+        .service-text {
+            font-size: 15px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.6;
         }
 
-        /* Карта - если нужна */
-        .map-container {
-            padding: 40px 20px;
-            background: #f5f5f5;
+        /* Contact Section */
+        .contact-section {
+            padding: 70px 20px;
+            background: var(--bg-light);
         }
 
-        .map-box {
-            background: #fff;
-            padding: 25px;
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        .contact-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
         }
 
-        .map-icon {
-            font-size: 48px;
+        .contact-card {
+            background: var(--bg-white);
+            padding: 35px 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .contact-icon {
+            font-size: 28px;
             margin-bottom: 15px;
         }
 
-        .map-box h3 {
-            font-size: 20px;
-            font-weight: 700;
+        .contact-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 10px;
-            color: #000;
+            font-weight: 600;
         }
 
-        .map-box p {
-            font-size: 16px;
-            color: #666;
-            line-height: 1.6;
+        .contact-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .contact-value a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-value a:hover {
+            color: var(--secondary-color);
+        }
+
+        .contact-info {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-top: 8px;
+        }
+
+        /* Location Section */
+        .location {
+            padding: 70px 20px;
+            background: var(--bg-white);
+        }
+
+        .location-container {
+            max-width: 800px;
+            margin: 40px auto 0;
+        }
+
+        .location-card {
+            background: var(--bg-light);
+            padding: 50px;
+            border-radius: 16px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .location-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        .location-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .location-address {
+            font-size: 18px;
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .location-hours {
+            display: inline-block;
+            background: var(--bg-white);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 600;
         }
 
         /* Footer */
         footer {
-            background: #1a1a1a;
-            color: #fff;
-            padding: 30px 20px;
-            text-align: center;
+            background: #0f1419;
+            color: rgba(255,255,255,0.7);
+            padding: 50px 20px 30px;
         }
 
-        footer p {
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-section p, .footer-section a {
             font-size: 14px;
-            opacity: 0.8;
+            line-height: 2;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s ease;
         }
 
-        /* Кнопка быстрого звонка */
-        .floating-call {
+        .footer-section a:hover {
+            color: var(--accent-gold);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        /* Fixed WhatsApp Button */
+        .fixed-call-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: #25d366;
+            bottom: 30px;
+            right: 30px;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #25d366 0%, #20c55a 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 32px;
+            box-shadow: 0 6px 24px rgba(37,211,102,0.4);
             z-index: 999;
             text-decoration: none;
-            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
+        .fixed-call-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 32px rgba(37,211,102,0.5);
         }
 
-        /* Адаптивность для планшетов */
-        @media (min-width: 600px) {
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-contact {
+                display: none;
+            }
+
+            .hero {
+                padding: 60px 20px 50px;
+            }
+
             .hero h1 {
-                font-size: 48px;
+                font-size: 32px;
             }
 
-            .action-buttons {
-                flex-direction: row;
-                max-width: 600px;
+            .hero-subtitle {
+                font-size: 18px;
             }
 
-            .brands-grid {
-                max-width: 500px;
+            .hero-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .trust-container {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 20px;
             }
 
-            .benefit-card {
-                max-width: 600px;
-                margin: 0 auto 15px;
-            }
-        }
-
-        /* Для больших экранов */
-        @media (min-width: 900px) {
-            .hero {
-                padding: 80px 20px;
-            }
-
-            .hero h1 {
-                font-size: 56px;
-            }
-
-            .benefits, .contacts, .map-container {
-                max-width: 900px;
-                margin: 0 auto;
+            .advantages-grid,
+            .services-grid {
+                grid-template-columns: 1fr;
             }
 
             .brands-grid {
-                max-width: 600px;
-                gap: 30px;
+                grid-template-columns: 1fr;
             }
 
-            .brand-box {
-                padding: 40px;
-                font-size: 36px;
+            .location-card {
+                padding: 35px 25px;
+            }
+
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
             }
         }
 
-        /* Улучшенная читаемость */
+        @media (min-width: 1200px) {
+            .hero h1 {
+                font-size: 52px;
+            }
+
+            .hero-subtitle {
+                font-size: 22px;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection Color */
         ::selection {
-            background: #6dd5ed;
-            color: #fff;
+            background: var(--accent-gold);
+            color: var(--text-dark);
         }
     </style>
 </head>
 <body>
+
     <!-- Header -->
     <header>
-        <div class="logo">KOMA AUTO PARTS</div>
+        <div class="header-container">
+            <div class="logo-section">
+                <div>
+                    <div class="logo-text">КОМА АВТО</div>
+                    <div class="logo-subtitle">Запчасти KIA & Hyundai</div>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <!-- Hero -->
+    <!-- Hero Section -->
     <section class="hero">
-        <h1>KIA & HYUNDAI</h1>
-        <p class="hero-subtitle">Оригинальные запчасти</p>
-        
-        <div class="action-buttons">
-            <a href="tel:+77771723377" class="btn-large btn-call">
-                📞 Позвонить
-            </a>
-            <a href="https://instagram.com/komaauto.parts" class="btn-large btn-instagram" target="_blank">
-                📷 Instagram
-            </a>
-        </div>
-    </section>
-
-    <!-- Преимущества -->
-    <section class="benefits">
-        <h2 class="section-title">Почему мы?</h2>
-        
-        <div class="benefit-card">
-            <div class="benefit-icon">✅</div>
-            <div class="benefit-content">
-                <h3>Оригинал</h3>
-                <p>Только официальные запчасти с гарантией</p>
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-icon">⚡</div>
-            <div class="benefit-content">
-                <h3>В наличии</h3>
-                <p>Большой склад, быстрая отгрузка</p>
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-icon">💰</div>
-            <div class="benefit-content">
-                <h3>Выгодно</h3>
-                <p>Прямые поставки от производителей</p>
-            </div>
-        </div>
-
-        <div class="benefit-card">
-            <div class="benefit-icon">🔧</div>
-            <div class="benefit-content">
-                <h3>Помощь в подборе</h3>
-                <p>Опытные консультанты подберут нужное</p>
+        <div class="hero-container">
+            <h1>КОМА АВТО — надёжный поставщик запчастей для KIA и Hyundai</h1>
+            <p class="hero-description">
+                Работаем напрямую с проверенными производителями.<br>
+                Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
+            </p>
+            <div class="hero-actions">
+                <a href="tel:+77771723377" class="btn btn-primary">
+                    📞 Связаться с нами
+                </a>
+                <a href="https://instagram.com/komaauto.parts" class="btn btn-secondary" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">
+                    📷 Instagram
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Бренды -->
+    <!-- Advantages -->
+    <section class="advantages">
+        <div class="section-header">
+            <h2 class="section-title">Почему выбирают нас</h2>
+        </div>
+        <div class="advantages-grid">
+            <div class="advantage-card">
+                <div class="advantage-icon">✓</div>
+                <h3 class="advantage-title">Оригинальные запчасти</h3>
+                <p class="advantage-text">
+                    Работаем с проверенными производителями
+                </p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">⚡</div>
+                <h3 class="advantage-title">Оперативная отгрузка</h3>
+                <p class="advantage-text">
+                    Большой ассортимент в наличии
+                </p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">🛡️</div>
+                <h3 class="advantage-title">Гарантия качества</h3>
+                <p class="advantage-text">
+                    Официальная гарантия на все детали
+                </p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">👨‍🔧</div>
+                <h3 class="advantage-title">Поддержка</h3>
+                <p class="advantage-text">
+                    Консультация на каждом этапе
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brands -->
     <section class="brands">
-        <h2 class="section-title">Наши бренды</h2>
-        <div class="brands-grid">
-            <div class="brand-box">KIA</div>
-            <div class="brand-box">HYUNDAI</div>
+        <div class="brands-container">
+            <div class="section-header">
+                <h2 class="section-title">Наши бренды</h2>
+            </div>
+            <div class="brands-grid">
+                <div class="brand-card">
+                    <div class="brand-logo">KIA</div>
+                </div>
+                <div class="brand-card">
+                    <div class="brand-logo">HYUNDAI</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Контакты -->
-    <section class="contacts">
-        <h2 class="section-title">Контакты</h2>
-        
-        <div class="contact-box">
-            <h3>Телефоны</h3>
-            <p>
-                <a href="tel:+77771723377">+7 777 172 33 77</a>
-            </p>
-            <p>
-                <a href="tel:+77078383086">+7 707 838 30 86</a>
-            </p>
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="section-header">
+            <h2 class="section-title">Контакты</h2>
         </div>
-
-        <div class="contact-box">
-            <h3>Email</h3>
-            <p>
-                <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
-            </p>
-        </div>
-
-        <div class="contact-box">
-            <h3>Instagram</h3>
-            <p>
-                <a href="https://instagram.com/komaauto.parts" target="_blank">@komaauto.parts</a>
-            </p>
+        <div class="contact-container">
+            <div class="contact-card">
+                <div class="contact-icon">📞</div>
+                <div class="contact-label">Телефоны</div>
+                <div class="contact-value">
+                    <a href="tel:+77771723377">+7 777 172 33 77</a>
+                </div>
+                <div class="contact-value">
+                    <a href="tel:+77078383086">+7 707 838 30 86</a>
+                </div>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-label">Email</div>
+                <div class="contact-value">
+                    <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+                </div>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">📱</div>
+                <div class="contact-label">Instagram</div>
+                <div class="contact-value">
+                    <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">@komaauto.parts</a>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Адрес -->
-    <section class="map-container">
-        <div class="map-box">
-            <div class="map-icon">📍</div>
-            <h3>Наш адрес</h3>
-            <p>ТЦ Car City<br>4 ярус</p>
+    <!-- Location -->
+    <section class="location">
+        <div class="section-header">
+            <h2 class="section-title">Адрес</h2>
+        </div>
+        <div class="location-container">
+            <div class="location-card">
+                <div class="location-icon">📍</div>
+                <h3 class="location-title">ТЦ Car City</h3>
+                <p class="location-address">4 ярус</p>
+            </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <p>© 2025 KOMA AUTO PARTS</p>
-        <p style="margin-top: 10px; opacity: 0.6;">Надёжные запчасти для вашего авто</p>
+        <div class="footer-container">
+            <div class="footer-section">
+                <div class="footer-logo">КОМА АВТО</div>
+                <p>
+                    Надёжный поставщик запчастей<br>для KIA и Hyundai
+                </p>
+            </div>
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <a href="tel:+77771723377">+7 777 172 33 77</a>
+                <a href="tel:+77078383086">+7 707 838 30 86</a>
+                <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+            </div>
+            <div class="footer-section">
+                <h3>Адрес</h3>
+                <p>ТЦ Car City<br>4 ярус</p>
+            </div>
+            <div class="footer-section">
+                <h3>Соцсети</h3>
+                <a href="https://instagram.com/komaauto.parts" target="_blank" onclick="openInstagram(event, 'komaauto.parts')">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2025 КОМА АВТО
+        </div>
     </footer>
 
-    <!-- Плавающая кнопка звонка -->
-    <a href="tel:+77771723377" class="floating-call">📞</a>
+    <!-- Fixed Call Button -->
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/77771723377" class="fixed-call-btn" aria-label="WhatsApp" onclick="openWhatsApp(event)">
+        📞
+    </a>
+
+    <script>
+        function openInstagram(event, username) {
+            event.preventDefault();
+            
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Mobilde önce Instagram uygulamasını aç
+                const appUrl = `instagram://user?username=${username}`;
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = appUrl;
+                document.body.appendChild(iframe);
+                
+                // 2 saniye sonra iframe'i kaldır
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 2000);
+            } else {
+                // Masaüstünde yeni sekmede aç
+                window.open(`https://instagram.com/${username}`, '_blank');
+            }
+        }
+
+        function openWhatsApp(event) {
+            event.preventDefault();
+            
+            const phoneNumber = '77771723377'; // Ülke kodu ile birlikte
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Mobilde WhatsApp uygulamasını aç
+                window.location.href = `whatsapp://send?phone=${phoneNumber}`;
+            } else {
+                // Masaüstünde WhatsApp Web aç
+                window.open(`https://wa.me/${phoneNumber}`, '_blank');
+            }
+        }
+    </script>
 
 </body>
 </html>
