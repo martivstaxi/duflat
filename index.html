@@ -1,130 +1,364 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title id="pageTitle">Bizim Diğer Projelerimiz</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOMA AUTO PARTS — Автозапчасти для KIA и Hyundai</title>
     <style>
-        /* Variables */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --accent: #f59e0b;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-        }
-
-        /* Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            position: fixed;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: none;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            background: #fefce8;
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            touch-action: manipulation;
+            color: #2c3e50;
+            overflow-x: hidden;
         }
 
-        /* Language Selector */
-        .lang-select {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            z-index: 1000;
+        /* Header */
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .lang-btn {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 10px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-phone {
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.06);
-            transition: all 0.2s ease;
-            color: #475569;
+            gap: 10px;
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 18px;
         }
 
-        .lang-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.12);
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .lang-list {
+        .hero::before {
+            content: '';
             position: absolute;
-            top: calc(100% + 8px);
+            top: 0;
+            left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.12);
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-            min-width: 180px;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
         }
 
-        .lang-list.show {
-            display: block;
-            animation: fadeIn 0.2s ease;
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
-        .lang-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            margin-bottom: 15px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .cta-buttons {
             display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #475569;
+            gap: 10px;
+            background: white;
+            color: #667eea;
+            padding: 18px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .lang-item:hover {
-            background: rgba(139, 92, 246, 0.1);
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
 
-        .lang-item.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 18px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+        }
+
+        /* Info Cards */
+        .info-section {
+            padding: 80px 30px;
+            background: #f8f9fd;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .info-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15);
+        }
+
+        .card-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .info-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .info-card p {
+            color: #5a6c7d;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        /* Brands Section */
+        .brands-section {
+            padding: 100px 30px;
+            background: white;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 42px;
+            margin-bottom: 60px;
+            color: #2c3e50;
+            font-weight: 800;
+        }
+
+        .brands-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 100px;
+            flex-wrap: wrap;
+        }
+
+        .brand-item {
+            font-size: 72px;
+            font-weight: 900;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .brand-item:hover {
+            transform: scale(1.1);
+            color: #764ba2;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 100px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        @keyframes fadeIn {
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .contact-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+
+        .contact-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .contact-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .contact-card p {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.8;
+        }
+
+        .contact-card a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-card a:hover {
+            opacity: 0.8;
+        }
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        footer p {
+            opacity: 0.8;
+            font-size: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero-subtitle {
+                font-size: 20px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .brands-container {
+                gap: 50px;
+            }
+
+            .brand-item {
+                font-size: 48px;
+            }
+
+            .section-title {
+                font-size: 32px;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -132,1416 +366,118 @@
             }
         }
 
-        /* Main Container */
-        .main-wrapper {
-            height: 100%;
-            width: 100%;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Background */
-        .bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(135deg, #fef3c7 0%, #ddd6fe 25%, #e0e7ff 50%, #ccfbf1 75%, #fef3c7 100%);
-            background-size: 200% 200%;
-            animation: subtleShift 30s ease infinite;
-            z-index: -2;
-            pointer-events: none;
-        }
-
-        @keyframes subtleShift {
-            0%, 100% {
-                background-position: 0% 0%;
-            }
-            50% {
-                background-position: 100% 100%;
-            }
-        }
-
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom right, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at center right, rgba(129, 140, 248, 0.06) 0%, transparent 40%),
-                radial-gradient(ellipse at center left, rgba(52, 211, 153, 0.06) 0%, transparent 40%),
-                linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .bg-overlay::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(196, 181, 253, 0.1) 0%, transparent 25%),
-                radial-gradient(circle at 80% 20%, rgba(254, 215, 170, 0.1) 0%, transparent 25%),
-                radial-gradient(circle at 60% 60%, rgba(167, 243, 208, 0.08) 0%, transparent 30%),
-                radial-gradient(circle at 40% 40%, rgba(165, 180, 252, 0.08) 0%, transparent 30%);
-            pointer-events: none;
-        }
-
-        .bg-overlay::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                repeating-linear-gradient(
-                    60deg,
-                    transparent,
-                    transparent 100px,
-                    rgba(255, 255, 255, 0.03) 100px,
-                    rgba(255, 255, 255, 0.03) 101px,
-                    transparent 101px,
-                    transparent 200px
-                );
-            pointer-events: none;
-        }
-
-        /* Container */
-        .container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            padding: 80px 16px 40px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-            flex-shrink: 0;
-        }
-
-        .title {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: clamp(2.5rem, 5vw, 3.5rem);
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.02em;
-            line-height: 0.9;
-            text-transform: uppercase;
-        }
-
-        .subtitle {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: clamp(1.1rem, 1.8vw, 1.4rem);
-            font-weight: 400;
-            color: #334155;
-            margin-top: 4px;
-            line-height: 1.2;
-            opacity: 0.9;
-            letter-spacing: -0.01em;
-        }
-
-        .title-part1 {
-            color: #0f172a;
-            font-weight: 400;
-        }
-
-        .title-part2 {
-            color: #92400e;
-            font-weight: 400;
-        }
-
-        /* Sites Section */
-        .sites-section {
-            width: 100%;
-            padding: 20px 0 40px 0;
-        }
-
-        .sites-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-
-        .site-item {
-            position: relative;
-            background: #ffffff;
-            border-radius: 24px 0 24px 0;
-            padding: 0;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            min-height: 280px;
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.06);
-        }
-        
-        /* Color header section */
-        .card-header {
-            height: 120px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 24px 0 0 0;
-        }
-        
-        .site-item:nth-child(1) .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .site-item:nth-child(2) .card-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        /* Animated background pattern */
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.1) 10px,
-                rgba(255,255,255,0.1) 20px
-            );
-            animation: slide 20s linear infinite;
-        }
-        
-        @keyframes slide {
-            0% {
-                transform: translate(0, 0);
-            }
-            100% {
-                transform: translate(50px, 50px);
-            }
-        }
-        
-        /* Floating circles animation */
-        .floating-circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            animation: float 4s ease-in-out infinite;
-        }
-        
-        .floating-circle:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: -40px;
-            right: -20px;
-            animation-delay: 0s;
-        }
-        
-        .floating-circle:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            bottom: -30px;
-            left: -10px;
-            animation-delay: 1s;
-        }
-        
-        .floating-circle:nth-child(3) {
-            width: 40px;
-            height: 40px;
-            top: 50%;
-            left: 30%;
-            animation-delay: 2s;
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-            }
-        }
-
-        /* Left side line for each site item */
-        .site-item::before {
-            content: '';
-            position: absolute;
-            left: 25px;
-            top: 35px;
-            bottom: 35px;
-            width: 3px;
-            border-radius: 2px;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-
-        /* Different colors for each site */
-        .site-item:nth-child(1)::before { background: #6366f1; }
-        .site-item:nth-child(2)::before { background: #3b82f6; }
-
-        .site-item:hover::before {
-            opacity: 1;
-            width: 4px;
-            left: 24px;
-        }
-
-        .site-item:nth-child(1) .site-name { color: #6366f1; }
-        .site-item:nth-child(2) .site-name { color: #3b82f6; }
-
-        .site-item:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow:
-                0 20px 60px rgba(0,0,0,0.2),
-                0 4px 12px rgba(0,0,0,0.1),
-                inset 0 2px 4px rgba(255,255,255,1),
-                inset 0 -2px 4px rgba(0,0,0,0.03);
-            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.98) 100%);
-        }
-
-        .site-item:active {
-            transform: scale(0.98);
-        }
-
-        /* Arrow icon */
-        .arrow-icon {
-            content: '▶';
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 100%);
-            transition: all 0.3s ease;
-            opacity: 0.9;
-            border-radius: 50%;
-            box-shadow: 
-                0 4px 12px rgba(0,0,0,0.08),
-                inset 0 1px 2px rgba(255,255,255,0.8);
-            z-index: 3;
-        }
-
-        .site-item:hover .arrow-icon {
-            width: 45px;
-            height: 45px;
-            opacity: 1;
-            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 100%);
-            box-shadow: 
-                0 6px 20px rgba(0,0,0,0.12),
-                inset 0 1px 2px rgba(255,255,255,0.9);
-        }
-
-        /* Arrow colors matching site name colors */
-        .site-item:nth-child(1) .arrow-icon { color: #6366f1; }
-        .site-item:nth-child(2) .arrow-icon { color: #3b82f6; }
-        
-        /* Card content section */
-        .card-content {
-            padding: 30px;
-            position: relative;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            justify-content: space-between;
-        }
-        
-        /* Content wrapper */
-        .content-top {
-            margin-bottom: 40px;
-        }
-        
-
-        
-        /* Typography */
-        .site-name {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            margin-top: 0;
-            color: #1a202c;
-            letter-spacing: -0.02em;
-            transition: all 0.3s ease;
-        }
-        
-        .site-description {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #4a5568;
-            margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        /* Action button */
-        .card-action {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 20px;
-            background: #f7fafc;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            margin-top: auto;
-            padding-top: 15px;
-        }
-        
-        .action-text {
-            font-size: 14px;
-            font-weight: 600;
-            color: #2d3748;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .action-arrow {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* Default colored state for arrows */
-        .site-item:nth-child(1) .action-arrow {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .site-item:nth-child(2) .action-arrow {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        /* Hover effects with new animations */
-        .site-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        }
-        
-        .site-item:hover .card-header::before {
-            animation-duration: 10s;
-        }
-        
-        .site-item:hover .floating-circle {
-            animation-duration: 2s;
-        }
-        
-        .site-item:hover .card-action {
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-        }
-        
-        /* New hover animation for arrows - bounce and glow */
-        .site-item:hover .action-arrow {
-            animation: bounceGlow 0.5s ease;
-            transform: translateY(-3px);
-            box-shadow: 
-                0 8px 25px rgba(0,0,0,0.2),
-                0 0 30px rgba(99,102,241,0.3);
-        }
-        
-        @keyframes bounceGlow {
-            0% {
-                transform: translateY(0) scale(1);
-            }
-            30% {
-                transform: translateY(-8px) scale(1.15);
-            }
-            60% {
-                transform: translateY(-3px) scale(1.05);
-            }
-            100% {
-                transform: translateY(-3px) scale(1);
-            }
-        }
-        
-        /* Add ripple effect on hover */
-        .action-arrow::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: inherit;
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0;
-            transition: all 0.4s ease;
-            z-index: -1;
-        }
-        
-        .site-item:hover .action-arrow::before {
-            transform: translate(-50%, -50%) scale(1.8);
-            opacity: 0;
-            animation: rippleOut 0.6s ease;
-        }
-        
-        @keyframes rippleOut {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.6;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.8);
-                opacity: 0;
-            }
-        }
-        
-        /* Add shimmer effect on hover */
-        .action-arrow::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent 30%,
-                rgba(255,255,255,0.5) 50%,
-                transparent 70%
-            );
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-        
-        .site-item:hover .action-arrow::after {
-            transform: translateX(100%);
-        }
-        
-        /* Active state */
-        .site-item:active {
-            transform: scale(0.98);
-        }
-        
-        /* Decorative elements */
-        .corner-decoration {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 30px;
-            height: 30px;
-            opacity: 0.3;
-        }
-        
-        .corner-decoration::before,
-        .corner-decoration::after {
-            content: '';
-            position: absolute;
-            background: white;
-        }
-        
-        .corner-decoration::before {
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 3px;
-            border-radius: 2px;
-        }
-        
-        .corner-decoration::after {
-            top: 0;
-            right: 0;
-            width: 3px;
-            height: 100%;
-            border-radius: 2px;
-        }
-        
-        /* Left side accent line */
-        .accent-line {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            border-radius: 20px 0 0 20px;
-            transition: all 0.3s ease;
-            z-index: 2;
-        }
-        
-        .site-item:nth-child(1) .accent-line {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        }
-        
-        .site-item:nth-child(2) .accent-line {
-            background: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
-        }
-        
-        .site-item:hover .accent-line {
-            width: 6px;
-            box-shadow: 0 0 20px rgba(99,102,241,0.4);
-        }
-
-        .site-item:nth-child(1) .site-name { 
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .site-item:nth-child(2) .site-name { 
-            background: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .site-item:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow:
-                0 30px 80px rgba(99,102,241,0.25),
-                0 10px 25px rgba(0,0,0,0.1),
-                inset 0 2px 4px rgba(255,255,255,1),
-                inset 0 -2px 4px rgba(0,0,0,0.03);
-            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.98) 100%);
-        }
-
-        .site-item:active {
-            transform: scale(0.98);
-        }
-
-        /* Modern arrow button */
-        .arrow-icon {
-            position: absolute;
-            top: 50%;
-            right: 25px;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
-            border: 1px solid rgba(99,102,241,0.2);
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            z-index: 3;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .arrow-icon::after {
-            content: '→';
-            transition: transform 0.3s ease;
-        }
-
-        .site-item:hover .arrow-icon {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 8px 25px rgba(99,102,241,0.3);
-        }
-        
-        .site-item:hover .arrow-icon::after {
-            transform: translateX(3px);
-        }
-
-        /* Arrow colors matching site name colors */
-        .site-item:nth-child(1) .arrow-icon { color: #6366f1; }
-        .site-item:nth-child(2) .arrow-icon { color: #3b82f6; }
-        
-        .site-item:nth-child(2):hover .arrow-icon {
-            background: linear-gradient(135deg, #3b82f6 0%, #0891b2 100%);
-        }
-        
-        /* Pattern overlay - updated */
-        .pattern-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.02;
-            background: 
-                radial-gradient(circle at 100% 0%, rgba(99,102,241,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, rgba(139,92,246,0.05) 0%, transparent 50%);
-            pointer-events: none;
-            border-radius: 20px;
-        }
-        
-        /* Tech grid pattern */
-        .tech-pattern {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 120px;
-            height: 120px;
-            opacity: 0.03;
-            background-image: 
-                linear-gradient(rgba(99,102,241,0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99,102,241,0.3) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border-radius: 0 0 20px 0;
-            pointer-events: none;
-        }
-
-        .site-number {
-            position: absolute;
-            top: 50%;
-            left: 2px;
-            transform: translateY(-50%);
-            font-size: 20px;
-            font-weight: 300;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-stretch: condensed;
-            opacity: 0.7;
-            letter-spacing: -0.5px;
-            z-index: 2;
-            background: none;
-            padding: 0;
-            line-height: 1;
-            min-width: 15px;
-            text-align: center;
-        }
-
-        /* Number colors matching line colors */
-        .site-item:nth-child(1) .site-number { color: #6366f1; }
-        .site-item:nth-child(2) .site-number { color: #3b82f6; }
-
-        .site-content {
-            position: relative;
-            z-index: 2;
-            padding-left: 15px;
-        }
-
-        .site-name {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 14px;
-            text-transform: none;
-            letter-spacing: -0.02em;
-            transition: all 0.3s ease;
-        }
-
-        .site-description {
-            font-size: 19px;
-            line-height: 1.5;
-            color: #1e293b;
-            margin: 0;
-            transition: color 0.3s ease;
-            font-weight: 400;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            letter-spacing: -0.005em;
-            font-stretch: condensed;
-            transform: scaleY(1.05);
-            transform-origin: left center;
-        }
-
-        .site-item:hover .site-description {
-            color: #0f172a;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .sites-container {
-                grid-template-columns: 1fr;
-                gap: 36px; /* Reduced 10% from 40px */
-            }
-
-            .header {
-                padding: 58px 10px 27px; /* Reduced 10% */
-            }
-
-            .title {
-                font-size: clamp(2.25rem, 5.4vw, 2.7rem); /* Reduced 10% */
-                line-height: 1.1;
-                letter-spacing: -0.03em;
-            }
-
-            .subtitle {
-                font-size: clamp(1.125rem, 2.25vw, 1.35rem); /* Reduced 10% */
-                line-height: 1.3;
-                margin-top: 7px; /* Reduced 10% */
-            }
-
-            .site-item {
-                min-height: 198px; /* Reduced 10% from 220px */
-            }
-            
-            .card-header {
-                height: 72px; /* Reduced 10% from 80px */
-            }
-            
-            .card-content {
-                padding: 22px 18px; /* Reduced 10% */
-            }
-            
-            .content-top {
-                margin-bottom: 18px; /* Reduced 10% */
-            }
-            
-            .site-name {
-                font-size: 29px; /* Reduced 10% from 32px */
-                margin-bottom: 14px; /* Reduced 10% */
-                line-height: 1.1;
-            }
-            
-            .site-description {
-                font-size: 16px; /* Reduced 10% from 18px */
-                line-height: 1.5;
-                margin-bottom: 0;
-                letter-spacing: -0.01em;
-            }
-            
-            .card-action {
-                padding: 11px 14px; /* Reduced 10% */
-                margin-top: 18px; /* Reduced 10% */
-            }
-            
-            .action-text {
-                font-size: 13.5px; /* Reduced 10% from 15px */
-                letter-spacing: 0.3px;
-            }
-            
-            .action-arrow {
-                width: 27px; /* Reduced 10% from 30px */
-                height: 27px;
-                font-size: 14px; /* Reduced 10% */
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .hero-content {
+            animation: fadeInUp 0.8s ease;
         }
     </style>
 </head>
-
 <body>
-    <!-- Background elements -->
-    <div class="bg-image"></div>
-    <div class="bg-overlay"></div>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">KOMA AUTO PARTS</div>
+            <a href="tel:+77771723377" class="header-phone">
+                📱 +7 777 172 33 77
+            </a>
+        </div>
+    </header>
 
-    <!-- Language Selector - Hidden but functional -->
-    <div class="lang-select" style="display: none;">
-        <button class="lang-btn" onclick="toggleLang()">
-            <span id="langFlag">🇹🇷</span>
-            <span id="langName">TR</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                <path d="M3 5L6 8L9 5"/>
-            </svg>
-        </button>
-        <div class="lang-list" id="langList"></div>
-    </div>
-
-    <script>
-        // Translations - 40 languages
-        const translations = {
-            tr: {
-                flag: '🇹🇷',
-                name: 'TR',
-                pageTitle: 'Bizim Diğer Projelerimiz',
-                titlePart1: 'Bizim Diğer',
-                titlePart2: 'Projelerimiz',
-                subtitle: 'Seyahatseverler için oluşturduk',
-                acibiberDesc: 'Telefon rehberindeki kötü insanlara eksi puan ver, iyi insanlara artı puan ver. Toplumu koru.',
-                duflatDesc: 'Seyahat için gerekli tüm araçlar.',
-                visitBtn: 'Siteyi Ziyaret Et'
-            },
-            en: {
-                flag: '🇬🇧',
-                name: 'EN',
-                pageTitle: 'Our Other Projects',
-                titlePart1: 'Our Other',
-                titlePart2: 'Projects',
-                subtitle: 'Created for travel lovers',
-                acibiberDesc: 'Give negative points to bad people in your phone contacts, positive points to good people. Protect society.',
-                duflatDesc: 'All the tools you need for travel.',
-                visitBtn: 'Visit Site'
-            },
-            de: {
-                flag: '🇩🇪',
-                name: 'DE',
-                pageTitle: 'Unsere Anderen Projekte',
-                titlePart1: 'Unsere Anderen',
-                titlePart2: 'Projekte',
-                subtitle: 'Für Reiseliebhaber erstellt',
-                acibiberDesc: 'Geben Sie schlechten Menschen in Ihrem Telefonbuch negative Punkte, guten Menschen positive Punkte. Schützen Sie die Gesellschaft.',
-                duflatDesc: 'Alle Werkzeuge, die Sie für Reisen benötigen.',
-                visitBtn: 'Seite Besuchen'
-            },
-            fr: {
-                flag: '🇫🇷',
-                name: 'FR',
-                pageTitle: 'Nos Autres Projets',
-                titlePart1: 'Nos Autres',
-                titlePart2: 'Projets',
-                subtitle: 'Créé pour les amateurs de voyages',
-                acibiberDesc: 'Donnez des points négatifs aux mauvaises personnes dans vos contacts, des points positifs aux bonnes personnes. Protégez la société.',
-                duflatDesc: 'Tous les outils dont vous avez besoin pour voyager.',
-                visitBtn: 'Visiter le Site'
-            },
-            es: {
-                flag: '🇪🇸',
-                name: 'ES',
-                pageTitle: 'Nuestros Otros Proyectos',
-                titlePart1: 'Nuestros Otros',
-                titlePart2: 'Proyectos',
-                subtitle: 'Creado para amantes de los viajes',
-                acibiberDesc: 'Da puntos negativos a las malas personas en tus contactos, puntos positivos a las buenas personas. Protege la sociedad.',
-                duflatDesc: 'Todas las herramientas que necesitas para viajar.',
-                visitBtn: 'Visitar Sitio'
-            },
-            it: {
-                flag: '🇮🇹',
-                name: 'IT',
-                pageTitle: 'I Nostri Altri Progetti',
-                titlePart1: 'I Nostri Altri',
-                titlePart2: 'Progetti',
-                subtitle: 'Creato per gli amanti dei viaggi',
-                acibiberDesc: 'Dai punti negativi alle persone cattive nei tuoi contatti, punti positivi alle persone buone. Proteggi la società.',
-                duflatDesc: 'Tutti gli strumenti necessari per viaggiare.',
-                visitBtn: 'Visita il Sito'
-            },
-            pt: {
-                flag: '🇵🇹',
-                name: 'PT',
-                pageTitle: 'Nossos Outros Projetos',
-                titlePart1: 'Nossos Outros',
-                titlePart2: 'Projetos',
-                subtitle: 'Criado para amantes de viagens',
-                acibiberDesc: 'Dê pontos negativos para pessoas ruins em seus contatos, pontos positivos para pessoas boas. Proteja a sociedade.',
-                duflatDesc: 'Todas as ferramentas que você precisa para viajar.',
-                visitBtn: 'Visitar Site'
-            },
-            ru: {
-                flag: '🇷🇺',
-                name: 'RU',
-                pageTitle: 'Наши Другие Проекты',
-                titlePart1: 'Наши Другие',
-                titlePart2: 'Проекты',
-                subtitle: 'Создано для любителей путешествий',
-                acibiberDesc: 'Ставьте минусы плохим людям в телефонной книге, плюсы хорошим людям. Защищайте общество.',
-                duflatDesc: 'Все инструменты, необходимые для путешествий.',
-                visitBtn: 'Посетить Сайт'
-            },
-            ja: {
-                flag: '🇯🇵',
-                name: 'JA',
-                pageTitle: '私たちの他のプロジェクト',
-                titlePart1: '私たちの他の',
-                titlePart2: 'プロジェクト',
-                subtitle: '旅行愛好家のために作成',
-                acibiberDesc: '電話帳の悪い人にマイナスポイント、良い人にプラスポイントを付けます。社会を守りましょう。',
-                duflatDesc: '旅行に必要なすべてのツール。',
-                visitBtn: 'サイトを訪問'
-            },
-            zh: {
-                flag: '🇨🇳',
-                name: 'ZH',
-                pageTitle: '我们的其他项目',
-                titlePart1: '我们的其他',
-                titlePart2: '项目',
-                subtitle: '为旅行爱好者创建',
-                acibiberDesc: '给电话簿中的坏人打负分，给好人打正分。保护社会。',
-                duflatDesc: '旅行所需的所有工具。',
-                visitBtn: '访问网站'
-            },
-            ar: {
-                flag: '🇸🇦',
-                name: 'AR',
-                pageTitle: 'مشاريعنا الأخرى',
-                titlePart1: 'مشاريعنا',
-                titlePart2: 'الأخرى',
-                subtitle: 'تم إنشاؤها لعشاق السفر',
-                acibiberDesc: 'أعط نقاط سلبية للأشخاص السيئين في دليل الهاتف، ونقاط إيجابية للأشخاص الجيدين. احم المجتمع.',
-                duflatDesc: 'جميع الأدوات التي تحتاجها للسفر.',
-                visitBtn: 'زيارة الموقع'
-            },
-            hi: {
-                flag: '🇮🇳',
-                name: 'HI',
-                pageTitle: 'हमारी अन्य परियोजनाएं',
-                titlePart1: 'हमारी अन्य',
-                titlePart2: 'परियोजनाएं',
-                subtitle: 'यात्रा प्रेमियों के लिए बनाया गया',
-                acibiberDesc: 'फोन बुक में बुरे लोगों को नकारात्मक अंक दें, अच्छे लोगों को सकारात्मक अंक दें। समाज की रक्षा करें।',
-                duflatDesc: 'यात्रा के लिए आवश्यक सभी उपकरण।',
-                visitBtn: 'साइट पर जाएं'
-            },
-            ko: {
-                flag: '🇰🇷',
-                name: 'KO',
-                pageTitle: '우리의 다른 프로젝트',
-                titlePart1: '우리의 다른',
-                titlePart2: '프로젝트',
-                subtitle: '여행을 사랑하는 사람들을 위해 만들었습니다',
-                acibiberDesc: '전화번호부의 나쁜 사람에게 마이너스 점수, 좋은 사람에게 플러스 점수를 주세요. 사회를 보호하세요.',
-                duflatDesc: '여행에 필요한 모든 도구.',
-                visitBtn: '사이트 방문'
-            },
-            nl: {
-                flag: '🇳🇱',
-                name: 'NL',
-                pageTitle: 'Onze Andere Projecten',
-                titlePart1: 'Onze Andere',
-                titlePart2: 'Projecten',
-                subtitle: 'Gemaakt voor reisliefhebbers',
-                acibiberDesc: 'Geef negatieve punten aan slechte mensen in je telefoonboek, positieve punten aan goede mensen. Bescherm de samenleving.',
-                duflatDesc: 'Alle tools die je nodig hebt voor reizen.',
-                visitBtn: 'Bezoek Site'
-            },
-            pl: {
-                flag: '🇵🇱',
-                name: 'PL',
-                pageTitle: 'Nasze Inne Projekty',
-                titlePart1: 'Nasze Inne',
-                titlePart2: 'Projekty',
-                subtitle: 'Stworzone dla miłośników podróży',
-                acibiberDesc: 'Dawaj punkty ujemne złym ludziom w książce telefonicznej, punkty dodatnie dobrym ludziom. Chroń społeczeństwo.',
-                duflatDesc: 'Wszystkie narzędzia potrzebne do podróżowania.',
-                visitBtn: 'Odwiedź Stronę'
-            },
-            sv: {
-                flag: '🇸🇪',
-                name: 'SV',
-                pageTitle: 'Våra Andra Projekt',
-                titlePart1: 'Våra Andra',
-                titlePart2: 'Projekt',
-                subtitle: 'Skapad för reseälskare',
-                acibiberDesc: 'Ge negativa poäng till dåliga personer i din telefonbok, positiva poäng till bra personer. Skydda samhället.',
-                duflatDesc: 'Alla verktyg du behöver för resor.',
-                visitBtn: 'Besök Sajten'
-            },
-            no: {
-                flag: '🇳🇴',
-                name: 'NO',
-                pageTitle: 'Våre Andre Prosjekter',
-                titlePart1: 'Våre Andre',
-                titlePart2: 'Prosjekter',
-                subtitle: 'Laget for reiseelskere',
-                acibiberDesc: 'Gi negative poeng til dårlige mennesker i telefonboken, positive poeng til gode mennesker. Beskytt samfunnet.',
-                duflatDesc: 'Alle verktøyene du trenger for reiser.',
-                visitBtn: 'Besøk Nettstedet'
-            },
-            da: {
-                flag: '🇩🇰',
-                name: 'DA',
-                pageTitle: 'Vores Andre Projekter',
-                titlePart1: 'Vores Andre',
-                titlePart2: 'Projekter',
-                subtitle: 'Skabt til rejseelskere',
-                acibiberDesc: 'Giv negative point til dårlige mennesker i din telefonbog, positive point til gode mennesker. Beskyt samfundet.',
-                duflatDesc: 'Alle de værktøjer du behøver til rejser.',
-                visitBtn: 'Besøg Siden'
-            },
-            fi: {
-                flag: '🇫🇮',
-                name: 'FI',
-                pageTitle: 'Muut Projektimme',
-                titlePart1: 'Muut',
-                titlePart2: 'Projektimme',
-                subtitle: 'Luotu matkailijoille',
-                acibiberDesc: 'Anna negatiivisia pisteitä puhelinluettelon huonoille ihmisille, positiivisia pisteitä hyville ihmisille. Suojele yhteiskuntaa.',
-                duflatDesc: 'Kaikki matkailuun tarvittavat työkalut.',
-                visitBtn: 'Vieraile Sivustolla'
-            },
-            cs: {
-                flag: '🇨🇿',
-                name: 'CS',
-                pageTitle: 'Naše Další Projekty',
-                titlePart1: 'Naše Další',
-                titlePart2: 'Projekty',
-                subtitle: 'Vytvořeno pro milovníky cestování',
-                acibiberDesc: 'Dejte záporné body špatným lidem v telefonním seznamu, kladné body dobrým lidem. Chraňte společnost.',
-                duflatDesc: 'Všechny nástroje potřebné pro cestování.',
-                visitBtn: 'Navštívit Stránku'
-            },
-            uk: {
-                flag: '🇺🇦',
-                name: 'UK',
-                pageTitle: 'Наші Інші Проекти',
-                titlePart1: 'Наші Інші',
-                titlePart2: 'Проекти',
-                subtitle: 'Створено для любителів подорожей',
-                acibiberDesc: 'Ставте мінуси поганим людям у телефонній книзі, плюси хорошим людям. Захищайте суспільство.',
-                duflatDesc: 'Усі інструменти, необхідні для подорожей.',
-                visitBtn: 'Відвідати Сайт'
-            },
-            ro: {
-                flag: '🇷🇴',
-                name: 'RO',
-                pageTitle: 'Celelalte Proiecte ale Noastre',
-                titlePart1: 'Celelalte Proiecte',
-                titlePart2: 'ale Noastre',
-                subtitle: 'Creat pentru iubitorii de călătorii',
-                acibiberDesc: 'Dați puncte negative persoanelor rele din agenda telefonică, puncte pozitive persoanelor bune. Protejați societatea.',
-                duflatDesc: 'Toate instrumentele necesare pentru călătorii.',
-                visitBtn: 'Vizitează Site-ul'
-            },
-            el: {
-                flag: '🇬🇷',
-                name: 'EL',
-                pageTitle: 'Τα Άλλα Έργα μας',
-                titlePart1: 'Τα Άλλα',
-                titlePart2: 'Έργα μας',
-                subtitle: 'Δημιουργήθηκε για τους λάτρεις των ταξιδιών',
-                acibiberDesc: 'Δώστε αρνητικούς πόντους σε κακούς ανθρώπους στον τηλεφωνικό κατάλογο, θετικούς πόντους σε καλούς ανθρώπους. Προστατέψτε την κοινωνία.',
-                duflatDesc: 'Όλα τα εργαλεία που χρειάζεστε για ταξίδια.',
-                visitBtn: 'Επισκεφθείτε τον Ιστότοπο'
-            },
-            hu: {
-                flag: '🇭🇺',
-                name: 'HU',
-                pageTitle: 'Egyéb Projektjeink',
-                titlePart1: 'Egyéb',
-                titlePart2: 'Projektjeink',
-                subtitle: 'Utazás szerelmeseinek készítve',
-                acibiberDesc: 'Adj negatív pontokat a rossz embereknek a telefonkönyvedben, pozitív pontokat a jó embereknek. Védd meg a társadalmat.',
-                duflatDesc: 'Minden eszköz, amire szükséged van az utazáshoz.',
-                visitBtn: 'Oldal Megtekintése'
-            },
-            th: {
-                flag: '🇹🇭',
-                name: 'TH',
-                pageTitle: 'โครงการอื่นๆ ของเรา',
-                titlePart1: 'โครงการอื่นๆ',
-                titlePart2: 'ของเรา',
-                subtitle: 'สร้างขึ้นสำหรับผู้รักการเดินทาง',
-                acibiberDesc: 'ให้คะแนนลบกับคนไม่ดีในสมุดโทรศัพท์ ให้คะแนนบวกกับคนดี ปกป้องสังคม',
-                duflatDesc: 'เครื่องมือทั้งหมดที่คุณต้องการสำหรับการเดินทาง',
-                visitBtn: 'เยี่ยมชมเว็บไซต์'
-            },
-            vi: {
-                flag: '🇻🇳',
-                name: 'VI',
-                pageTitle: 'Các Dự Án Khác Của Chúng Tôi',
-                titlePart1: 'Các Dự Án Khác',
-                titlePart2: 'Của Chúng Tôi',
-                subtitle: 'Được tạo cho những người yêu du lịch',
-                acibiberDesc: 'Cho điểm âm cho người xấu trong danh bạ điện thoại, điểm dương cho người tốt. Bảo vệ xã hội.',
-                duflatDesc: 'Tất cả các công cụ bạn cần cho du lịch.',
-                visitBtn: 'Truy Cập Trang'
-            },
-            id: {
-                flag: '🇮🇩',
-                name: 'ID',
-                pageTitle: 'Proyek Lain Kami',
-                titlePart1: 'Proyek Lain',
-                titlePart2: 'Kami',
-                subtitle: 'Dibuat untuk pecinta perjalanan',
-                acibiberDesc: 'Berikan poin negatif untuk orang jahat di buku telepon, poin positif untuk orang baik. Lindungi masyarakat.',
-                duflatDesc: 'Semua alat yang Anda butuhkan untuk perjalanan.',
-                visitBtn: 'Kunjungi Situs'
-            },
-            ms: {
-                flag: '🇲🇾',
-                name: 'MS',
-                pageTitle: 'Projek Lain Kami',
-                titlePart1: 'Projek Lain',
-                titlePart2: 'Kami',
-                subtitle: 'Dicipta untuk pencinta perjalanan',
-                acibiberDesc: 'Berikan mata negatif kepada orang jahat dalam buku telefon, mata positif kepada orang baik. Lindungi masyarakat.',
-                duflatDesc: 'Semua alat yang anda perlukan untuk perjalanan.',
-                visitBtn: 'Lawati Laman'
-            },
-            bn: {
-                flag: '🇧🇩',
-                name: 'BN',
-                pageTitle: 'আমাদের অন্যান্য প্রকল্প',
-                titlePart1: 'আমাদের অন্যান্য',
-                titlePart2: 'প্রকল্প',
-                subtitle: 'ভ্রমণ প্রেমীদের জন্য তৈরি',
-                acibiberDesc: 'ফোন বইয়ের খারাপ মানুষদের নেতিবাচক পয়েন্ট দিন, ভাল মানুষদের ইতিবাচক পয়েন্ট দিন। সমাজকে রক্ষা করুন।',
-                duflatDesc: 'ভ্রমণের জন্য প্রয়োজনীয় সমস্ত সরঞ্জাম।',
-                visitBtn: 'সাইট ভিজিট করুন'
-            },
-            tl: {
-                flag: '🇵🇭',
-                name: 'TL',
-                pageTitle: 'Aming Iba Pang Mga Proyekto',
-                titlePart1: 'Aming Iba Pang',
-                titlePart2: 'Mga Proyekto',
-                subtitle: 'Ginawa para sa mga mahilig maglakbay',
-                acibiberDesc: 'Magbigay ng negatibong puntos sa masamang tao sa phone book, positibong puntos sa mabuting tao. Protektahan ang lipunan.',
-                duflatDesc: 'Lahat ng kasangkapan na kailangan mo para sa paglalakbay.',
-                visitBtn: 'Bisitahin ang Site'
-            },
-            hr: {
-                flag: '🇭🇷',
-                name: 'HR',
-                pageTitle: 'Naši Drugi Projekti',
-                titlePart1: 'Naši Drugi',
-                titlePart2: 'Projekti',
-                subtitle: 'Stvoreno za ljubitelje putovanja',
-                acibiberDesc: 'Dajte negativne bodove lošim ljudima u imeniku, pozitivne bodove dobrim ljudima. Zaštitite društvo.',
-                duflatDesc: 'Svi alati koji su vam potrebni za putovanje.',
-                visitBtn: 'Posjetite Stranicu'
-            },
-            he: {
-                flag: '🇮🇱',
-                name: 'HE',
-                pageTitle: 'הפרויקטים האחרים שלנו',
-                titlePart1: 'הפרויקטים',
-                titlePart2: 'האחרים שלנו',
-                subtitle: 'נוצר עבור אוהבי טיולים',
-                acibiberDesc: 'תן נקודות שליליות לאנשים רעים בספר הטלפונים, נקודות חיוביות לאנשים טובים. הגן על החברה.',
-                duflatDesc: 'כל הכלים שאתה צריך לטיולים.',
-                visitBtn: 'בקר באתר'
-            },
-            fa: {
-                flag: '🇮🇷',
-                name: 'FA',
-                pageTitle: 'پروژه‌های دیگر ما',
-                titlePart1: 'پروژه‌های',
-                titlePart2: 'دیگر ما',
-                subtitle: 'ساخته شده برای عاشقان سفر',
-                acibiberDesc: 'به افراد بد در دفترچه تلفن امتیاز منفی، به افراد خوب امتیاز مثبت بدهید. از جامعه محافظت کنید.',
-                duflatDesc: 'تمام ابزارهایی که برای سفر نیاز دارید.',
-                visitBtn: 'بازدید از سایت'
-            },
-            ca: {
-                flag: '🇪🇸',
-                name: 'CA',
-                pageTitle: 'Els Nostres Altres Projectes',
-                titlePart1: 'Els Nostres Altres',
-                titlePart2: 'Projectes',
-                subtitle: 'Creat per als amants dels viatges',
-                acibiberDesc: 'Dóna punts negatius a les males persones a la teva agenda, punts positius a les bones persones. Protegeix la societat.',
-                duflatDesc: 'Totes les eines que necessites per viatjar.',
-                visitBtn: 'Visitar el Lloc'
-            },
-            sk: {
-                flag: '🇸🇰',
-                name: 'SK',
-                pageTitle: 'Naše Ďalšie Projekty',
-                titlePart1: 'Naše Ďalšie',
-                titlePart2: 'Projekty',
-                subtitle: 'Vytvorené pre milovníkov cestovania',
-                acibiberDesc: 'Dajte záporné body zlým ľuďom v telefónnom zozname, kladné body dobrým ľuďom. Chráňte spoločnosť.',
-                duflatDesc: 'Všetky nástroje potrebné na cestovanie.',
-                visitBtn: 'Navštíviť Stránku'
-            },
-            ur: {
-                flag: '🇵🇰',
-                name: 'UR',
-                pageTitle: 'ہماری دیگر پروجیکٹس',
-                titlePart1: 'ہماری دیگر',
-                titlePart2: 'پروجیکٹس',
-                subtitle: 'سفر کے شوقینوں کے لیے بنایا گیا',
-                acibiberDesc: 'فون بک میں برے لوگوں کو منفی پوائنٹس دیں، اچھے لوگوں کو مثبت پوائنٹس دیں۔ معاشرے کی حفاظت کریں۔',
-                duflatDesc: 'سفر کے لیے درکار تمام ٹولز۔',
-                visitBtn: 'سائٹ دیکھیں'
-            },
-            hak: {
-                flag: '🇨🇳',
-                name: 'HAK',
-                pageTitle: '𠊎等个其他項目',
-                titlePart1: '𠊎等个',
-                titlePart2: '其他項目',
-                subtitle: '為旅行愛好者創建',
-                acibiberDesc: '畀電話簿个壞人負分，畀好人正分。保護社會。',
-                duflatDesc: '旅行需要个所有工具。',
-                visitBtn: '訪問網站'
-            },
-            arz: {
-                flag: '🇪🇬',
-                name: 'ARZ',
-                pageTitle: 'مشاريعنا التانية',
-                titlePart1: 'مشاريعنا',
-                titlePart2: 'التانية',
-                subtitle: 'اتعملت لمحبين السفر',
-                acibiberDesc: 'ادي نقط سلبية للناس الوحشة في دليل التليفون، ونقط إيجابية للناس الكويسة. احمي المجتمع.',
-                duflatDesc: 'كل الأدوات اللي محتاجها للسفر.',
-                visitBtn: 'زور الموقع'
-            },
-            wuu: {
-                flag: '🇨🇳',
-                name: 'WUU',
-                pageTitle: '阿拉个其他项目',
-                titlePart1: '阿拉个',
-                titlePart2: '其他项目',
-                subtitle: '为旅行爱好者创建',
-                acibiberDesc: '畀电话簿里个坏人负分，畀好人正分。保护社会。',
-                duflatDesc: '旅行需要个所有工具。',
-                visitBtn: '访问网站'
-            },
-            yue: {
-                flag: '🇭🇰',
-                name: 'YUE',
-                pageTitle: '我哋嘅其他項目',
-                titlePart1: '我哋嘅',
-                titlePart2: '其他項目',
-                subtitle: '為旅行愛好者而設',
-                acibiberDesc: '畀電話簿入面嘅衰人負分，好人正分。保護社會。',
-                duflatDesc: '旅行需要嘅所有工具。',
-                visitBtn: '訪問網站'
-            }
-        };
-
-        // Language functions
-        let currentLang = 'tr';
-
-        function detectLang() {
-            const saved = localStorage.getItem('lang');
-            if (saved && translations[saved]) return saved;
-            
-            const browser = navigator.language.toLowerCase();
-            for (const code in translations) {
-                if (browser.startsWith(code)) return code;
-            }
-            return 'tr';
-        }
-
-        function setLang(code) {
-            currentLang = code;
-            const t = translations[code];
-            
-            // Update UI elements
-            document.getElementById('pageTitle').textContent = t.pageTitle;
-            document.getElementById('titlePart1').textContent = t.titlePart1;
-            document.getElementById('titlePart2').textContent = t.titlePart2;
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('acibiberDesc').textContent = t.acibiberDesc;
-            document.getElementById('duflatDesc').textContent = t.duflatDesc;
-            document.getElementById('visitBtn1').textContent = t.visitBtn;
-            document.getElementById('visitBtn2').textContent = t.visitBtn;
-            
-            // Update language button
-            document.getElementById('langFlag').textContent = t.flag;
-            document.getElementById('langName').textContent = t.name;
-            
-            // Update document language
-            document.documentElement.lang = code;
-            localStorage.setItem('lang', code);
-            
-            // Update active state in dropdown
-            document.querySelectorAll('.lang-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.lang === code);
-            });
-        }
-
-        function toggleLang() {
-            const list = document.getElementById('langList');
-            list.classList.toggle('show');
-        }
-
-        function initLangList() {
-            const list = document.getElementById('langList');
-            list.innerHTML = '';
-            
-            for (const [code, lang] of Object.entries(translations)) {
-                const item = document.createElement('div');
-                item.className = 'lang-item';
-                item.dataset.lang = code;
-                item.innerHTML = `<span>${lang.flag}</span><span>${lang.name}</span>`;
-                item.onclick = () => {
-                    setLang(code);
-                    list.classList.remove('show');
-                };
-                list.appendChild(item);
-            }
-        }
-
-        // Initialize on DOM load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize language list (even though hidden)
-            initLangList();
-            
-            // Detect browser language and set it automatically
-            const detectedLang = detectLang();
-            setLang(detectedLang);
-            
-            // Log for debugging
-            console.log('Detected language:', detectedLang);
-            console.log('Browser language:', navigator.language);
-        });
-
-        // Close language dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const langSelect = document.querySelector('.lang-select');
-            if (langSelect && !langSelect.contains(e.target)) {
-                document.getElementById('langList').classList.remove('show');
-            }
-        });
-    </script>
-
-    <!-- Main scrollable wrapper -->
-    <div class="main-wrapper">
-        <div class="container">
-            <div class="header">
-                <h1 class="title" id="title">
-                    <span class="title-part1" id="titlePart1">Bizim Diğer</span> 
-                    <span class="title-part2" id="titlePart2">Projelerimiz</span>
-                </h1>
-                <p class="subtitle" id="subtitle">Seyahatseverler için oluşturduk</p>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>KOMA AUTO PARTS</h1>
+            <div class="hero-subtitle">Магазин автозапчастей</div>
+            <p class="hero-description">Надёжный поставщик оригинальных запчастей для KIA и Hyundai. Работаем напрямую с проверенными производителями.</p>
+            <div class="cta-buttons">
+                <a href="tel:+77771723377" class="btn-primary">
+                    📞 Позвонить сейчас
+                </a>
+                <a href="https://instagram.com/komaauto.parts" class="btn-secondary" target="_blank">
+                    📷 Instagram
+                </a>
             </div>
+        </div>
+    </section>
 
-            <!-- Sites List -->
-            <div class="sites-section" id="sitesSection">
-                <div class="sites-container" id="sitesContainer">
-                    <a href="https://acibiber.net" target="_blank" class="site-item">
-                        <div class="card-header">
-                            <div class="floating-circle"></div>
-                            <div class="floating-circle"></div>
-                            <div class="floating-circle"></div>
-                            <div class="corner-decoration"></div>
-                        </div>
-                        <div class="card-content">
-                            <div class="content-top">
-                                <h3 class="site-name">acibiber</h3>
-                                <p class="site-description" id="acibiberDesc">Telefon rehberindeki kötü insanlara eksi puan ver, iyi insanlara artı puan ver.</p>
-                            </div>
-                            <div class="card-action">
-                                <span class="action-text" id="visitBtn1">Siteyi Ziyaret Et</span>
-                                <div class="action-arrow">→</div>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="https://duflat.com/check.html" target="_blank" class="site-item">
-                        <div class="card-header">
-                            <div class="floating-circle"></div>
-                            <div class="floating-circle"></div>
-                            <div class="floating-circle"></div>
-                            <div class="corner-decoration"></div>
-                        </div>
-                        <div class="card-content">
-                            <div class="content-top">
-                                <h3 class="site-name">duflat</h3>
-                                <p class="site-description" id="duflatDesc">Seyahat için gerekli tüm araçlar.</p>
-                            </div>
-                            <div class="card-action">
-                                <span class="action-text" id="visitBtn2">Siteyi Ziyaret Et</span>
-                                <div class="action-arrow">→</div>
-                            </div>
-                        </div>
-                    </a>
+    <!-- Info Cards -->
+    <section class="info-section">
+        <div class="container">
+            <div class="cards-grid">
+                <div class="info-card">
+                    <span class="card-icon">✅</span>
+                    <h3>Оригинальные запчасти</h3>
+                    <p>Работаем только с официальными поставщиками. Гарантия качества на все товары.</p>
+                </div>
+                <div class="info-card">
+                    <span class="card-icon">🚚</span>
+                    <h3>Быстрая доставка</h3>
+                    <p>Оперативная отгрузка и доставка по городу. Большой ассортимент в наличии.</p>
+                </div>
+                <div class="info-card">
+                    <span class="card-icon">💰</span>
+                    <h3>Выгодные цены</h3>
+                    <p>Конкурентные цены благодаря прямым поставкам от производителей.</p>
+                </div>
+                <div class="info-card">
+                    <span class="card-icon">🤝</span>
+                    <h3>Профессиональная консультация</h3>
+                    <p>Поможем подобрать нужные запчасти и ответим на все вопросы.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Brands -->
+    <section class="brands-section">
+        <h2 class="section-title">Специализируемся на брендах</h2>
+        <div class="brands-container">
+            <div class="brand-item">KIA</div>
+            <div class="brand-item">HYUNDAI</div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="contact-section">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">Свяжитесь с нами</h2>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <span class="contact-icon">📱</span>
+                    <h3>Телефоны</h3>
+                    <p>
+                        <a href="tel:+77771723377">+7 777 172 33 77</a><br>
+                        <a href="tel:+77078383086">+7 707 838 30 86</a>
+                    </p>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">✉️</span>
+                    <h3>Email</h3>
+                    <p>
+                        <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+                    </p>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">📍</span>
+                    <h3>Адрес</h3>
+                    <p>ТЦ. «Car City»<br>4 ярус</p>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">📷</span>
+                    <h3>Instagram</h3>
+                    <p>
+                        <a href="https://instagram.com/komaauto.parts" target="_blank">@komaauto.parts</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 KOMA AUTO PARTS. Все права защищены.</p>
+            <p style="margin-top: 10px;">Надёжный партнёр в мире автозапчастей KIA и Hyundai</p>
+        </div>
+    </footer>
 </body>
 </html>
