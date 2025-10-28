@@ -391,10 +391,10 @@
 
         .hero-buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin: 60px auto 0;
-            max-width: 900px;
+            max-width: 700px;
             animation: fadeInUp 0.8s ease 0.4s both;
         }
 
@@ -451,8 +451,8 @@
         .hero-btn {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 20px 25px;
+            gap: 12px;
+            padding: 18px 20px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: var(--border-radius);
@@ -463,6 +463,47 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
+        }
+
+        /* Icon adjustments for 2x2 grid */
+        .btn-icon {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--transition-base);
+            flex-shrink: 0;
+        }
+
+        .btn-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .btn-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .btn-phone {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         /* Subtle pulse animation for call-to-action */
@@ -1167,23 +1208,23 @@
             }
 
             .hero-buttons {
-                grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
                 margin-top: 40px;
             }
 
             .hero-btn {
-                padding: 15px 20px;
+                padding: 14px 10px;
                 animation: shadowPulse 4s ease-in-out infinite;
+                gap: 10px;
             }
 
             .hero-btn::after {
-                opacity: 0.4;
-                font-size: 16px;
+                display: none;
             }
 
             .btn-icon {
-                font-size: 28px;
+                font-size: 24px;
             }
 
             .btn-title {
@@ -1273,7 +1314,26 @@
             }
 
             .hero-buttons {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
                 margin-top: 30px;
+            }
+
+            .hero-btn {
+                padding: 12px 8px;
+            }
+
+            .btn-icon {
+                font-size: 22px;
+            }
+
+            .btn-title {
+                font-size: 10px;
+                letter-spacing: 0;
+            }
+
+            .btn-phone {
+                font-size: 12px;
             }
 
             .scroll-indicator {
@@ -1291,6 +1351,17 @@
             .advantage-card,
             .contact-card {
                 padding: 25px 20px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .hero-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .hero-btn {
+                padding: 14px 16px;
             }
         }
 
