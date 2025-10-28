@@ -29,6 +29,11 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             line-height: 1.7;
@@ -39,6 +44,8 @@
             overflow-x: hidden;
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: transparent;
+            width: 100%;
+            position: relative;
         }
 
         /* Prevent zoom on input focus (iOS) */
@@ -861,8 +868,7 @@
             }
 
             .scroll-indicator {
-                font-size: 13px;
-                padding: 10px 20px;
+                display: none !important;
             }
 
             .header-container {
@@ -876,11 +882,6 @@
             .logo-subtitle {
                 font-size: 9px;
             }
-        }
-
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
         }
 
         /* Extra Small Screens (iPhone SE, older Android) */
@@ -1068,12 +1069,7 @@
             }
 
             .scroll-indicator {
-                font-size: 12px;
-                padding: 8px 16px;
-            }
-
-            .scroll-arrow {
-                font-size: 18px;
+                display: none !important;
             }
 
             .logo-text {
