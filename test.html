@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="kk">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -1249,7 +1249,7 @@
             <div class="lang-selector">
                 <button class="lang-btn" id="langBtn">
                     <span id="currentLangFlag">🇰🇿</span>
-                    <span id="currentLangName">KK</span>
+                    <span id="currentLangName">RU</span>
                 </button>
                 <div class="lang-dropdown" id="langDropdown"></div>
             </div>
@@ -1679,7 +1679,7 @@
             }
         };
 
-        let currentLang = 'kk';
+        let currentLang = 'ru';
 
         // Detect browser language
         function detectLanguage() {
@@ -1690,8 +1690,8 @@
                 return storedLang;
             }
             
-            // Varsayılan olarak her zaman Kazakça döndür
-            return 'kk';
+            // Varsayılan olarak Rusça döndür
+            return 'ru';
         }
 
         // Update page language
