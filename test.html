@@ -50,7 +50,7 @@
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
             --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --header-height: 72px;
+            --header-height: 60px;
             --container-max: 1280px;
             --border-radius: 12px;
             --border-radius-sm: 8px;
@@ -150,13 +150,13 @@
         .lang-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
+            gap: 6px;
+            padding: 8px 12px;
             background: var(--bg-white);
             border: 2px solid var(--gray-200);
             border-radius: var(--border-radius-sm);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-dark);
             box-shadow: var(--shadow-sm);
@@ -214,7 +214,7 @@
         /* Header */
         header {
             background: var(--bg-white);
-            padding: 20px 0;
+            padding: 15px 0;
             box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
@@ -241,7 +241,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
             gap: 20px;
         }
 
@@ -252,7 +251,7 @@
         }
 
         .logo-text {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: 0.5px;
             color: var(--primary-color);
@@ -260,11 +259,13 @@
         }
 
         .logo-subtitle {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 1px;
             font-weight: 600;
+            display: block;
+            margin-top: 2px;
         }
 
         /* Navigation */
@@ -940,8 +941,52 @@
             }
         }
 
+        @media (max-width: 576px) {
+            .logo-subtitle {
+                display: none;
+            }
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            /* Mobile Header */
+            header {
+                position: relative; /* Sticky değil, normal akış içinde */
+                padding: 10px 0;
+            }
+
+            .header-container {
+                padding: 0 15px;
+                gap: 10px;
+            }
+
+            .logo-section {
+                flex: 1;
+            }
+
+            .logo-text {
+                font-size: 18px;
+                letter-spacing: 0;
+            }
+
+            .logo-subtitle {
+                display: none; /* Mobilde subtitle gizleniyor */
+            }
+
+            .lang-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .lang-btn span#currentLangName {
+                display: none; /* Sadece bayrak görünsün */
+            }
+
+            .lang-dropdown {
+                right: -10px;
+                min-width: 150px;
+            }
+
             /* Hide navigation on mobile */
             nav {
                 display: none;
@@ -949,7 +994,7 @@
 
             /* Mobile Hero */
             .hero {
-                padding: 80px 20px 60px;
+                padding: 60px 20px 50px;
                 min-height: auto;
             }
 
@@ -1024,12 +1069,38 @@
         }
 
         @media (max-width: 480px) {
+            header {
+                padding: 8px 0;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .lang-btn {
+                padding: 5px 8px;
+            }
+
+            .lang-btn #currentLangFlag {
+                font-size: 16px;
+            }
+
+            .hero {
+                padding: 40px 15px;
+            }
+
             .hero-title {
-                font-size: 28px;
+                font-size: 26px;
+                line-height: 1.2;
             }
 
             .hero-subtitle {
-                font-size: 16px;
+                font-size: 15px;
+                margin-bottom: 30px;
+            }
+
+            .hero-buttons {
+                margin: 30px auto;
             }
 
             .section-title {
@@ -1079,6 +1150,7 @@
             <nav id="navMenu">
                 <ul class="nav-links">
                     <li><a href="#hero" class="nav-link active" data-translate="navHome">Главная</a></li>
+                    <li><a href="#services" class="nav-link" data-translate="navServices">Услуги</a></li>
                     <li><a href="#advantages" class="nav-link" data-translate="navAdvantages">Преимущества</a></li>
                     <li><a href="#brands" class="nav-link" data-translate="navBrands">Бренды</a></li>
                     <li><a href="#contact" class="nav-link" data-translate="navContact">Контакты</a></li>
@@ -1137,6 +1209,36 @@
         </div>
     </section>
 
+    <!-- Services -->
+    <section class="services" id="services">
+        <div class="section-header fade-in">
+            <h2 class="section-title" data-translate="servicesTitle">Наши услуги</h2>
+        </div>
+        <div class="services-grid">
+            <div class="service-card scale-in">
+                <div class="service-icon">🔧</div>
+                <h3 class="service-title" data-translate="serviceTitle1">Ходовая часть</h3>
+                <p class="service-text" data-translate="serviceText1">
+                    Полный ассортимент деталей подвески и рулевого управления
+                </p>
+            </div>
+            <div class="service-card scale-in">
+                <div class="service-icon">⚙️</div>
+                <h3 class="service-title" data-translate="serviceTitle2">Запчасти двигателя</h3>
+                <p class="service-text" data-translate="serviceText2">
+                    Все компоненты для ремонта и обслуживания двигателя
+                </p>
+            </div>
+            <div class="service-card scale-in">
+                <div class="service-icon">✨</div>
+                <h3 class="service-title" data-translate="serviceTitle3">Гарантия качества</h3>
+                <p class="service-text" data-translate="serviceText3">
+                    Официальная гарантия на все детали
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- Advantages -->
     <section class="advantages" id="advantages">
         <div class="section-header fade-in">
@@ -1188,36 +1290,6 @@
             </div>
             <div class="brand-card scale-in">
                 <div class="brand-logo">CHEVROLET</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Services -->
-    <section class="services" id="services">
-        <div class="section-header fade-in">
-            <h2 class="section-title" data-translate="servicesTitle">Наши услуги</h2>
-        </div>
-        <div class="services-grid">
-            <div class="service-card scale-in">
-                <div class="service-icon">🔧</div>
-                <h3 class="service-title" data-translate="serviceTitle1">Ходовая часть</h3>
-                <p class="service-text" data-translate="serviceText1">
-                    Полный ассортимент деталей подвески и рулевого управления
-                </p>
-            </div>
-            <div class="service-card scale-in">
-                <div class="service-icon">⚙️</div>
-                <h3 class="service-title" data-translate="serviceTitle2">Запчасти двигателя</h3>
-                <p class="service-text" data-translate="serviceText2">
-                    Все компоненты для ремонта и обслуживания двигателя
-                </p>
-            </div>
-            <div class="service-card scale-in">
-                <div class="service-icon">✨</div>
-                <h3 class="service-title" data-translate="serviceTitle3">Гарантия качества</h3>
-                <p class="service-text" data-translate="serviceText3">
-                    Официальная гарантия на все детали
-                </p>
             </div>
         </div>
     </section>
@@ -1326,6 +1398,7 @@
                 logoText: 'КОМА АВТО',
                 logoSubtitle: 'НАДЁЖНЫЙ ПОСТАВЩИК ЗАПЧАСТЕЙ',
                 navHome: 'Главная',
+                navServices: 'Услуги',
                 navAdvantages: 'Преимущества',
                 navBrands: 'Бренды',
                 navContact: 'Контакты',
@@ -1371,6 +1444,7 @@
                 logoText: 'КОМА АВТО',
                 logoSubtitle: 'СЕНІМДІ БӨЛШЕКТЕР ЖЕТКІЗУШІ',
                 navHome: 'Басты бет',
+                navServices: 'Қызметтер',
                 navAdvantages: 'Артықшылықтар',
                 navBrands: 'Брендтер',
                 navContact: 'Байланыс',
@@ -1416,6 +1490,7 @@
                 logoText: 'KOMA AUTO',
                 logoSubtitle: 'RELIABLE PARTS SUPPLIER',
                 navHome: 'Home',
+                navServices: 'Services',
                 navAdvantages: 'Advantages',
                 navBrands: 'Brands',
                 navContact: 'Contact',
@@ -1461,6 +1536,7 @@
                 logoText: 'KOMA AUTO',
                 logoSubtitle: 'GÜVENİLİR YEDEK PARÇA TEDARİKÇİSİ',
                 navHome: 'Ana Sayfa',
+                navServices: 'Hizmetler',
                 navAdvantages: 'Avantajlar',
                 navBrands: 'Markalar',
                 navContact: 'İletişim',
