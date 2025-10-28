@@ -452,28 +452,49 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 16px 24px;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 18px 26px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
             backdrop-filter: blur(10px);
             border-radius: var(--border-radius);
             text-decoration: none;
             transition: all var(--transition-base);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 2px solid rgba(26, 77, 122, 0.15);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.08),
+                0 2px 8px rgba(0,0,0,0.05),
+                inset 0 1px 2px rgba(255,255,255,0.9);
             cursor: pointer;
             position: relative;
             overflow: hidden;
             width: 100%;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Animated gradient border */
+        @keyframes borderGlow {
+            0%, 100% {
+                border-color: rgba(26, 77, 122, 0.15);
+            }
+            25% {
+                border-color: rgba(201, 169, 97, 0.25);
+            }
+            50% {
+                border-color: rgba(26, 77, 122, 0.25);
+            }
+            75% {
+                border-color: rgba(201, 169, 97, 0.15);
+            }
         }
 
         /* Icon adjustments for single column */
         .btn-icon {
-            font-size: 26px;
+            font-size: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform var(--transition-base);
+            transition: all var(--transition-base);
             flex-shrink: 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .btn-content {
@@ -499,45 +520,71 @@
             color: var(--primary-color);
         }
 
-        /* Subtle pulse animation for call-to-action */
+        /* Shimmer effect */
         .hero-btn::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: -2px;
+            left: -100%;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.6s ease;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255,255,255,0.5), 
+                transparent
+            );
+            transition: left 0.5s ease;
             pointer-events: none;
         }
 
         .hero-btn:hover::before {
-            transform: translate(-50%, -50%) scale(2);
+            left: 100%;
         }
 
         /* 3D effect on hover */
         .hero-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 
+                0 16px 48px rgba(0,0,0,0.12),
+                0 4px 12px rgba(0,0,0,0.08),
+                inset 0 1px 3px rgba(255,255,255,1);
+            border-color: var(--primary-color);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(252, 252, 252, 0.98));
         }
 
-        /* Active state for better feedback */
+        /* Active state */
         .hero-btn:active {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.1),
+                0 2px 6px rgba(0,0,0,0.06);
         }
 
-        /* Subtle shadow animation */
-        @keyframes shadowPulse {
-            0% { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-            50% { box-shadow: 0 6px 25px rgba(0,0,0,0.15); }
-            100% { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        /* Icon hover animation */
+        .hero-btn:hover .btn-icon {
+            transform: scale(1.15) rotate(5deg);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+
+        /* Continuous animation */
+        @keyframes buttonPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(0,0,0,0.08),
+                    0 2px 8px rgba(0,0,0,0.05),
+                    inset 0 1px 2px rgba(255,255,255,0.9);
+            }
+            50% { 
+                box-shadow: 
+                    0 12px 40px rgba(0,0,0,0.1),
+                    0 4px 12px rgba(0,0,0,0.07),
+                    inset 0 1px 3px rgba(255,255,255,1);
+            }
         }
 
         .hero-btn {
-            animation: shadowPulse 3s ease-in-out infinite;
+            animation: buttonPulse 4s ease-in-out infinite, borderGlow 6s ease-in-out infinite;
         }
 
         .hero-btn:hover {
@@ -595,17 +642,20 @@
         .hero-btn::after {
             content: '→';
             position: absolute;
-            right: 20px;
+            right: 24px;
             top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.3;
-            font-size: 20px;
+            transform: translateY(-50%) translateX(0);
+            opacity: 0.5;
+            font-size: 22px;
+            font-weight: bold;
             transition: all var(--transition-base);
+            color: var(--primary-color);
         }
 
         .hero-btn:hover::after {
-            opacity: 0.6;
-            right: 15px;
+            opacity: 1;
+            transform: translateY(-50%) translateX(4px);
+            color: var(--accent-gold);
         }
 
         .btn-content {
@@ -1226,12 +1276,13 @@
 
             .hero-btn {
                 padding: 14px 16px;
-                animation: shadowPulse 4s ease-in-out infinite;
+                animation: buttonPulse 5s ease-in-out infinite;
                 gap: 12px;
             }
 
             .hero-btn::after {
-                display: none;
+                right: 16px;
+                font-size: 18px;
             }
 
             .btn-icon {
