@@ -239,6 +239,7 @@
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
+            display: none !important;
         }
 
         .loading-content {
@@ -1235,6 +1236,16 @@
         </div>
     </div>
 
+    <script>
+        // Immediately hide loading screen when page is ready
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loadingScreen');
+            if (loader) {
+                loader.classList.add('hidden');
+            }
+        });
+    </script>
+
     <!-- Language Selector -->
     <div class="lang-selector">
         <button class="lang-btn" id="langBtn">
@@ -1818,15 +1829,25 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize language
-            initLanguageSelector();
-            const detectedLang = detectLanguage();
-            updateLanguage(detectedLang);
+            try {
+                // Initialize language
+                initLanguageSelector();
+                const detectedLang = detectLanguage();
+                updateLanguage(detectedLang);
+            } catch (error) {
+                console.error('Language initialization error:', error);
+            }
 
-            // Hide loading screen
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 1000);
+            // Hide loading screen immediately after content loads
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    // Force hide after animation
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }, 500);
 
             // Scroll animations
             const observerOptions = {
