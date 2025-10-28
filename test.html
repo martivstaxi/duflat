@@ -6,28 +6,19 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     
     <!-- SEO Meta Tags -->
-    <title>КОМА АВТО - Запчасти KIA, Hyundai, Chevrolet | Надёжный поставщик</title>
-    <meta name="description" content="Оригинальные запчасти для KIA, Hyundai и Chevrolet. Гарантия качества, быстрая доставка, профессиональная поддержка. ☎️ +7 777 172 33 77">
-    <meta name="keywords" content="KIA запчасти, Hyundai запчасти, Chevrolet запчасти, автозапчасти, Car City, Koma Auto">
+    <title>КОМА АВТО — Запчасти KIA, Hyundai и Chevrolet | Надёжный поставщик</title>
+    <meta name="description" content="Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet. Работаем напрямую с проверенными производителями. ☎️ +7 777 172 33 77">
+    <meta name="keywords" content="KIA запчасти, Hyundai запчасти, Chevrolet запчасти, автозапчасти, Car City, Koma Auto, ходовая часть, запчасти двигателя">
     <meta name="author" content="КОМА АВТО">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#1a4d7a">
     
     <!-- Open Graph Tags -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="КОМА АВТО - Надёжный поставщик запчастей">
-    <meta property="og:description" content="Оригинальные запчасти для KIA, Hyundai и Chevrolet. Гарантия и быстрая доставка.">
-    <meta property="og:image" content="/assets/og-image.jpg">
+    <meta property="og:title" content="КОМА АВТО — Надёжный поставщик запчастей">
+    <meta property="og:description" content="Оригинальные запчасти для KIA, Hyundai и Chevrolet. Гарантия качества и быстрая доставка.">
     <meta property="og:url" content="https://komaauto.com">
     <meta property="og:locale" content="ru_RU">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="КОМА АВТО - Запчасти">
-    <meta name="twitter:description" content="KIA, Hyundai, Chevrolet оригинальные запчасти">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://komaauto.com">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%231a4d7a%22/><text x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.35em%22 font-family=%22Arial%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22>K</text></svg>">
@@ -46,8 +37,6 @@
             --accent-gold: #c9a961;
             --accent-gold-hover: #b8984f;
             --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
             --text-dark: #1a1a1a;
             --text-gray: #4a4a4a;
             --text-light: #6a6a6a;
@@ -56,19 +45,15 @@
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
             --gray-300: #d1d5db;
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-            --shadow-xl: 0 16px 48px rgba(0,0,0,0.16);
             --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
             --header-height: 72px;
             --container-max: 1280px;
             --border-radius: 12px;
             --border-radius-sm: 8px;
-            --border-radius-lg: 16px;
         }
 
         /* Reset & Base */
@@ -84,43 +69,68 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: var(--text-dark);
             background: var(--bg-white);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
             min-height: 100vh;
-            position: relative;
             overflow-x: hidden;
         }
 
-        /* Selection */
-        ::selection {
-            background: var(--primary-color);
-            color: var(--bg-white);
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
 
-        ::-webkit-scrollbar-track {
-            background: var(--gray-100);
+        .loading-content {
+            text-align: center;
+            color: white;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray-300);
-            border-radius: 5px;
-            transition: background var(--transition-fast);
+        .loading-logo {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-light);
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Container */
@@ -129,12 +139,6 @@
             max-width: var(--container-max);
             margin: 0 auto;
             padding: 0 20px;
-        }
-
-        /* Focus Visible */
-        :focus-visible {
-            outline: 3px solid var(--primary-color);
-            outline-offset: 2px;
         }
 
         /* Language Selector */
@@ -207,83 +211,6 @@
 
         .lang-item:hover {
             background: var(--gray-100);
-            color: var(--primary-color);
-        }
-
-        .lang-item.active {
-            background: var(--primary-color);
-            color: var(--bg-white);
-        }
-
-        .lang-flag {
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-
-        .loading-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            display: none !important;
-        }
-
-        .loading-content {
-            text-align: center;
-            color: white;
-            animation: fadeInUp 0.6s ease;
-        }
-
-        .loading-logo {
-            font-size: 48px;
-            font-weight: 900;
-            margin-bottom: 20px;
-            animation: pulse 1.5s ease-in-out infinite;
-            letter-spacing: 3px;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: var(--accent-gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         /* Header */
@@ -294,7 +221,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid #e5e7eb;
             animation: slideDown 0.5s ease;
         }
 
@@ -310,12 +237,14 @@
         }
 
         .header-container {
-            max-width: var(--container-max);
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .logo-section {
@@ -325,15 +254,11 @@
         }
 
         .logo-text {
-            font-size: 24px;
-            font-weight: 800;
+            font-size: 22px;
+            font-weight: 700;
             letter-spacing: 0.5px;
             color: var(--primary-color);
-            transition: color var(--transition-base);
-        }
-
-        .logo-text:hover {
-            color: var(--accent-gold);
+            transition: color 0.3s ease;
         }
 
         .logo-subtitle {
@@ -342,14 +267,20 @@
             text-transform: uppercase;
             letter-spacing: 1.2px;
             font-weight: 600;
-            margin-top: 4px;
         }
 
         /* Navigation */
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
         .nav-links {
             display: flex;
-            gap: 32px;
+            gap: 30px;
             align-items: center;
+            list-style: none;
         }
 
         .nav-link {
@@ -357,25 +288,9 @@
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
-            transition: all var(--transition-base);
+            transition: all var(--transition-fast);
             position: relative;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary-color);
-            transform: scaleX(0);
-            transition: transform var(--transition-base);
-        }
-
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            transform: scaleX(1);
+            padding: 5px 0;
         }
 
         .nav-link:hover,
@@ -383,20 +298,55 @@
             color: var(--primary-color);
         }
 
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gold);
+            transition: width var(--transition-base);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
         /* Mobile Menu Toggle */
         .menu-toggle {
             display: none;
             flex-direction: column;
-            gap: 4px;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
             cursor: pointer;
-            padding: 8px;
+            padding: 0;
         }
 
-        .menu-line {
-            width: 24px;
-            height: 2px;
+        .menu-toggle span {
+            display: block;
+            width: 100%;
+            height: 3px;
             background: var(--text-dark);
+            margin: 3px 0;
             transition: all var(--transition-base);
+            border-radius: 2px;
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
         }
 
         /* Hero Section */
@@ -426,259 +376,195 @@
             to { transform: translate(100px, 100px); }
         }
 
-        .hero::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(201,169,97,0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            top: -100px;
-            right: -100px;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(20px); }
-        }
-
-        .hero-container {
-            max-width: var(--container-max);
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
         .hero-content {
-            max-width: 600px;
-            animation: fadeInLeft 0.8s ease;
-        }
-
-        @keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 2;
         }
 
         .hero-title {
-            font-size: clamp(36px, 5vw, 56px);
+            font-size: clamp(36px, 6vw, 56px);
             font-weight: 900;
-            color: white;
+            margin-bottom: 20px;
             line-height: 1.1;
-            margin-bottom: 24px;
-            letter-spacing: -0.5px;
+            letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-subtitle {
-            font-size: clamp(18px, 2.5vw, 24px);
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 32px;
+            font-size: clamp(18px, 3vw, 24px);
             font-weight: 400;
-            line-height: 1.4;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            line-height: 1.5;
+            animation: fadeInUp 0.8s ease 0.2s both;
         }
 
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
+        .hero-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 60px auto 50px;
+            max-width: 900px;
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border-radius: var(--border-radius-sm);
-            font-weight: 600;
-            font-size: 16px;
-            text-decoration: none;
-            transition: all var(--transition-base);
-            cursor: pointer;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background: var(--accent-gold);
-            color: white;
-            box-shadow: 0 4px 14px rgba(201, 169, 97, 0.4);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-gold-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(201, 169, 97, 0.5);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.15);
-            color: white;
-            border-color: rgba(255,255,255,0.3);
+        .hero-feature {
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all var(--transition-base);
+            animation: fadeInUp 0.8s ease 0.4s both;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.5);
-            transform: translateY(-2px);
+        .hero-feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .hero-stats {
-            display: flex;
-            gap: 48px;
-            margin-top: 60px;
-            padding-top: 32px;
-            border-top: 1px solid rgba(255,255,255,0.2);
+        .hero-feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
         }
 
-        .stat-item {
-            animation: fadeInUp 0.8s ease;
-            animation-fill-mode: both;
-        }
-
-        .stat-item:nth-child(1) { animation-delay: 0.1s; }
-        .stat-item:nth-child(2) { animation-delay: 0.2s; }
-        .stat-item:nth-child(3) { animation-delay: 0.3s; }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 800;
+        .hero-feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
             color: var(--accent-gold);
         }
 
-        .stat-label {
+        .hero-feature-text {
             font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            line-height: 1.6;
+            opacity: 0.9;
         }
 
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
+        .hero-cta {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            animation: bounce 2s ease-in-out infinite;
+            gap: 10px;
+            background: var(--accent-gold);
+            color: white;
+            padding: 18px 40px;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all var(--transition-base);
+            margin-top: 20px;
+            animation: fadeInUp 0.8s ease 0.6s both;
+            box-shadow: 0 4px 20px rgba(201, 169, 97, 0.3);
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(10px); }
+        .hero-cta:hover {
+            background: var(--accent-gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(201, 169, 97, 0.4);
         }
 
-        .scroll-text {
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
-        .scroll-arrow {
-            font-size: 24px;
-            color: rgba(255,255,255,0.7);
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Features Section */
-        .features {
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Advantages Section */
+        .advantages {
             padding: 80px 20px;
-            background: var(--bg-white);
+            background: var(--bg-light);
         }
 
         .section-header {
             text-align: center;
-            margin-bottom: 56px;
-            animation: fadeIn 0.6s ease;
+            margin-bottom: 60px;
         }
 
         .section-title {
             font-size: clamp(32px, 4vw, 42px);
             font-weight: 800;
             color: var(--text-dark);
-            margin-bottom: 16px;
+            margin-bottom: 15px;
             letter-spacing: -0.5px;
         }
 
-        .section-subtitle {
-            font-size: 18px;
-            color: var(--text-light);
-            max-width: 600px;
+        .advantages-grid {
+            max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 32px;
-            max-width: var(--container-max);
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
         }
 
-        .feature-card {
+        .advantage-card {
             background: var(--bg-white);
-            padding: 32px;
             border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
             transition: all var(--transition-base);
-            position: relative;
-            overflow: hidden;
             border: 1px solid var(--gray-100);
         }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-gold));
-            transform: scaleX(0);
-            transition: transform var(--transition-base);
-        }
-
-        .feature-card:hover {
+        .advantage-card:hover {
             transform: translateY(-8px);
             box-shadow: var(--shadow-lg);
+            border-color: var(--accent-gold);
         }
 
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .feature-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: var(--border-radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: white;
+        .advantage-icon {
+            font-size: 48px;
             margin-bottom: 20px;
+            display: inline-block;
+            animation: bounce 2s infinite;
         }
 
-        .feature-title {
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .advantage-title {
             font-size: 20px;
             font-weight: 700;
             color: var(--text-dark);
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
-        .feature-text {
+        .advantage-text {
             font-size: 15px;
             color: var(--text-gray);
             line-height: 1.6;
@@ -687,70 +573,76 @@
         /* Brands Section */
         .brands {
             padding: 80px 20px;
-            background: var(--bg-light);
+            background: var(--bg-white);
         }
 
         .brands-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 32px;
-            max-width: var(--container-max);
+            max-width: 900px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
         }
 
         .brand-card {
-            background: var(--bg-white);
-            padding: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border-radius: var(--border-radius);
+            padding: 60px 40px;
             text-align: center;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             transition: all var(--transition-base);
-            cursor: pointer;
-            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 15s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .brand-card:hover {
             transform: scale(1.05);
-            box-shadow: var(--shadow-xl);
-            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
         }
 
         .brand-logo {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: 900;
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-        }
-
-        .brand-name {
-            font-size: 14px;
-            color: var(--text-light);
-            text-transform: uppercase;
+            color: white;
             letter-spacing: 2px;
-            font-weight: 600;
+            position: relative;
+            z-index: 1;
         }
 
         /* Contact Section */
-        .contact {
+        .contact-section {
             padding: 80px 20px;
-            background: var(--bg-white);
+            background: var(--bg-light);
         }
 
         .contact-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 32px;
-            max-width: var(--container-max);
+            max-width: 1000px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
         }
 
         .contact-card {
             background: var(--bg-white);
-            padding: 32px;
             border-radius: var(--border-radius);
+            padding: 35px 25px;
             text-align: center;
             box-shadow: var(--shadow-sm);
             transition: all var(--transition-base);
@@ -758,44 +650,37 @@
         }
 
         .contact-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
             border-color: var(--primary-color);
         }
 
         .contact-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin: 0 auto 16px;
-            color: white;
+            font-size: 36px;
+            margin-bottom: 15px;
+            display: inline-block;
         }
 
         .contact-label {
-            font-size: 13px;
-            color: var(--text-light);
+            font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
+            letter-spacing: 1.5px;
+            color: var(--text-light);
+            margin-bottom: 10px;
             font-weight: 600;
         }
 
         .contact-value {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 16px;
             color: var(--text-dark);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .contact-value a {
             color: var(--primary-color);
             text-decoration: none;
-            transition: color var(--transition-base);
+            font-weight: 600;
+            transition: color var(--transition-fast);
         }
 
         .contact-value a:hover {
@@ -804,135 +689,63 @@
 
         .contact-value small {
             display: block;
-            font-size: 13px;
             color: var(--text-light);
             margin-top: 4px;
-            font-weight: 400;
+            font-size: 12px;
         }
 
         /* Location Section */
         .location {
-            padding: 80px 20px;
-            background: var(--bg-light);
+            padding: 60px 20px;
+            background: var(--bg-white);
         }
 
         .location-container {
-            max-width: var(--container-max);
+            max-width: 600px;
             margin: 0 auto;
-            text-align: center;
         }
 
         .location-card {
-            background: var(--bg-white);
-            padding: 48px;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            max-width: 600px;
-            margin: 0 auto;
-            border: 2px solid var(--gray-100);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--border-radius);
+            padding: 50px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            position: relative;
+            overflow: hidden;
         }
 
         .location-icon {
             font-size: 48px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
         .location-title {
             font-size: 28px;
             font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .location-address {
             font-size: 18px;
-            color: var(--text-gray);
-            line-height: 1.6;
-        }
-
-        /* Contact Form Section */
-        .contact-form-section {
-            padding: 80px 20px;
-            background: var(--bg-white);
-        }
-
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius-sm);
-            font-size: 16px;
-            font-family: inherit;
-            transition: all var(--transition-base);
-            background: var(--bg-white);
-        }
-
-        .form-input:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(26, 77, 122, 0.1);
-        }
-
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        .form-button {
-            width: 100%;
-            padding: 16px 32px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all var(--transition-base);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            opacity: 0.9;
         }
 
         /* Footer */
         footer {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
             color: white;
             padding: 60px 20px 20px;
         }
 
         .footer-container {
-            max-width: var(--container-max);
-            margin: 0 auto;
+            max-width: 1200px;
+            margin: 0 auto 40px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 40px;
-            margin-bottom: 40px;
         }
 
         .footer-section h3 {
@@ -944,33 +757,41 @@
             letter-spacing: 1px;
         }
 
-        .footer-section p,
-        .footer-section a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .footer-section p {
+            font-size: 14px;
             line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .footer-section a {
             display: block;
-            margin-bottom: 8px;
-            transition: color var(--transition-base);
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            transition: all var(--transition-fast);
         }
 
         .footer-section a:hover {
+            opacity: 1;
             color: var(--accent-gold);
-        }
-
-        .footer-logo {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 16px;
-            color: white;
+            transform: translateX(5px);
         }
 
         .footer-bottom {
             text-align: center;
-            padding-top: 32px;
+            padding-top: 30px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.6);
             font-size: 14px;
+            opacity: 0.8;
         }
 
         /* Fixed WhatsApp Button */
@@ -985,27 +806,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-size: 28px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
             text-decoration: none;
-            box-shadow: var(--shadow-lg);
             transition: all var(--transition-base);
             z-index: 999;
-            animation: pulseWhatsApp 2s ease-in-out infinite;
+            animation: pulse 2s infinite;
         }
 
         .fixed-call-btn:hover {
             transform: scale(1.1);
-            box-shadow: var(--shadow-xl);
-        }
-
-        @keyframes pulseWhatsApp {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
-            }
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
         }
 
         /* Scroll to Top Button */
@@ -1016,25 +827,24 @@
             width: 48px;
             height: 48px;
             background: var(--primary-color);
+            color: white;
+            border: none;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-size: 20px;
             cursor: pointer;
-            box-shadow: var(--shadow-md);
-            transition: all var(--transition-base);
             opacity: 0;
             visibility: hidden;
-            transform: translateY(20px);
+            transition: all var(--transition-base);
             z-index: 998;
+            box-shadow: var(--shadow-md);
         }
 
         .scroll-to-top.visible {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
         }
 
         .scroll-to-top:hover {
@@ -1043,165 +853,20 @@
             box-shadow: var(--shadow-lg);
         }
 
-        /* Animation Classes */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .slide-in-left {
-            opacity: 0;
-            transform: translateX(-50px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .slide-in-left.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .slide-in-right {
-            opacity: 0;
-            transform: translateX(50px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .slide-in-right.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .scale-in {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .scale-in.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .menu-toggle {
-                display: flex;
-            }
-
-            .hero-stats {
-                gap: 24px;
-            }
-
-            .stat-value {
-                font-size: 24px;
-            }
-
-            .features-grid,
-            .brands-grid,
-            .contact-container {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .footer-container {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .fixed-call-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 56px;
-                height: 56px;
-                font-size: 24px;
-            }
-
-            .scroll-to-top {
-                bottom: 20px;
-                left: 20px;
-                width: 44px;
-                height: 44px;
-            }
-
-            .lang-selector {
-                top: auto;
-                bottom: 100px;
-                right: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-title {
-                font-size: 32px;
-            }
-
-            .hero-subtitle {
-                font-size: 18px;
-            }
-
-            .section-title {
-                font-size: 28px;
-            }
-
-            .brand-logo {
-                font-size: 36px;
-            }
-        }
-
-        /* Print Styles */
-        @media print {
-            .lang-selector,
-            .fixed-call-btn,
-            .scroll-to-top,
-            .menu-toggle {
-                display: none !important;
-            }
-
-            header {
-                position: static;
-            }
-
-            .hero {
-                min-height: auto;
-                padding: 40px 20px;
-            }
-        }
-
-        /* Notification System */
+        /* Notification */
         .notification {
             position: fixed;
             top: 100px;
             right: 20px;
-            padding: 16px 24px;
             background: var(--success);
             color: white;
+            padding: 16px 24px;
             border-radius: var(--border-radius-sm);
             box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 9999;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10001;
             animation: slideInRight 0.3s ease;
-            max-width: 300px;
         }
 
         @keyframes slideInRight {
@@ -1225,33 +890,190 @@
                 opacity: 0;
             }
         }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            /* Mobile Navigation */
+            .menu-toggle {
+                display: flex;
+            }
+
+            nav {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--bg-white);
+                box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+                transition: left var(--transition-base);
+                z-index: 999;
+                padding: 80px 20px 20px;
+                overflow-y: auto;
+            }
+
+            nav.active {
+                left: 0;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+
+            .nav-link {
+                font-size: 18px;
+                width: 100%;
+                padding: 10px 0;
+            }
+
+            /* Mobile Hero */
+            .hero {
+                padding: 80px 20px 60px;
+                min-height: auto;
+            }
+
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+
+            .hero-features {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            /* Mobile Sections */
+            .advantages-grid,
+            .brands-grid,
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            /* Mobile Footer */
+            .footer-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            /* Mobile Buttons */
+            .fixed-call-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+            }
+
+            .scroll-to-top {
+                bottom: 20px;
+                left: 20px;
+                width: 44px;
+                height: 44px;
+            }
+
+            /* Mobile Language Selector */
+            .lang-selector {
+                top: 15px;
+                right: 60px;
+            }
+
+            .lang-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* Mobile Form */
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            /* Adjust padding for mobile */
+            .advantages,
+            .brands,
+            .contact-section,
+            .location,
+            .contact-form-section {
+                padding: 60px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .advantage-card,
+            .contact-card {
+                padding: 25px 20px;
+            }
+        }
+
+        /* Overlay for mobile menu */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-base);
+            z-index: 998;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Accessibility */
+        :focus-visible {
+            outline: 3px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Print styles */
+        @media print {
+            .lang-selector,
+            .fixed-call-btn,
+            .scroll-to-top,
+            .menu-toggle {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-content">
-            <div class="loading-logo">KOMA AUTO</div>
+            <div class="loading-logo">КОМА АВТО</div>
             <div class="loading-spinner"></div>
         </div>
     </div>
 
-    <script>
-        // Immediately hide loading screen when page is ready
-        window.addEventListener('load', function() {
-            const loader = document.getElementById('loadingScreen');
-            if (loader) {
-                loader.classList.add('hidden');
-            }
-        });
-    </script>
-
     <!-- Language Selector -->
     <div class="lang-selector">
         <button class="lang-btn" id="langBtn">
-            <span class="lang-flag" id="langFlag">🇷🇺</span>
-            <span id="langName">RU</span>
-            <span>▼</span>
+            <span id="currentLangFlag">🇷🇺</span>
+            <span id="currentLangName">RU</span>
         </button>
         <div class="lang-dropdown" id="langDropdown"></div>
     </div>
@@ -1261,208 +1083,175 @@
         <div class="header-container">
             <div class="logo-section">
                 <div>
-                    <div class="logo-text" id="logoText">КОМА АВТО</div>
-                    <div class="logo-subtitle" id="logoSubtitle">ЗАПЧАСТИ ДЛЯ ВАШЕГО АВТО</div>
+                    <div class="logo-text" data-translate="logoText">КОМА АВТО</div>
+                    <div class="logo-subtitle" data-translate="logoSubtitle">НАДЁЖНЫЙ ПОСТАВЩИК ЗАПЧАСТЕЙ</div>
                 </div>
             </div>
-            <nav class="nav-links">
-                <a href="#features" class="nav-link" data-translate="nav_features">Преимущества</a>
-                <a href="#brands" class="nav-link" data-translate="nav_brands">Бренды</a>
-                <a href="#contact" class="nav-link" data-translate="nav_contact">Контакты</a>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="#hero" class="nav-link active" data-translate="navHome">Главная</a></li>
+                    <li><a href="#advantages" class="nav-link" data-translate="navAdvantages">Преимущества</a></li>
+                    <li><a href="#brands" class="nav-link" data-translate="navBrands">Бренды</a></li>
+                    <li><a href="#contact" class="nav-link" data-translate="navContact">Контакты</a></li>
+                </ul>
             </nav>
-            <div class="menu-toggle">
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-            </div>
         </div>
     </header>
 
+    <!-- Overlay for mobile menu -->
+    <div class="overlay" id="overlay"></div>
+
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1 class="hero-title" data-translate="hero_title">Оригинальные запчасти KIA, Hyundai и Chevrolet</h1>
-                <p class="hero-subtitle" data-translate="hero_subtitle">Надёжный поставщик с прямыми поставками от производителей. Гарантия качества на все детали.</p>
-                <div class="hero-buttons">
-                    <a href="tel:+77771723377" class="btn btn-primary">
-                        <span>📞</span>
-                        <span data-translate="call_btn">Позвонить</span>
-                    </a>
-                    <a href="https://wa.me/77771723377" class="btn btn-secondary" target="_blank">
-                        <span>💬</span>
-                        <span>WhatsApp</span>
-                    </a>
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <h1 class="hero-title" data-translate="heroTitle">
+                Оригинальные запчасти для KIA, Hyundai и Chevrolet
+            </h1>
+            <p class="hero-subtitle" data-translate="heroSubtitle">
+                Работаем напрямую с проверенными производителями
+            </p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">🔧</div>
+                    <h3 class="hero-feature-title" data-translate="featureTitle1">Ходовая часть</h3>
+                    <p class="hero-feature-text" data-translate="featureText1">
+                        Полный ассортимент деталей подвески и рулевого управления
+                    </p>
                 </div>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">10+</div>
-                        <div class="stat-label" data-translate="stat_years">Лет опыта</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">5000+</div>
-                        <div class="stat-label" data-translate="stat_clients">Довольных клиентов</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">24/7</div>
-                        <div class="stat-label" data-translate="stat_support">Поддержка</div>
-                    </div>
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">⚙️</div>
+                    <h3 class="hero-feature-title" data-translate="featureTitle2">Запчасти двигателя</h3>
+                    <p class="hero-feature-text" data-translate="featureText2">
+                        Все компоненты для ремонта и обслуживания двигателя
+                    </p>
+                </div>
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">✨</div>
+                    <h3 class="hero-feature-title" data-translate="featureTitle3">Гарантия качества</h3>
+                    <p class="hero-feature-text" data-translate="featureText3">
+                        Официальная гарантия на все детали
+                    </p>
                 </div>
             </div>
-        </div>
-        <div class="scroll-indicator">
-            <span class="scroll-text" data-translate="scroll_down">Прокрутите вниз</span>
-            <span class="scroll-arrow">↓</span>
+            <a href="#contact" class="hero-cta" data-translate="heroCta">
+                <span>Связаться с нами</span> →
+            </a>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title" data-translate="features_title">Почему выбирают нас</h2>
-                <p class="section-subtitle" data-translate="features_subtitle">Мы предлагаем лучшие условия и сервис для наших клиентов</p>
+    <!-- Advantages -->
+    <section class="advantages" id="advantages">
+        <div class="section-header fade-in">
+            <h2 class="section-title" data-translate="advantagesTitle">Почему выбирают нас</h2>
+        </div>
+        <div class="advantages-grid">
+            <div class="advantage-card scale-in">
+                <div class="advantage-icon">✓</div>
+                <h3 class="advantage-title" data-translate="advTitle1">Оригинальные запчасти</h3>
+                <p class="advantage-text" data-translate="advText1">
+                    Работаем с проверенными производителями
+                </p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card scale-in">
-                    <div class="feature-icon">✓</div>
-                    <h3 class="feature-title" data-translate="feature1_title">Оригинальные запчасти</h3>
-                    <p class="feature-text" data-translate="feature1_text">Работаем напрямую с проверенными производителями и поставщиками</p>
-                </div>
-                <div class="feature-card scale-in" style="animation-delay: 0.1s">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title" data-translate="feature2_title">Быстрая доставка</h3>
-                    <p class="feature-text" data-translate="feature2_text">Большой ассортимент в наличии. Оперативная отгрузка в день заказа</p>
-                </div>
-                <div class="feature-card scale-in" style="animation-delay: 0.2s">
-                    <div class="feature-icon">🛡️</div>
-                    <h3 class="feature-title" data-translate="feature3_title">Гарантия качества</h3>
-                    <p class="feature-text" data-translate="feature3_text">Официальная гарантия на все детали. Возврат и обмен без проблем</p>
-                </div>
-                <div class="feature-card scale-in" style="animation-delay: 0.3s">
-                    <div class="feature-icon">👨‍🔧</div>
-                    <h3 class="feature-title" data-translate="feature4_title">Экспертная поддержка</h3>
-                    <p class="feature-text" data-translate="feature4_text">Профессиональная консультация и помощь в подборе запчастей</p>
-                </div>
-                <div class="feature-card scale-in" style="animation-delay: 0.4s">
-                    <div class="feature-icon">💰</div>
-                    <h3 class="feature-title" data-translate="feature5_title">Выгодные цены</h3>
-                    <p class="feature-text" data-translate="feature5_text">Конкурентные цены и система скидок для постоянных клиентов</p>
-                </div>
-                <div class="feature-card scale-in" style="animation-delay: 0.5s">
-                    <div class="feature-icon">🔧</div>
-                    <h3 class="feature-title" data-translate="feature6_title">Полный ассортимент</h3>
-                    <p class="feature-text" data-translate="feature6_text">Запчасти для двигателя, ходовой части, кузова и электрики</p>
-                </div>
+            <div class="advantage-card scale-in">
+                <div class="advantage-icon">⚡</div>
+                <h3 class="advantage-title" data-translate="advTitle2">Оперативная отгрузка</h3>
+                <p class="advantage-text" data-translate="advText2">
+                    Большой ассортимент в наличии
+                </p>
+            </div>
+            <div class="advantage-card scale-in">
+                <div class="advantage-icon">🛡️</div>
+                <h3 class="advantage-title" data-translate="advTitle3">Гарантия качества</h3>
+                <p class="advantage-text" data-translate="advText3">
+                    Официальная гарантия на все детали
+                </p>
+            </div>
+            <div class="advantage-card scale-in">
+                <div class="advantage-icon">👨‍🔧</div>
+                <h3 class="advantage-title" data-translate="advTitle4">Поддержка</h3>
+                <p class="advantage-text" data-translate="advText4">
+                    Консультация на каждом этапе
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- Brands Section -->
+    <!-- Brands -->
     <section class="brands" id="brands">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title" data-translate="brands_title">Наши бренды</h2>
-                <p class="section-subtitle" data-translate="brands_subtitle">Специализируемся на корейских и американских автомобилях</p>
+        <div class="section-header fade-in">
+            <h2 class="section-title" data-translate="brandsTitle">Наши бренды</h2>
+        </div>
+        <div class="brands-grid">
+            <div class="brand-card scale-in">
+                <div class="brand-logo">KIA</div>
             </div>
-            <div class="brands-grid">
-                <div class="brand-card slide-in-left">
-                    <div class="brand-logo">KIA</div>
-                    <div class="brand-name">KIA MOTORS</div>
-                </div>
-                <div class="brand-card scale-in">
-                    <div class="brand-logo">HYUNDAI</div>
-                    <div class="brand-name">HYUNDAI MOTOR</div>
-                </div>
-                <div class="brand-card slide-in-right">
-                    <div class="brand-logo">CHEVROLET</div>
-                    <div class="brand-name">CHEVROLET</div>
-                </div>
+            <div class="brand-card scale-in">
+                <div class="brand-logo">HYUNDAI</div>
+            </div>
+            <div class="brand-card scale-in">
+                <div class="brand-logo">CHEVROLET</div>
             </div>
         </div>
     </section>
 
     <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title" data-translate="contact_title">Контакты</h2>
-                <p class="section-subtitle" data-translate="contact_subtitle">Свяжитесь с нами любым удобным способом</p>
+    <section class="contact-section" id="contact">
+        <div class="section-header fade-in">
+            <h2 class="section-title" data-translate="contactTitle">Контакты</h2>
+        </div>
+        <div class="contact-container">
+            <div class="contact-card scale-in">
+                <div class="contact-icon">📞</div>
+                <div class="contact-label" data-translate="phoneLabel">Телефоны</div>
+                <div class="contact-value">
+                    <a href="tel:+77771723377">+7 777 172 33 77</a>
+                    <small data-translate="phoneDept1">Отдел ходовой части</small>
+                </div>
+                <div class="contact-value">
+                    <a href="tel:+77078383086">+7 707 838 30 86</a>
+                    <small data-translate="phoneDept2">Отдел запчастей двигателя</small>
+                </div>
             </div>
-            <div class="contact-container">
-                <div class="contact-card scale-in">
-                    <div class="contact-icon">📞</div>
-                    <div class="contact-label" data-translate="phone_label">Телефоны</div>
-                    <div class="contact-value">
-                        <a href="tel:+77771723377">+7 777 172 33 77</a>
-                        <small data-translate="phone1_dept">Отдел ходовой части</small>
-                    </div>
-                    <div class="contact-value">
-                        <a href="tel:+77078383086">+7 707 838 30 86</a>
-                        <small data-translate="phone2_dept">Отдел запчастей двигателя</small>
-                    </div>
+            <div class="contact-card scale-in">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-label" data-translate="emailLabel">Email</div>
+                <div class="contact-value">
+                    <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
                 </div>
-                <div class="contact-card scale-in" style="animation-delay: 0.1s">
-                    <div class="contact-icon">✉️</div>
-                    <div class="contact-label">Email</div>
-                    <div class="contact-value">
-                        <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
-                    </div>
+            </div>
+            <div class="contact-card scale-in">
+                <div class="contact-icon">📱</div>
+                <div class="contact-label" data-translate="instagramLabel">Instagram</div>
+                <div class="contact-value">
+                    <a href="https://instagram.com/koma_auto" target="_blank">@koma_auto</a>
                 </div>
-                <div class="contact-card scale-in" style="animation-delay: 0.2s">
-                    <div class="contact-icon">📱</div>
-                    <div class="contact-label">Instagram</div>
-                    <div class="contact-value">
-                        <a href="https://instagram.com/koma_auto" target="_blank">@koma_auto</a>
-                    </div>
-                </div>
-                <div class="contact-card scale-in" style="animation-delay: 0.3s">
-                    <div class="contact-icon">💬</div>
-                    <div class="contact-label" data-translate="messengers_label">WhatsApp и Telegram</div>
-                    <div class="contact-value">
-                        <a href="https://wa.me/77771723377" target="_blank">+7 777 172 33 77</a>
-                    </div>
+            </div>
+            <div class="contact-card scale-in">
+                <div class="contact-icon">💬</div>
+                <div class="contact-label" data-translate="messengerLabel">WhatsApp и Telegram</div>
+                <div class="contact-value">
+                    <a href="https://wa.me/77771723377" target="_blank">+7 777 172 33 77</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Location Section -->
+    <!-- Location -->
     <section class="location">
+        <div class="section-header fade-in">
+            <h2 class="section-title" data-translate="locationTitle">Адрес</h2>
+        </div>
         <div class="location-container">
-            <div class="section-header fade-in">
-                <h2 class="section-title" data-translate="location_title">Наш адрес</h2>
-            </div>
             <div class="location-card fade-in">
                 <div class="location-icon">📍</div>
-                <h3 class="location-title" data-translate="location_tc">ТЦ Car City</h3>
-                <p class="location-address" data-translate="location_floor">4 ярус</p>
+                <h3 class="location-title" data-translate="locationName">ТЦ Car City</h3>
+                <p class="location-address" data-translate="locationFloor">4 ярус</p>
             </div>
-        </div>
-    </section>
-
-    <!-- Contact Form Section -->
-    <section class="contact-form-section">
-        <div class="form-container">
-            <div class="section-header fade-in">
-                <h2 class="section-title" data-translate="form_title">Оставьте заявку</h2>
-                <p class="section-subtitle" data-translate="form_subtitle">Мы свяжемся с вами в ближайшее время</p>
-            </div>
-            <form id="contactForm" class="fade-in">
-                <div class="form-group">
-                    <label class="form-label" for="name" data-translate="form_name">Ваше имя</label>
-                    <input type="text" class="form-input" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="phone" data-translate="form_phone">Телефон</label>
-                    <input type="tel" class="form-input" id="phone" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="message" data-translate="form_message">Сообщение</label>
-                    <textarea class="form-textarea" id="message" required></textarea>
-                </div>
-                <button type="submit" class="form-button" data-translate="form_submit">Отправить заявку</button>
-            </form>
         </div>
     </section>
 
@@ -1470,336 +1259,287 @@
     <footer>
         <div class="footer-container">
             <div class="footer-section">
-                <div class="footer-logo" data-translate="footer_logo">КОМА АВТО</div>
-                <p data-translate="footer_desc">Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet</p>
+                <div class="footer-logo">КОМА АВТО</div>
+                <p data-translate="footerDesc">
+                    Надёжный поставщик запчастей<br>для KIA, Hyundai и Chevrolet
+                </p>
             </div>
             <div class="footer-section">
-                <h3 data-translate="footer_contacts">Контакты</h3>
+                <h3 data-translate="footerContacts">Контакты</h3>
                 <a href="tel:+77771723377">+7 777 172 33 77</a>
                 <a href="tel:+77078383086">+7 707 838 30 86</a>
                 <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
             </div>
             <div class="footer-section">
-                <h3 data-translate="footer_address">Адрес</h3>
-                <p data-translate="footer_address_text">ТЦ Car City<br>4 ярус</p>
+                <h3 data-translate="footerAddress">Адрес</h3>
+                <p data-translate="footerLocation">ТЦ Car City<br>4 ярус</p>
             </div>
             <div class="footer-section">
-                <h3 data-translate="footer_social">Соцсети</h3>
+                <h3 data-translate="footerSocial">Соцсети</h3>
                 <a href="https://instagram.com/koma_auto" target="_blank">Instagram</a>
             </div>
         </div>
         <div class="footer-bottom">
-            © 2025 KOMA AUTO
+            © 2025 КОМА АВТО
         </div>
     </footer>
 
-    <!-- Fixed Buttons -->
-    <a href="https://wa.me/77771723377" class="fixed-call-btn" aria-label="WhatsApp" target="_blank">
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/77771723377" class="fixed-call-btn" aria-label="WhatsApp">
         💬
     </a>
-    
-    <div class="scroll-to-top" id="scrollToTop">
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
         ↑
-    </div>
+    </button>
 
     <script>
-        // Translation data
+        // Multi-language support
         const translations = {
             ru: {
-                code: 'ru',
-                name: 'RU',
                 flag: '🇷🇺',
+                name: 'Русский',
                 logoText: 'КОМА АВТО',
-                logoSubtitle: 'ЗАПЧАСТИ ДЛЯ ВАШЕГО АВТО',
-                nav_features: 'Преимущества',
-                nav_brands: 'Бренды',
-                nav_contact: 'Контакты',
-                hero_title: 'Оригинальные запчасти KIA, Hyundai и Chevrolet',
-                hero_subtitle: 'Надёжный поставщик с прямыми поставками от производителей. Гарантия качества на все детали.',
-                call_btn: 'Позвонить',
-                stat_years: 'Лет опыта',
-                stat_clients: 'Довольных клиентов',
-                stat_support: 'Поддержка',
-                scroll_down: 'Прокрутите вниз',
-                features_title: 'Почему выбирают нас',
-                features_subtitle: 'Мы предлагаем лучшие условия и сервис для наших клиентов',
-                feature1_title: 'Оригинальные запчасти',
-                feature1_text: 'Работаем напрямую с проверенными производителями и поставщиками',
-                feature2_title: 'Быстрая доставка',
-                feature2_text: 'Большой ассортимент в наличии. Оперативная отгрузка в день заказа',
-                feature3_title: 'Гарантия качества',
-                feature3_text: 'Официальная гарантия на все детали. Возврат и обмен без проблем',
-                feature4_title: 'Экспертная поддержка',
-                feature4_text: 'Профессиональная консультация и помощь в подборе запчастей',
-                feature5_title: 'Выгодные цены',
-                feature5_text: 'Конкурентные цены и система скидок для постоянных клиентов',
-                feature6_title: 'Полный ассортимент',
-                feature6_text: 'Запчасти для двигателя, ходовой части, кузова и электрики',
-                brands_title: 'Наши бренды',
-                brands_subtitle: 'Специализируемся на корейских и американских автомобилях',
-                contact_title: 'Контакты',
-                contact_subtitle: 'Свяжитесь с нами любым удобным способом',
-                phone_label: 'Телефоны',
-                phone1_dept: 'Отдел ходовой части',
-                phone2_dept: 'Отдел запчастей двигателя',
-                messengers_label: 'WhatsApp и Telegram',
-                location_title: 'Наш адрес',
-                location_tc: 'ТЦ Car City',
-                location_floor: '4 ярус',
-                form_title: 'Оставьте заявку',
-                form_subtitle: 'Мы свяжемся с вами в ближайшее время',
-                form_name: 'Ваше имя',
-                form_phone: 'Телефон',
-                form_message: 'Сообщение',
-                form_submit: 'Отправить заявку',
-                footer_logo: 'КОМА АВТО',
-                footer_desc: 'Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet',
-                footer_contacts: 'Контакты',
-                footer_address: 'Адрес',
-                footer_address_text: 'ТЦ Car City<br>4 ярус',
-                footer_social: 'Соцсети'
+                logoSubtitle: 'НАДЁЖНЫЙ ПОСТАВЩИК ЗАПЧАСТЕЙ',
+                navHome: 'Главная',
+                navAdvantages: 'Преимущества',
+                navBrands: 'Бренды',
+                navContact: 'Контакты',
+                heroTitle: 'Оригинальные запчасти для KIA, Hyundai и Chevrolet',
+                heroSubtitle: 'Работаем напрямую с проверенными производителями',
+                featureTitle1: 'Ходовая часть',
+                featureText1: 'Полный ассортимент деталей подвески и рулевого управления',
+                featureTitle2: 'Запчасти двигателя',
+                featureText2: 'Все компоненты для ремонта и обслуживания двигателя',
+                featureTitle3: 'Гарантия качества',
+                featureText3: 'Официальная гарантия на все детали',
+                heroCta: 'Связаться с нами',
+                advantagesTitle: 'Почему выбирают нас',
+                advTitle1: 'Оригинальные запчасти',
+                advText1: 'Работаем с проверенными производителями',
+                advTitle2: 'Оперативная отгрузка',
+                advText2: 'Большой ассортимент в наличии',
+                advTitle3: 'Гарантия качества',
+                advText3: 'Официальная гарантия на все детали',
+                advTitle4: 'Поддержка',
+                advText4: 'Консультация на каждом этапе',
+                brandsTitle: 'Наши бренды',
+                contactTitle: 'Контакты',
+                phoneLabel: 'Телефоны',
+                phoneDept1: 'Отдел ходовой части',
+                phoneDept2: 'Отдел запчастей двигателя',
+                emailLabel: 'Email',
+                instagramLabel: 'Instagram',
+                messengerLabel: 'WhatsApp и Telegram',
+                locationTitle: 'Адрес',
+                locationName: 'ТЦ Car City',
+                locationFloor: '4 ярус',
+                formTitle: 'Свяжитесь с нами',
+                formName: 'Имя',
+                formPhone: 'Телефон',
+                formMessage: 'Сообщение',
+                formSubmit: 'Отправить',
+                footerDesc: 'Надёжный поставщик запчастей<br>для KIA, Hyundai и Chevrolet',
+                footerContacts: 'Контакты',
+                footerAddress: 'Адрес',
+                footerLocation: 'ТЦ Car City<br>4 ярус',
+                footerSocial: 'Соцсети'
             },
             kk: {
-                code: 'kk',
-                name: 'KZ',
                 flag: '🇰🇿',
+                name: 'Қазақша',
                 logoText: 'КОМА АВТО',
-                logoSubtitle: 'КӨЛІГІҢІЗГЕ ҚОСАЛҚЫ БӨЛШЕКТЕР',
-                nav_features: 'Артықшылықтар',
-                nav_brands: 'Брендтер',
-                nav_contact: 'Байланыс',
-                hero_title: 'KIA, Hyundai және Chevrolet түпнұсқа қосалқы бөлшектері',
-                hero_subtitle: 'Өндірушілерден тікелей жеткізілімдері бар сенімді жеткізуші. Барлық бөлшектердің сапасына кепілдік.',
-                call_btn: 'Қоңырау шалу',
-                stat_years: 'Жыл тәжірибе',
-                stat_clients: 'Қанағаттанған клиенттер',
-                stat_support: 'Қолдау',
-                scroll_down: 'Төмен айналдыру',
-                features_title: 'Неге бізді таңдайды',
-                features_subtitle: 'Біз клиенттерімізге ең жақсы шарттар мен қызмет ұсынамыз',
-                feature1_title: 'Түпнұсқа қосалқы бөлшектер',
-                feature1_text: 'Тексерілген өндірушілер мен жеткізушілермен тікелей жұмыс істейміз',
-                feature2_title: 'Жылдам жеткізу',
-                feature2_text: 'Қоймада үлкен ассортимент. Тапсырыс күні жедел жөнелту',
-                feature3_title: 'Сапа кепілдігі',
-                feature3_text: 'Барлық бөлшектерге ресми кепілдік. Проблемасыз қайтару және айырбастау',
-                feature4_title: 'Сарапшы қолдауы',
-                feature4_text: 'Кәсіби кеңес және қосалқы бөлшектерді таңдауда көмек',
-                feature5_title: 'Тиімді бағалар',
-                feature5_text: 'Бәсекелес бағалар және тұрақты клиенттерге жеңілдіктер жүйесі',
-                feature6_title: 'Толық ассортимент',
-                feature6_text: 'Қозғалтқыш, жүріс бөлігі, шанақ және электрика қосалқы бөлшектері',
-                brands_title: 'Біздің брендтер',
-                brands_subtitle: 'Корей және американдық автомобильдерге мамандандырылған',
-                contact_title: 'Байланыс',
-                contact_subtitle: 'Бізбен кез келген ыңғайлы тәсілмен байланысыңыз',
-                phone_label: 'Телефондар',
-                phone1_dept: 'Жүріс бөлігі бөлімі',
-                phone2_dept: 'Қозғалтқыш қосалқы бөлшектері бөлімі',
-                messengers_label: 'WhatsApp және Telegram',
-                location_title: 'Біздің мекенжай',
-                location_tc: 'СО Car City',
-                location_floor: '4 қабат',
-                form_title: 'Өтінім қалдырыңыз',
-                form_subtitle: 'Біз сізбен жақын арада байланысамыз',
-                form_name: 'Сіздің атыңыз',
-                form_phone: 'Телефон',
-                form_message: 'Хабарлама',
-                form_submit: 'Өтінім жіберу',
-                footer_logo: 'КОМА АВТО',
-                footer_desc: 'KIA, Hyundai және Chevrolet үшін сенімді қосалқы бөлшектер жеткізуші',
-                footer_contacts: 'Байланыс',
-                footer_address: 'Мекенжай',
-                footer_address_text: 'СО Car City<br>4 қабат',
-                footer_social: 'Әлеуметтік желілер'
+                logoSubtitle: 'СЕНІМДІ БӨЛШЕКТЕР ЖЕТКІЗУШІ',
+                navHome: 'Басты бет',
+                navAdvantages: 'Артықшылықтар',
+                navBrands: 'Брендтер',
+                navContact: 'Байланыс',
+                heroTitle: 'KIA, Hyundai және Chevrolet үшін түпнұсқа бөлшектер',
+                heroSubtitle: 'Тексерілген өндірушілермен тікелей жұмыс істейміз',
+                featureTitle1: 'Жүріс бөлігі',
+                featureText1: 'Аспа және рульдік басқару бөлшектерінің толық ассортименті',
+                featureTitle2: 'Қозғалтқыш бөлшектері',
+                featureText2: 'Қозғалтқышты жөндеу және қызмет көрсету үшін барлық компоненттер',
+                featureTitle3: 'Сапа кепілдігі',
+                featureText3: 'Барлық бөлшектерге ресми кепілдік',
+                heroCta: 'Бізбен байланысу',
+                advantagesTitle: 'Неліктен бізді таңдайды',
+                advTitle1: 'Түпнұсқа бөлшектер',
+                advText1: 'Тексерілген өндірушілермен жұмыс істейміз',
+                advTitle2: 'Жедел жөнелту',
+                advText2: 'Қоймада үлкен ассортимент',
+                advTitle3: 'Сапа кепілдігі',
+                advText3: 'Барлық бөлшектерге ресми кепілдік',
+                advTitle4: 'Қолдау',
+                advText4: 'Әр кезеңде кеңес беру',
+                brandsTitle: 'Біздің брендтер',
+                contactTitle: 'Байланыс',
+                phoneLabel: 'Телефондар',
+                phoneDept1: 'Жүріс бөлігі бөлімі',
+                phoneDept2: 'Қозғалтқыш бөлшектері бөлімі',
+                emailLabel: 'Email',
+                instagramLabel: 'Instagram',
+                messengerLabel: 'WhatsApp және Telegram',
+                locationTitle: 'Мекенжай',
+                locationName: 'СО Car City',
+                locationFloor: '4 қабат',
+                formTitle: 'Бізбен байланысыңыз',
+                formName: 'Аты',
+                formPhone: 'Телефон',
+                formMessage: 'Хабарлама',
+                formSubmit: 'Жіберу',
+                footerDesc: 'KIA, Hyundai және Chevrolet<br>үшін сенімді бөлшектер жеткізуші',
+                footerContacts: 'Байланыс',
+                footerAddress: 'Мекенжай',
+                footerLocation: 'СО Car City<br>4 қабат',
+                footerSocial: 'Әлеуметтік желілер'
             },
             en: {
-                code: 'en',
-                name: 'EN',
                 flag: '🇬🇧',
+                name: 'English',
                 logoText: 'KOMA AUTO',
-                logoSubtitle: 'AUTO PARTS FOR YOUR CAR',
-                nav_features: 'Advantages',
-                nav_brands: 'Brands',
-                nav_contact: 'Contacts',
-                hero_title: 'Original KIA, Hyundai and Chevrolet Parts',
-                hero_subtitle: 'Reliable supplier with direct deliveries from manufacturers. Quality guarantee for all parts.',
-                call_btn: 'Call',
-                stat_years: 'Years of experience',
-                stat_clients: 'Satisfied customers',
-                stat_support: 'Support',
-                scroll_down: 'Scroll down',
-                features_title: 'Why Choose Us',
-                features_subtitle: 'We offer the best conditions and service for our customers',
-                feature1_title: 'Original Parts',
-                feature1_text: 'We work directly with verified manufacturers and suppliers',
-                feature2_title: 'Fast Delivery',
-                feature2_text: 'Large assortment in stock. Prompt shipment on the day of order',
-                feature3_title: 'Quality Guarantee',
-                feature3_text: 'Official warranty for all parts. Return and exchange without problems',
-                feature4_title: 'Expert Support',
-                feature4_text: 'Professional consultation and assistance in selecting parts',
-                feature5_title: 'Competitive Prices',
-                feature5_text: 'Competitive prices and discount system for regular customers',
-                feature6_title: 'Complete Range',
-                feature6_text: 'Parts for engine, chassis, body and electrical systems',
-                brands_title: 'Our Brands',
-                brands_subtitle: 'Specializing in Korean and American cars',
-                contact_title: 'Contacts',
-                contact_subtitle: 'Contact us in any convenient way',
-                phone_label: 'Phones',
-                phone1_dept: 'Chassis Department',
-                phone2_dept: 'Engine Parts Department',
-                messengers_label: 'WhatsApp and Telegram',
-                location_title: 'Our Address',
-                location_tc: 'Car City Shopping Center',
-                location_floor: '4th floor',
-                form_title: 'Leave a Request',
-                form_subtitle: 'We will contact you shortly',
-                form_name: 'Your Name',
-                form_phone: 'Phone',
-                form_message: 'Message',
-                form_submit: 'Send Request',
-                footer_logo: 'KOMA AUTO',
-                footer_desc: 'Reliable parts supplier for KIA, Hyundai and Chevrolet',
-                footer_contacts: 'Contacts',
-                footer_address: 'Address',
-                footer_address_text: 'Car City Shopping Center<br>4th floor',
-                footer_social: 'Social Media'
+                logoSubtitle: 'RELIABLE PARTS SUPPLIER',
+                navHome: 'Home',
+                navAdvantages: 'Advantages',
+                navBrands: 'Brands',
+                navContact: 'Contact',
+                heroTitle: 'Original spare parts for KIA, Hyundai and Chevrolet',
+                heroSubtitle: 'We work directly with trusted manufacturers',
+                featureTitle1: 'Chassis',
+                featureText1: 'Complete range of suspension and steering parts',
+                featureTitle2: 'Engine Parts',
+                featureText2: 'All components for engine repair and maintenance',
+                featureTitle3: 'Quality Guarantee',
+                featureText3: 'Official warranty on all parts',
+                heroCta: 'Contact us',
+                advantagesTitle: 'Why choose us',
+                advTitle1: 'Original Parts',
+                advText1: 'Working with verified manufacturers',
+                advTitle2: 'Fast Shipping',
+                advText2: 'Large assortment in stock',
+                advTitle3: 'Quality Guarantee',
+                advText3: 'Official warranty on all parts',
+                advTitle4: 'Support',
+                advText4: 'Consultation at every stage',
+                brandsTitle: 'Our brands',
+                contactTitle: 'Contacts',
+                phoneLabel: 'Phones',
+                phoneDept1: 'Chassis department',
+                phoneDept2: 'Engine parts department',
+                emailLabel: 'Email',
+                instagramLabel: 'Instagram',
+                messengerLabel: 'WhatsApp and Telegram',
+                locationTitle: 'Address',
+                locationName: 'Car City Shopping Center',
+                locationFloor: '4th floor',
+                formTitle: 'Contact us',
+                formName: 'Name',
+                formPhone: 'Phone',
+                formMessage: 'Message',
+                formSubmit: 'Send',
+                footerDesc: 'Reliable parts supplier<br>for KIA, Hyundai and Chevrolet',
+                footerContacts: 'Contacts',
+                footerAddress: 'Address',
+                footerLocation: 'Car City SC<br>4th floor',
+                footerSocial: 'Social media'
             },
             tr: {
-                code: 'tr',
-                name: 'TR',
                 flag: '🇹🇷',
+                name: 'Türkçe',
                 logoText: 'KOMA AUTO',
-                logoSubtitle: 'ARABANIZ İÇİN YEDEK PARÇA',
-                nav_features: 'Avantajlar',
-                nav_brands: 'Markalar',
-                nav_contact: 'İletişim',
-                hero_title: 'Orijinal KIA, Hyundai ve Chevrolet Yedek Parçaları',
-                hero_subtitle: 'Üreticilerden doğrudan teslimat ile güvenilir tedarikçi. Tüm parçalar için kalite garantisi.',
-                call_btn: 'Ara',
-                stat_years: 'Yıllık deneyim',
-                stat_clients: 'Memnun müşteri',
-                stat_support: 'Destek',
-                scroll_down: 'Aşağı kaydır',
-                features_title: 'Neden Bizi Seçmelisiniz',
-                features_subtitle: 'Müşterilerimize en iyi şartları ve hizmeti sunuyoruz',
-                feature1_title: 'Orijinal Yedek Parçalar',
-                feature1_text: 'Onaylı üreticiler ve tedarikçilerle doğrudan çalışıyoruz',
-                feature2_title: 'Hızlı Teslimat',
-                feature2_text: 'Stokta geniş ürün yelpazesi. Sipariş gününde hızlı sevkiyat',
-                feature3_title: 'Kalite Garantisi',
-                feature3_text: 'Tüm parçalar için resmi garanti. Sorunsuz iade ve değişim',
-                feature4_title: 'Uzman Desteği',
-                feature4_text: 'Profesyonel danışmanlık ve parça seçiminde yardım',
-                feature5_title: 'Uygun Fiyatlar',
-                feature5_text: 'Rekabetçi fiyatlar ve düzenli müşteriler için indirim sistemi',
-                feature6_title: 'Tam Ürün Yelpazesi',
-                feature6_text: 'Motor, şasi, gövde ve elektrik sistemleri için parçalar',
-                brands_title: 'Markalarımız',
-                brands_subtitle: 'Kore ve Amerikan otomobillerinde uzmanlaşmış',
-                contact_title: 'İletişim',
-                contact_subtitle: 'Bizimle istediğiniz yöntemle iletişime geçin',
-                phone_label: 'Telefonlar',
-                phone1_dept: 'Şasi Departmanı',
-                phone2_dept: 'Motor Parçaları Departmanı',
-                messengers_label: 'WhatsApp ve Telegram',
-                location_title: 'Adresimiz',
-                location_tc: 'Car City Alışveriş Merkezi',
-                location_floor: '4. kat',
-                form_title: 'Talep Bırakın',
-                form_subtitle: 'En kısa sürede sizinle iletişime geçeceğiz',
-                form_name: 'Adınız',
-                form_phone: 'Telefon',
-                form_message: 'Mesaj',
-                form_submit: 'Talep Gönder',
-                footer_logo: 'KOMA AUTO',
-                footer_desc: 'KIA, Hyundai ve Chevrolet için güvenilir yedek parça tedarikçisi',
-                footer_contacts: 'İletişim',
-                footer_address: 'Adres',
-                footer_address_text: 'Car City AVM<br>4. kat',
-                footer_social: 'Sosyal Medya'
+                logoSubtitle: 'GÜVENİLİR YEDEK PARÇA TEDARİKÇİSİ',
+                navHome: 'Ana Sayfa',
+                navAdvantages: 'Avantajlar',
+                navBrands: 'Markalar',
+                navContact: 'İletişim',
+                heroTitle: 'KIA, Hyundai ve Chevrolet için orijinal yedek parçalar',
+                heroSubtitle: 'Güvenilir üreticilerle doğrudan çalışıyoruz',
+                featureTitle1: 'Şasi',
+                featureText1: 'Süspansiyon ve direksiyon parçalarının tam yelpazesi',
+                featureTitle2: 'Motor Parçaları',
+                featureText2: 'Motor tamir ve bakımı için tüm bileşenler',
+                featureTitle3: 'Kalite Garantisi',
+                featureText3: 'Tüm parçalarda resmi garanti',
+                heroCta: 'Bizimle iletişime geçin',
+                advantagesTitle: 'Neden bizi seçiyorlar',
+                advTitle1: 'Orijinal Parçalar',
+                advText1: 'Doğrulanmış üreticilerle çalışıyoruz',
+                advTitle2: 'Hızlı Kargo',
+                advText2: 'Stokta geniş ürün yelpazesi',
+                advTitle3: 'Kalite Garantisi',
+                advText3: 'Tüm parçalarda resmi garanti',
+                advTitle4: 'Destek',
+                advText4: 'Her aşamada danışmanlık',
+                brandsTitle: 'Markalarımız',
+                contactTitle: 'İletişim',
+                phoneLabel: 'Telefonlar',
+                phoneDept1: 'Şasi departmanı',
+                phoneDept2: 'Motor parçaları departmanı',
+                emailLabel: 'E-posta',
+                instagramLabel: 'Instagram',
+                messengerLabel: 'WhatsApp ve Telegram',
+                locationTitle: 'Adres',
+                locationName: 'Car City AVM',
+                locationFloor: '4. kat',
+                formTitle: 'Bizimle iletişime geçin',
+                formName: 'Ad',
+                formPhone: 'Telefon',
+                formMessage: 'Mesaj',
+                formSubmit: 'Gönder',
+                footerDesc: 'KIA, Hyundai ve Chevrolet için<br>güvenilir yedek parça tedarikçisi',
+                footerContacts: 'İletişim',
+                footerAddress: 'Adres',
+                footerLocation: 'Car City AVM<br>4. kat',
+                footerSocial: 'Sosyal medya'
             }
         };
 
-        // Language detection and management
         let currentLang = 'ru';
 
+        // Detect browser language
         function detectLanguage() {
-            // Check localStorage first
-            const savedLang = localStorage.getItem('komaAutoLang');
-            if (savedLang && translations[savedLang]) {
-                return savedLang;
+            const browserLang = navigator.language.toLowerCase();
+            const storedLang = localStorage.getItem('selectedLanguage');
+            
+            if (storedLang && translations[storedLang]) {
+                return storedLang;
             }
-
-            // Get browser/device language
-            const browserLang = navigator.language || navigator.userLanguage;
-            const langCode = browserLang.toLowerCase().split('-')[0];
-
-            // Map language codes
-            const langMap = {
-                'ru': 'ru',
-                'kk': 'kk',
-                'kz': 'kk',
-                'en': 'en',
-                'tr': 'tr',
-                'uz': 'ru', // Uzbek users see Russian
-                'az': 'ru', // Azerbaijani users see Russian
-                'ky': 'ru', // Kyrgyz users see Russian
-                'tg': 'ru', // Tajik users see Russian
-                'tk': 'ru', // Turkmen users see Russian
-            };
-
-            // Return mapped language or English as fallback
-            return langMap[langCode] || 'en';
+            
+            if (browserLang.includes('kk') || browserLang.includes('kaz')) return 'kk';
+            if (browserLang.includes('tr')) return 'tr';
+            if (browserLang.includes('en')) return 'en';
+            return 'ru';
         }
 
+        // Update page language
         function updateLanguage(lang) {
             if (!translations[lang]) return;
-
+            
             currentLang = lang;
-            const t = translations[lang];
-
-            // Update HTML lang attribute
-            document.documentElement.lang = lang;
-
-            // Update all elements with data-translate attribute
+            localStorage.setItem('selectedLanguage', lang);
+            
+            // Update lang button
+            document.getElementById('currentLangFlag').textContent = translations[lang].flag;
+            document.getElementById('currentLangName').textContent = lang.toUpperCase();
+            
+            // Update all translatable elements
             document.querySelectorAll('[data-translate]').forEach(element => {
                 const key = element.getAttribute('data-translate');
-                if (t[key]) {
-                    element.innerHTML = t[key];
+                if (translations[lang][key]) {
+                    element.innerHTML = translations[lang][key];
                 }
             });
-
-            // Update special elements
-            document.getElementById('logoText').textContent = t.logoText;
-            document.getElementById('logoSubtitle').textContent = t.logoSubtitle;
-            document.getElementById('langFlag').textContent = t.flag;
-            document.getElementById('langName').textContent = t.name;
-
-            // Update page title
-            const titles = {
-                ru: 'КОМА АВТО - Запчасти KIA, Hyundai, Chevrolet | Надёжный поставщик',
-                kk: 'КОМА АВТО - KIA, Hyundai, Chevrolet қосалқы бөлшектері | Сенімді жеткізуші',
-                en: 'KOMA AUTO - KIA, Hyundai, Chevrolet Parts | Reliable Supplier',
-                tr: 'KOMA AUTO - KIA, Hyundai, Chevrolet Yedek Parça | Güvenilir Tedarikçi'
-            };
-            document.title = titles[lang] || titles.ru;
-
-            // Save language preference
-            localStorage.setItem('komaAutoLang', lang);
-
-            // Update active state in dropdown
-            document.querySelectorAll('.lang-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.lang === lang);
-            });
+            
+            // Update HTML lang attribute
+            document.documentElement.lang = lang === 'kk' ? 'kk' : lang;
         }
 
+        // Initialize language selector
         function initLanguageSelector() {
             const langDropdown = document.getElementById('langDropdown');
             const langBtn = document.getElementById('langBtn');
-
+            
             // Create language items
             Object.entries(translations).forEach(([code, lang]) => {
                 const item = document.createElement('div');
@@ -1812,13 +1552,13 @@
                 };
                 langDropdown.appendChild(item);
             });
-
+            
             // Toggle dropdown
             langBtn.onclick = (e) => {
                 e.stopPropagation();
                 langDropdown.classList.toggle('show');
             };
-
+            
             // Close on outside click
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.lang-selector')) {
@@ -1827,34 +1567,64 @@
             });
         }
 
+        // Mobile menu toggle
+        function initMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            const overlay = document.getElementById('overlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            menuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                menuToggle.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+            });
+            
+            overlay.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                menuToggle.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // Initialize language
-                initLanguageSelector();
-                const detectedLang = detectLanguage();
-                updateLanguage(detectedLang);
-            } catch (error) {
-                console.error('Language initialization error:', error);
-            }
-
-            // Hide loading screen immediately after content loads
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                setTimeout(() => {
+            // Hide loading screen
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
                     loadingScreen.classList.add('hidden');
-                    // Force hide after animation
                     setTimeout(() => {
                         loadingScreen.style.display = 'none';
                     }, 500);
-                }, 500);
-
+                }
+            }, 500);
+            
+            // Initialize language
+            initLanguageSelector();
+            const detectedLang = detectLanguage();
+            updateLanguage(detectedLang);
+            
+            // Initialize mobile menu
+            initMobileMenu();
+            
             // Scroll animations
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
             };
-
+            
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -1862,12 +1632,12 @@
                     }
                 });
             }, observerOptions);
-
+            
             // Observe all animated elements
-            document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right, .scale-in').forEach(el => {
+            document.querySelectorAll('.fade-in, .scale-in').forEach(el => {
                 observer.observe(el);
             });
-
+            
             // Smooth scroll for navigation
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
@@ -1885,11 +1655,11 @@
                     }
                 });
             });
-
+            
             // Active navigation link
             const sections = document.querySelectorAll('section[id]');
             const navLinks = document.querySelectorAll('.nav-link');
-
+            
             window.addEventListener('scroll', () => {
                 let current = '';
                 sections.forEach(section => {
@@ -1899,7 +1669,7 @@
                         current = section.getAttribute('id');
                     }
                 });
-
+                
                 navLinks.forEach(link => {
                     link.classList.remove('active');
                     if (link.getAttribute('href').slice(1) === current) {
@@ -1907,7 +1677,7 @@
                     }
                 });
             });
-
+            
             // Scroll to top button
             const scrollToTop = document.getElementById('scrollToTop');
             
@@ -1918,57 +1688,15 @@
                     scrollToTop.classList.remove('visible');
                 }
             });
-
+            
             scrollToTop.addEventListener('click', () => {
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
             });
-
-            // Contact form
-            const contactForm = document.getElementById('contactForm');
-            contactForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                
-                const formData = {
-                    name: document.getElementById('name').value,
-                    phone: document.getElementById('phone').value,
-                    message: document.getElementById('message').value
-                };
-
-                // Prepare message based on language
-                const messages = {
-                    ru: `Здравствуйте, КОМА АВТО!\n\nИмя: ${formData.name}\nТелефон: ${formData.phone}\n\nСообщение:\n${formData.message}`,
-                    kk: `Сәлеметсіз бе, КОМА АВТО!\n\nАты: ${formData.name}\nТелефон: ${formData.phone}\n\nХабарлама:\n${formData.message}`,
-                    en: `Hello KOMA AUTO!\n\nName: ${formData.name}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`,
-                    tr: `Merhaba KOMA AUTO!\n\nAd: ${formData.name}\nTelefon: ${formData.phone}\n\nMesaj:\n${formData.message}`
-                };
-
-                const message = messages[currentLang] || messages.ru;
-                const whatsappUrl = `https://wa.me/77771723377?text=${encodeURIComponent(message)}`;
-                
-                window.open(whatsappUrl, '_blank');
-                
-                // Reset form
-                contactForm.reset();
-                
-                // Show success notification
-                showNotification();
-            });
-
-            // Mobile menu toggle
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navLinks = document.querySelector('.nav-links');
-            
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    navLinks.classList.toggle('active');
-                    menuToggle.classList.toggle('active');
-                });
-            }
         });
-
+        
         // Notification function
         function showNotification() {
             const messages = {
@@ -1977,7 +1705,7 @@
                 en: 'Message is being sent via WhatsApp...',
                 tr: 'Mesaj WhatsApp üzerinden gönderiliyor...'
             };
-
+            
             const notification = document.createElement('div');
             notification.className = 'notification';
             notification.textContent = messages[currentLang] || messages.ru;
@@ -1989,7 +1717,7 @@
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
         }
-
+        
         // Performance optimization
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
