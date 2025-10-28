@@ -1,498 +1,1373 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps Konum Editörü</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1a4d7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>КОМА АВТО — Запчасти KIA, Hyundai и Chevrolet</title>
+    <meta name="description" content="Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet. Работаем напрямую с проверенными производителями.">
     <style>
+        :root {
+            --primary-color: #1a4d7a;
+            --secondary-color: #2c5f8d;
+            --accent-gold: #c9a961;
+            --text-dark: #1a1a1a;
+            --text-gray: #4a4a4a;
+            --text-light: #6a6a6a;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-white);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevent zoom on input focus (iOS) */
+        input, textarea, select {
+            font-size: 16px;
+        }
+
+        /* Loading Animation */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
-        
-        .container {
-            max-width: 1400px;
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-logo {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             margin: 0 auto;
         }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
         }
-        
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        
-        .controls {
+
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-white);
+            padding: 20px 0;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #e5e7eb;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            justify-content: space-between;
             align-items: center;
         }
-        
-        .file-input-wrapper {
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--primary-color);
+            transition: color 0.3s ease;
+        }
+
+        .logo-text:hover {
+            color: var(--accent-gold);
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 100px 20px 80px;
             position: relative;
             overflow: hidden;
-            display: inline-block;
-        }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-        
-        .file-input-wrapper label {
-            display: inline-block;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            font-weight: 500;
-        }
-        
-        .file-input-wrapper label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .btn-export {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .btn-export:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-        
-        .btn-clear {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-clear:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .stats {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            min-height: 90vh;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
-        .stats-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgba(255,255,255,0.03)"/></svg>') repeat;
+            opacity: 0.3;
+            animation: pattern-move 20s linear infinite;
+        }
+
+        @keyframes pattern-move {
+            to { transform: translate(100px, 100px); }
+        }
+
+        /* Floating shapes */
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(201,169,97,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-subtitle {
+            font-size: 22px;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-weight: 600;
+            line-height: 1.4;
+            animation: fadeInUp 0.8s ease 0.5s both;
+            letter-spacing: -0.01em;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 720px;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            min-height: 56px;
+            line-height: 1.2;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Active state for touch devices */
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gold);
+            color: var(--text-dark);
+            box-shadow: 0 4px 14px rgba(201,169,97,0.4);
+        }
+
+        .btn-primary:hover {
+            background: #d4b56f;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(201,169,97,0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-3px);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        .scroll-indicator span {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.8);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
+            margin: 0 auto;
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
         }
-        
-        .map-container {
-            flex: 1;
-            margin: 20px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            background: white;
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* Advantages */
+        .advantages {
+            padding: 80px 20px;
+            background: var(--bg-light);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .advantages-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .advantage-card {
+            background: var(--bg-white);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .advantage-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            border-color: var(--accent-gold);
+        }
+
+        .advantage-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .advantage-card:hover .advantage-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .advantage-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .advantage-text {
+            color: var(--text-gray);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Brands */
+        .brands {
+            padding: 80px 20px;
+            background: var(--bg-white);
+        }
+
+        .brands-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .brand-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            transition: all 0.4s ease;
             position: relative;
+            overflow: hidden;
         }
-        
-        #map {
-            height: 600px;
-            width: 100%;
-        }
-        
-        .loading {
+
+        .brand-card::before {
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px 40px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            z-index: 1000;
-            display: none;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transition: transform 0.5s ease;
         }
-        
-        .loading.active {
-            display: block;
+
+        .brand-card:hover::before {
+            transform: translate(25%, 25%);
         }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+
+        .brand-card:hover {
+            transform: translateY(-10px) rotate(-2deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #4caf50;
+
+        .brand-logo {
+            font-size: 42px;
+            font-weight: 900;
             color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: none;
-            animation: slideIn 0.3s ease;
-            z-index: 2000;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
-        
-        .notification.active {
+
+        .brand-card:hover .brand-logo {
+            color: var(--accent-gold);
+            transform: scale(1.1);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 80px 20px;
+            background: var(--bg-light);
+        }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .contact-card {
+            background: var(--bg-white);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .contact-icon {
+            font-size: 42px;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-card:hover .contact-icon {
+            transform: scale(1.15) rotate(-10deg);
+        }
+
+        .contact-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .contact-value {
+            margin-bottom: 8px;
+        }
+
+        .contact-value a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            padding: 4px 8px;
+            margin: -4px -8px;
+        }
+
+        .contact-value a:hover {
+            color: var(--accent-gold);
+            transform: scale(1.05);
+        }
+
+        .contact-value a:active {
+            transform: scale(0.98);
+        }
+        }
+
+        /* Location */
+        .location {
+            padding: 80px 20px;
+            background: var(--bg-white);
+        }
+
+        .location-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .location-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            color: white;
+            transition: all 0.4s ease;
+        }
+
+        .location-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+        }
+
+        .location-icon {
+            font-size: 52px;
+            margin-bottom: 20px;
+            animation: bounce-location 2s ease infinite;
+        }
+
+        @keyframes bounce-location {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .location-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .location-address {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: rgba(255,255,255,0.8);
+            padding: 50px 20px 30px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h3 {
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer-section a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
             display: block;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
-        
-        .notification.error {
-            background: #f44336;
+
+        .footer-section a:hover {
+            color: var(--accent-gold);
+            transform: translateX(5px);
         }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 15px;
         }
-        
-        .custom-marker {
-            background: #ff4444;
-            border: 2px solid white;
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        /* Fixed WhatsApp Button */
+        .fixed-call-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
             border-radius: 50%;
-            width: 12px;
-            height: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            text-decoration: none;
+            z-index: 999;
+            transition: all 0.3s ease;
+            animation: pulse-btn 2s ease infinite;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .fixed-call-btn:hover {
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+        }
+
+        .fixed-call-btn:active {
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+            50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 15px 50px;
+                min-height: auto;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+                line-height: 1.3;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .hero-actions {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                max-width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 16px 20px;
+                font-size: 15px;
+                min-height: 54px;
+            }
+
+            .section-title {
+                font-size: 26px;
+            }
+
+            .advantages {
+                padding: 50px 15px;
+            }
+
+            .advantages-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .advantage-card {
+                padding: 30px 20px;
+            }
+
+            .brands {
+                padding: 50px 15px;
+            }
+
+            .brands-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .brand-card {
+                padding: 40px 20px;
+            }
+
+            .brand-logo {
+                font-size: 32px;
+            }
+
+            .contact-section {
+                padding: 50px 15px;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .contact-card {
+                padding: 30px 20px;
+            }
+
+            .location {
+                padding: 50px 15px;
+            }
+
+            .location-card {
+                padding: 40px 25px;
+            }
+
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .fixed-call-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .scroll-indicator {
+                font-size: 13px;
+                padding: 10px 20px;
+            }
+
+            .header-container {
+                padding: 0 15px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+
+            .logo-subtitle {
+                font-size: 9px;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Extra Small Screens (iPhone SE, older Android) */
+        @media (max-width: 375px) {
+            .hero h1 {
+                font-size: 22px;
+            }
+
+            .hero-subtitle {
+                font-size: 13px;
+            }
+
+            .hero-description {
+                font-size: 12px;
+            }
+
+            .btn {
+                font-size: 13px;
+                padding: 12px 14px;
+                min-height: 48px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            .advantage-card,
+            .brand-card,
+            .contact-card,
+            .location-card {
+                padding: 20px 12px;
+            }
+
+            .logo-text {
+                font-size: 15px;
+            }
+
+            .logo-subtitle {
+                font-size: 7px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+
+            .fixed-call-btn {
+                min-width: 48px;
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+
+            a, button {
+                touch-action: manipulation;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .hero {
+                min-height: auto;
+                padding: 40px 20px 30px;
+            }
+
+            .hero h1 {
+                font-size: 24px;
+            }
+
+            .hero-subtitle {
+                font-size: 14px;
+            }
+
+            .scroll-indicator {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 50px 15px 40px;
+            }
+
+            .hero h1 {
+                font-size: 24px;
+                line-height: 1.3;
+            }
+
+            .hero-subtitle {
+                font-size: 14px;
+            }
+
+            .hero-description {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 14px 16px;
+                min-height: 50px;
+            }
+
+            .section-title {
+                font-size: 22px;
+            }
+
+            .advantage-card {
+                padding: 25px 15px;
+            }
+
+            .advantage-icon {
+                font-size: 40px;
+            }
+
+            .advantage-title {
+                font-size: 18px;
+            }
+
+            .advantage-text {
+                font-size: 13px;
+            }
+
+            .brand-card {
+                padding: 35px 15px;
+            }
+
+            .brand-logo {
+                font-size: 28px;
+            }
+
+            .contact-card {
+                padding: 25px 15px;
+            }
+
+            .contact-icon {
+                font-size: 36px;
+            }
+
+            .contact-label {
+                font-size: 13px;
+            }
+
+            .contact-value {
+                font-size: 15px;
+            }
+
+            .location-card {
+                padding: 35px 20px;
+            }
+
+            .location-icon {
+                font-size: 44px;
+            }
+
+            .location-title {
+                font-size: 24px;
+            }
+
+            .location-address {
+                font-size: 16px;
+            }
+
+            .footer-logo {
+                font-size: 20px;
+            }
+
+            .footer-section h3 {
+                font-size: 15px;
+            }
+
+            .footer-section a,
+            .footer-section p {
+                font-size: 13px;
+            }
+
+            .fixed-call-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 22px;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .scroll-indicator {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+
+            .scroll-arrow {
+                font-size: 18px;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .logo-subtitle {
+                font-size: 8px;
+            }
+
+            .loading-logo {
+                font-size: 36px;
+            }
+        }
+
+        /* Selection Color */
+        ::selection {
+            background: var(--accent-gold);
+            color: var(--text-dark);
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>🗺️ Google Maps Konum Editörü</h1>
-            <p class="subtitle">CSV dosyasından Google Maps linklerini yükleyin ve harita üzerinde görüntüleyin</p>
-            <div class="controls">
-                <div class="file-input-wrapper">
-                    <input type="file" id="csvFile" accept=".csv">
-                    <label for="csvFile">📁 CSV Dosyası Yükle</label>
-                </div>
-                <button class="btn btn-export" id="exportBtn" disabled>
-                    📤 HTML Olarak Export Et
-                </button>
-                <button class="btn btn-clear" id="clearBtn" disabled>
-                    🗑️ Temizle
-                </button>
-                <div class="stats">
-                    <div class="stats-icon">📍</div>
-                    <span id="locationCount">0 konum yüklendi</span>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">КОМА АВТО</div>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <div>
+                    <div class="logo-text">КОМА АВТО</div>
+                    <div class="logo-subtitle">Запчасти KIA, Hyundai & Chevrolet</div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="map-container">
-        <div id="map"></div>
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Konumlar işleniyor...</p>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>Запчасти KIA, Hyundai и Chevrolet</h1>
+            <p class="hero-subtitle">Надёжный поставщик оригинальных запчастей</p>
+            <p class="hero-description">
+                Работаем напрямую с проверенными производителями. Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
+            </p>
+            <div class="hero-actions">
+                <a href="tel:+77771723377" class="btn btn-primary">
+                    📞 Свяжитесь с нами
+                </a>
+                <a href="https://instagram.com/koma_auto" class="btn btn-secondary" target="_blank" onclick="openInstagram(event, 'koma_auto')">
+                    📷 Instagram
+                </a>
+                <a href="https://2gis.kz/almaty/search/%D0%A2%D0%A6%20Car%20City%204%20%D1%8F%D1%80%D1%83%D1%81%20/firm/70000001018022676/76.822281%2C43.238852?m=76.893175%2C43.218377%2F11.72" class="btn btn-secondary" target="_blank">
+                    📍 Локация
+                </a>
+            </div>
         </div>
-    </div>
-    
-    <div class="notification" id="notification"></div>
+        <div class="scroll-indicator" onclick="document.querySelector('.advantages').scrollIntoView({behavior: 'smooth'})">
+            <span>Узнать больше</span>
+            <div class="scroll-arrow">↓</div>
+        </div>
+    </section>
+
+    <!-- Advantages -->
+    <section class="advantages">
+        <div class="section-header fade-in">
+            <h2 class="section-title">Почему выбирают нас</h2>
+        </div>
+        <div class="advantages-grid">
+            <div class="advantage-card scale-in">
+                <div class="advantage-icon">✓</div>
+                <h3 class="advantage-title">Оригинальные запчасти</h3>
+                <p class="advantage-text">
+                    Работаем с проверенными производителями
+                </p>
+            </div>
+            <div class="advantage-card scale-in" style="transition-delay: 0.1s">
+                <div class="advantage-icon">⚡</div>
+                <h3 class="advantage-title">Оперативная отгрузка</h3>
+                <p class="advantage-text">
+                    Большой ассортимент в наличии
+                </p>
+            </div>
+            <div class="advantage-card scale-in" style="transition-delay: 0.2s">
+                <div class="advantage-icon">🛡️</div>
+                <h3 class="advantage-title">Гарантия качества</h3>
+                <p class="advantage-text">
+                    Официальная гарантия на все детали
+                </p>
+            </div>
+            <div class="advantage-card scale-in" style="transition-delay: 0.3s">
+                <div class="advantage-icon">👨‍🔧</div>
+                <h3 class="advantage-title">Поддержка</h3>
+                <p class="advantage-text">
+                    Консультация на каждом этапе
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brands -->
+    <section class="brands">
+        <div class="brands-container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Наши бренды</h2>
+            </div>
+            <div class="brands-grid">
+                <div class="brand-card slide-in-left">
+                    <div class="brand-logo">KIA</div>
+                </div>
+                <div class="brand-card scale-in">
+                    <div class="brand-logo">HYUNDAI</div>
+                </div>
+                <div class="brand-card slide-in-right">
+                    <div class="brand-logo">CHEVROLET</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="section-header fade-in">
+            <h2 class="section-title">Контакты</h2>
+        </div>
+        <div class="contact-container">
+            <div class="contact-card scale-in">
+                <div class="contact-icon">📞</div>
+                <div class="contact-label">Телефоны</div>
+                <div class="contact-value">
+                    <a href="tel:+77771723377">+7 777 172 33 77</a>
+                    <small style="display:block; color: #6a6a6a; margin-top: 4px;">Отдел ходовой части</small>
+                </div>
+                <div class="contact-value">
+                    <a href="tel:+77078383086">+7 707 838 30 86</a>
+                    <small style="display:block; color: #6a6a6a; margin-top: 4px;">Отдел запчастей двигателя</small>
+                </div>
+            </div>
+            <div class="contact-card scale-in" style="transition-delay: 0.1s">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-label">Email</div>
+                <div class="contact-value">
+                    <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+                </div>
+            </div>
+            <div class="contact-card scale-in" style="transition-delay: 0.2s">
+                <div class="contact-icon">📱</div>
+                <div class="contact-label">Instagram</div>
+                <div class="contact-value">
+                    <a href="https://instagram.com/koma_auto" target="_blank" onclick="openInstagram(event, 'koma_auto')">@koma_auto</a>
+                </div>
+            </div>
+            <div class="contact-card scale-in" style="transition-delay: 0.3s">
+                <div class="contact-icon">💬</div>
+                <div class="contact-label">WhatsApp и Telegram</div>
+                <div class="contact-value">
+                    <a href="https://wa.me/77771723377" target="_blank">+7 777 172 33 77</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location -->
+    <section class="location">
+        <div class="section-header fade-in">
+            <h2 class="section-title">Адрес</h2>
+        </div>
+        <div class="location-container">
+            <div class="location-card fade-in">
+                <div class="location-icon">📍</div>
+                <h3 class="location-title">ТЦ Car City</h3>
+                <p class="location-address">4 ярус</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <div class="footer-logo">КОМА АВТО</div>
+                <p>
+                    Надёжный поставщик запчастей<br>для KIA, Hyundai и Chevrolet
+                </p>
+            </div>
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <a href="tel:+77771723377">+7 777 172 33 77 <small>(ходовая часть)</small></a>
+                <a href="tel:+77078383086">+7 707 838 30 86 <small>(запчасти двигателя)</small></a>
+                <a href="mailto:kamoliddint@gmail.com">kamoliddint@gmail.com</a>
+            </div>
+            <div class="footer-section">
+                <h3>Адрес</h3>
+                <p>ТЦ Car City<br>4 ярус</p>
+            </div>
+            <div class="footer-section">
+                <h3>Соцсети</h3>
+                <a href="https://instagram.com/koma_auto" target="_blank" onclick="openInstagram(event, 'koma_auto')">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2025 КОМА АВТО
+        </div>
+    </footer>
+
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/77771723377" class="fixed-call-btn" aria-label="WhatsApp" onclick="openWhatsApp(event)">
+        📞
+    </a>
 
     <script>
-        // Harita başlatma
-        const map = L.map('map').setView([20, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        let markers = [];
-        let locations = [];
-        
-        // Google Maps URL'den koordinat çıkarma
-        function extractCoordinates(url) {
-            if (!url) return null;
-            
-            // Farklı Google Maps URL formatlarını kontrol et
-            const patterns = [
-                /@(-?\d+\.\d+),(-?\d+\.\d+)/,  // @lat,lng formatı
-                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, // !3dlat!4dlng formatı
-                /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/, // place/.../@ formatı
-                /ll=(-?\d+\.\d+),(-?\d+\.\d+)/, // ll=lat,lng formatı
-                /q=(-?\d+\.\d+),(-?\d+\.\d+)/ // q=lat,lng formatı
-            ];
-            
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match) {
-                    const lat = parseFloat(match[1]);
-                    const lng = parseFloat(match[2] || match[1].split(',')[1]);
-                    
-                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-                        return { lat, lng };
-                    }
+        // Loading Screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelector('.loading-screen').classList.add('hidden');
+            }, 1000);
+        });
+
+        // Scroll Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
                 }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right, .scale-in');
+            animatedElements.forEach(el => observer.observe(el));
+        });
+
+        // Instagram Function
+        function openInstagram(event, username) {
+            event.preventDefault();
+            
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                const appUrl = `instagram://user?username=${username}`;
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = appUrl;
+                document.body.appendChild(iframe);
+                
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 2000);
+            } else {
+                window.open(`https://instagram.com/${username}`, '_blank');
             }
-            
-            return null;
         }
-        
-        // Haritayı temizle
-        function clearMap() {
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            locations = [];
-            updateStats();
-            document.getElementById('exportBtn').disabled = true;
-            document.getElementById('clearBtn').disabled = true;
-        }
-        
-        // İstatistikleri güncelle
-        function updateStats() {
-            document.getElementById('locationCount').textContent = `${locations.length} konum yüklendi`;
-        }
-        
-        // Bildirim göster
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification active' + (isError ? ' error' : '');
+
+        // WhatsApp Function
+        function openWhatsApp(event) {
+            event.preventDefault();
             
-            setTimeout(() => {
-                notification.classList.remove('active');
-            }, 3000);
+            const phoneNumber = '77771723377';
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                window.location.href = `whatsapp://send?phone=${phoneNumber}`;
+            } else {
+                window.open(`https://wa.me/${phoneNumber}`, '_blank');
+            }
         }
-        
-        // CSV dosyası yükleme
-        document.getElementById('csvFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            document.getElementById('loading').classList.add('active');
-            clearMap();
-            
-            Papa.parse(file, {
-                complete: function(results) {
-                    let validLocations = 0;
-                    let invalidLocations = 0;
-                    
-                    results.data.forEach((row, index) => {
-                        // Her satırdaki ilk hücreyi Google Maps linki olarak kabul et
-                        const url = row[0];
-                        if (url && typeof url === 'string' && url.includes('google.com/maps')) {
-                            const coords = extractCoordinates(url);
-                            if (coords) {
-                                // Konum adını çıkarmaya çalış
-                                const placeMatch = url.match(/place\/([^\/\@]+)/);
-                                const placeName = placeMatch ? decodeURIComponent(placeMatch[1].replace(/\+/g, ' ')) : `Konum ${validLocations + 1}`;
-                                
-                                locations.push({
-                                    lat: coords.lat,
-                                    lng: coords.lng,
-                                    name: placeName,
-                                    url: url
-                                });
-                                
-                                // Haritaya marker ekle
-                                const marker = L.circleMarker([coords.lat, coords.lng], {
-                                    radius: 6,
-                                    fillColor: '#ff4444',
-                                    color: '#ffffff',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.8
-                                }).addTo(map);
-                                
-                                marker.bindPopup(`<b>${placeName}</b><br>Lat: ${coords.lat.toFixed(6)}<br>Lng: ${coords.lng.toFixed(6)}`);
-                                markers.push(marker);
-                                validLocations++;
-                            } else {
-                                invalidLocations++;
-                            }
-                        }
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
-                    
-                    document.getElementById('loading').classList.remove('active');
-                    
-                    if (validLocations > 0) {
-                        // Tüm markerları gösterecek şekilde haritayı ayarla
-                        const group = L.featureGroup(markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                        
-                        document.getElementById('exportBtn').disabled = false;
-                        document.getElementById('clearBtn').disabled = false;
-                        
-                        let message = `✅ ${validLocations} konum başarıyla yüklendi`;
-                        if (invalidLocations > 0) {
-                            message += ` (${invalidLocations} geçersiz link atlandı)`;
-                        }
-                        showNotification(message);
-                    } else {
-                        showNotification('❌ Geçerli konum bulunamadı', true);
-                    }
-                    
-                    updateStats();
-                },
-                error: function(error) {
-                    document.getElementById('loading').classList.remove('active');
-                    showNotification('❌ Dosya okuma hatası: ' + error.message, true);
                 }
             });
-        });
-        
-        // HTML Export
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            if (locations.length === 0) {
-                showNotification('❌ Export edilecek konum yok', true);
-                return;
-            }
-            
-            const htmlContent = `<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konum Haritası - ${locations.length} Nokta</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
-    <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; }
-        .info-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <div class="info-panel">
-        <strong>📍 Toplam ${locations.length} konum</strong>
-    </div>
-    <script>
-        const map = L.map('map').setView([20, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        const locations = ${JSON.stringify(locations)};
-        const markers = [];
-        
-        locations.forEach(loc => {
-            const marker = L.circleMarker([loc.lat, loc.lng], {
-                radius: 6,
-                fillColor: '#ff4444',
-                color: '#ffffff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-            
-            marker.bindPopup('<b>' + loc.name + '</b><br>Lat: ' + loc.lat.toFixed(6) + '<br>Lng: ' + loc.lng.toFixed(6));
-            markers.push(marker);
-        });
-        
-        if (markers.length > 0) {
-            const group = L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.1));
-        }
-    <\/script>
-</body>
-</html>`;
-            
-            // HTML'i panoya kopyala
-            navigator.clipboard.writeText(htmlContent).then(() => {
-                showNotification('✅ HTML kodu panoya kopyalandı!');
-            }).catch(() => {
-                // Alternatif yöntem: Blob ve download
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `harita-${locations.length}-konum.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showNotification('✅ HTML dosyası indirildi!');
-            });
-        });
-        
-        // Temizle butonu
-        document.getElementById('clearBtn').addEventListener('click', function() {
-            if (confirm('Tüm konumları temizlemek istediğinizden emin misiniz?')) {
-                clearMap();
-                document.getElementById('csvFile').value = '';
-                showNotification('🗑️ Harita temizlendi');
-            }
         });
     </script>
+
 </body>
 </html>
