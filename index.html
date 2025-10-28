@@ -378,23 +378,66 @@
             }
         }
 
+        .hero-subtitle-wrapper {
+            margin-top: 25px;
+            margin-bottom: 45px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
         .hero-subtitle {
-            font-size: clamp(22px, 3.5vw, 32px);
+            font-size: clamp(20px, 3vw, 28px);
             font-weight: 400;
-            margin-bottom: 80px;
-            opacity: 0.95;
-            line-height: 1.4;
+            margin-bottom: 12px;
+            opacity: 0.98;
+            line-height: 1.3;
             animation: fadeInUp 0.8s ease 0.2s both;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
-            max-width: 800px;
+            max-width: 900px;
+            letter-spacing: 0.3px;
+        }
+
+        .hero-description {
+            font-size: clamp(18px, 2.5vw, 24px);
+            font-weight: 500;
+            margin: 0;
+            margin-top: 20px;
+            padding: 12px 24px;
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-gold), #b8984f);
+            border-radius: 30px;
+            opacity: 1;
+            line-height: 1.35;
+            animation: fadeInUp 0.8s ease 0.35s both, goldPulse 3s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(201, 169, 97, 0.3);
+            max-width: fit-content;
+            color: white;
+            letter-spacing: 0.3px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .hero-description:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 35px rgba(201, 169, 97, 0.6);
+        }
+
+        @keyframes goldPulse {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(201, 169, 97, 0.3);
+            }
+            50% {
+                box-shadow: 0 6px 30px rgba(201, 169, 97, 0.5);
+            }
         }
 
         .hero-buttons {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 12px;
+            gap: 16px;
             margin: 60px auto 0;
-            max-width: 380px;
+            max-width: 500px;
             animation: fadeInUp 0.8s ease 0.4s both;
         }
 
@@ -451,8 +494,8 @@
         .hero-btn {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 18px 26px;
+            gap: 20px;
+            padding: 22px 32px;
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
             backdrop-filter: blur(10px);
             border-radius: var(--border-radius);
@@ -467,6 +510,7 @@
             position: relative;
             overflow: hidden;
             width: 100%;
+            min-height: 80px;
             transform: translateY(0) scale(1);
         }
 
@@ -488,36 +532,40 @@
 
         /* Icon adjustments for single column */
         .btn-icon {
-            font-size: 28px;
+            font-size: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all var(--transition-base);
             flex-shrink: 0;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            width: 45px;
+            height: 45px;
         }
 
         .btn-content {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            justify-content: center;
             flex: 1;
             min-width: 0;
         }
 
         .btn-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             color: var(--text-dark);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
         }
 
         .btn-phone {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--primary-color);
+            line-height: 1.2;
         }
 
         /* Shimmer effect */
@@ -642,11 +690,11 @@
         .hero-btn::after {
             content: '→';
             position: absolute;
-            right: 24px;
+            right: 32px;
             top: 50%;
             transform: translateY(-50%) translateX(0);
             opacity: 0.5;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             transition: all var(--transition-base);
             color: var(--primary-color);
@@ -654,7 +702,7 @@
 
         .hero-btn:hover::after {
             opacity: 1;
-            transform: translateY(-50%) translateX(4px);
+            transform: translateY(-50%) translateX(6px);
             color: var(--accent-gold);
         }
 
@@ -1261,32 +1309,50 @@
                 margin-bottom: 25px;
             }
 
+            .hero-subtitle-wrapper {
+                margin-top: 20px;
+                margin-bottom: 35px;
+                gap: 15px;
+            }
+
             .hero-subtitle {
-                font-size: 20px;
-                margin-bottom: 50px;
+                font-size: 18px;
+                margin-bottom: 0;
+                line-height: 1.3;
+            }
+
+            .hero-description {
+                font-size: 16px;
+                padding: 10px 20px;
+                line-height: 1.3;
+                border-radius: 25px;
+                max-width: 90%;
             }
 
             .hero-buttons {
                 grid-template-columns: 1fr;
-                gap: 10px;
+                gap: 12px;
                 margin-top: 40px;
                 max-width: 100%;
-                padding: 0 10px;
+                padding: 0;
             }
 
             .hero-btn {
-                padding: 14px 16px;
+                padding: 18px 20px;
                 animation: buttonPulse 5s ease-in-out infinite;
-                gap: 12px;
+                gap: 16px;
+                min-height: 72px;
             }
 
             .hero-btn::after {
-                right: 16px;
-                font-size: 18px;
+                right: 20px;
+                font-size: 20px;
             }
 
             .btn-icon {
-                font-size: 24px;
+                font-size: 28px;
+                width: 40px;
+                height: 40px;
             }
 
             .btn-title {
@@ -1390,33 +1456,58 @@
                 margin-bottom: 20px;
             }
 
+            .hero-subtitle-wrapper {
+                margin-top: 18px;
+                margin-bottom: 30px;
+                padding: 0 10px;
+                gap: 12px;
+            }
+
             .hero-subtitle {
-                font-size: 18px;
-                margin-bottom: 40px;
+                font-size: 16px;
+                margin-bottom: 0;
+                line-height: 1.25;
+            }
+
+            .hero-description {
+                font-size: 14px;
+                padding: 8px 16px;
+                line-height: 1.25;
+                border-radius: 20px;
+                max-width: 95%;
             }
 
             .hero-buttons {
                 grid-template-columns: 1fr;
-                gap: 8px;
+                gap: 10px;
                 margin-top: 30px;
-                padding: 0 5px;
+                padding: 0;
             }
 
             .hero-btn {
-                padding: 12px 14px;
+                padding: 16px 18px;
+                min-height: 68px;
+                gap: 14px;
             }
 
             .btn-icon {
-                font-size: 22px;
+                font-size: 26px;
+                width: 36px;
+                height: 36px;
             }
 
             .btn-title {
-                font-size: 10px;
-                letter-spacing: 0;
+                font-size: 13px;
+                letter-spacing: 0.5px;
             }
 
             .btn-phone {
-                font-size: 12px;
+                font-size: 15px;
+            }
+
+            .hero-btn::after {
+                right: 18px;
+                font-size: 18px;
             }
 
             .brands-grid {
@@ -1516,11 +1607,16 @@
     <section class="hero" id="hero">
         <div class="hero-content">
             <h1 class="hero-title" data-translate="heroTitle">
-                Оригинальные запчасти для KIA, Hyundai и Chevrolet
+                Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet
             </h1>
-            <p class="hero-subtitle" data-translate="heroSubtitle">
-                Работаем напрямую с проверенными производителями
-            </p>
+            <div class="hero-subtitle-wrapper">
+                <p class="hero-subtitle" data-translate="heroSubtitle">
+                    Работаем напрямую с проверенными производителями.
+                </p>
+                <p class="hero-description" data-translate="heroDescription">
+                    Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.
+                </p>
+            </div>
             <div class="hero-buttons">
                 <a href="tel:+77771723377" class="hero-btn primary">
                     <span class="btn-icon">📞</span>
@@ -1744,8 +1840,9 @@
                 navAdvantages: 'Преимущества',
                 navBrands: 'Бренды',
                 navContact: 'Контакты',
-                heroTitle: 'Оригинальные запчасти для KIA, Hyundai и Chevrolet',
-                heroSubtitle: 'Работаем напрямую с проверенными производителями',
+                heroTitle: 'Надёжный поставщик запчастей для KIA, Hyundai и Chevrolet',
+                heroSubtitle: 'Работаем напрямую с проверенными производителями.',
+                heroDescription: 'Предлагаем оптимальные условия, оперативную отгрузку и поддержку на каждом этапе.',
                 btnChassis: 'Ходовая часть',
                 btnEngine: 'Запчасти двигателя',
                 btnLocation: 'Локация',
@@ -1773,6 +1870,7 @@
                 advTitle4: 'Поддержка',
                 advText4: 'Консультация на каждом этапе',
                 brandsTitle: 'Наши бренды',
+                brandNote: 'KIA • Hyundai • Chevrolet',
                 contactTitle: 'Контакты',
                 phoneLabel: 'Телефоны',
                 phoneDept1: 'Отдел ходовой части',
@@ -1799,8 +1897,9 @@
                 navAdvantages: 'Артықшылықтар',
                 navBrands: 'Брендтер',
                 navContact: 'Байланыс',
-                heroTitle: 'KIA, Hyundai және Chevrolet үшін түпнұсқа бөлшектер',
-                heroSubtitle: 'Тексерілген өндірушілермен тікелей жұмыс істейміз',
+                heroTitle: 'KIA, Hyundai және Chevrolet үшін сенімді бөлшектер жеткізуші',
+                heroSubtitle: 'Тексерілген өндірушілермен тікелей жұмыс істейміз.',
+                heroDescription: 'Оңтайлы жағдайлар, жедел жөнелту және әр кезеңде қолдау ұсынамыз.',
                 btnChassis: 'Жүріс бөлігі',
                 btnEngine: 'Қозғалтқыш бөлшектері',
                 btnLocation: 'Орналасу',
@@ -1854,8 +1953,9 @@
                 navAdvantages: 'Advantages',
                 navBrands: 'Brands',
                 navContact: 'Contact',
-                heroTitle: 'Original spare parts for KIA, Hyundai and Chevrolet',
-                heroSubtitle: 'We work directly with trusted manufacturers',
+                heroTitle: 'Reliable supplier of spare parts for KIA, Hyundai and Chevrolet',
+                heroSubtitle: 'We work directly with trusted manufacturers.',
+                heroDescription: 'We offer optimal conditions, prompt shipment and support at every stage.',
                 btnChassis: 'Chassis',
                 btnEngine: 'Engine Parts',
                 btnLocation: 'Location',
@@ -1909,8 +2009,9 @@
                 navAdvantages: 'Avantajlar',
                 navBrands: 'Markalar',
                 navContact: 'İletişim',
-                heroTitle: 'KIA, Hyundai ve Chevrolet için orijinal yedek parçalar',
-                heroSubtitle: 'Güvenilir üreticilerle doğrudan çalışıyoruz',
+                heroTitle: 'KIA, Hyundai ve Chevrolet için güvenilir yedek parça tedarikçisi',
+                heroSubtitle: 'Güvenilir üreticilerle doğrudan çalışıyoruz.',
+                heroDescription: 'Optimal koşullar, hızlı kargo ve her aşamada destek sunuyoruz.',
                 btnChassis: 'Şasi',
                 btnEngine: 'Motor Parçaları',
                 btnLocation: 'Konum',
