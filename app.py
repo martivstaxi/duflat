@@ -35,6 +35,7 @@ SOCIAL_PLATFORMS = {
     'discord':     {'regex': re.compile(r'discord\.(?:gg|com/invite)/([a-zA-Z0-9]{2,20})', re.I),'url_fmt': 'https://discord.gg/{}',   'validator': None,        'check': 'discord.'},
     'twitch':      {'regex': re.compile(r'twitch\.tv/([a-zA-Z0-9_]{2,25})', re.I),      'url_fmt': 'https://twitch.tv/{}',              'validator': 'twitch',    'check': 'twitch.tv/'},
     'myanimelist': {'regex': re.compile(r'myanimelist\.net/profile/([a-zA-Z0-9_-]{2,30})', re.I),'url_fmt': 'https://myanimelist.net/profile/{}','validator': None,'check': 'myanimelist.net/'},
+    'linkedin':    {'regex': re.compile(r'linkedin\.com/(?:company|in)/([a-zA-Z0-9._-]{2,80})', re.I),'url_fmt': 'https://www.linkedin.com/company/{}','validator': None,'check': 'linkedin.com/'},
 }
 
 RE_EMAIL = re.compile(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
@@ -705,6 +706,299 @@ def debug_about():
             'all_links': links,
         }
     })
+
+
+# ============================================================
+# AGENCY FINDER
+# ============================================================
+
+# Ajans aramasında atlanacak domain'ler
+_AGENCY_SKIP_DOMAINS = (
+    'youtube.com', 'youtu.be', 'instagram.com', 'twitter.com', 'x.com',
+    'facebook.com', 'tiktok.com', 'discord.gg', 'discord.com', 'twitch.tv',
+    'reddit.com', 'wikipedia.org', 'linktr.ee', 'bio.link', 'linkin.bio',
+    'beacons.ai', 'allmylinks.com', 'myanimelist.net',
+)
+# Kişisel email provider'ları
+_PERSONAL_EMAIL_DOMAINS = (
+    'gmail.', 'yahoo.', 'hotmail.', 'outlook.', 'icloud.',
+    'protonmail.', 'live.', 'msn.', 'aol.', 'mail.',
+)
+
+# Description'dan ajans ipuçları
+_AGENCY_DESC_RE = [
+    re.compile(r'(?:management|managed by|booking|talent agency|mcn|multi.?channel network|production company|produced by|partner(?:ship)?s?)\s*[:\-]?\s*([A-Za-z0-9&\s\.]{3,60})', re.I),
+    re.compile(r'(?:for business(?: inquiries)?|business contact|business email|work with us)\s*[:\-]?\s*[\w\s]{0,20}?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', re.I),
+    re.compile(r'(?:network|agency|label|studio|entertainment)\s*[:\-]?\s*([A-Za-z0-9&\s\.]{3,50})', re.I),
+]
+
+
+def _ddg_search(query, max_results=5):
+    """DuckDuckGo HTML search — API anahtarı gerektirmez."""
+    try:
+        r = requests.post(
+            'https://html.duckduckgo.com/html/',
+            data={'q': query, 'b': '', 'kl': 'en-us'},
+            headers={**BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded'},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return []
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(r.text, 'html.parser')
+        urls = []
+        # DDG HTML'de sonuç URL'leri .result__url span içinde gösterilir (text olarak)
+        for el in soup.select('.result__url'):
+            url_text = el.get_text(strip=True)
+            if not url_text:
+                continue
+            if not url_text.startswith('http'):
+                url_text = 'https://' + url_text
+            if url_text not in urls:
+                urls.append(url_text)
+        return urls[:max_results]
+    except Exception:
+        return []
+
+
+def _extract_company_info(html, page_url):
+    """HTML'den şirket adı, email, açıklama, sosyal medya çıkar."""
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+    except Exception:
+        return None
+
+    result = {'website': page_url}
+
+    # Şirket adı: OG title > title tag
+    og_title = soup.find('meta', property='og:title')
+    if og_title and og_title.get('content'):
+        raw = og_title['content'].strip()
+        result['name'] = re.sub(r'\s*[-|–|·]\s*(home|official|welcome|website).*$', '', raw, flags=re.I).strip()
+    elif soup.title and soup.title.string:
+        raw = soup.title.string.strip()
+        result['name'] = re.sub(r'\s*[-|–|·]\s*(home|official|welcome|website).*$', '', raw, flags=re.I).strip()
+
+    # Description
+    for attr in [{'property': 'og:description'}, {'name': 'description'}]:
+        tag = soup.find('meta', attrs=attr)
+        if tag and tag.get('content'):
+            result['description'] = tag['content'].strip()[:300]
+            break
+
+    # Email — önce mailto: linkleri, sonra genel regex
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        if href.startswith('mailto:'):
+            e = href[7:].split('?')[0].strip()
+            if e and not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                result['email'] = e
+                break
+    if not result.get('email'):
+        for m in RE_EMAIL.finditer(html):
+            e = m.group(1)
+            if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                result['email'] = e
+                break
+
+    # Telefon (basit)
+    phone_m = re.search(r'(?:tel|phone|call)[\s:]*(\+?[\d\s\-().]{7,20})', html, re.I)
+    if phone_m:
+        result['phone'] = phone_m.group(1).strip()
+
+    # Sosyal medya
+    socials = {}
+    for key, info in SOCIAL_PLATFORMS.items():
+        for m in info['regex'].finditer(html):
+            uname = m.group(1)
+            v = info.get('validator')
+            if (v is None or is_valid_username(uname, v)) and len(uname) > 1:
+                socials[key] = info['url_fmt'].format(uname)
+                break
+    if socials:
+        result['socials'] = socials
+
+    return result
+
+
+def _investigate_url(url):
+    """
+    URL'yi scrape et, şirket bilgilerini çıkar.
+    Ana sayfa + /contact + /about sub-page'leri de dener.
+    """
+    try:
+        r = requests.get(url, headers=BROWSER_HEADERS, timeout=10, allow_redirects=True)
+        if r.status_code not in (200,):
+            return None
+        result = _extract_company_info(r.text, r.url)
+        if not result:
+            return None
+
+        # Contact / About sub-page'leri de tara — eksik alanları doldur
+        base = r.url.rstrip('/')
+        for sub in ('/contact', '/about'):
+            if result.get('email') and result.get('name'):
+                break
+            try:
+                r2 = requests.get(base + sub, headers=BROWSER_HEADERS, timeout=8, allow_redirects=True)
+                if r2.status_code == 200:
+                    sub_info = _extract_company_info(r2.text, r2.url)
+                    if sub_info:
+                        if not result.get('email') and sub_info.get('email'):
+                            result['email'] = sub_info['email']
+                        if not result.get('description') and sub_info.get('description'):
+                            result['description'] = sub_info['description']
+                        for k, v in sub_info.get('socials', {}).items():
+                            result.setdefault('socials', {})[k] = v
+            except Exception:
+                pass
+
+        # Yeterli bilgi var mı?
+        has_name = bool(result.get('name'))
+        has_contact = bool(result.get('email') or result.get('socials'))
+        if has_name or has_contact:
+            return result
+    except Exception:
+        pass
+    return None
+
+
+def _search_and_investigate(query):
+    """DDG'de ara, sosyal medya dışı ilk uygun sonucu araştır."""
+    urls = _ddg_search(query, max_results=6)
+    for url in urls:
+        u_lower = url.lower()
+        if any(d in u_lower for d in _AGENCY_SKIP_DOMAINS):
+            continue
+        result = _investigate_url(url)
+        if result:
+            return result
+    return None
+
+
+def _try_linktree(url):
+    """Linktree sayfasından şirket linklerini çıkarmayı dene."""
+    try:
+        r = requests.get(url, headers=BROWSER_HEADERS, timeout=10)
+        if r.status_code != 200:
+            return []
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(r.text, 'html.parser')
+        links = []
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            if href.startswith('http') and not any(d in href.lower() for d in _AGENCY_SKIP_DOMAINS):
+                if href not in links:
+                    links.append(href)
+        return links[:5]
+    except Exception:
+        return []
+
+
+def find_agency(channel_data):
+    """
+    Channel verilerinden ajans/şirket araştırması yapar.
+    Sırayla her ipucunu dener, bulana kadar devam eder.
+    Döndürür: {'found': True, 'name': ..., 'website': ..., ...} veya {'found': False}
+    """
+    channel_name = channel_data.get('name', '')
+    email = channel_data.get('email', '')
+    description = channel_data.get('description', '')
+    all_links = channel_data.get('all_links', [])
+
+    # --- İpuçlarını topla ---
+
+    # Email domain
+    email_domain = None
+    if email and '@' in email:
+        domain = email.split('@')[1].lower()
+        if not any(domain.startswith(g) for g in _PERSONAL_EMAIL_DOMAINS):
+            email_domain = domain
+
+    # Description'dan ajans regex
+    desc_hints = []
+    for pat in _AGENCY_DESC_RE:
+        m = pat.search(description)
+        if m:
+            val = m.group(1).strip().rstrip('.').strip()
+            if len(val) > 3 and val not in desc_hints:
+                desc_hints.append(val)
+
+    # External links: sosyal medya dışı
+    company_links = []
+    linktree_links = []
+    for lnk in all_links:
+        u_lower = lnk.lower()
+        if 'linktr.ee' in u_lower or 'linkin.bio' in u_lower or 'beacons.ai' in u_lower:
+            linktree_links.append(lnk)
+        elif not any(d in u_lower for d in _AGENCY_SKIP_DOMAINS):
+            company_links.append(lnk)
+
+    # --- Araştırma Pipeline ---
+
+    def _make_result(info, source):
+        return {'found': True, 'source': source, **info}
+
+    # 1. Email domain → corporate site
+    if email_domain:
+        r = _investigate_url(f'https://{email_domain}')
+        if r:
+            return _make_result(r, 'email_domain')
+        # www. dene
+        r = _investigate_url(f'https://www.{email_domain}')
+        if r:
+            return _make_result(r, 'email_domain')
+
+    # 2. External company links
+    for lnk in company_links[:3]:
+        r = _investigate_url(lnk)
+        if r:
+            return _make_result(r, 'external_link')
+
+    # 3. Linktree → içindeki şirket linklerini çıkar
+    for lt in linktree_links[:2]:
+        extracted = _try_linktree(lt)
+        for lnk in extracted:
+            r = _investigate_url(lnk)
+            if r:
+                return _make_result(r, 'linktree')
+
+    # 4. Description regex → DDG arama
+    for hint in desc_hints[:2]:
+        r = _search_and_investigate(f'"{hint}" official site')
+        if r:
+            return _make_result(r, 'description_regex')
+
+    # 5. Channel adı + agency → DDG arama
+    if channel_name:
+        r = _search_and_investigate(f'{channel_name} management agency booking contact')
+        if r:
+            return _make_result(r, 'web_search')
+
+    return {'found': False}
+
+
+# ============================================================
+# AGENCY API
+# ============================================================
+
+@app.route('/agency', methods=['POST'])
+def agency_endpoint():
+    body = request.get_json(silent=True) or {}
+
+    # Frontend zaten scrape etmişse channel_data direkt gönderir
+    channel_data = body.get('channel_data')
+    if not channel_data:
+        url = body.get('url', '').strip()
+        if not url:
+            return jsonify({'error': 'channel_data or url required'}), 400
+        channel_data = scrape_channel(url)
+        if 'error' in channel_data:
+            return jsonify({'error': channel_data['error']}), 400
+
+    result = find_agency(channel_data)
+    return jsonify(result)
 
 
 if __name__ == '__main__':
