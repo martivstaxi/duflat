@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duflat — YouTube Channel Investigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* ── Palette ───────────────────────────────────────────
            #262624  Koyu Kömür     main background
@@ -22,6 +25,10 @@
             --border-m: rgba(177,173,161,.25);
             --text:     #FFFFFF;
             --faint:    rgba(177,173,161,.38);
+
+            --font-sans:  'Inter', system-ui, sans-serif;
+            --font-serif: 'Merriweather', Georgia, serif;
+            --font-mono:  'Roboto Mono', 'Courier New', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,7 +36,7 @@
         body {
             min-height: 100vh;
             background: var(--bg);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: var(--font-sans);
             color: var(--text);
             font-size: 15px;
             line-height: 1.5;
@@ -45,8 +52,9 @@
         }
 
         .logo {
+            font-family: var(--font-serif);
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 900;
             color: var(--accent);
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -67,8 +75,9 @@
         }
 
         .page-title {
+            font-family: var(--font-serif);
             font-size: 1.75rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
             margin-bottom: 6px;
             letter-spacing: -.3px;
@@ -93,7 +102,8 @@
             border: 1px solid var(--border-m);
             border-radius: 8px;
             padding: 13px 16px;
-            font-size: 0.9rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
             color: var(--text);
             outline: none;
             transition: border-color .15s;
@@ -225,20 +235,23 @@
         }
 
         .channel-name {
+            font-family: var(--font-serif);
             font-size: 1.15rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
             margin-bottom: 3px;
         }
 
         .channel-handle {
+            font-family: var(--font-mono);
             color: var(--accent);
-            font-size: 0.88rem;
+            font-size: 0.83rem;
         }
 
         .channel-url-link {
+            font-family: var(--font-mono);
             color: var(--faint);
-            font-size: 0.76rem;
+            font-size: 0.72rem;
             text-decoration: none;
             margin-top: 3px;
             display: block;
@@ -263,8 +276,9 @@
         .stat-item:last-child { border-right: none; }
 
         .stat-value {
+            font-family: var(--font-mono);
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text);
             margin-bottom: 3px;
         }
@@ -294,14 +308,15 @@
         }
 
         .info-value {
-            font-size: 0.88rem;
+            font-family: var(--font-mono);
+            font-size: 0.83rem;
             color: var(--text);
             word-break: break-word;
         }
 
         .info-value a { color: var(--accent); text-decoration: none; }
         .info-value a:hover { text-decoration: underline; }
-        .info-value.empty { color: var(--faint); font-style: italic; }
+        .info-value.empty { font-family: var(--font-sans); color: var(--faint); font-style: italic; }
 
         .info-full { grid-column: 1 / -1; }
 
@@ -357,7 +372,8 @@
         .link-list { display: flex; flex-direction: column; gap: 5px; }
 
         .link-list a {
-            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
             color: var(--faint);
             text-decoration: none;
             white-space: nowrap;
@@ -431,14 +447,16 @@
         .agency-body { padding: 22px 26px; }
 
         .agency-name {
+            font-family: var(--font-serif);
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
             margin-bottom: 4px;
         }
 
         .agency-website {
-            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
             color: var(--accent);
             text-decoration: none;
             display: inline-block;
@@ -517,6 +535,7 @@
         .agency-source { margin-top: 16px; }
 
         .source-badge {
+            font-family: var(--font-mono);
             display: inline-block;
             background: rgba(193,95,60,.08);
             border: 1px solid rgba(193,95,60,.2);
