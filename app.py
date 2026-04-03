@@ -94,7 +94,10 @@ def debug_email():
         return jsonify({'error': 'url parameter required'}), 400
 
     from modules.scraper import (normalize_url, _fetch_email_innertube,
-                                  _fetch_email_ydl_about)
+                                  _fetch_email_ydl_about, _innertube_session,
+                                  _extract_continuation_token, _find_obj,
+                                  _INNERTUBE_ABOUT_PARAMS, _INNERTUBE_WEB_CONTEXT,
+                                  _INNERTUBE_WEB_HEADERS)
     import re as _re
 
     url = normalize_url(url)
@@ -110,11 +113,54 @@ def debug_email():
     # yt-dlp full about extraction
     ydl_email = _fetch_email_ydl_about(channel_url)
 
-    # Two-phase InnerTube (browse → continuation → aboutChannelViewModel)
-    it_email = ''
-    has_hidden_email = False
+    # Two-phase InnerTube — detailed debug
+    debug_innertube = {'phase1_status': 0, 'phase1_len': 0, 'cont_token': '',
+                       'phase2_status': 0, 'phase2_len': 0,
+                       'has_aboutViewModel': False, 'signInForEmail': '',
+                       'email': '', 'has_hidden': False, 'error': ''}
     if channel_id:
-        it_email, has_hidden_email = _fetch_email_innertube(channel_id)
+        try:
+            session = _innertube_session()
+            headers = {**_INNERTUBE_WEB_HEADERS,
+                       'Referer': f'https://www.youtube.com/channel/{channel_id}/about'}
+            # Phase 1
+            payload = {'browseId': channel_id, 'params': _INNERTUBE_ABOUT_PARAMS,
+                       'context': _INNERTUBE_WEB_CONTEXT}
+            r1 = session.post('https://www.youtube.com/youtubei/v1/browse',
+                               json=payload, headers=headers, timeout=15)
+            debug_innertube['phase1_status'] = r1.status_code
+            debug_innertube['phase1_len'] = len(r1.text)
+            if r1.status_code == 200:
+                data1 = r1.json()
+                cont_token = _extract_continuation_token(data1)
+                debug_innertube['cont_token'] = cont_token[:80] + '...' if cont_token else ''
+
+                if cont_token:
+                    # Phase 2
+                    r2 = session.post('https://www.youtube.com/youtubei/v1/browse',
+                                      json={'continuation': cont_token, 'context': _INNERTUBE_WEB_CONTEXT},
+                                      headers=headers, timeout=15)
+                    debug_innertube['phase2_status'] = r2.status_code
+                    debug_innertube['phase2_len'] = len(r2.text)
+                    if r2.status_code == 200:
+                        data2 = r2.json()
+                        vm = _find_obj(data2, 'aboutChannelViewModel')
+                        debug_innertube['has_aboutViewModel'] = vm is not None
+                        if vm and isinstance(vm, dict):
+                            sign_in = vm.get('signInForBusinessEmail', {})
+                            if sign_in:
+                                debug_innertube['signInForEmail'] = sign_in.get('content', '')[:100]
+                                debug_innertube['has_hidden'] = True
+                            for k in ('businessEmail', 'email'):
+                                if vm.get(k):
+                                    debug_innertube['email'] = str(vm[k])[:100]
+        except Exception as e:
+            debug_innertube['error'] = str(e)
+
+    # Also run the main function
+    it_email, has_hidden = '', False
+    if channel_id:
+        it_email, has_hidden = _fetch_email_innertube(channel_id)
 
     return jsonify({
         'channel_id':           channel_id,
@@ -122,7 +168,8 @@ def debug_email():
         'has_hidden_email':     result.get('has_hidden_email', False),
         'ydl_about_email':      ydl_email,
         'innertube_email':      it_email,
-        'innertube_has_hidden': has_hidden_email,
+        'innertube_has_hidden': has_hidden,
+        'debug_innertube':      debug_innertube,
     })
 
 
