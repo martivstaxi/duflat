@@ -172,23 +172,25 @@ def scrape_channel(url):
     )
     channel_url = RE_CLEAN.sub('', channel_url.rstrip('/'))
 
-    # Abone sayısı: üst seviyede null olabiliyor, tab_entry'de de dene
-    sub_count = (info.get('channel_follower_count')
-                 or info.get('subscriber_count')
-                 or (tab_entry.get('channel_follower_count') if tab_entry else None))
+    # Abone sayısı — top-level'da geliyor
+    sub_count = info.get('channel_follower_count') or info.get('subscriber_count')
+    if not sub_count and tab_entry:
+        sub_count = tab_entry.get('channel_follower_count') or tab_entry.get('subscriber_count')
     subscribers = f"{sub_count:,}" if sub_count else ''
 
-    views = info.get('view_count') or (tab_entry.get('view_count') if tab_entry else None)
+    views = info.get('view_count')
     views = f"{views:,}" if views else ''
 
-    # Video sayısı: tab_entry.playlist_count gerçek sayıyı tutar
-    video_count = (
-        (tab_entry.get('playlist_count') if tab_entry else None)
-        or info.get('playlist_count')
-        or info.get('video_count')
-    )
-    # Sadece tabs sayısıysa (2-3 gibi küçük değerler) gösterme
-    video_count = str(video_count) if (video_count and int(video_count) > 3) else ''
+    # Video sayısı: top-level playlist_count = tab sayısı (2-3), kullanma
+    # tab_entry.playlist_count = gerçek video sayısı
+    video_count = None
+    if tab_entry:
+        video_count = tab_entry.get('playlist_count') or tab_entry.get('video_count')
+    if not video_count:
+        vc = info.get('playlist_count') or info.get('video_count')
+        if vc and int(vc) > 3:
+            video_count = vc
+    video_count = str(video_count) if video_count else ''
 
     description = (info.get('description') or info.get('channel_description') or '')[:1000]
 
@@ -283,6 +285,15 @@ def debug():
         if isinstance(first, dict):
             safe['first_entry_keys'] = list(first.keys())
             safe['first_entry_upload_date'] = first.get('upload_date')
+            safe['first_entry_playlist_count'] = first.get('playlist_count')
+            safe['first_entry_channel_follower_count'] = first.get('channel_follower_count')
+            safe['first_entry_type'] = first.get('_type')
+            # İç içe entries var mı?
+            sub = first.get('entries') or []
+            safe['first_entry_sub_entries_count'] = len(sub)
+            if sub and isinstance(sub[0], dict):
+                safe['first_video_upload_date'] = sub[0].get('upload_date')
+                safe['first_video_title'] = sub[0].get('title')
     return jsonify(safe)
 
 if __name__ == '__main__':
