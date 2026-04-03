@@ -145,28 +145,36 @@ def extract_video_count(ps):
 _about_patch_lock = threading.Lock()
 
 
+RE_PUBLISHED_TIME = re.compile(
+    r'"publishedTimeText":\s*\{\s*"simpleText":\s*"([^"]+)"\s*\}'
+    r'|"publishedTimeText":\s*"([^"]+)"'
+)
+
+
 def _extract_about_via_ytdlp(channel_url):
     """
-    yt-dlp'nin /about fetch'ini intercept ederek raw HTML'i yakala,
-    sonra ytInitialData'dan location, joined, views, video_count çıkar.
+    yt-dlp'nin _download_webpage'ini intercept ederek:
+    - /about HTML'den: location, joined, views, video_count
+    - /videos HTML'den: son video tarihi (publishedTimeText)
     yt-dlp consent'i otomatik handle ettiği için Railway IP sorunu olmaz.
     """
     base = RE_CLEAN.sub('', channel_url.rstrip('/'))
     about_url = base + '/about'
-    captured_html = {}
+    videos_url = base + '/videos'
+    captured = {'about': '', 'videos': ''}
 
     try:
-        from yt_dlp.extractor.youtube import YoutubeTabIE
         from yt_dlp.extractor.common import InfoExtractor
 
         original_dw = InfoExtractor._download_webpage
 
         def patched_dw(self, url_or_request, *args, **kwargs):
             result = original_dw(self, url_or_request, *args, **kwargs)
-            if (result and isinstance(result, str)
-                    and 'ytInitialData' in result
-                    and not captured_html):
-                captured_html['html'] = result
+            if result and isinstance(result, str) and 'ytInitialData' in result:
+                if not captured['about']:
+                    captured['about'] = result
+                elif not captured['videos']:
+                    captured['videos'] = result
             return result
 
         with _about_patch_lock:
@@ -176,14 +184,25 @@ def _extract_about_via_ytdlp(channel_url):
                             'ignoreerrors': True, 'extract_flat': True}
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.extract_info(about_url, download=False)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.extract_info(videos_url, download=False)
             finally:
                 InfoExtractor._download_webpage = original_dw
 
     except Exception:
         pass
 
-    html = captured_html.get('html', '')
-    return html, _parse_about_from_html(html)
+    about_html = captured['about']
+    videos_html = captured['videos']
+    parsed = _parse_about_from_html(about_html)
+
+    # Son video tarihi: /videos sayfasından publishedTimeText
+    if not parsed.get('last_video_date'):
+        m = RE_PUBLISHED_TIME.search(videos_html)
+        if m:
+            parsed['last_video_date'] = (m.group(1) or m.group(2) or '').strip()
+
+    return about_html, parsed
 
 
 def _parse_about_from_html(html):
@@ -226,7 +245,7 @@ def fetch_about_page(channel_url):
     """About sayfasından email, sosyal medya, konum, katılım tarihi, görüntülenme, video sayısı çek"""
     ps, extra = _extract_about_via_ytdlp(channel_url)
     if not ps:
-        return {}, [], '', extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count','')
+        return {}, [], '', extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count',''), extra.get('last_video_date','')
 
     # Redirect URL'leri çöz
     redirect_urls = RE_REDIRECT.findall(ps)
@@ -283,7 +302,7 @@ def fetch_about_page(channel_url):
         if email:
             break
 
-    return socials, json_ext_links[:15], email, extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count','')
+    return socials, json_ext_links[:15], email, extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count',''), extra.get('last_video_date','')
 
 
 def extract_socials_from_text(text):
@@ -446,7 +465,7 @@ def scrape_channel(url):
     socials, all_links, email = extract_socials_from_text(combined_text)
 
     # About sayfasından link kartları + email + konum + katılım + views + video sayısı
-    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count = fetch_about_page(channel_url)
+    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count, about_last_video = fetch_about_page(channel_url)
     for k, v in about_socials.items():
         if k not in socials:
             socials[k] = v
@@ -459,6 +478,8 @@ def scrape_channel(url):
         video_count = about_video_count
     if not views and about_views:
         views = about_views
+    if not last_video_date and about_last_video:
+        last_video_date = about_last_video
 
     data = {
         'channel_url': channel_url,
