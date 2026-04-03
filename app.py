@@ -324,28 +324,71 @@ def extract_socials_from_text(text):
 # ANA ÇIKARMA (yt-dlp)
 # ============================================================
 
+def _oembed_channel_url(video_url):
+    """Video URL'sinden oEmbed ile kanal URL'si al (bot tespiti yok)"""
+    try:
+        r = requests.get(
+            'https://www.youtube.com/oembed',
+            params={'url': video_url, 'format': 'json'},
+            headers={'User-Agent': 'Mozilla/5.0'},
+            timeout=10
+        )
+        if r.status_code == 200:
+            data = r.json()
+            author_url = data.get('author_url', '')
+            if author_url and 'youtube.com' in author_url:
+                return author_url, data.get('author_name', '')
+    except Exception:
+        pass
+    return None, ''
+
+
 def scrape_channel(url):
     url = normalize_url(url)
     if not url:
         return {'error': 'Geçersiz URL'}
 
-    # İlk geçiş: tam meta veri (extract_flat yok), sadece ilk 1 videoyu işle
     ydl_opts = {
         'skip_download': True,
         'quiet': True,
         'no_warnings': True,
         'ignoreerrors': True,
-        'playlistend': 1,   # Sadece son videoyu al (tarih için), kanal meta verisinin tamamı gelir
+        'playlistend': 1,
     }
 
+    info = None
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-    except Exception as e:
-        return {'error': str(e)[:200]}
+    except Exception:
+        pass
 
+    # yt-dlp başarısız olduysa ve video URL ise: oEmbed fallback
     if not info:
-        return {'error': 'Kanal bilgisi alınamadı'}
+        is_video_url = any(x in url for x in ['/watch?', 'youtu.be/', '/shorts/', '/live/'])
+        if is_video_url:
+            channel_url_fb, name_fb = _oembed_channel_url(url)
+            if channel_url_fb:
+                # Kanal URL'si ile tekrar dene
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(channel_url_fb, download=False)
+                except Exception:
+                    pass
+                # Kanal URL'si de başarısız olduysa sadece about page çek
+                if not info:
+                    url = channel_url_fb
+                    # Minimal info dict oluştur, about page'den dolduracağız
+                    info = {
+                        'extractor': 'youtube:tab',
+                        '_type': 'playlist',
+                        'uploader': name_fb,
+                        'channel': name_fb,
+                        'channel_url': channel_url_fb,
+                        'uploader_url': channel_url_fb,
+                    }
+        if not info:
+            return {'error': 'Kanal bilgisi alınamadı'}
 
     is_video = info.get('extractor') == 'youtube' and info.get('_type') != 'playlist'
 
