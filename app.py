@@ -136,21 +136,31 @@ def extract_video_count(ps):
 
 
 def _fetch_page_html(url):
-    """yt-dlp HTTP session'ı ile URL'yi fetch et (YouTube bot tespitini atlatır)"""
+    """YouTube about sayfasını consent bypass ile çek"""
+    consent_cookies = {
+        'SOCS': 'CAE=',
+        'CONSENT': 'YES+cb.20210328-17-p0.en+FX+667',
+        'PREF': 'tz=UTC&f6=40000000',
+    }
+    headers = {
+        **BROWSER_HEADERS,
+        'Cookie': '; '.join(f'{k}={v}' for k, v in consent_cookies.items()),
+    }
+    try:
+        session = requests.Session()
+        for k, v in consent_cookies.items():
+            session.cookies.set(k, v, domain='.youtube.com')
+        r = session.get(url, headers=headers, timeout=15, allow_redirects=True)
+        if r.status_code == 200 and 'consent.youtube.com' not in r.url:
+            return r.text
+    except Exception:
+        pass
+    # Fallback: yt-dlp urlopen
     try:
         ydl_opts = {'quiet': True, 'no_warnings': True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             response = ydl.urlopen(url)
             return response.read().decode('utf-8', errors='replace')
-    except Exception:
-        pass
-    # Fallback: requests
-    try:
-        session = requests.Session()
-        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
-        r = session.get(url, headers=BROWSER_HEADERS, timeout=15)
-        if r.status_code == 200:
-            return r.text
     except Exception:
         pass
     return ''
