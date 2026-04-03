@@ -36,7 +36,24 @@ _SKIP_DOMAINS = (
     'facebook.com', 'tiktok.com', 'discord.gg', 'discord.com', 'twitch.tv',
     'reddit.com', 'wikipedia.org', 'google.com', 'gstatic.com',
     'googleapis.com', 'apple.com', 'microsoft.com', 'amazon.com',
+    'myanimelist.net', 'myanimelist.com', 'anilist.co',
+    'twitch.tv', 'kick.com', 'spotify.com', 'soundcloud.com',
+    'patreon.com', 'onlyfans.com', 'ko-fi.com', 'buymeacoffee.com',
+    'snapchat.com', 'pinterest.com', 'tumblr.com', 'threads.net',
 )
+
+# Short/common English words that look like TLDs but aren't real email TLDs
+_FAKE_TLDS = frozenset({
+    'on', 'at', 'in', 'or', 'to', 'be', 'we', 'my', 'me', 'by', 'do',
+    'go', 'up', 'us', 'it', 'if', 'as', 'so', 'no', 'an', 'of', 'is',
+    'he', 'she', 'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
+    'can', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him',
+    'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who',
+    'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use', 'from',
+    'have', 'this', 'will', 'your', 'that', 'with', 'they', 'been', 'more',
+    'when', 'come', 'here', 'just', 'know', 'like', 'look', 'make', 'most',
+    'over', 'than', 'them', 'well', 'were',
+})
 
 _LINK_AGGREGATORS = ('linktr.ee', 'bio.link', 'beacons.ai', 'allmylinks.com',
                      'linkin.bio', 'lnk.bio', 'msha.ke', 'campsite.bio')
@@ -72,10 +89,23 @@ def _is_business_email(email: str) -> bool:
         return False
     if any(x in e for x in EMAIL_BLACKLIST):
         return False
-    domain = e.split('@')[1]
+    parts = e.split('@')
+    if len(parts) != 2:
+        return False
+    domain = parts[1]
     if any(domain.startswith(p) for p in _PERSONAL_EMAIL_DOMAINS):
         return False
-    return bool(domain)
+    # TLD must exist, be 2-12 chars, only letters, and not a common English word
+    tld_match = re.search(r'\.([a-z]{2,12})$', domain)
+    if not tld_match:
+        return False
+    tld = tld_match.group(1)
+    if tld in _FAKE_TLDS:
+        return False
+    # Reject if domain is a known platform
+    if any(skip in domain for skip in _SKIP_DOMAINS):
+        return False
+    return True
 
 
 def _clean_emails(emails: list[str]) -> list[str]:
@@ -182,6 +212,26 @@ def _ddg_search(query: str, max_results: int = 6) -> list[str]:
         return []
 
 
+def _is_site_own_email(email: str, page_url: str) -> bool:
+    """
+    Return True if the email belongs to the scraped site itself
+    (e.g. contact@myanimelist.net found on myanimelist.net).
+    We want to skip these — they're not the creator's email.
+    """
+    try:
+        from urllib.parse import urlparse
+        site_domain = urlparse(page_url).netloc.lower().lstrip('www.')
+        email_domain = email.split('@')[1].lower() if '@' in email else ''
+        if not email_domain or not site_domain:
+            return False
+        # Same domain or subdomain
+        return (email_domain == site_domain or
+                email_domain.endswith('.' + site_domain) or
+                site_domain.endswith('.' + email_domain))
+    except Exception:
+        return False
+
+
 def _scrape_url_deep(url: str) -> tuple[list[str], str]:
     """
     Scrape a URL and its /contact + /about subpages.
@@ -192,7 +242,8 @@ def _scrape_url_deep(url: str) -> tuple[list[str], str]:
 
     html = _fetch(url)
     if html:
-        emails += _extract_emails_html(html)
+        raw = _extract_emails_html(html)
+        emails += [e for e in raw if not _is_site_own_email(e, url)]
         texts.append(_page_text(html, 600))
         base = url.rstrip('/')
         for sub in ('/contact', '/about', '/about-us', '/contact-us'):
@@ -200,7 +251,8 @@ def _scrape_url_deep(url: str) -> tuple[list[str], str]:
                 break
             sub_html = _fetch(base + sub, timeout=8)
             if sub_html:
-                emails += _extract_emails_html(sub_html)
+                raw = _extract_emails_html(sub_html)
+                emails += [e for e in raw if not _is_site_own_email(e, url)]
                 texts.append(_page_text(sub_html, 400))
 
     return _clean_emails(emails), ' '.join(t for t in texts if t)[:800]
@@ -304,8 +356,13 @@ Analyze ALL the evidence carefully:
 4. If a website domain was found in the links, the most likely email is contact@/info@/business@/collab@ that domain
 5. Cross-reference the channel name, handle, and found domains to identify the most plausible email
 
+CRITICAL validation rules — REJECT any email that:
+- Belongs to a known platform (gmail, myanimelist, youtube, instagram, twitter, linktr.ee, etc.)
+- Looks like it was parsed incorrectly from natural language (e.g. "follow@somesite.on" or "email@platform.from")
+- Is the contact email of a third-party site, not the creator themselves
+
 Be bold — if the evidence strongly points to an email even if not explicitly stated, report it with low confidence.
-Only return found:false if there is absolutely no signal at all.
+Only return found:false if there is absolutely no signal pointing to the creator's own email.
 
 Respond ONLY with valid JSON:
 {{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence explaining the evidence"}}
