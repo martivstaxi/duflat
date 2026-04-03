@@ -26,6 +26,7 @@ import json
 import requests
 
 from .constants import BROWSER_HEADERS, RE_EMAIL, EMAIL_BLACKLIST
+from .scraper import _fetch_email_innertube, _fetch_email_ydl_about
 
 # ─────────────────────────────────────────────
 # CONSTANTS
@@ -449,6 +450,29 @@ def find_email(channel_data: dict) -> dict:
     evidence:          list[tuple[str, str]] = []   # (label, text) for Haiku
     candidate_emails:  list[str]             = []   # domain-guessed
     found_domains:     list[str]             = []   # corporate domains found
+
+    # ── STEP -1: InnerTube API deep extraction ─────────────────
+    # Try InnerTube with session cookies + multiple clients
+    # This catches emails hidden behind YouTube's "View email address" button
+    channel_id = ''
+    if channel_url:
+        m = re.search(r'/channel/(UC[a-zA-Z0-9_-]{22})', channel_url)
+        if m:
+            channel_id = m.group(1)
+    if channel_id:
+        it_email = _fetch_email_innertube(channel_id)
+        if it_email and _is_business_email(it_email):
+            return {'found': True, 'email': it_email, 'source': 'youtube_hidden',
+                    'confidence': 'high',
+                    'reasoning': 'Found via YouTube InnerTube API (hidden behind "View email address" button).'}
+
+    # Also try yt-dlp full about extraction
+    if channel_url:
+        ydl_email = _fetch_email_ydl_about(channel_url)
+        if ydl_email and _is_business_email(ydl_email):
+            return {'found': True, 'email': ydl_email, 'source': 'youtube_about',
+                    'confidence': 'high',
+                    'reasoning': 'Found via yt-dlp full about page extraction.'}
 
     # ── STEP 0: Obfuscated emails in description ───────────────
     if description:

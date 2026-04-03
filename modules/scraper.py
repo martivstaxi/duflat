@@ -61,7 +61,7 @@ def _try_decode_b64_email(s: str) -> str:
 
 def _find_email_in_obj(obj, depth: int = 0) -> str:
     """Recursively search any dict/list/str for a valid email address."""
-    if depth > 6:
+    if depth > 12:
         return ''
     if isinstance(obj, str):
         # Try base64 decode first
@@ -75,9 +75,10 @@ def _find_email_in_obj(obj, depth: int = 0) -> str:
                 if not any(x in e.lower() for x in EMAIL_BLACKLIST):
                     return e
     elif isinstance(obj, dict):
-        # Priority fields
+        # Priority fields — check email-related keys first
         for key in ('businessEmail', 'email', 'channel_email', 'business_email',
-                    'uploader_email', 'emailText'):
+                    'uploader_email', 'emailText', 'businessEmailLabel',
+                    'businessEmailRevealText', 'revealedBusinessEmail'):
             v = obj.get(key)
             if v:
                 found = _find_email_in_obj(v, depth + 1)
@@ -85,13 +86,14 @@ def _find_email_in_obj(obj, depth: int = 0) -> str:
                     return found
         # All other fields
         for k, v in obj.items():
-            if k in ('thumbnails', 'avatar', 'thumbnail', 'banner', 'tvBanner'):
+            if k in ('thumbnails', 'avatar', 'thumbnail', 'banner', 'tvBanner',
+                     'topbar', 'adSlots', 'frameworkUpdates'):
                 continue
             found = _find_email_in_obj(v, depth + 1)
             if found:
                 return found
     elif isinstance(obj, list):
-        for item in obj[:20]:
+        for item in obj[:30]:
             found = _find_email_in_obj(item, depth + 1)
             if found:
                 return found
@@ -100,15 +102,104 @@ def _find_email_in_obj(obj, depth: int = 0) -> str:
 
 # YouTube InnerTube API — about tab params (base64 of protobuf \x12\x05about)
 _INNERTUBE_ABOUT_PARAMS = 'EgVhYm91dA=='
-_INNERTUBE_CONTEXT = {
-    'client': {
-        'hl': 'en', 'gl': 'US',
-        'clientName': 'WEB',
-        'clientVersion': '2.20240701.09.00',
-        'platform': 'DESKTOP',
-        'userAgent': BROWSER_HEADERS['User-Agent'],
-    }
-}
+_INNERTUBE_WEB_VERSION = '2.20260401.01.00'
+
+# Multiple InnerTube clients — some return more data than others
+_INNERTUBE_CLIENTS = [
+    {   # WEB client — standard desktop browser
+        'context': {
+            'client': {
+                'hl': 'en', 'gl': 'US',
+                'clientName': 'WEB',
+                'clientVersion': _INNERTUBE_WEB_VERSION,
+                'platform': 'DESKTOP',
+                'userAgent': BROWSER_HEADERS['User-Agent'],
+            }
+        },
+        'headers': {
+            'X-YouTube-Client-Name': '1',
+            'X-YouTube-Client-Version': _INNERTUBE_WEB_VERSION,
+        },
+    },
+    {   # ANDROID client — often returns more data with fewer restrictions
+        'context': {
+            'client': {
+                'hl': 'en', 'gl': 'US',
+                'clientName': 'ANDROID',
+                'clientVersion': '19.29.37',
+                'platform': 'MOBILE',
+                'androidSdkVersion': 34,
+                'userAgent': 'com.google.android.youtube/19.29.37 (Linux; U; Android 14) gzip',
+            }
+        },
+        'headers': {
+            'X-YouTube-Client-Name': '3',
+            'X-YouTube-Client-Version': '19.29.37',
+            'User-Agent': 'com.google.android.youtube/19.29.37 (Linux; U; Android 14) gzip',
+        },
+    },
+    {   # MWEB client — mobile web, sometimes returns different data structure
+        'context': {
+            'client': {
+                'hl': 'en', 'gl': 'US',
+                'clientName': 'MWEB',
+                'clientVersion': '2.20260401.01.00',
+                'platform': 'MOBILE',
+            }
+        },
+        'headers': {
+            'X-YouTube-Client-Name': '2',
+            'X-YouTube-Client-Version': '2.20260401.01.00',
+        },
+    },
+]
+
+
+def _extract_email_from_response(r) -> str:
+    """Extract email from an InnerTube API response object."""
+    try:
+        data = r.json()
+    except Exception:
+        data = None
+
+    # 1. Recursive search on parsed JSON
+    if data:
+        email = _find_email_in_obj(data)
+        if email:
+            return email
+
+    # 2. Regex fallback on raw text
+    raw = r.text
+    m = re.search(r'"businessEmail"\s*:\s*"([^"]{6,200})"', raw)
+    if m:
+        decoded = _try_decode_b64_email(m.group(1))
+        if decoded:
+            return decoded
+        if '@' in m.group(1):
+            return m.group(1)
+
+    # 3. Look for revealedBusinessEmail or similar fields
+    for pattern in [
+        r'"revealedBusinessEmail"\s*:\s*"([^"]{6,200})"',
+        r'"businessEmailText"\s*:\s*"([^"]{6,200})"',
+        r'"emailAddress"\s*:\s*"([^"]{6,200})"',
+    ]:
+        m = re.search(pattern, raw)
+        if m:
+            val = m.group(1)
+            decoded = _try_decode_b64_email(val)
+            if decoded:
+                return decoded
+            if '@' in val and not any(x in val.lower() for x in EMAIL_BLACKLIST):
+                return val
+
+    # 4. Generic email regex on full response
+    for m in RE_EMAIL.finditer(raw):
+        e = m.group(1)
+        if '@' in e and '.' in e.split('@')[1]:
+            if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                return e
+    return ''
 
 
 def _fetch_email_ydl_about(channel_url: str) -> str:
@@ -142,60 +233,79 @@ def _fetch_email_ydl_about(channel_url: str) -> str:
 def _fetch_email_innertube(channel_id: str) -> str:
     """
     Call YouTube's InnerTube browse API for the channel's about tab.
+    Tries multiple client types (WEB, ANDROID, MWEB) with session cookies.
     Searches the JSON response recursively for any email address.
-    Works even when the email is behind YouTube's 'View email address' button.
     """
     if not channel_id:
         return ''
+
+    # Create session with cookies to bypass consent and get full data
+    session = requests.Session()
     try:
-        payload = {
-            'browseId':  channel_id,
-            'params':    _INNERTUBE_ABOUT_PARAMS,
-            'context':   _INNERTUBE_CONTEXT,
-        }
-        headers = {
-            **BROWSER_HEADERS,
-            'X-YouTube-Client-Name':    '1',
-            'X-YouTube-Client-Version': '2.20240701.09.00',
-            'Content-Type':             'application/json',
-            'Origin':                   'https://www.youtube.com',
-            'Referer':                  'https://www.youtube.com/',
-            'Accept-Encoding':          'gzip, deflate',  # no brotli — requests can't decode br
-        }
-        r = requests.post(
-            'https://www.youtube.com/youtubei/v1/browse',
-            json=payload,
-            headers=headers,
-            timeout=15,
-        )
-        if r.status_code != 200:
-            return ''
-
-        data = r.json()
-
-        # 1. Direct recursive search (handles businessEmail base64 decode)
-        email = _find_email_in_obj(data)
-        if email:
-            return email
-
-        # 2. Regex fallback on raw JSON text
-        raw = r.text
-        m = re.search(r'"businessEmail"\s*:\s*"([^"]{6,200})"', raw)
-        if m:
-            decoded = _try_decode_b64_email(m.group(1))
-            if decoded:
-                return decoded
-            if '@' in m.group(1):
-                return m.group(1)
-
-        for m in RE_EMAIL.finditer(raw):
-            e = m.group(1)
-            if '@' in e and '.' in e.split('@')[1]:
-                if not any(x in e.lower() for x in EMAIL_BLACKLIST):
-                    return e
-
+        session.get('https://www.youtube.com/', headers=BROWSER_HEADERS, timeout=10)
     except Exception:
         pass
+    # Set CONSENT cookie to avoid consent.youtube.com redirect
+    session.cookies.set('CONSENT', 'PENDING+987', domain='.youtube.com')
+    session.cookies.set('SOCS', 'CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwODI5LjA3X3AxGgJlbiACGgYIgJnPpwY',
+                        domain='.youtube.com')
+
+    for client_cfg in _INNERTUBE_CLIENTS:
+        try:
+            payload = {
+                'browseId': channel_id,
+                'params':   _INNERTUBE_ABOUT_PARAMS,
+                'context':  client_cfg['context'],
+            }
+            headers = {
+                'Content-Type':    'application/json',
+                'Origin':          'https://www.youtube.com',
+                'Referer':         f'https://www.youtube.com/channel/{channel_id}/about',
+                'Accept-Encoding': 'gzip, deflate',
+                **client_cfg['headers'],
+            }
+            r = session.post(
+                'https://www.youtube.com/youtubei/v1/browse',
+                json=payload, headers=headers, timeout=15,
+            )
+            if r.status_code != 200:
+                continue
+
+            email = _extract_email_from_response(r)
+            if email:
+                return email
+        except Exception:
+            continue
+
+    # Last resort: try fetching the channel about page HTML directly
+    # and extract ytInitialData which may contain businessEmail
+    try:
+        about_url = f'https://www.youtube.com/channel/{channel_id}/about'
+        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
+        if r.status_code == 200:
+            html = r.text
+            # Extract businessEmail from ytInitialData in page HTML
+            m = re.search(r'"businessEmail"\s*:\s*"([^"]{6,200})"', html)
+            if m:
+                decoded = _try_decode_b64_email(m.group(1))
+                if decoded:
+                    return decoded
+                if '@' in m.group(1):
+                    return m.group(1)
+            # Generic email search in about page HTML
+            for pat in RE_EMAIL_PAGE:
+                for e in pat.findall(html):
+                    e = e.strip()
+                    if '@' not in e and len(e) > 8:
+                        decoded = _try_decode_b64_email(e)
+                        if decoded:
+                            return decoded
+                    if '@' in e and '.' in e.split('@')[1]:
+                        if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                            return e
+    except Exception:
+        pass
+
     return ''
 RE_COUNTRY     = re.compile(r'"country":\s*"([^"]+)"')
 RE_JOINED      = re.compile(r'Joined\s+([A-Za-z]+\s+\d+,\s+\d{4})')

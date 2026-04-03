@@ -95,7 +95,8 @@ def debug_email():
 
     from modules.scraper import (normalize_url, _fetch_email_innertube,
                                   _fetch_email_ydl_about, _find_email_in_obj,
-                                  _try_decode_b64_email)
+                                  _try_decode_b64_email, _extract_email_from_response,
+                                  _INNERTUBE_ABOUT_PARAMS, _INNERTUBE_CLIENTS)
     import re as _re, requests as _req
     from modules.constants import BROWSER_HEADERS, EMAIL_BLACKLIST
 
@@ -112,60 +113,57 @@ def debug_email():
     # yt-dlp full about extraction
     ydl_email = _fetch_email_ydl_about(channel_url)
 
-    # InnerTube API — capture response text BEFORE json parsing
-    it_status  = 0
-    it_text    = ''
-    it_email   = ''
-    it_be_raw  = None
-    it_be_dec  = None
-    it_err     = ''
+    # InnerTube API — try all clients with session cookies
+    client_results = []
+    it_email = ''
     if channel_id:
+        session = _req.Session()
         try:
-            payload = {'browseId': channel_id, 'params': 'EgVhYm91dA==',
-                       'context': {'client': {'hl': 'en', 'gl': 'US',
-                                               'clientName': 'WEB',
-                                               'clientVersion': '2.20240701.09.00'}}}
-            hdrs = {**BROWSER_HEADERS,
-                    'X-YouTube-Client-Name': '1',
-                    'X-YouTube-Client-Version': '2.20240701.09.00',
-                    'Content-Type': 'application/json',
-                    'Origin': 'https://www.youtube.com',
-                    'Referer': 'https://www.youtube.com/',
-                    'Accept-Encoding': 'gzip, deflate'}
-            r        = _req.post('https://www.youtube.com/youtubei/v1/browse',
-                                  json=payload, headers=hdrs, timeout=15)
-            it_status = r.status_code
-            it_text   = r.text[:3000]   # always capture BEFORE json()
-            bm = _re.search(r'"businessEmail"\s*:\s*"([^"]+)"', r.text)
-            if bm:
-                it_be_raw = bm.group(1)
-                it_be_dec = _try_decode_b64_email(it_be_raw)
-            try:
-                it_email = _find_email_in_obj(r.json())
-            except Exception as je:
-                it_err = str(je)
-        except Exception as e:
-            it_err = str(e)
+            session.get('https://www.youtube.com/', headers=BROWSER_HEADERS, timeout=10)
+        except Exception:
+            pass
+        session.cookies.set('CONSENT', 'PENDING+987', domain='.youtube.com')
 
-    # Search raw InnerTube text for anything email-related
-    email_hits = []
-    if it_text:
-        import re as _re2
-        for m in _re2.finditer(r'.{0,60}(?:email|mail|contact|business).{0,60}', it_text, _re2.I):
-            email_hits.append(m.group())
+        for client_cfg in _INNERTUBE_CLIENTS:
+            client_name = client_cfg['context']['client']['clientName']
+            cr = {'client': client_name, 'status': 0, 'email': '', 'be_raw': None, 'be_decoded': None, 'error': '', 'email_hits': []}
+            try:
+                payload = {'browseId': channel_id, 'params': _INNERTUBE_ABOUT_PARAMS,
+                           'context': client_cfg['context']}
+                hdrs = {'Content-Type': 'application/json',
+                        'Origin': 'https://www.youtube.com',
+                        'Referer': f'https://www.youtube.com/channel/{channel_id}/about',
+                        'Accept-Encoding': 'gzip, deflate',
+                        **client_cfg['headers']}
+                r = session.post('https://www.youtube.com/youtubei/v1/browse',
+                                  json=payload, headers=hdrs, timeout=15)
+                cr['status'] = r.status_code
+                cr['response_len'] = len(r.text)
+                bm = _re.search(r'"businessEmail"\s*:\s*"([^"]+)"', r.text)
+                if bm:
+                    cr['be_raw'] = bm.group(1)
+                    cr['be_decoded'] = _try_decode_b64_email(bm.group(1))
+                cr['email'] = _extract_email_from_response(r)
+                if cr['email'] and not it_email:
+                    it_email = cr['email']
+                # Find email-related snippets
+                for em in _re.finditer(r'.{0,60}(?:email|mail|contact|business).{0,60}', r.text[:5000], _re.I):
+                    cr['email_hits'].append(em.group())
+                cr['email_hits'] = cr['email_hits'][:10]
+            except Exception as e:
+                cr['error'] = str(e)
+            client_results.append(cr)
+
+    # Also test the main function
+    innertube_main = _fetch_email_innertube(channel_id) if channel_id else ''
 
     return jsonify({
         'channel_id':           channel_id,
         'scraper_email':        result.get('email'),
         'ydl_about_email':      ydl_email,
-        'innertube_status':     it_status,
+        'innertube_main':       innertube_main,
         'innertube_email':      it_email,
-        'innertube_be_raw':     it_be_raw,
-        'innertube_be_decoded': it_be_dec,
-        'innertube_error':      it_err,
-        'innertube_response_len': len(it_text),
-        'innertube_email_hits': email_hits[:20],
-        'innertube_snippet':    it_text[:800],
+        'client_results':       client_results,
     })
 
 
