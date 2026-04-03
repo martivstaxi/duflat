@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -318,27 +318,27 @@
 
     <main>
         <h1>YouTube Channel Investigator</h1>
-        <p class="subtitle">Video veya kanal linki yapıştır, kanal bilgilerini ve sosyal medya hesaplarını bul.</p>
+        <p class="subtitle">Paste a video or channel link to reveal social accounts, contact info, and more.</p>
 
         <div id="apiWarning">
-            ⚠️ API henüz bağlanmadı. Railway deploy sonrası URL güncellenmeli.
+            ⚠️ API not connected. Update the Railway URL after deploying.
         </div>
 
         <div class="search-wrap">
             <input
                 id="urlInput"
                 type="text"
-                placeholder="https://youtube.com/watch?v=... veya https://youtube.com/@channel"
+                placeholder="https://youtube.com/watch?v=... or https://youtube.com/@channel"
                 autocomplete="off"
                 spellcheck="false"
             />
-            <button id="searchBtn" onclick="doSearch()">Ara</button>
+            <button id="searchBtn" onclick="doSearch()">Investigate</button>
         </div>
 
         <div id="statusMsg"></div>
         <div id="loader">
             <div class="spinner"></div>
-            <div id="loaderText">Kanal bilgileri çekiliyor...</div>
+            <div id="loaderText">Fetching channel info...</div>
         </div>
         <div id="result"></div>
     </main>
@@ -377,12 +377,12 @@
                 const data = await res.json();
 
                 if (!res.ok || data.error) {
-                    setStatus(data.error || 'Bir hata oluştu');
+                    setStatus(data.error || 'An error occurred.');
                 } else {
                     renderResult(data);
                 }
             } catch (err) {
-                setStatus('API\'ye bağlanılamadı. app.py çalışıyor mu? (python app.py)');
+                setStatus('Could not reach the API. Is app.py running?');
             } finally {
                 showLoader(false);
                 document.getElementById('searchBtn').disabled = false;
@@ -390,7 +390,7 @@
         }
 
         function renderResult(d) {
-            const name = d.name || 'İsimsiz Kanal';
+            const name = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
 
             const socials = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
@@ -426,19 +426,19 @@
                     </div>
 
                     <div class="stats-row">
-                        ${statItem(d.subscribers, 'Abone')}
-                        ${statItem(d.videos, 'Video')}
-                        ${statItem(d.views, 'Görüntülenme')}
-                        ${statItem(d.last_video_date, 'Son Video')}
+                        ${statItem(d.subscribers, 'Subscribers')}
+                        ${statItem(d.videos, 'Videos')}
+                        ${statItem(d.views, 'Total Views')}
+                        ${statItem(d.last_video_date, 'Last Video')}
                     </div>
 
                     <div class="info-grid">
                         ${infoItem('Email', d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : null)}
-                        ${infoItem('Konum', d.location)}
-                        ${infoItem('Katılma', d.joined)}
+                        ${infoItem('Location', d.location)}
+                        ${infoItem('Joined', d.joined)}
                         ${d.description ? `
                         <div class="info-item info-full">
-                            <span class="info-label">Açıklama</span>
+                            <span class="info-label">Description</span>
                             <div class="description-box">${esc(d.description)}</div>
                         </div>` : ''}
                     </div>
@@ -447,7 +447,7 @@
 
                     ${linkItems ? `
                     <div class="all-links-section">
-                        <div class="all-links-title">Tüm Harici Linkler</div>
+                        <div class="all-links-title">External Links</div>
                         <div class="link-list">${linkItems}</div>
                     </div>` : ''}
                 </div>
@@ -467,7 +467,7 @@
         function infoItem(label, val) {
             if (!val) return `<div class="info-item">
                 <span class="info-label">${label}</span>
-                <span class="info-value empty">Bulunamadı</span>
+                <span class="info-value empty">Not found</span>
             </div>`;
             return `<div class="info-item">
                 <span class="info-label">${label}</span>
