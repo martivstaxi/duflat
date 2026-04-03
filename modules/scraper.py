@@ -12,6 +12,7 @@ Public API:
 
 import re
 import json
+import base64
 import threading
 import requests
 from datetime import date
@@ -47,14 +48,123 @@ RE_EMAIL_PAGE  = [
     re.compile(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
 ]
 
-# Tries to base64-decode a string and return if it looks like an email
-import base64 as _base64
 def _try_decode_b64_email(s: str) -> str:
     """If s is base64-encoded and decodes to an email, return the email."""
     try:
-        decoded = _base64.b64decode(s + '==').decode('utf-8', errors='ignore').strip()
+        decoded = base64.b64decode(s + '==').decode('utf-8', errors='ignore').strip()
         if '@' in decoded and '.' in decoded.split('@')[1] and len(decoded) < 120:
             return decoded
+    except Exception:
+        pass
+    return ''
+
+
+def _find_email_in_obj(obj, depth: int = 0) -> str:
+    """Recursively search any dict/list/str for a valid email address."""
+    if depth > 6:
+        return ''
+    if isinstance(obj, str):
+        # Try base64 decode first
+        if '@' not in obj and 8 <= len(obj) <= 200:
+            decoded = _try_decode_b64_email(obj)
+            if decoded:
+                return decoded
+        for m in RE_EMAIL.finditer(obj):
+            e = m.group(1)
+            if '@' in e and '.' in e.split('@')[1]:
+                if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                    return e
+    elif isinstance(obj, dict):
+        # Priority fields
+        for key in ('businessEmail', 'email', 'channel_email', 'business_email',
+                    'uploader_email', 'emailText'):
+            v = obj.get(key)
+            if v:
+                found = _find_email_in_obj(v, depth + 1)
+                if found:
+                    return found
+        # All other fields
+        for k, v in obj.items():
+            if k in ('thumbnails', 'avatar', 'thumbnail', 'banner', 'tvBanner'):
+                continue
+            found = _find_email_in_obj(v, depth + 1)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for item in obj[:20]:
+            found = _find_email_in_obj(item, depth + 1)
+            if found:
+                return found
+    return ''
+
+
+# YouTube InnerTube API — about tab params (base64 of protobuf \x12\x05about)
+_INNERTUBE_ABOUT_PARAMS = 'EgVhYm91dA=='
+_INNERTUBE_CONTEXT = {
+    'client': {
+        'hl': 'en', 'gl': 'US',
+        'clientName': 'WEB',
+        'clientVersion': '2.20240701.09.00',
+        'platform': 'DESKTOP',
+        'userAgent': BROWSER_HEADERS['User-Agent'],
+    }
+}
+
+
+def _fetch_email_innertube(channel_id: str) -> str:
+    """
+    Call YouTube's InnerTube browse API for the channel's about tab.
+    Searches the JSON response recursively for any email address.
+    Works even when the email is behind YouTube's 'View email address' button.
+    """
+    if not channel_id:
+        return ''
+    try:
+        payload = {
+            'browseId':  channel_id,
+            'params':    _INNERTUBE_ABOUT_PARAMS,
+            'context':   _INNERTUBE_CONTEXT,
+        }
+        headers = {
+            **BROWSER_HEADERS,
+            'X-YouTube-Client-Name':    '1',
+            'X-YouTube-Client-Version': '2.20240701.09.00',
+            'Content-Type':             'application/json',
+            'Origin':                   'https://www.youtube.com',
+            'Referer':                  'https://www.youtube.com/',
+        }
+        r = requests.post(
+            'https://www.youtube.com/youtubei/v1/browse',
+            json=payload,
+            headers=headers,
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return ''
+
+        data = r.json()
+
+        # 1. Direct recursive search (handles businessEmail base64 decode)
+        email = _find_email_in_obj(data)
+        if email:
+            return email
+
+        # 2. Regex fallback on raw JSON text
+        raw = r.text
+        m = re.search(r'"businessEmail"\s*:\s*"([^"]{6,200})"', raw)
+        if m:
+            decoded = _try_decode_b64_email(m.group(1))
+            if decoded:
+                return decoded
+            if '@' in m.group(1):
+                return m.group(1)
+
+        for m in RE_EMAIL.finditer(raw):
+            e = m.group(1)
+            if '@' in e and '.' in e.split('@')[1]:
+                if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                    return e
+
     except Exception:
         pass
     return ''
@@ -224,7 +334,7 @@ def _parse_about_from_html(html: str) -> dict:
     return result
 
 
-def fetch_about_page(channel_url: str) -> tuple:
+def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
     """
     Scrape the channel about page.
 
@@ -291,6 +401,10 @@ def fetch_about_page(channel_url: str) -> tuple:
                     break
         if email:
             break
+
+    # If still no email, try YouTube InnerTube API (bypasses 'View email' button)
+    if not email and channel_id:
+        email = _fetch_email_innertube(channel_id)
 
     return (
         socials,
@@ -448,7 +562,14 @@ def scrape_channel(url: str) -> dict:
 
     socials, all_links, email = extract_socials_from_text(combined_text)
 
-    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count, about_last_video = fetch_about_page(channel_url)
+    # Extract channel ID (UCxxx) for InnerTube API
+    channel_id = info.get('channel_id') or ''
+    if not channel_id:
+        m_id = re.search(r'/channel/(UC[a-zA-Z0-9_-]{22})', channel_url)
+        if m_id:
+            channel_id = m_id.group(1)
+
+    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count, about_last_video = fetch_about_page(channel_url, channel_id)
 
     for k, v in about_socials.items():
         if k not in socials:
