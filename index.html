@@ -5,391 +5,434 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duflat — YouTube Channel Investigator</title>
     <style>
+        /* ── Palette ───────────────────────────────────────────
+           #262624  Koyu Kömür     main background
+           #1E1E1C  Koyu Kömür–   surface (cards, panels)
+           #C15F3C  Crail          accent, buttons, links
+           #B1ADA1  Cloudy         labels, borders, secondary text
+           #FFFFFF  Saf Beyaz      primary text
+        ─────────────────────────────────────────────────────── */
+
+        :root {
+            --bg:       #262624;
+            --surface:  #1E1E1C;
+            --accent:   #C15F3C;
+            --muted:    #B1ADA1;
+            --border:   rgba(177,173,161,.13);
+            --border-m: rgba(177,173,161,.25);
+            --text:     #FFFFFF;
+            --faint:    rgba(177,173,161,.38);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             min-height: 100vh;
-            background: #0d0d0d;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: #e0e0e0;
+            background: var(--bg);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
         }
 
+        /* ── Header ─────────────────────────────────────────── */
         header {
-            padding: 28px 40px;
-            border-bottom: 1px solid #1e1e1e;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 1px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .logo-dot { color: #a855f7; }
+        .logo-sub {
+            font-size: 0.72rem;
+            color: var(--faint);
+            letter-spacing: .5px;
+            margin-top: 2px;
+        }
 
+        /* ── Main ───────────────────────────────────────────── */
         main {
-            max-width: 820px;
+            max-width: 860px;
             margin: 0 auto;
-            padding: 60px 24px 80px;
+            padding: 56px 24px 80px;
         }
 
-        h1 {
-            font-size: 2rem;
+        .page-title {
+            font-size: 1.75rem;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #fff;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -.3px;
         }
 
-        .subtitle {
-            color: #666;
-            margin-bottom: 40px;
-            font-size: 0.95rem;
+        .page-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 36px;
         }
 
+        /* ── Search ─────────────────────────────────────────── */
         .search-wrap {
             display: flex;
             gap: 10px;
-            margin-bottom: 40px;
+            margin-bottom: 36px;
         }
 
         #urlInput {
             flex: 1;
-            background: #161616;
-            border: 1px solid #2a2a2a;
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 0.95rem;
-            color: #e0e0e0;
+            background: var(--surface);
+            border: 1px solid var(--border-m);
+            border-radius: 8px;
+            padding: 13px 16px;
+            font-size: 0.9rem;
+            color: var(--text);
             outline: none;
-            transition: border-color .2s;
+            transition: border-color .15s;
         }
 
-        #urlInput::placeholder { color: #444; }
-        #urlInput:focus { border-color: #667eea; }
+        #urlInput::placeholder { color: var(--faint); }
+        #urlInput:focus { border-color: var(--accent); }
 
         #searchBtn {
-            background: linear-gradient(135deg, #667eea, #a855f7);
+            background: var(--accent);
             border: none;
-            border-radius: 10px;
-            padding: 14px 28px;
+            border-radius: 8px;
+            padding: 13px 26px;
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity .2s, transform .1s;
+            letter-spacing: .2px;
+            transition: opacity .15s, transform .1s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        #searchBtn:hover { opacity: 0.88; }
-        #searchBtn:active { transform: scale(0.98); }
-        #searchBtn:disabled { opacity: 0.4; cursor: default; }
+        #searchBtn:hover  { opacity: .88; }
+        #searchBtn:active { transform: scale(.98); }
+        #searchBtn:disabled { opacity: .35; cursor: default; }
 
-        /* Status / hata */
+        /* ── Status / Error ──────────────────────────────────── */
         #statusMsg {
             display: none;
-            font-size: 0.88rem;
-            color: #ef4444;
+            font-size: 0.85rem;
+            color: #e07060;
             margin-bottom: 20px;
+            padding: 12px 16px;
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 8px;
         }
 
-        /* Loading */
+        /* ── Loader ──────────────────────────────────────────── */
         #loader {
             display: none;
             text-align: center;
-            padding: 60px 0;
-            color: #555;
+            padding: 56px 0;
+            color: var(--muted);
+            font-size: 0.88rem;
         }
 
         .spinner {
-            width: 36px; height: 36px;
-            border: 3px solid #222;
-            border-top-color: #667eea;
+            width: 32px; height: 32px;
+            border: 2.5px solid rgba(177,173,161,.15);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin .8s linear infinite;
-            margin: 0 auto 16px;
+            animation: spin .75s linear infinite;
+            margin: 0 auto 14px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Sonuç kartı */
+        /* ── Cards ───────────────────────────────────────────── */
         #result { display: none; }
 
         .card {
-            background: #111;
-            border: 1px solid #1e1e1e;
-            border-radius: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             overflow: hidden;
         }
 
+        /* card section label */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--faint);
+            margin-bottom: 16px;
+        }
+
+        /* ── Channel card header ─────────────────────────────── */
         .card-header {
-            padding: 24px 28px;
-            border-bottom: 1px solid #1a1a1a;
+            padding: 22px 26px;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 16px;
         }
 
         .channel-avatar {
-            width: 56px; height: 56px;
+            width: 52px; height: 52px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #a855f7);
+            background: var(--accent);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: #fff;
             flex-shrink: 0;
         }
 
         .channel-name {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            color: #fff;
-            margin-bottom: 4px;
+            color: var(--text);
+            margin-bottom: 3px;
         }
 
         .channel-handle {
-            color: #667eea;
-            font-size: 0.9rem;
+            color: var(--accent);
+            font-size: 0.88rem;
         }
 
         .channel-url-link {
-            color: #444;
-            font-size: 0.8rem;
+            color: var(--faint);
+            font-size: 0.76rem;
             text-decoration: none;
-            margin-top: 4px;
+            margin-top: 3px;
             display: block;
+            transition: color .15s;
         }
 
-        .channel-url-link:hover { color: #667eea; }
+        .channel-url-link:hover { color: var(--muted); }
 
-        /* Stats row */
+        /* ── Stats row ───────────────────────────────────────── */
         .stats-row {
             display: flex;
-            gap: 0;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid var(--border);
         }
 
         .stat-item {
             flex: 1;
-            padding: 18px 20px;
-            border-right: 1px solid #1a1a1a;
+            padding: 16px 18px;
+            border-right: 1px solid var(--border);
             text-align: center;
         }
 
         .stat-item:last-child { border-right: none; }
 
         .stat-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #fff;
+            color: var(--text);
             margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 0.72rem;
-            color: #555;
+            font-size: 0.68rem;
+            color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .5px;
         }
 
-        /* Info grid */
+        /* ── Info grid ───────────────────────────────────────── */
         .info-grid {
-            padding: 24px 28px;
+            padding: 22px 26px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 18px;
         }
 
         .info-item { display: flex; flex-direction: column; gap: 4px; }
-        .info-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: .5px; }
-        .info-value { font-size: 0.9rem; color: #ccc; word-break: break-word; }
-        .info-value a { color: #667eea; text-decoration: none; }
+
+        .info-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .info-value {
+            font-size: 0.88rem;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .info-value a { color: var(--accent); text-decoration: none; }
         .info-value a:hover { text-decoration: underline; }
-        .info-value.empty { color: #333; font-style: italic; }
+        .info-value.empty { color: var(--faint); font-style: italic; }
 
         .info-full { grid-column: 1 / -1; }
 
-        /* Description */
+        /* ── Description box ────────────────────────────────── */
         .description-box {
-            background: #0d0d0d;
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 0.85rem;
-            color: #888;
-            line-height: 1.6;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 11px 13px;
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.65;
             white-space: pre-wrap;
-            max-height: 120px;
+            max-height: 110px;
             overflow-y: auto;
         }
 
-        /* Sosyal medya linkleri */
+        /* ── Social badges ──────────────────────────────────── */
         .social-grid {
-            padding: 0 28px 24px;
+            padding: 0 26px 22px;
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 7px;
         }
 
         .social-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #181818;
-            border: 1px solid #252525;
+            background: transparent;
+            border: 1px solid var(--border-m);
             border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 0.82rem;
-            color: #bbb;
+            padding: 5px 13px;
+            font-size: 0.8rem;
+            color: var(--muted);
             text-decoration: none;
-            transition: border-color .2s, color .2s;
+            transition: border-color .15s, color .15s;
         }
 
-        .social-badge:hover { border-color: #667eea; color: #fff; }
+        .social-badge:hover { border-color: var(--accent); color: var(--text); }
 
-        /* All links */
-        .all-links-section {
-            padding: 0 28px 28px;
-        }
+        /* ── External links ────────────────────────────────── */
+        .all-links-section { padding: 0 26px 26px; }
 
         .all-links-title {
-            font-size: 0.72rem;
-            color: #555;
+            font-size: 0.68rem;
+            color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .5px;
             margin-bottom: 10px;
         }
 
-        .link-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .link-list { display: flex; flex-direction: column; gap: 5px; }
 
         .link-list a {
-            font-size: 0.82rem;
-            color: #555;
+            font-size: 0.8rem;
+            color: var(--faint);
             text-decoration: none;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            transition: color .15s;
         }
 
-        .link-list a:hover { color: #667eea; }
+        .link-list a:hover { color: var(--accent); }
 
-        /* Lokal API uyarısı */
-        #apiWarning {
-            display: none;
-            background: #1a1000;
-            border: 1px solid #3a2800;
-            border-radius: 10px;
-            padding: 16px 20px;
-            font-size: 0.88rem;
-            color: #aaa;
-            margin-bottom: 24px;
-            line-height: 1.7;
-        }
-
-        #apiWarning code {
-            background: #111;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #e0b0ff;
-            font-size: 0.82rem;
-        }
-
-        /* Agency Investigation card */
+        /* ── Agency card ────────────────────────────────────── */
         #agencyResult {
             display: none;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
         .agency-card {
-            background: #111;
-            border: 1px solid #1e1e1e;
-            border-radius: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--accent);
+            border-radius: 12px;
             overflow: hidden;
         }
 
         .agency-header {
-            padding: 18px 28px;
-            border-bottom: 1px solid #1a1a1a;
+            padding: 14px 26px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .agency-header-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
         }
 
         .agency-header-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            color: #555;
+            font-size: 0.7rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--muted);
         }
 
         .agency-loading {
-            padding: 28px;
+            padding: 24px 26px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            color: #555;
-            font-size: 0.88rem;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 0.85rem;
         }
 
         .agency-loading .spinner {
-            width: 20px; height: 20px;
+            width: 18px; height: 18px;
             border-width: 2px;
             margin: 0;
             flex-shrink: 0;
         }
 
-        .agency-loading .step-text {
-            font-style: italic;
-        }
-
         .agency-not-found {
-            padding: 28px;
-            color: #444;
-            font-size: 0.88rem;
+            padding: 24px 26px;
+            color: var(--faint);
+            font-size: 0.85rem;
             font-style: italic;
         }
 
-        .agency-body {
-            padding: 24px 28px;
-        }
+        .agency-body { padding: 22px 26px; }
 
         .agency-name {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #fff;
-            margin-bottom: 6px;
+            color: var(--text);
+            margin-bottom: 4px;
         }
 
         .agency-website {
-            font-size: 0.88rem;
-            color: #667eea;
+            font-size: 0.85rem;
+            color: var(--accent);
             text-decoration: none;
             display: inline-block;
             margin-bottom: 14px;
+            transition: opacity .15s;
         }
 
-        .agency-website:hover { text-decoration: underline; }
+        .agency-website:hover { opacity: .8; text-decoration: underline; }
+
+        .agency-summary {
+            font-size: 0.86rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 14px;
+        }
 
         .agency-desc {
-            font-size: 0.85rem;
-            color: #888;
-            line-height: 1.6;
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.65;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 11px 13px;
             margin-bottom: 16px;
-            background: #0d0d0d;
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            padding: 12px 14px;
         }
 
         .agency-fields {
@@ -402,98 +445,104 @@
         .agency-social-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
+            gap: 7px;
+            margin-top: 16px;
         }
 
-        .agency-summary {
-            font-size: 0.88rem;
-            color: #aaa;
-            line-height: 1.65;
-            margin-bottom: 14px;
-        }
-
-        .agency-tags-section {
-            margin-top: 14px;
-        }
+        .agency-tags-section { margin-top: 14px; }
 
         .agency-tags-label {
-            font-size: 0.72rem;
-            color: #555;
+            font-size: 0.68rem;
+            color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .5px;
             margin-bottom: 8px;
         }
 
-        .agency-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
+        .agency-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
         .agency-tag {
-            background: #181818;
-            border: 1px solid #252525;
-            border-radius: 6px;
-            padding: 4px 10px;
-            font-size: 0.78rem;
-            color: #999;
+            background: rgba(177,173,161,.07);
+            border: 1px solid var(--border-m);
+            border-radius: 5px;
+            padding: 3px 10px;
+            font-size: 0.76rem;
+            color: var(--muted);
         }
 
         .agency-tag-client {
-            border-color: #2a2a3a;
-            color: #7b8ec8;
+            border-color: rgba(193,95,60,.25);
+            color: var(--accent);
+            background: rgba(193,95,60,.06);
         }
 
         .agency-note {
             margin-top: 10px;
-            font-size: 0.78rem;
-            color: #444;
+            font-size: 0.76rem;
+            color: var(--faint);
             font-style: italic;
         }
 
-        .agency-source {
-            margin-top: 16px;
-            font-size: 0.75rem;
-            color: #333;
-        }
+        .agency-source { margin-top: 16px; }
 
         .source-badge {
             display: inline-block;
-            background: #181818;
-            border: 1px solid #252525;
-            border-radius: 12px;
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 10px;
             padding: 3px 10px;
-            font-size: 0.72rem;
-            color: #555;
+            font-size: 0.68rem;
+            color: var(--accent);
+            letter-spacing: .2px;
         }
 
+        /* ── API Warning ────────────────────────────────────── */
+        #apiWarning {
+            display: none;
+            background: rgba(193,95,60,.07);
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
+            header { padding: 16px 20px; }
+            main { padding: 36px 16px 60px; }
+            .page-title { font-size: 1.4rem; }
+            .search-wrap { flex-direction: column; }
+            #searchBtn { width: 100%; }
             .info-grid { grid-template-columns: 1fr; }
             .stats-row { flex-wrap: wrap; }
-            .stat-item { min-width: 50%; }
+            .stat-item { min-width: 50%; border-bottom: 1px solid var(--border); }
             .agency-fields { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <header>
-        <span class="logo">Duflat</span>
+        <div>
+            <div class="logo">Duflat</div>
+            <div class="logo-sub">YouTube Channel Investigator</div>
+        </div>
     </header>
 
     <main>
-        <h1>YouTube Channel Investigator</h1>
-        <p class="subtitle">Paste a video or channel link to reveal social accounts, contact info, and more.</p>
+        <h1 class="page-title">Investigate a Channel</h1>
+        <p class="page-sub">Paste any YouTube video or channel link to reveal the team behind it.</p>
 
         <div id="apiWarning">
-            ⚠️ API not connected. Update the Railway URL after deploying.
+            API not connected. Update the Railway URL after deploying.
         </div>
 
         <div class="search-wrap">
             <input
                 id="urlInput"
                 type="text"
-                placeholder="https://youtube.com/watch?v=... or https://youtube.com/@channel"
+                placeholder="https://youtube.com/watch?v=...  or  https://youtube.com/@channel"
                 autocomplete="off"
                 spellcheck="false"
             />
@@ -501,16 +550,17 @@
         </div>
 
         <div id="statusMsg"></div>
+
         <div id="loader">
             <div class="spinner"></div>
             <div id="loaderText">Fetching channel info...</div>
         </div>
+
         <div id="result"></div>
         <div id="agencyResult"></div>
     </main>
 
     <script>
-        // Yerelde localhost, production'da Railway URL'i
         const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
             ? 'http://localhost:5000'
             : 'https://duflat-production.up.railway.app';
@@ -519,7 +569,6 @@
             if (e.key === 'Enter') doSearch();
         });
 
-        // API bağlantısı henüz yapılandırılmamışsa uyarı göster
         if (API_URL.includes('RAILWAY_URL_BURAYA')) {
             document.getElementById('apiWarning').style.display = 'block';
         }
@@ -542,9 +591,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
                 });
-
                 const data = await res.json();
-
                 if (!res.ok || data.error) {
                     setStatus(data.error || 'An error occurred.');
                 } else {
@@ -558,15 +605,11 @@
                 document.getElementById('searchBtn').disabled = false;
             }
 
-            // Channel info başarıyla geldi — agency aramasını başlat
-            if (channelData) {
-                investigateAgency(channelData);
-            }
+            if (channelData) investigateAgency(channelData);
         }
 
         async function investigateAgency(channelData) {
             showAgencyLoading();
-
             const steps = [
                 'Checking email domain...',
                 'Scanning external links...',
@@ -597,52 +640,45 @@
         }
 
         function renderResult(d) {
-            const name = d.name || 'Unknown Channel';
+            const name    = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
 
-            const socials = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
-            const socialIcons = {
-                instagram: '📷', tiktok: '🎵', twitter: '𝕏',
-                facebook: '👤', discord: '💬', twitch: '🎮', myanimelist: '🎌'
-            };
-            const socialNames = {
-                instagram: 'Instagram', tiktok: 'TikTok', twitter: 'X / Twitter',
-                facebook: 'Facebook', discord: 'Discord', twitch: 'Twitch', myanimelist: 'MyAnimeList'
-            };
+            const socialKeys  = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
+            const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', myanimelist:'🎌' };
+            const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', myanimelist:'MyAnimeList' };
 
-            const socialBadges = socials
+            const socialBadges = socialKeys
                 .filter(s => d[s])
                 .map(s => `<a class="social-badge" href="${esc(d[s])}" target="_blank" rel="noopener">${socialIcons[s]} ${socialNames[s]}</a>`)
                 .join('');
 
             const allLinks = Array.isArray(d.all_links) ? d.all_links : [];
-            const linkItems = allLinks
-                .slice(0, 12)
+            const linkItems = allLinks.slice(0, 12)
                 .map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`)
                 .join('');
 
-            const html = `
+            document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
                         <div class="channel-avatar">${initial}</div>
                         <div>
                             <div class="channel-name">${esc(name)}</div>
-                            ${d.handle ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
-                            ${d.channel_url ? `<a class="channel-url-link" href="${esc(d.channel_url)}" target="_blank" rel="noopener">${esc(d.channel_url)}</a>` : ''}
+                            ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
+                            ${d.channel_url? `<a class="channel-url-link" href="${esc(d.channel_url)}" target="_blank" rel="noopener">${esc(d.channel_url)}</a>` : ''}
                         </div>
                     </div>
 
                     <div class="stats-row">
-                        ${statItem(d.subscribers, 'Subscribers')}
-                        ${statItem(d.videos, 'Videos')}
-                        ${statItem(d.views, 'Total Views')}
-                        ${statItem(d.last_video_date, 'Last Video')}
+                        ${statItem(d.subscribers,    'Subscribers')}
+                        ${statItem(d.videos,         'Videos')}
+                        ${statItem(d.views,          'Total Views')}
+                        ${statItem(d.last_video_date,'Last Video')}
                     </div>
 
                     <div class="info-grid">
-                        ${infoItem('Email', d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : null)}
+                        ${infoItem('Email',    d.email    ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : null)}
                         ${infoItem('Location', d.location)}
-                        ${infoItem('Joined', d.joined)}
+                        ${infoItem('Joined',   d.joined)}
                         ${d.description ? `
                         <div class="info-item info-full">
                             <span class="info-label">Description</span>
@@ -657,16 +693,13 @@
                         <div class="all-links-title">External Links</div>
                         <div class="link-list">${linkItems}</div>
                     </div>` : ''}
-                </div>
-            `;
-
-            document.getElementById('result').innerHTML = html;
+                </div>`;
             showResult(true);
         }
 
         function statItem(val, label) {
             return `<div class="stat-item">
-                <div class="stat-value">${val ? esc(val) : '<span style="color:#333">—</span>'}</div>
+                <div class="stat-value">${val ? esc(val) : `<span style="color:var(--faint)">—</span>`}</div>
                 <div class="stat-label">${label}</div>
             </div>`;
         }
@@ -674,7 +707,7 @@
         function infoItem(label, val) {
             if (!val) return `<div class="info-item">
                 <span class="info-label">${label}</span>
-                <span class="info-value empty">Not found</span>
+                <span class="info-value empty">—</span>
             </div>`;
             return `<div class="info-item">
                 <span class="info-label">${label}</span>
@@ -686,11 +719,12 @@
             document.getElementById('agencyResult').innerHTML = `
                 <div class="agency-card">
                     <div class="agency-header">
+                        <div class="agency-header-dot"></div>
                         <span class="agency-header-title">Agency Investigation</span>
                     </div>
                     <div class="agency-loading">
                         <div class="spinner"></div>
-                        <span class="step-text" id="agencyStepText">Checking email domain...</span>
+                        <span id="agencyStepText">Checking email domain...</span>
                     </div>
                 </div>`;
             document.getElementById('agencyResult').style.display = 'block';
@@ -716,44 +750,35 @@
                 document.getElementById('agencyResult').innerHTML = `
                     <div class="agency-card">
                         <div class="agency-header">
+                            <div class="agency-header-dot"></div>
                             <span class="agency-header-title">Agency Investigation</span>
                         </div>
-                        <div class="agency-not-found">No agency or management company could be identified from the available data.</div>
+                        <div class="agency-not-found">No agency or management company could be identified.</div>
                     </div>`;
                 return;
             }
 
-            const name        = d.name || '';
-            const website     = d.website || '';
-            const email       = d.contact_email || d.email || '';
-            const phone       = d.contact_phone || d.phone || '';
-            const address     = d.address || '';
-            const founded     = d.founded || '';
-            const desc        = d.description || '';
-            const summary     = d.summary || '';
-            const services    = Array.isArray(d.services) ? d.services : [];
-            const clients     = Array.isArray(d.notable_clients) ? d.notable_clients : [];
-            const socials     = d.socials || {};
-            const source      = d.source || '';
+            const name     = d.name || '';
+            const website  = d.website || '';
+            const email    = d.contact_email || d.email || '';
+            const phone    = d.contact_phone || d.phone || '';
+            const address  = d.address || '';
+            const founded  = d.founded || '';
+            const desc     = d.description || '';
+            const summary  = d.summary || '';
+            const services = Array.isArray(d.services) ? d.services : [];
+            const clients  = Array.isArray(d.notable_clients) ? d.notable_clients : [];
+            const socials  = d.socials || {};
+            const source   = d.source || '';
 
-            const socialIcons = {
-                instagram: '📷', tiktok: '🎵', twitter: '𝕏',
-                facebook: '👤', discord: '💬', twitch: '🎮',
-                linkedin: '💼', myanimelist: '🎌'
-            };
-            const socialNames = {
-                instagram: 'Instagram', tiktok: 'TikTok', twitter: 'X / Twitter',
-                facebook: 'Facebook', discord: 'Discord', twitch: 'Twitch',
-                linkedin: 'LinkedIn', myanimelist: 'MyAnimeList'
-            };
+            const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', linkedin:'💼', myanimelist:'🎌' };
+            const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', linkedin:'LinkedIn', myanimelist:'MyAnimeList' };
 
-            // Sosyal medya — hem agency socials dict'inden hem channel socials'tan
             const socialBadges = Object.entries(socials)
                 .filter(([, v]) => v && v !== 'null')
-                .map(([k, v]) => `<a class="social-badge" href="${esc(v)}" target="_blank" rel="noopener">${socialIcons[k] || '🔗'} ${socialNames[k] || k}</a>`)
+                .map(([k, v]) => `<a class="social-badge" href="${esc(v)}" target="_blank" rel="noopener">${socialIcons[k]||'🔗'} ${socialNames[k]||k}</a>`)
                 .join('');
 
-            // Info grid alanları
             const infoFields = [
                 email   ? `<div class="info-item"><span class="info-label">Email</span><span class="info-value"><a href="mailto:${esc(email)}">${esc(email)}</a></span></div>` : '',
                 phone   ? `<div class="info-item"><span class="info-label">Phone</span><span class="info-value">${esc(phone)}</span></div>` : '',
@@ -764,20 +789,19 @@
             const servicesTags = services.length
                 ? `<div class="agency-tags-section">
                      <div class="agency-tags-label">Services</div>
-                     <div class="agency-tags">${services.map(s => `<span class="agency-tag">${esc(s)}</span>`).join('')}</div>
-                   </div>`
-                : '';
+                     <div class="agency-tags">${services.map(s=>`<span class="agency-tag">${esc(s)}</span>`).join('')}</div>
+                   </div>` : '';
 
             const clientsTags = clients.length
                 ? `<div class="agency-tags-section">
                      <div class="agency-tags-label">Notable Clients</div>
-                     <div class="agency-tags">${clients.map(c => `<span class="agency-tag agency-tag-client">${esc(c)}</span>`).join('')}</div>
-                   </div>`
-                : '';
+                     <div class="agency-tags">${clients.map(c=>`<span class="agency-tag agency-tag-client">${esc(c)}</span>`).join('')}</div>
+                   </div>` : '';
 
             document.getElementById('agencyResult').innerHTML = `
                 <div class="agency-card">
                     <div class="agency-header">
+                        <div class="agency-header-dot"></div>
                         <span class="agency-header-title">Agency / Management</span>
                     </div>
                     <div class="agency-body">
@@ -791,7 +815,7 @@
                         ${socialBadges ? `<div class="agency-social-grid">${socialBadges}</div>` : ''}
                         ${d.note      ? `<div class="agency-note">${esc(d.note)}</div>` : ''}
                         ${d.reasoning ? `<div class="agency-note">${esc(d.reasoning)}</div>` : ''}
-                        ${source      ? `<div class="agency-source"><span class="source-badge">${esc(sourceLabels[source] || source)}</span></div>` : ''}
+                        ${source      ? `<div class="agency-source"><span class="source-badge">${esc(sourceLabels[source]||source)}</span></div>` : ''}
                     </div>
                 </div>`;
         }
@@ -806,13 +830,8 @@
             el.style.display = msg ? 'block' : 'none';
         }
 
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
-        }
-
-        function showResult(show) {
-            document.getElementById('result').style.display = show ? 'block' : 'none';
-        }
+        function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
+        function showResult(show) { document.getElementById('result').style.display = show ? 'block' : 'none'; }
     </script>
 </body>
 </html>
