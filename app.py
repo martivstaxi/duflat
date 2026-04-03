@@ -449,6 +449,51 @@ def debug():
                 safe['first_video_title'] = sub[0].get('title')
     return jsonify(safe)
 
+@app.route('/debug-deep', methods=['GET'])
+def debug_deep():
+    """yt-dlp'nin tam info dict'ini göster — tüm nested alanlar dahil"""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'url parametresi gerekli'}), 400
+    url = normalize_url(url)
+    ydl_opts = {
+        'skip_download': True,
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+        'playlistend': 1,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    if not info:
+        return jsonify({'error': 'Boş sonuç'}), 500
+
+    def safe_val(v, depth=0):
+        if isinstance(v, (str, int, float, bool, type(None))):
+            return v
+        if isinstance(v, list) and depth < 2:
+            return [safe_val(i, depth+1) for i in v[:3]]
+        if isinstance(v, dict) and depth < 2:
+            return {k2: safe_val(v2, depth+1) for k2, v2 in list(v.items())[:30]}
+        return f'<{type(v).__name__}>'
+
+    result = safe_val(info)
+
+    # İlk entry'nin tüm alanları (scalar)
+    entries = info.get('entries') or []
+    if entries and isinstance(entries[0], dict):
+        first = entries[0]
+        result['_first_entry_all_scalars'] = {
+            k: v for k, v in first.items()
+            if isinstance(v, (str, int, float, bool, type(None))) and 'channel' in k.lower() or
+               k in ('view_count', 'subscriber_count', 'playlist_count', 'video_count', 'location', 'joined', 'country')
+        }
+    return jsonify(result)
+
+
 @app.route('/debug-about', methods=['GET'])
 def debug_about():
     """About sayfası requests çıktısını göster — konum/katılım/views/videos testi için"""
