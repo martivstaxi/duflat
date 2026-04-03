@@ -347,7 +347,7 @@
         // Yerelde localhost, production'da Railway URL'i
         const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
             ? 'http://localhost:5000'
-            : 'https://RAILWAY_URL_BURAYA';
+            : 'https://duflat-production.up.railway.app';
 
         document.getElementById('urlInput').addEventListener('keydown', e => {
             if (e.key === 'Enter') doSearch();
