@@ -138,6 +138,27 @@ def scrape_channel(url):
             except:
                 pass
 
+    # ---- Yapıyı düzelt: YouTube tab playlist içinde iç içe entries var ----
+    # info.entries[0] = "Videos" tab (playlist), info.entries[0].entries[0] = gerçek video
+    entries = info.get('entries') or []
+    tab_entry = None   # İlk tab (Videos sekmesi)
+    first_video = None # İlk gerçek video
+
+    for e in entries:
+        if not isinstance(e, dict):
+            continue
+        if e.get('_type') == 'playlist' or e.get('entries') is not None:
+            tab_entry = e
+            sub = e.get('entries') or []
+            for v in sub:
+                if isinstance(v, dict) and v.get('upload_date'):
+                    first_video = v
+                    break
+            break
+        elif e.get('upload_date'):
+            first_video = e
+            break
+
     # ---- Temel alanlar ----
     name = info.get('uploader') or info.get('channel') or info.get('title') or ''
     handle_raw = info.get('uploader_id') or info.get('channel_id') or ''
@@ -151,36 +172,30 @@ def scrape_channel(url):
     )
     channel_url = RE_CLEAN.sub('', channel_url.rstrip('/'))
 
-    subscribers = info.get('channel_follower_count') or info.get('subscriber_count')
-    if subscribers:
-        subscribers = f"{subscribers:,}"
+    # Abone sayısı: üst seviyede null olabiliyor, tab_entry'de de dene
+    sub_count = (info.get('channel_follower_count')
+                 or info.get('subscriber_count')
+                 or (tab_entry.get('channel_follower_count') if tab_entry else None))
+    subscribers = f"{sub_count:,}" if sub_count else ''
 
-    views = info.get('view_count')
-    if views:
-        views = f"{views:,}"
+    views = info.get('view_count') or (tab_entry.get('view_count') if tab_entry else None)
+    views = f"{views:,}" if views else ''
 
-    # Video sayısı: yt-dlp channel extraction'da 'playlist_count' döner
+    # Video sayısı: tab_entry.playlist_count gerçek sayıyı tutar
     video_count = (
-        info.get('playlist_count')
+        (tab_entry.get('playlist_count') if tab_entry else None)
+        or info.get('playlist_count')
         or info.get('video_count')
-        or (len(info['entries']) if info.get('entries') else None)
     )
-    # playlist_count bazen entries sayısından gelir (1 = playlistend:1 sınırı), güvenilmez
-    # Gerçek sayı genellikle channel_tab metadata'sında olur, yoksa boş bırak
-    if video_count and int(video_count) <= 1:
-        video_count = ''  # 1 = sadece bizim indirdiğimiz, gerçek değil
-    video_count = str(video_count) if video_count else ''
+    # Sadece tabs sayısıysa (2-3 gibi küçük değerler) gösterme
+    video_count = str(video_count) if (video_count and int(video_count) > 3) else ''
 
     description = (info.get('description') or info.get('channel_description') or '')[:1000]
 
-    # Thumbnail → avatar için ilk harf yeterli, ama thumbnail URL'ini de verelim
     thumbnail = info.get('thumbnail') or ''
 
     # ---- Sosyal + email ----
-    # yt-dlp bazen channel_url'nin tags'larında ya da description'da verir
     combined_text = description
-
-    # yt-dlp'nin tags, categories, availability alanlarını da tara
     for field in ('tags', 'categories'):
         val = info.get(field)
         if isinstance(val, list):
@@ -188,16 +203,12 @@ def scrape_channel(url):
 
     socials, all_links, email = extract_socials_from_text(combined_text)
 
-    # Son video tarihi: entries[0] = en son video
+    # Son video tarihi: iç içe yapıdan gerçek videoyu bul
     last_video_date = ''
-    entries = info.get('entries') or []
-    for entry in entries[:3]:
-        if not isinstance(entry, dict):
-            continue
-        d = entry.get('upload_date') or ''
+    if first_video:
+        d = first_video.get('upload_date') or ''
         if d and len(d) == 8 and d.isdigit():
             last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
-            break
 
     data = {
         'channel_url': channel_url,
