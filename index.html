@@ -823,8 +823,10 @@
                     // Update saved channel data so agency investigation can use it
                     _currentChannelData = { ..._currentChannelData, email: data.email };
                 } else {
-                    emailItem.querySelector('.info-value').innerHTML =
-                        `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
+                    const hiddenMsg = _currentChannelData?.has_hidden_email
+                        ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
+                        : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
+                    emailItem.querySelector('.info-value').innerHTML = hiddenMsg;
                 }
             } catch (err) {
                 clearInterval(stepTimer);
@@ -875,6 +877,9 @@
                             ${d.email
                                 ? `<span class="info-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
                                 : `<span class="info-value">
+                                       ${d.has_hidden_email
+                                           ? `<span style="color:var(--accent);font-size:.85rem;margin-right:8px" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
+                                           : ''}
                                        <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
                                            🔍 Find Email
                                        </button>
