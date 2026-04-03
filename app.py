@@ -42,6 +42,21 @@ NAV_DOMAINS = ('developers.google.com','support.google.com','policies.google.com
 RE_EMBED   = re.compile(r'youtube\.com/v/([a-zA-Z0-9_-]+)')
 RE_CLEAN   = re.compile(r'/(about|videos|shorts|streams|playlists|community|channels|featured)/?$')
 
+# About sayfası regex'leri
+RE_COUNTRY    = re.compile(r'"country":\s*"([^"]+)"')
+RE_JOINED     = re.compile(r'Joined\s+([A-Za-z]+\s+\d+,\s+\d{4})')
+RE_JOINED_JSON = re.compile(r'"joinedDateText"[^}]{0,300}"content":\s*"Joined\s+([^"]+)"')
+RE_VIEW_COUNT = re.compile(r'"viewCountText"[^}]{0,200}"simpleText":\s*"([\d,\.]+)')
+RE_VIDEO_COUNT_PATTERNS = [
+    re.compile(r'"videosCountText":\s*\{\s*"simpleText":\s*"([\d,.\s]+)\s*video', re.I),
+    re.compile(r'"videosCountText":\s*"([\d,.\s]+)\s*video', re.I),
+    re.compile(r'"videoCount":\s*"(\d+)"'),
+    re.compile(r'"videoCount":\s*(\d+)'),
+    re.compile(r'"aboutChannelViewModel"[^}]{0,800}"videoCountText":\s*"([\d,.\s]+)', re.I | re.DOTALL),
+    re.compile(r'"videoCountText":\s*\{\s*"runs"[^}]{0,200}"text":\s*"([\d,.\s]+)"'),
+    re.compile(r'"text":\s*"([\d,.\s]+)\s*videos?"', re.I),
+]
+
 # ============================================================
 # YARDIMCI
 # ============================================================
@@ -83,9 +98,16 @@ RE_EMAIL_PAGE = [
 ]
 
 BROWSER_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Cache-Control': 'max-age=0',
 }
 
 def decode_redirect(url):
@@ -100,17 +122,32 @@ def decode_redirect(url):
         pass
     return url
 
+def extract_video_count(ps):
+    """Page source'dan video sayısını çıkar"""
+    for pat in RE_VIDEO_COUNT_PATTERNS:
+        m = pat.search(ps)
+        if m:
+            grp = next((g for g in m.groups() if g), None) if m.lastindex and m.lastindex > 1 else m.group(1)
+            if grp:
+                cleaned = grp.strip().replace(',', '').replace('.', '').split()[0]
+                if cleaned.isdigit() and int(cleaned) > 0:
+                    return cleaned
+    return ''
+
+
 def fetch_about_page(channel_url):
-    """About sayfasından email ve sosyal medya linklerini çek"""
+    """About sayfasından email, sosyal medya, konum, katılım tarihi, görüntülenme, video sayısı çek"""
     base = RE_CLEAN.sub('', channel_url.rstrip('/'))
     about_url = base + '/about'
     try:
-        r = requests.get(about_url, headers=BROWSER_HEADERS, timeout=15)
+        session = requests.Session()
+        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
+        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
         if r.status_code != 200:
-            return {}, [], ''
+            return {}, [], '', '', '', '', ''
         ps = r.text
     except Exception:
-        return {}, [], ''
+        return {}, [], '', '', '', '', ''
 
     # Redirect URL'leri çöz
     redirect_urls = RE_REDIRECT.findall(ps)
@@ -167,7 +204,34 @@ def fetch_about_page(channel_url):
         if email:
             break
 
-    return socials, json_ext_links[:15], email
+    # Konum
+    location = ''
+    m = RE_COUNTRY.search(ps)
+    if m:
+        location = m.group(1)
+
+    # Katılım tarihi
+    joined = ''
+    m = RE_JOINED_JSON.search(ps)
+    if m:
+        joined = m.group(1).strip()
+    if not joined:
+        m = RE_JOINED.search(ps)
+        if m:
+            joined = m.group(1).strip()
+
+    # Toplam görüntülenme
+    views = ''
+    m = RE_VIEW_COUNT.search(ps)
+    if m:
+        cs = m.group(1).replace(',', '').replace('.', '')
+        if cs.isdigit() and int(cs) > 0:
+            views = format(int(cs), ',')
+
+    # Video sayısı
+    video_count = extract_video_count(ps)
+
+    return socials, json_ext_links[:15], email, location, joined, views, video_count
 
 
 def extract_socials_from_text(text):
@@ -286,8 +350,8 @@ def scrape_channel(url):
 
     socials, all_links, email = extract_socials_from_text(combined_text)
 
-    # About sayfasından link kartları + email
-    about_socials, about_links, about_email = fetch_about_page(channel_url)
+    # About sayfasından link kartları + email + konum + katılım + views + video sayısı
+    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count = fetch_about_page(channel_url)
     for k, v in about_socials.items():
         if k not in socials:
             socials[k] = v
@@ -296,6 +360,10 @@ def scrape_channel(url):
     for lnk in about_links:
         if lnk not in all_links:
             all_links.append(lnk)
+    if not video_count and about_video_count:
+        video_count = about_video_count
+    if not views and about_views:
+        views = about_views
 
     data = {
         'channel_url': channel_url,
@@ -306,8 +374,8 @@ def scrape_channel(url):
         'videos': video_count,
         'description': description,
         'email': email,
-        'location': info.get('location') or '',
-        'joined': '',
+        'location': about_location or info.get('location') or '',
+        'joined': about_joined or '',
         'last_video_date': last_video_date,
         'thumbnail': thumbnail,
         **socials,
@@ -380,6 +448,44 @@ def debug():
                 safe['first_video_upload_date'] = sub[0].get('upload_date')
                 safe['first_video_title'] = sub[0].get('title')
     return jsonify(safe)
+
+@app.route('/debug-about', methods=['GET'])
+def debug_about():
+    """About sayfası requests çıktısını göster — konum/katılım/views/videos testi için"""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'url parametresi gerekli'}), 400
+    url = normalize_url(url)
+    base = RE_CLEAN.sub('', url.rstrip('/'))
+    about_url = base + '/about'
+    try:
+        session = requests.Session()
+        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
+        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
+        ps = r.text
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    socials, links, email, location, joined, views, video_count = fetch_about_page(url)
+    return jsonify({
+        'status_code': r.status_code,
+        'page_length': len(ps),
+        'has_ytInitialData': 'ytInitialData' in ps,
+        'has_country': '"country"' in ps,
+        'has_viewCountText': '"viewCountText"' in ps,
+        'has_joinedDateText': '"joinedDateText"' in ps,
+        'has_videoCountText': '"videoCountText"' in ps or '"videosCountText"' in ps,
+        'extracted': {
+            'location': location,
+            'joined': joined,
+            'views': views,
+            'video_count': video_count,
+            'email': email,
+            'socials': socials,
+            'all_links': links,
+        }
+    })
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
