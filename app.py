@@ -938,7 +938,8 @@ def find_agency(channel_data):
     # --- Araştırma Pipeline ---
 
     def _make_result(info, source):
-        return {'found': True, 'source': source, **info}
+        enriched = enrich_agency(channel_data, info)
+        return {'found': True, 'source': source, **enriched}
 
     # 1. Email domain → corporate site
     if email_domain:
@@ -996,6 +997,117 @@ def find_agency(channel_data):
         return _make_result(r, 'ai_analysis')
 
     return {'found': False}
+
+
+def _deep_scrape_agency_site(website):
+    """Agency websitesinin birden fazla sayfasını scrape et, temiz metin döndür."""
+    from bs4 import BeautifulSoup
+    parsed = urlparse(website.rstrip('/'))
+    base = f"{parsed.scheme}://{parsed.netloc}"
+    pages = {}
+    for path in ['', '/about', '/about-us', '/contact', '/contact-us', '/team', '/roster', '/talent', '/services']:
+        if len(pages) >= 5:
+            break
+        try:
+            r = requests.get(base + path, headers=BROWSER_HEADERS, timeout=8, allow_redirects=True)
+            if r.status_code == 200 and 'text/html' in r.headers.get('content-type', ''):
+                soup = BeautifulSoup(r.text, 'html.parser')
+                for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe']):
+                    tag.decompose()
+                text = ' '.join(soup.get_text(' ', strip=True).split())
+                if len(text) > 100:
+                    pages[path or '/'] = text[:1800]
+        except Exception:
+            pass
+    return pages
+
+
+def _llm_enrich_agency(channel_data, basic_info, scraped_content):
+    """Claude Haiku ile kapsamlı ajans profili oluştur."""
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return None
+    try:
+        import anthropic
+
+        parts = ['=== YouTube Channel ===']
+        for f, l in [('name', 'Channel'), ('handle', 'Handle'), ('email', 'Email'),
+                     ('description', 'Description'), ('location', 'Location')]:
+            if channel_data.get(f):
+                parts.append(f'{l}: {channel_data[f]}')
+        social_keys = ['instagram', 'twitter', 'tiktok', 'facebook', 'linkedin']
+        socials_text = [f"{k}: {channel_data[k]}" for k in social_keys if channel_data.get(k)]
+        if socials_text:
+            parts.append('Social: ' + ', '.join(socials_text))
+        if channel_data.get('all_links'):
+            parts.append('Links: ' + ', '.join(channel_data['all_links'][:8]))
+
+        parts.append('\n=== Agency (found so far) ===')
+        for f, l in [('name', 'Name'), ('website', 'Website'), ('email', 'Email')]:
+            if basic_info.get(f):
+                parts.append(f'{l}: {basic_info[f]}')
+
+        if scraped_content:
+            parts.append('\n=== Agency Website Content ===')
+            for path, text in list(scraped_content.items())[:5]:
+                parts.append(f'[{path or "/"}]\n{text}')
+
+        context = '\n'.join(parts)[:6000]
+
+        prompt = f"""Analyze this data and extract a detailed profile of the management company / talent agency behind the YouTube channel.
+
+{context}
+
+Return ONLY a valid JSON object. Use null for unknown fields. Extract only what is actually supported by the data:
+{{
+  "name": "official company name",
+  "website": "main website URL",
+  "description": "2-3 sentences describing what this company does",
+  "summary": "one paragraph executive summary about this agency",
+  "services": ["talent management", "content production", ...],
+  "contact_email": "primary business contact email",
+  "contact_phone": "phone number or null",
+  "address": "city/country or full address or null",
+  "founded": "founding year or null",
+  "socials": {{
+    "instagram": "URL or null",
+    "twitter": "URL or null",
+    "linkedin": "URL or null",
+    "facebook": "URL or null"
+  }},
+  "notable_clients": ["channel or artist names managed by this agency"],
+  "reasoning": "one sentence explaining how you identified this as the agency"
+}}"""
+
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=800,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = message.content[0].text.strip()
+        m = re.search(r'\{.*\}', text, re.DOTALL)
+        if m:
+            data = json.loads(m.group())
+            # null ve boş değerleri filtrele
+            return {k: v for k, v in data.items() if v and v != 'null'}
+    except Exception:
+        pass
+    return None
+
+
+def enrich_agency(channel_data, basic_info):
+    """Agency hakkında derin araştırma: web scraping + AI analizi."""
+    website = basic_info.get('website', '')
+    scraped = _deep_scrape_agency_site(website) if website else {}
+    enriched = _llm_enrich_agency(channel_data, basic_info, scraped)
+    if enriched:
+        merged = {**basic_info}
+        for k, v in enriched.items():
+            if v:
+                merged[k] = v
+        return merged
+    return basic_info
 
 
 def _llm_find_agency(channel_data):
