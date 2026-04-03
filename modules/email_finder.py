@@ -58,11 +58,6 @@ _FAKE_TLDS = frozenset({
 _LINK_AGGREGATORS = ('linktr.ee', 'bio.link', 'beacons.ai', 'allmylinks.com',
                      'linkin.bio', 'lnk.bio', 'msha.ke', 'campsite.bio')
 
-_PERSONAL_EMAIL_DOMAINS = (
-    'gmail.', 'yahoo.', 'hotmail.', 'outlook.', 'icloud.',
-    'protonmail.', 'live.', 'msn.', 'aol.', 'mail.ru',
-)
-
 _CONTACT_PREFIXES = (
     'contact', 'info', 'hello', 'business', 'collab', 'collaboration',
     'booking', 'management', 'press', 'media', 'pr', 'partnerships',
@@ -93,8 +88,6 @@ def _is_business_email(email: str) -> bool:
     if len(parts) != 2:
         return False
     domain = parts[1]
-    if any(domain.startswith(p) for p in _PERSONAL_EMAIL_DOMAINS):
-        return False
     # TLD must exist, be 2-12 chars, only letters, and not a common English word
     tld_match = re.search(r'\.([a-z]{2,12})$', domain)
     if not tld_match:
