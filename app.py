@@ -509,6 +509,39 @@ def debug_deep():
     return jsonify(result)
 
 
+@app.route('/debug-rawpage', methods=['GET'])
+def debug_rawpage():
+    """About sayfasının ham içeriğinden snippet'lar göster"""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'url gerekli'}), 400
+    url = normalize_url(url)
+    base = RE_CLEAN.sub('', url.rstrip('/'))
+    about_url = base + '/about'
+    ps = _fetch_page_html(about_url)
+    if not ps:
+        return jsonify({'error': 'fetch başarısız'}), 500
+
+    checks = [
+        'ytInitialData', 'ytcfg', 'ytInitialPlayerResponse',
+        '"country"', '"viewCountText"', '"joinedDateText"', '"videoCountText"',
+        '"subscriberCountText"', 'channelMetadataRenderer', 'aboutChannelViewModel',
+        'c4TabbedHeaderRenderer', 'channelHeaderTabsRenderer',
+        'INNERTUBE_API_KEY',
+    ]
+    snippets = {}
+    for key in checks:
+        idx = ps.find(key)
+        if idx >= 0:
+            snippets[key] = ps[max(0, idx-20):idx+100]
+
+    return jsonify({
+        'page_length': len(ps),
+        'first_500_chars': ps[:500],
+        'found_keys': snippets,
+    })
+
+
 @app.route('/debug-about', methods=['GET'])
 def debug_about():
     """About sayfası requests çıktısını göster — konum/katılım/views/videos testi için"""
