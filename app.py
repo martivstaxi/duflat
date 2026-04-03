@@ -135,18 +135,33 @@ def extract_video_count(ps):
     return ''
 
 
+def _fetch_page_html(url):
+    """yt-dlp HTTP session'ı ile URL'yi fetch et (YouTube bot tespitini atlatır)"""
+    try:
+        ydl_opts = {'quiet': True, 'no_warnings': True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            response = ydl.urlopen(url)
+            return response.read().decode('utf-8', errors='replace')
+    except Exception:
+        pass
+    # Fallback: requests
+    try:
+        session = requests.Session()
+        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
+        r = session.get(url, headers=BROWSER_HEADERS, timeout=15)
+        if r.status_code == 200:
+            return r.text
+    except Exception:
+        pass
+    return ''
+
+
 def fetch_about_page(channel_url):
     """About sayfasından email, sosyal medya, konum, katılım tarihi, görüntülenme, video sayısı çek"""
     base = RE_CLEAN.sub('', channel_url.rstrip('/'))
     about_url = base + '/about'
-    try:
-        session = requests.Session()
-        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
-        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
-        if r.status_code != 200:
-            return {}, [], '', '', '', '', ''
-        ps = r.text
-    except Exception:
+    ps = _fetch_page_html(about_url)
+    if not ps:
         return {}, [], '', '', '', '', ''
 
     # Redirect URL'leri çöz
@@ -503,17 +518,12 @@ def debug_about():
     url = normalize_url(url)
     base = RE_CLEAN.sub('', url.rstrip('/'))
     about_url = base + '/about'
-    try:
-        session = requests.Session()
-        session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
-        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
-        ps = r.text
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    ps = _fetch_page_html(about_url)
+    if not ps:
+        return jsonify({'error': 'Sayfa çekilemedi'}), 500
 
     socials, links, email, location, joined, views, video_count = fetch_about_page(url)
     return jsonify({
-        'status_code': r.status_code,
         'page_length': len(ps),
         'has_ytInitialData': 'ytInitialData' in ps,
         'has_country': '"country"' in ps,
