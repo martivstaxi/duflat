@@ -191,18 +191,69 @@ def _extract_continuation_token(data: dict) -> str:
     """
     Extract the about-panel continuation token from InnerTube browse response.
     YouTube lazy-loads the about panel via engagementPanel → continuationItemRenderer.
+    Must follow the specific path to avoid picking up video-list continuations.
     """
-    # Path: header → pageHeaderViewModel → description → descriptionPreviewViewModel
-    #       → rendererContext → commandContext → onTap → showEngagementPanelEndpoint
-    #       → engagementPanel → engagementPanelSectionListRenderer → content
-    #       → sectionListRenderer → contents[0] → itemSectionRenderer
-    #       → contents[0] → continuationItemRenderer → continuationEndpoint
-    #       → continuationCommand → token
-    token = _find_obj(data, 'continuationItemRenderer')
-    if token and isinstance(token, dict):
-        cmd = (token.get('continuationEndpoint', {})
-                     .get('continuationCommand', {}))
-        return cmd.get('token', '')
+    # Navigate the exact path to the engagement panel continuation
+    try:
+        vm = (data.get('header', {})
+                  .get('pageHeaderRenderer', {})
+                  .get('content', {})
+                  .get('pageHeaderViewModel', {}))
+
+        # The engagement panel can be triggered from description or attribution
+        for trigger_path in [
+            vm.get('description', {}).get('descriptionPreviewViewModel', {}),
+            vm.get('attribution', {}).get('attributionViewModel', {}),
+        ]:
+            ep = (trigger_path
+                  .get('rendererContext', {})
+                  .get('commandContext', {})
+                  .get('onTap', {})
+                  .get('innertubeCommand', {})
+                  .get('showEngagementPanelEndpoint', {}))
+
+            panel = (ep.get('engagementPanel', {})
+                       .get('engagementPanelSectionListRenderer', {}))
+
+            content = panel.get('content', {})
+            sl = content.get('sectionListRenderer', {})
+            contents = sl.get('contents', [])
+            if not contents:
+                continue
+
+            # Look for continuationItemRenderer in the section
+            for section in contents[:3]:
+                isr = section.get('itemSectionRenderer', {})
+                for item in isr.get('contents', [])[:3]:
+                    cir = item.get('continuationItemRenderer', {})
+                    token = (cir.get('continuationEndpoint', {})
+                                .get('continuationCommand', {})
+                                .get('token', ''))
+                    if token:
+                        return token
+
+        # Also check attribution suffix commandRuns
+        suffix = vm.get('attribution', {}).get('attributionViewModel', {}).get('suffix', {})
+        for cmd_run in suffix.get('commandRuns', [])[:3]:
+            ep = (cmd_run.get('onTap', {})
+                         .get('innertubeCommand', {})
+                         .get('showEngagementPanelEndpoint', {}))
+            panel = (ep.get('engagementPanel', {})
+                       .get('engagementPanelSectionListRenderer', {}))
+            content = panel.get('content', {})
+            sl = content.get('sectionListRenderer', {})
+            for section in sl.get('contents', [])[:3]:
+                isr = section.get('itemSectionRenderer', {})
+                for item in isr.get('contents', [])[:3]:
+                    cir = item.get('continuationItemRenderer', {})
+                    token = (cir.get('continuationEndpoint', {})
+                                .get('continuationCommand', {})
+                                .get('token', ''))
+                    if token:
+                        return token
+
+    except Exception:
+        pass
     return ''
 
 
