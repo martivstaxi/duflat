@@ -585,12 +585,7 @@ def debug_about():
     if not url:
         return jsonify({'error': 'url parametresi gerekli'}), 400
     url = normalize_url(url)
-    base = RE_CLEAN.sub('', url.rstrip('/'))
-    about_url = base + '/about'
-    ps = _fetch_page_html(about_url)
-    if not ps:
-        return jsonify({'error': 'Sayfa çekilemedi'}), 500
-
+    ps, _ = _extract_about_via_ytdlp(url)
     socials, links, email, location, joined, views, video_count = fetch_about_page(url)
     return jsonify({
         'page_length': len(ps),
