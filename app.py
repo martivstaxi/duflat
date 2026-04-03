@@ -19,6 +19,7 @@ from flask_cors import CORS
 from modules.scraper      import scrape_channel, normalize_url, _extract_about_via_ytdlp, fetch_about_page
 from modules.agency       import find_agency
 from modules.email_finder import find_email
+from modules.summarizer   import summarize_channel
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -59,6 +60,16 @@ def agency_endpoint():
             return jsonify({'error': channel_data['error']}), 400
 
     result = find_agency(channel_data)
+    return jsonify(result)
+
+
+@app.route('/summarize', methods=['POST'])
+def summarize_endpoint():
+    body         = request.get_json(silent=True) or {}
+    channel_data = body.get('channel_data', {})
+    if not channel_data:
+        return jsonify({'error': 'channel_data required'}), 400
+    result = summarize_channel(channel_data)
     return jsonify(result)
 
 

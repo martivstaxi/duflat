@@ -329,9 +329,32 @@
             font-size: 0.83rem;
             color: var(--muted);
             line-height: 1.65;
-            white-space: pre-wrap;
-            max-height: 110px;
-            overflow-y: auto;
+        }
+
+        .description-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--faint);
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .topic-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .topic-tag {
+            background: rgba(177,173,161,.07);
+            border: 1px solid var(--border-m);
+            border-radius: 4px;
+            padding: 2px 9px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-family: var(--font-sans);
         }
 
         /* ── Social badges ──────────────────────────────────── */
@@ -659,7 +682,44 @@
                 document.getElementById('searchBtn').disabled = false;
             }
 
-            if (channelData) investigateAgency(channelData);
+            if (channelData) {
+                summarizeChannel(channelData);   // parallel — fills description box
+                investigateAgency(channelData);  // parallel — fills agency card
+            }
+        }
+
+        async function summarizeChannel(channelData) {
+            try {
+                const res = await fetch(`${API_URL}/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel_data: channelData })
+                });
+                const data = await res.json();
+                const box = document.getElementById('summaryBox');
+                if (!box) return;
+
+                if (data.summary) {
+                    const tags = Array.isArray(data.topics) && data.topics.length
+                        ? `<div class="topic-tags">${data.topics.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
+                        : '';
+                    box.innerHTML = `<div style="font-family:var(--font-sans)">${esc(data.summary)}</div>${tags}`;
+                } else {
+                    // Fallback: show raw description if summary failed
+                    const raw = channelData.description || '';
+                    box.innerHTML = raw
+                        ? `<div style="font-family:var(--font-sans);white-space:pre-wrap">${esc(raw)}</div>`
+                        : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
+                }
+            } catch (_) {
+                const box = document.getElementById('summaryBox');
+                if (box) {
+                    const raw = channelData.description || '';
+                    box.innerHTML = raw
+                        ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
+                        : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
+                }
+            }
         }
 
         async function investigateAgency(channelData) {
@@ -795,11 +855,15 @@
                         </div>
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
-                        ${d.description ? `
-                        <div class="info-item info-full">
-                            <span class="info-label">Description</span>
-                            <div class="description-box">${esc(d.description)}</div>
-                        </div>` : ''}
+                        <div class="info-item info-full" id="summaryBlock">
+                            <span class="info-label">About</span>
+                            <div class="description-box" id="summaryBox">
+                                <div class="description-loading">
+                                    <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                                    Generating summary...
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
