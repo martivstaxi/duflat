@@ -160,6 +160,7 @@ def _fetch_email_innertube(channel_id: str) -> str:
             'Content-Type':             'application/json',
             'Origin':                   'https://www.youtube.com',
             'Referer':                  'https://www.youtube.com/',
+            'Accept-Encoding':          'gzip, deflate',  # no brotli — requests can't decode br
         }
         r = requests.post(
             'https://www.youtube.com/youtubei/v1/browse',

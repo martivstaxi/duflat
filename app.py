@@ -130,7 +130,8 @@ def debug_email():
                     'X-YouTube-Client-Version': '2.20240701.09.00',
                     'Content-Type': 'application/json',
                     'Origin': 'https://www.youtube.com',
-                    'Referer': 'https://www.youtube.com/'}
+                    'Referer': 'https://www.youtube.com/',
+                    'Accept-Encoding': 'gzip, deflate'}
             r        = _req.post('https://www.youtube.com/youtubei/v1/browse',
                                   json=payload, headers=hdrs, timeout=15)
             it_status = r.status_code
