@@ -768,21 +768,48 @@
                     Investigating...
                 </span>`;
 
+            // Cycle through detective steps while waiting
+            const detectiveSteps = [
+                'Scanning external links...',
+                'Checking social media bios...',
+                'Reading latest video description...',
+                'Searching the web...',
+                'Guessing domain patterns...',
+                'Running AI analysis...',
+            ];
+            let stepIdx = 0;
+            const stepTimer = setInterval(() => {
+                stepIdx = (stepIdx + 1) % detectiveSteps.length;
+                const el = emailItem.querySelector('.info-value');
+                if (el) el.innerHTML =
+                    `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem">
+                        <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                        ${detectiveSteps[stepIdx]}
+                    </span>`;
+            }, 2500);
+
             try {
                 const res = await fetch(`${API_URL}/find-email`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel_data: _currentChannelData })
                 });
+                clearInterval(stepTimer);
                 const data = await res.json();
 
                 if (data.found && data.email) {
                     const sourceLabel = {
-                        'channel':        'from channel page',
-                        'external_link':  'from external link',
-                        'instagram_bio':  'from Instagram bio',
-                        'web_search':     'via web search',
-                        'ai_analysis':    'identified by AI',
+                        'channel':            'from channel page',
+                        'description':        'from channel description',
+                        'external_link':      'from external link',
+                        'linktree':           'via link aggregator',
+                        'instagram':          'from Instagram',
+                        'twitter':            'from Twitter/X',
+                        'tiktok':             'from TikTok',
+                        'facebook':           'from Facebook',
+                        'video_description':  'from video description',
+                        'web_search':         'via web search',
+                        'ai_analysis':        'identified by AI',
                     }[data.source] || data.source;
 
                     const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
@@ -800,6 +827,7 @@
                         `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
                 }
             } catch (err) {
+                clearInterval(stepTimer);
                 emailItem.querySelector('.info-value').innerHTML =
                     `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
             }

@@ -1,20 +1,23 @@
 """
-Email Finder
------------
-Finds a business contact email for a YouTube channel when not present in channel data.
+Email Finder — Detective Mode
+------------------------------
+Exhaustive multi-source investigation to find a YouTube creator's business
+contact email. Tries every angle before giving up.
 
-Investigation pipeline (runs in order, collects hints for AI along the way):
-    1. External links  → scrape each page for mailto: / email regex
-    2. Instagram bio   → OG description tag (server-side rendered)
-    3. DDG search      → "{channel} contact email" → scrape top results
-    4. Claude Haiku    → synthesize all collected content, find best email
+Investigation pipeline:
+    0. Obfuscated email decode  — description / about text ("contact [at] x [dot] com")
+    1. External links           — scrape each + /contact /about subpages
+    2. Link aggregators         — Linktree / beacons.ai / bio.link → extract links → scrape
+    3. Social media profiles    — Instagram, Twitter/X, TikTok, Facebook OG tags + bio
+    4. Latest video description — yt-dlp fetch of most recent video description
+    5. DuckDuckGo searches      — 5 different targeted queries
+    6. Domain pattern guessing  — known contact prefixes on any found domain
+    7. Claude Haiku             — detective synthesis of ALL collected evidence
 
 Public API:
     find_email(channel_data: dict) -> dict
-        {'found': True, 'email': 'x@y.com', 'source': str, 'confidence': str, 'reasoning': str}
+        {'found': True, 'email': str, 'source': str, 'confidence': str, 'reasoning': str}
      or {'found': False}
-
-source values: 'channel', 'external_link', 'instagram_bio', 'web_search', 'ai_analysis'
 """
 
 import re
@@ -31,13 +34,32 @@ from .constants import BROWSER_HEADERS, RE_EMAIL, EMAIL_BLACKLIST
 _SKIP_DOMAINS = (
     'youtube.com', 'youtu.be', 'instagram.com', 'twitter.com', 'x.com',
     'facebook.com', 'tiktok.com', 'discord.gg', 'discord.com', 'twitch.tv',
-    'reddit.com', 'wikipedia.org', 'linktr.ee', 'bio.link', 'beacons.ai',
-    'myanimelist.net', 'linkedin.com', 'linkin.bio',
+    'reddit.com', 'wikipedia.org', 'google.com', 'gstatic.com',
+    'googleapis.com', 'apple.com', 'microsoft.com', 'amazon.com',
 )
+
+_LINK_AGGREGATORS = ('linktr.ee', 'bio.link', 'beacons.ai', 'allmylinks.com',
+                     'linkin.bio', 'lnk.bio', 'msha.ke', 'campsite.bio')
 
 _PERSONAL_EMAIL_DOMAINS = (
     'gmail.', 'yahoo.', 'hotmail.', 'outlook.', 'icloud.',
-    'protonmail.', 'live.', 'msn.', 'aol.', 'mail.',
+    'protonmail.', 'live.', 'msn.', 'aol.', 'mail.ru',
+)
+
+_CONTACT_PREFIXES = (
+    'contact', 'info', 'hello', 'business', 'collab', 'collaboration',
+    'booking', 'management', 'press', 'media', 'pr', 'partnerships',
+    'brand', 'sponsor', 'work', 'agency',
+)
+
+# Obfuscated email patterns
+_RE_OBFUSCATED = re.compile(
+    r'([a-zA-Z0-9._%+\-]+)'      # local part
+    r'\s*(?:\[at\]|\(at\)|@| at )\s*'
+    r'([a-zA-Z0-9.\-]+)'          # domain
+    r'\s*(?:\[dot\]|\(dot\)|\. | dot |\.)?\s*'
+    r'([a-zA-Z]{2,})',             # TLD
+    re.I
 )
 
 # ─────────────────────────────────────────────
@@ -45,42 +67,63 @@ _PERSONAL_EMAIL_DOMAINS = (
 # ─────────────────────────────────────────────
 
 def _is_business_email(email: str) -> bool:
-    """Return True if email looks like a real business contact (not personal/noreply)."""
-    e = email.lower()
+    e = email.lower().strip()
+    if len(e) < 6 or '@' not in e:
+        return False
     if any(x in e for x in EMAIL_BLACKLIST):
         return False
-    domain = e.split('@')[1] if '@' in e else ''
+    domain = e.split('@')[1]
     if any(domain.startswith(p) for p in _PERSONAL_EMAIL_DOMAINS):
         return False
     return bool(domain)
 
 
-def _extract_emails_from_html(html: str) -> list[str]:
-    """Extract business emails from HTML — prefers mailto: links over regex matches."""
+def _clean_emails(emails: list[str]) -> list[str]:
+    seen, out = set(), []
+    for e in emails:
+        e = e.lower().strip().rstrip('.')
+        if _is_business_email(e) and e not in seen:
+            seen.add(e)
+            out.append(e)
+    return out
+
+
+def _decode_obfuscated(text: str) -> list[str]:
+    """Find emails written as 'name [at] domain [dot] com'."""
+    found = []
+    for m in _RE_OBFUSCATED.finditer(text):
+        local, domain_part, tld = m.group(1), m.group(2), m.group(3)
+        email = f'{local}@{domain_part}.{tld}'.lower()
+        if _is_business_email(email) and email not in found:
+            found.append(email)
+    return found
+
+
+def _extract_emails_html(html: str) -> list[str]:
+    """Extract emails from HTML — mailto: links first, then regex."""
     from bs4 import BeautifulSoup
-    emails: list[str] = []
+    results = []
     try:
         soup = BeautifulSoup(html, 'html.parser')
         for a in soup.find_all('a', href=True):
-            href = a['href']
-            if href.startswith('mailto:'):
-                e = href[7:].split('?')[0].strip().lower()
-                if e and _is_business_email(e) and e not in emails:
-                    emails.append(e)
+            if a['href'].startswith('mailto:'):
+                e = a['href'][7:].split('?')[0].strip().lower()
+                if e not in results:
+                    results.append(e)
     except Exception:
         pass
-    # Regex fallback
     for m in RE_EMAIL.finditer(html):
         e = m.group(1).lower()
-        if _is_business_email(e) and e not in emails:
-            emails.append(e)
-    return emails[:5]
+        if e not in results:
+            results.append(e)
+    results += _decode_obfuscated(html)
+    return _clean_emails(results)
 
 
 def _fetch(url: str, timeout: int = 10) -> str | None:
-    """GET a URL, return text or None."""
     try:
-        r = requests.get(url, headers=BROWSER_HEADERS, timeout=timeout, allow_redirects=True)
+        r = requests.get(url, headers=BROWSER_HEADERS, timeout=timeout,
+                         allow_redirects=True)
         if r.status_code == 200 and 'text/html' in r.headers.get('content-type', ''):
             return r.text
     except Exception:
@@ -88,8 +131,32 @@ def _fetch(url: str, timeout: int = 10) -> str | None:
     return None
 
 
+def _page_text(html: str, max_chars: int = 800) -> str:
+    """Strip scripts/styles, return visible text."""
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'iframe']):
+            tag.decompose()
+        return ' '.join(soup.get_text(' ', strip=True).split())[:max_chars]
+    except Exception:
+        return ''
+
+
+def _og_desc(html: str) -> str:
+    """Extract og:description meta tag content."""
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        tag = soup.find('meta', property='og:description')
+        if tag and tag.get('content'):
+            return tag['content']
+    except Exception:
+        pass
+    return ''
+
+
 def _ddg_search(query: str, max_results: int = 6) -> list[str]:
-    """DuckDuckGo HTML search — no API key needed."""
     try:
         r = requests.post(
             'https://html.duckduckgo.com/html/',
@@ -115,27 +182,87 @@ def _ddg_search(query: str, max_results: int = 6) -> list[str]:
         return []
 
 
-def _page_text(html: str) -> str:
-    """Strip scripts/styles, return cleaned visible text (max 600 chars)."""
+def _scrape_url_deep(url: str) -> tuple[list[str], str]:
+    """
+    Scrape a URL and its /contact + /about subpages.
+    Returns (emails_found, combined_text_hint).
+    """
+    emails: list[str] = []
+    texts: list[str] = []
+
+    html = _fetch(url)
+    if html:
+        emails += _extract_emails_html(html)
+        texts.append(_page_text(html, 600))
+        base = url.rstrip('/')
+        for sub in ('/contact', '/about', '/about-us', '/contact-us'):
+            if emails:
+                break
+            sub_html = _fetch(base + sub, timeout=8)
+            if sub_html:
+                emails += _extract_emails_html(sub_html)
+                texts.append(_page_text(sub_html, 400))
+
+    return _clean_emails(emails), ' '.join(t for t in texts if t)[:800]
+
+
+def _extract_linktree_links(url: str) -> list[str]:
+    """Pull all external links from a link-aggregator page."""
+    html = _fetch(url)
+    if not html:
+        return []
     try:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(html, 'html.parser')
-        for tag in soup(['script', 'style', 'nav', 'header', 'footer']):
-            tag.decompose()
-        return ' '.join(soup.get_text(' ', strip=True).split())[:600]
+        links = []
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            if href.startswith('http') and not any(d in href.lower() for d in _SKIP_DOMAINS):
+                if href not in links:
+                    links.append(href)
+        return links[:8]
     except Exception:
+        return []
+
+
+def _fetch_latest_video_description(channel_url: str) -> str:
+    """Fetch description of the most recent video via yt-dlp extract_flat."""
+    if not channel_url:
         return ''
+    try:
+        import yt_dlp
+        opts = {
+            'skip_download': True, 'quiet': True, 'no_warnings': True,
+            'ignoreerrors': True, 'playlistend': 1, 'extract_flat': False,
+        }
+        target = channel_url.rstrip('/') + '/videos'
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(target, download=False)
+        if not info:
+            return ''
+        entries = info.get('entries') or []
+        if entries and isinstance(entries[0], dict):
+            return entries[0].get('description', '') or ''
+    except Exception:
+        pass
+    return ''
 
 
 # ─────────────────────────────────────────────
-# AI HELPER
+# STEP 6 — DOMAIN EMAIL GUESSING
 # ─────────────────────────────────────────────
 
-def _llm_find_email(channel_data: dict, hints: list[tuple[str, str]]) -> dict | None:
-    """
-    Use Claude Haiku to deduce the contact email from all collected evidence.
-    hints: list of (source_label, content) tuples gathered during earlier steps.
-    """
+def _guess_domain_emails(domain: str) -> list[str]:
+    """Generate plausible contact emails for a domain using common prefixes."""
+    return [f'{prefix}@{domain}' for prefix in _CONTACT_PREFIXES]
+
+
+# ─────────────────────────────────────────────
+# STEP 7 — CLAUDE HAIKU DETECTIVE
+# ─────────────────────────────────────────────
+
+def _llm_find_email(channel_data: dict, evidence: list[tuple[str, str]],
+                    candidate_emails: list[str]) -> dict | None:
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
         return None
@@ -143,52 +270,59 @@ def _llm_find_email(channel_data: dict, hints: list[tuple[str, str]]) -> dict | 
         import anthropic
 
         parts = ['=== YouTube Channel ===']
-        for field, label in [('name', 'Channel'), ('handle', 'Handle'),
-                              ('description', 'Description'), ('location', 'Location')]:
+        for field, label in [('name','Name'), ('handle','Handle'),
+                              ('description','Description (raw)'), ('location','Location'),
+                              ('email','Email on page (if any)')]:
             if channel_data.get(field):
                 parts.append(f'{label}: {channel_data[field]}')
-        for k in ('instagram', 'twitter', 'tiktok', 'facebook', 'linkedin'):
+        for k in ('instagram','twitter','tiktok','facebook','linkedin'):
             if channel_data.get(k):
                 parts.append(f'{k.capitalize()}: {channel_data[k]}')
         if channel_data.get('all_links'):
-            parts.append('External links: ' + ', '.join(channel_data['all_links'][:12]))
+            parts.append('All links: ' + ', '.join(channel_data['all_links'][:15]))
 
-        if hints:
-            parts.append('\n=== Investigated Sources ===')
-            for label, content in hints[:10]:
+        if evidence:
+            parts.append('\n=== Evidence Collected ===')
+            for label, content in evidence[:15]:
                 if content:
-                    parts.append(f'[{label}]\n{content[:500]}')
+                    parts.append(f'[{label}]\n{content[:600]}')
 
-        context = '\n'.join(parts)[:5500]
+        if candidate_emails:
+            parts.append('\n=== Candidate Emails (domain-guessed, unverified) ===')
+            parts.append(', '.join(candidate_emails[:12]))
 
-        prompt = f"""You are a private investigator specializing in finding business contact emails for YouTube creators.
+        context = '\n'.join(parts)[:7000]
+
+        prompt = f"""You are an elite digital private investigator. Your job is to find the business contact email for this YouTube creator.
 
 {context}
 
-Your task: identify the best business contact email for this channel.
+Analyze ALL the evidence carefully:
+1. Look for explicit emails in the evidence text
+2. Look for obfuscated emails (e.g. "name at domain dot com")
+3. Check if any candidate email matches the creator's branding/domain
+4. If a website domain was found in the links, the most likely email is contact@/info@/business@/collab@ that domain
+5. Cross-reference the channel name, handle, and found domains to identify the most plausible email
 
-Rules:
-- Prefer emails found in the investigated sources over guesses
-- Business emails (not gmail/yahoo/personal) are preferred
-- If you see a domain that belongs to this creator (e.g. from external links), an email at that domain is likely correct
-- Do NOT invent emails — only report emails that appear in the data or are strongly implied
+Be bold — if the evidence strongly points to an email even if not explicitly stated, report it with low confidence.
+Only return found:false if there is absolutely no signal at all.
 
 Respond ONLY with valid JSON:
-If confident: {{"found": true, "email": "contact@example.com", "confidence": "high", "reasoning": "found in external link xyz.com"}}
-If a likely email: {{"found": true, "email": "info@example.com", "confidence": "low", "reasoning": "domain matches channel branding"}}
-If nothing found: {{"found": false}}"""
+{{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence explaining the evidence"}}
+or
+{{"found": false}}"""
 
         client  = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=150,
+            max_tokens=200,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        text = message.content[0].text.strip()
+        text  = message.content[0].text.strip()
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if not match:
             return None
-        data = json.loads(match.group())
+        data  = json.loads(match.group())
         if data.get('found') and data.get('email'):
             email = data['email'].lower().strip()
             if _is_business_email(email):
@@ -210,83 +344,197 @@ If nothing found: {{"found": false}}"""
 
 def find_email(channel_data: dict) -> dict:
     """
-    Investigate and return the best business contact email for a YouTube channel.
-
-    Args:
-        channel_data: dict from scraper.scrape_channel()
-
-    Returns:
-        {'found': True,  'email': str, 'source': str, 'confidence': str, 'reasoning': str}
-     or {'found': False}
+    Exhaustive email investigation for a YouTube creator.
+    Tries every available method before giving up.
     """
-    # Already have a business email — done
+
+    # Already have a clean business email
     existing = channel_data.get('email', '')
     if existing and _is_business_email(existing):
-        return {'found': True, 'email': existing, 'source': 'channel', 'confidence': 'high', 'reasoning': 'Listed on channel about page.'}
+        return {'found': True, 'email': existing, 'source': 'channel',
+                'confidence': 'high', 'reasoning': 'Listed on the channel about page.'}
 
-    channel_name = channel_data.get('name', '')
-    handle       = channel_data.get('handle', '').lstrip('@')
-    all_links    = channel_data.get('all_links', [])
-    hints: list[tuple[str, str]] = []
+    name       = channel_data.get('name', '')
+    handle     = channel_data.get('handle', '').lstrip('@')
+    description= channel_data.get('description', '')
+    all_links  = channel_data.get('all_links', [])
+    channel_url= channel_data.get('channel_url', '')
 
-    # ── Step 1: Scrape external links ──────────────────
-    for link in all_links[:8]:
-        if any(d in link.lower() for d in _SKIP_DOMAINS):
-            continue
-        html = _fetch(link)
-        if html:
-            emails = _extract_emails_from_html(html)
-            if emails:
-                return {'found': True, 'email': emails[0], 'source': 'external_link',
-                        'confidence': 'high', 'reasoning': f'Found in external link: {link}'}
-            hints.append((f'external_link:{link}', _page_text(html)))
+    evidence:          list[tuple[str, str]] = []   # (label, text) for Haiku
+    candidate_emails:  list[str]             = []   # domain-guessed
+    found_domains:     list[str]             = []   # corporate domains found
 
-    # ── Step 2: Instagram bio (OG description is server-rendered) ──
-    if channel_data.get('instagram'):
-        html = _fetch(channel_data['instagram'])
-        if html:
-            # Check mailto / regex in full page
-            emails = _extract_emails_from_html(html)
-            if emails:
-                return {'found': True, 'email': emails[0], 'source': 'instagram_bio',
-                        'confidence': 'high', 'reasoning': 'Found in Instagram profile page.'}
-            # OG description = bio text
+    # ── STEP 0: Obfuscated emails in description ───────────────
+    if description:
+        obf = _decode_obfuscated(description)
+        if obf:
+            return {'found': True, 'email': obf[0], 'source': 'description',
+                    'confidence': 'high', 'reasoning': 'Obfuscated email decoded from channel description.'}
+        evidence.append(('channel_description', description[:600]))
+
+    # ── STEP 1: External links — scrape deep ──────────────────
+    company_links  = []
+    aggregator_links = []
+    for lnk in all_links:
+        lo = lnk.lower()
+        if any(d in lo for d in _LINK_AGGREGATORS):
+            aggregator_links.append(lnk)
+        elif not any(d in lo for d in _SKIP_DOMAINS):
+            company_links.append(lnk)
+
+    for link in company_links[:6]:
+        emails, hint = _scrape_url_deep(link)
+        if hint:
+            evidence.append((f'external_link:{link}', hint))
+        # Track domain for guessing later
+        try:
+            from urllib.parse import urlparse
+            domain = urlparse(link).netloc.lstrip('www.')
+            if domain and domain not in found_domains:
+                found_domains.append(domain)
+        except Exception:
+            pass
+        if emails:
+            return {'found': True, 'email': emails[0], 'source': 'external_link',
+                    'confidence': 'high', 'reasoning': f'Found in external link: {link}'}
+
+    # ── STEP 2: Link aggregators (Linktree etc.) ──────────────
+    for agg in aggregator_links[:2]:
+        for link in _extract_linktree_links(agg):
+            emails, hint = _scrape_url_deep(link)
+            if hint:
+                evidence.append((f'linktree_link:{link}', hint))
             try:
-                from bs4 import BeautifulSoup
-                soup = BeautifulSoup(html, 'html.parser')
-                og = soup.find('meta', property='og:description')
-                bio = og['content'] if og and og.get('content') else ''
-                if bio:
-                    for m in RE_EMAIL.finditer(bio):
-                        e = m.group(1).lower()
-                        if _is_business_email(e):
-                            return {'found': True, 'email': e, 'source': 'instagram_bio',
-                                    'confidence': 'high', 'reasoning': 'Found in Instagram bio.'}
-                    hints.append(('instagram_bio', bio))
+                from urllib.parse import urlparse
+                domain = urlparse(link).netloc.lstrip('www.')
+                if domain and domain not in found_domains:
+                    found_domains.append(domain)
             except Exception:
                 pass
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'linktree',
+                        'confidence': 'high', 'reasoning': f'Found via link aggregator → {link}'}
 
-    # ── Step 3: DuckDuckGo search ──────────────────────
-    queries = []
-    if channel_name:
-        queries.append(f'"{channel_name}" contact email business inquiry')
+    # ── STEP 3: Social media profiles ────────────────────────
+
+    # Instagram — full page + OG description
+    if channel_data.get('instagram'):
+        ig_html = _fetch(channel_data['instagram'])
+        if ig_html:
+            emails = _extract_emails_html(ig_html)
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'instagram',
+                        'confidence': 'high', 'reasoning': 'Found in Instagram profile page.'}
+            bio = _og_desc(ig_html)
+            if bio:
+                obf = _decode_obfuscated(bio)
+                if obf:
+                    return {'found': True, 'email': obf[0], 'source': 'instagram',
+                            'confidence': 'high', 'reasoning': 'Obfuscated email decoded from Instagram bio.'}
+                for m in RE_EMAIL.finditer(bio):
+                    e = m.group(1).lower()
+                    if _is_business_email(e):
+                        return {'found': True, 'email': e, 'source': 'instagram',
+                                'confidence': 'high', 'reasoning': 'Found in Instagram bio.'}
+                evidence.append(('instagram_bio', bio))
+
+    # Twitter/X — try OG description from profile page
+    if channel_data.get('twitter'):
+        for tw_url in [channel_data['twitter'],
+                       channel_data['twitter'].replace('x.com', 'twitter.com')]:
+            tw_html = _fetch(tw_url)
+            if tw_html:
+                emails = _extract_emails_html(tw_html)
+                if emails:
+                    return {'found': True, 'email': emails[0], 'source': 'twitter',
+                            'confidence': 'high', 'reasoning': 'Found in Twitter/X profile page.'}
+                bio = _og_desc(tw_html)
+                if bio:
+                    obf = _decode_obfuscated(bio)
+                    if obf:
+                        return {'found': True, 'email': obf[0], 'source': 'twitter',
+                                'confidence': 'high', 'reasoning': 'Obfuscated email from Twitter/X bio.'}
+                    evidence.append(('twitter_bio', bio))
+                break
+
+    # TikTok profile
+    if channel_data.get('tiktok'):
+        tt_html = _fetch(channel_data['tiktok'])
+        if tt_html:
+            emails = _extract_emails_html(tt_html)
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'tiktok',
+                        'confidence': 'high', 'reasoning': 'Found in TikTok profile page.'}
+            bio = _og_desc(tt_html)
+            if bio:
+                obf = _decode_obfuscated(bio)
+                if obf:
+                    return {'found': True, 'email': obf[0], 'source': 'tiktok',
+                            'confidence': 'high', 'reasoning': 'Obfuscated email from TikTok bio.'}
+                evidence.append(('tiktok_bio', bio))
+
+    # Facebook page
+    if channel_data.get('facebook'):
+        fb_html = _fetch(channel_data['facebook'])
+        if fb_html:
+            emails = _extract_emails_html(fb_html)
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'facebook',
+                        'confidence': 'high', 'reasoning': 'Found in Facebook page.'}
+            bio = _og_desc(fb_html)
+            if bio:
+                evidence.append(('facebook_bio', bio))
+
+    # ── STEP 4: Latest video description ─────────────────────
+    if channel_url:
+        vid_desc = _fetch_latest_video_description(channel_url)
+        if vid_desc:
+            obf = _decode_obfuscated(vid_desc)
+            if obf:
+                return {'found': True, 'email': obf[0], 'source': 'video_description',
+                        'confidence': 'high', 'reasoning': 'Obfuscated email found in latest video description.'}
+            for m in RE_EMAIL.finditer(vid_desc):
+                e = m.group(1).lower()
+                if _is_business_email(e):
+                    return {'found': True, 'email': e, 'source': 'video_description',
+                            'confidence': 'high', 'reasoning': 'Found in latest video description.'}
+            evidence.append(('latest_video_description', vid_desc[:800]))
+
+    # ── STEP 5: DuckDuckGo — multiple targeted queries ────────
+    ddg_queries = []
+    if name:
+        ddg_queries += [
+            f'"{name}" youtube contact email business',
+            f'"{name}" booking management email inquiry',
+        ]
     if handle:
-        queries.append(f'"{handle}" youtube business contact email')
+        ddg_queries += [
+            f'"{handle}" contact email',
+            f'site:instagram.com "{handle}" email contact',
+        ]
+    if found_domains:
+        ddg_queries.append(f'"{found_domains[0]}" contact email')
 
-    for query in queries[:2]:
+    for query in ddg_queries[:5]:
         for url in _ddg_search(query, max_results=5):
             if any(d in url.lower() for d in _SKIP_DOMAINS):
                 continue
-            html = _fetch(url, timeout=8)
-            if html:
-                emails = _extract_emails_from_html(html)
-                if emails:
-                    return {'found': True, 'email': emails[0], 'source': 'web_search',
-                            'confidence': 'medium', 'reasoning': f'Found via web search: {url}'}
-                hints.append((f'search_result:{url}', _page_text(html)))
+            emails, hint = _scrape_url_deep(url)
+            if hint:
+                evidence.append((f'web_search:{url}', hint))
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'web_search',
+                        'confidence': 'medium', 'reasoning': f'Found via web search: {url}'}
 
-    # ── Step 4: Claude Haiku — private detective mode ──
-    result = _llm_find_email(channel_data, hints)
+    # ── STEP 6: Domain email pattern guessing ─────────────────
+    for domain in found_domains[:3]:
+        guesses = _guess_domain_emails(domain)
+        candidate_emails.extend(guesses)
+        evidence.append((f'domain_found:{domain}',
+                         f'Corporate domain identified. Possible contacts: {", ".join(guesses[:5])}'))
+
+    # ── STEP 7: Claude Haiku — full detective synthesis ───────
+    result = _llm_find_email(channel_data, evidence, candidate_emails)
     if result:
         return result
 
