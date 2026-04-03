@@ -270,27 +270,59 @@ def _extract_linktree_links(url: str) -> list[str]:
         return []
 
 
-def _fetch_latest_video_description(channel_url: str) -> str:
-    """Fetch description of the most recent video via yt-dlp extract_flat."""
+def _fetch_video_descriptions(channel_url: str, n: int = 5) -> list[str]:
+    """
+    Fetch descriptions of the last N videos.
+    Many creators put business email in every video description.
+    """
     if not channel_url:
-        return ''
+        return []
     try:
         import yt_dlp
         opts = {
             'skip_download': True, 'quiet': True, 'no_warnings': True,
-            'ignoreerrors': True, 'playlistend': 1, 'extract_flat': False,
+            'ignoreerrors': True, 'playlistend': n, 'extract_flat': False,
         }
         target = channel_url.rstrip('/') + '/videos'
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(target, download=False)
         if not info:
-            return ''
+            return []
         entries = info.get('entries') or []
-        if entries and isinstance(entries[0], dict):
-            return entries[0].get('description', '') or ''
+        descs = []
+        for e in entries:
+            if isinstance(e, dict):
+                d = e.get('description', '') or ''
+                if d and d not in descs:
+                    descs.append(d)
+        return descs[:n]
     except Exception:
         pass
-    return ''
+    return []
+
+
+def _bing_search(query: str, max_results: int = 5) -> list[str]:
+    """Bing HTML search — no API key needed."""
+    try:
+        r = requests.get(
+            'https://www.bing.com/search',
+            params={'q': query, 'count': 10},
+            headers={**BROWSER_HEADERS, 'Accept-Language': 'en-US,en;q=0.9'},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return []
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(r.text, 'html.parser')
+        urls = []
+        for a in soup.select('h2 a[href]'):
+            href = a.get('href', '')
+            if href.startswith('http') and 'bing.com' not in href and 'microsoft.com' not in href:
+                if href not in urls:
+                    urls.append(href)
+        return urls[:max_results]
+    except Exception:
+        return []
 
 
 # ─────────────────────────────────────────────
@@ -338,27 +370,31 @@ def _llm_find_email(channel_data: dict, evidence: list[tuple[str, str]],
 
         context = '\n'.join(parts)[:7000]
 
-        prompt = f"""You are an elite digital private investigator. Your job is to find the business contact email for this YouTube creator.
+        prompt = f"""You are an elite digital private investigator specializing in finding YouTube creators' contact emails.
 
 {context}
 
-Analyze ALL the evidence carefully:
-1. Look for explicit emails in the evidence text
-2. Look for obfuscated emails (e.g. "name at domain dot com")
-3. Check if any candidate email matches the creator's branding/domain
-4. If a website domain was found in the links, the most likely email is contact@/info@/business@/collab@ that domain
-5. Cross-reference the channel name, handle, and found domains to identify the most plausible email
+Your task: identify the BEST contact email for this creator to receive business/collab inquiries.
 
-CRITICAL validation rules — REJECT any email that:
-- Belongs to a known platform (gmail, myanimelist, youtube, instagram, twitter, linktr.ee, etc.)
-- Looks like it was parsed incorrectly from natural language (e.g. "follow@somesite.on" or "email@platform.from")
-- Is the contact email of a third-party site, not the creator themselves
+Investigation steps:
+1. Scan all evidence text for any email address (including @gmail.com, @yahoo.com — creators often use these)
+2. Look for obfuscated emails: "name at domain dot com", "name[at]domain[dot]com"
+3. If a personal website/domain was found in the links, generate the most likely email: contact@domain, info@domain, collab@domain, hello@domain, [creator_name]@domain
+4. Cross-reference the channel name/handle with any found domain to guess the email format
+5. If the creator's first name is identifiable, try firstname@domain.com or firstnamelastname@gmail.com patterns
 
-Be bold — if the evidence strongly points to an email even if not explicitly stated, report it with low confidence.
-Only return found:false if there is absolutely no signal pointing to the creator's own email.
+REJECT only emails that are clearly:
+- Auto-generated site emails (noreply@, donotreply@, support@platform.com)
+- Incorrectly parsed from natural language (e.g. "follow@somesite.on" where ".on" is a preposition)
+- Contact emails of unrelated third-party companies (not the creator's own)
+
+Gmail, Yahoo, Hotmail, Outlook ARE valid — many creators use them.
+
+Be bold: if you can reasonably infer an email from the evidence, report it with "low" confidence.
+Only return found:false if there is truly zero signal.
 
 Respond ONLY with valid JSON:
-{{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence explaining the evidence"}}
+{{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence"}}
 or
 {{"found": false}}"""
 
@@ -535,46 +571,80 @@ def find_email(channel_data: dict) -> dict:
             if bio:
                 evidence.append(('facebook_bio', bio))
 
-    # ── STEP 4: Latest video description ─────────────────────
+    # ── STEP 4: Last 5 video descriptions ────────────────────
     if channel_url:
-        vid_desc = _fetch_latest_video_description(channel_url)
-        if vid_desc:
+        video_descs = _fetch_video_descriptions(channel_url, n=5)
+        for i, vid_desc in enumerate(video_descs):
+            if not vid_desc:
+                continue
             obf = _decode_obfuscated(vid_desc)
             if obf:
                 return {'found': True, 'email': obf[0], 'source': 'video_description',
-                        'confidence': 'high', 'reasoning': 'Obfuscated email found in latest video description.'}
+                        'confidence': 'high', 'reasoning': f'Obfuscated email in video #{i+1} description.'}
             for m in RE_EMAIL.finditer(vid_desc):
                 e = m.group(1).lower()
                 if _is_business_email(e):
                     return {'found': True, 'email': e, 'source': 'video_description',
-                            'confidence': 'high', 'reasoning': 'Found in latest video description.'}
-            evidence.append(('latest_video_description', vid_desc[:800]))
+                            'confidence': 'high', 'reasoning': f'Found in video #{i+1} description.'}
+            if i == 0:
+                evidence.append(('video_description_1', vid_desc[:600]))
 
-    # ── STEP 5: DuckDuckGo — multiple targeted queries ────────
+    # ── STEP 5: Multi-engine search ───────────────────────────
+    # Build targeted queries using every piece of data we have
+    location = channel_data.get('location', '')
+    first_name = name.split()[0] if name and ' ' in name else name
+
     ddg_queries = []
     if name:
         ddg_queries += [
-            f'"{name}" youtube contact email business',
-            f'"{name}" booking management email inquiry',
+            f'"{name}" youtube contact email',
+            f'"{name}" business email inquiry',
+            f'"{name}" youtuber email collab',
         ]
     if handle:
         ddg_queries += [
-            f'"{handle}" contact email',
-            f'site:instagram.com "{handle}" email contact',
+            f'"{handle}" email contact',
+            f'"{handle}" youtube business email',
         ]
+    if first_name and first_name != name:
+        ddg_queries.append(f'"{first_name}" youtube {location} contact email'.strip())
     if found_domains:
-        ddg_queries.append(f'"{found_domains[0]}" contact email')
+        ddg_queries.append(f'site:{found_domains[0]} contact email')
+    if location and name:
+        ddg_queries.append(f'"{name}" {location} youtube email')
 
-    for query in ddg_queries[:5]:
+    seen_urls: set[str] = set()
+
+    for query in ddg_queries[:8]:
         for url in _ddg_search(query, max_results=5):
-            if any(d in url.lower() for d in _SKIP_DOMAINS):
+            if url in seen_urls or any(d in url.lower() for d in _SKIP_DOMAINS):
                 continue
+            seen_urls.add(url)
             emails, hint = _scrape_url_deep(url)
             if hint:
-                evidence.append((f'web_search:{url}', hint))
+                evidence.append((f'ddg:{url}', hint))
             if emails:
                 return {'found': True, 'email': emails[0], 'source': 'web_search',
                         'confidence': 'medium', 'reasoning': f'Found via web search: {url}'}
+
+    # Bing search — different index, may find different results
+    bing_queries = []
+    if name:
+        bing_queries.append(f'{name} youtube email contact business')
+    if handle:
+        bing_queries.append(f'{handle} youtube email')
+
+    for query in bing_queries[:3]:
+        for url in _bing_search(query, max_results=5):
+            if url in seen_urls or any(d in url.lower() for d in _SKIP_DOMAINS):
+                continue
+            seen_urls.add(url)
+            emails, hint = _scrape_url_deep(url)
+            if hint:
+                evidence.append((f'bing:{url}', hint))
+            if emails:
+                return {'found': True, 'email': emails[0], 'source': 'web_search',
+                        'confidence': 'medium', 'reasoning': f'Found via Bing: {url}'}
 
     # ── STEP 6: Domain email pattern guessing ─────────────────
     for domain in found_domains[:3]:
