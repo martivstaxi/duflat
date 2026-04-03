@@ -4,7 +4,9 @@ Duflat - YouTube Channel Investigator API
 
 import re
 import os
+import json
 import random
+import threading
 import requests
 from urllib.parse import unquote, parse_qs, urlparse
 from flask import Flask, request, jsonify, send_from_directory
@@ -135,29 +137,90 @@ def extract_video_count(ps):
     return ''
 
 
-def _fetch_page_html(url):
-    """YouTube about sayfasını yt-dlp extractor ile çek (consent otomatik handle edilir)"""
+_about_patch_lock = threading.Lock()
+
+
+def _extract_about_via_ytdlp(channel_url):
+    """
+    yt-dlp'nin /about fetch'ini intercept ederek raw HTML'i yakala,
+    sonra ytInitialData'dan location, joined, views, video_count çıkar.
+    yt-dlp consent'i otomatik handle ettiği için Railway IP sorunu olmaz.
+    """
+    base = RE_CLEAN.sub('', channel_url.rstrip('/'))
+    about_url = base + '/about'
+    captured_html = {}
+
     try:
         from yt_dlp.extractor.youtube import YoutubeTabIE
-        ydl_opts = {'quiet': True, 'no_warnings': True}
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ie = YoutubeTabIE(ydl)
-            webpage = ie._download_webpage(url, 'channel_about', fatal=False,
-                                            note=False, errnote=False)
-            if webpage and 'consent.youtube.com' not in webpage[:500]:
-                return webpage
+        from yt_dlp.extractor.common import InfoExtractor
+
+        original_dw = InfoExtractor._download_webpage
+
+        def patched_dw(self, url_or_request, *args, **kwargs):
+            result = original_dw(self, url_or_request, *args, **kwargs)
+            if (result and isinstance(result, str)
+                    and 'ytInitialData' in result
+                    and not captured_html):
+                captured_html['html'] = result
+            return result
+
+        with _about_patch_lock:
+            InfoExtractor._download_webpage = patched_dw
+            try:
+                ydl_opts = {'skip_download': True, 'quiet': True, 'no_warnings': True,
+                            'ignoreerrors': True, 'extract_flat': True}
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.extract_info(about_url, download=False)
+            finally:
+                InfoExtractor._download_webpage = original_dw
+
     except Exception:
         pass
-    return ''
+
+    html = captured_html.get('html', '')
+    return html, _parse_about_from_html(html)
+
+
+def _parse_about_from_html(html):
+    """Raw HTML'den location, joined, views, video_count çıkar"""
+    if not html:
+        return {}
+    result = {}
+
+    # Location
+    m = RE_COUNTRY.search(html)
+    if m:
+        result['location'] = m.group(1)
+
+    # Joined date
+    m = RE_JOINED_JSON.search(html)
+    if m:
+        result['joined'] = m.group(1).strip()
+    if not result.get('joined'):
+        m = RE_JOINED.search(html)
+        if m:
+            result['joined'] = m.group(1).strip()
+
+    # Total views
+    m = RE_VIEW_COUNT.search(html)
+    if m:
+        cs = m.group(1).replace(',', '').replace('.', '')
+        if cs.isdigit() and int(cs) > 0:
+            result['views'] = format(int(cs), ',')
+
+    # Video count
+    vc = extract_video_count(html)
+    if vc:
+        result['video_count'] = vc
+
+    return result
 
 
 def fetch_about_page(channel_url):
     """About sayfasından email, sosyal medya, konum, katılım tarihi, görüntülenme, video sayısı çek"""
-    base = RE_CLEAN.sub('', channel_url.rstrip('/'))
-    about_url = base + '/about'
-    ps = _fetch_page_html(about_url)
+    ps, extra = _extract_about_via_ytdlp(channel_url)
     if not ps:
-        return {}, [], '', '', '', '', ''
+        return {}, [], '', extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count','')
 
     # Redirect URL'leri çöz
     redirect_urls = RE_REDIRECT.findall(ps)
@@ -214,34 +277,7 @@ def fetch_about_page(channel_url):
         if email:
             break
 
-    # Konum
-    location = ''
-    m = RE_COUNTRY.search(ps)
-    if m:
-        location = m.group(1)
-
-    # Katılım tarihi
-    joined = ''
-    m = RE_JOINED_JSON.search(ps)
-    if m:
-        joined = m.group(1).strip()
-    if not joined:
-        m = RE_JOINED.search(ps)
-        if m:
-            joined = m.group(1).strip()
-
-    # Toplam görüntülenme
-    views = ''
-    m = RE_VIEW_COUNT.search(ps)
-    if m:
-        cs = m.group(1).replace(',', '').replace('.', '')
-        if cs.isdigit() and int(cs) > 0:
-            views = format(int(cs), ',')
-
-    # Video sayısı
-    video_count = extract_video_count(ps)
-
-    return socials, json_ext_links[:15], email, location, joined, views, video_count
+    return socials, json_ext_links[:15], email, extra.get('location',''), extra.get('joined',''), extra.get('views',''), extra.get('video_count','')
 
 
 def extract_socials_from_text(text):
@@ -511,11 +547,9 @@ def debug_rawpage():
     if not url:
         return jsonify({'error': 'url gerekli'}), 400
     url = normalize_url(url)
-    base = RE_CLEAN.sub('', url.rstrip('/'))
-    about_url = base + '/about'
-    ps = _fetch_page_html(about_url)
+    ps, extra = _extract_about_via_ytdlp(url)
     if not ps:
-        return jsonify({'error': 'fetch başarısız'}), 500
+        return jsonify({'error': 'fetch başarısız', 'extra': extra}), 500
 
     checks = [
         'ytInitialData', 'ytcfg', 'ytInitialPlayerResponse',
@@ -534,6 +568,7 @@ def debug_rawpage():
         'page_length': len(ps),
         'first_500_chars': ps[:500],
         'found_keys': snippets,
+        'extra_parsed': extra,
     })
 
 
