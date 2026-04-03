@@ -238,6 +238,42 @@ def scrape():
         return jsonify(result), 500
     return jsonify(result)
 
+@app.route('/debug', methods=['GET'])
+def debug():
+    """Ham yt-dlp çıktısını göster — sorun tespiti için"""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'url parametresi gerekli: /debug?url=...'}), 400
+
+    url = normalize_url(url)
+    ydl_opts = {
+        'skip_download': True,
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+        'playlistend': 1,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    if not info:
+        return jsonify({'error': 'Boş sonuç döndü'}), 500
+
+    # Sadece skaler alanları döndür (entries vs. çok büyük)
+    safe = {k: v for k, v in info.items()
+            if isinstance(v, (str, int, float, bool, type(None))) or
+               (isinstance(v, list) and k in ('tags', 'categories'))}
+    safe['entries_count'] = len(info.get('entries') or [])
+    if info.get('entries'):
+        first = info['entries'][0]
+        if isinstance(first, dict):
+            safe['first_entry_keys'] = list(first.keys())
+            safe['first_entry_upload_date'] = first.get('upload_date')
+    return jsonify(safe)
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"🚀 Duflat API başlatılıyor... http://localhost:{port}")
