@@ -479,8 +479,11 @@ def scrape_channel(url):
         video_count = about_video_count
     if not views and about_views:
         views = about_views
-    if not last_video_date and about_last_video:
+    # /videos tab'ından gelen tarih her zaman öncelikli — aranan video eski olabilir
+    if about_last_video:
         last_video_date = about_last_video
+    # Fallback: yt-dlp'den gelen (searched video's date) — sadece about_last_video yoksa
+
 
     # Duplicate link temizle: trailing slash farkını normalize et
     seen_normalized = set()
