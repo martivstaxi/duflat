@@ -103,56 +103,41 @@ def _find_email_in_obj(obj, depth: int = 0) -> str:
 # YouTube InnerTube API — about tab params (base64 of protobuf \x12\x05about)
 _INNERTUBE_ABOUT_PARAMS = 'EgVhYm91dA=='
 _INNERTUBE_WEB_VERSION = '2.20260401.01.00'
+_INNERTUBE_WEB_CONTEXT = {
+    'client': {
+        'hl': 'en', 'gl': 'US',
+        'clientName': 'WEB',
+        'clientVersion': _INNERTUBE_WEB_VERSION,
+        'platform': 'DESKTOP',
+        'userAgent': BROWSER_HEADERS['User-Agent'],
+    }
+}
+_INNERTUBE_WEB_HEADERS = {
+    'Content-Type':             'application/json',
+    'X-YouTube-Client-Name':    '1',
+    'X-YouTube-Client-Version': _INNERTUBE_WEB_VERSION,
+    'Origin':                   'https://www.youtube.com',
+    'Accept-Encoding':          'gzip, deflate',
+}
 
-# Multiple InnerTube clients — some return more data than others
-_INNERTUBE_CLIENTS = [
-    {   # WEB client — standard desktop browser
-        'context': {
-            'client': {
-                'hl': 'en', 'gl': 'US',
-                'clientName': 'WEB',
-                'clientVersion': _INNERTUBE_WEB_VERSION,
-                'platform': 'DESKTOP',
-                'userAgent': BROWSER_HEADERS['User-Agent'],
-            }
-        },
-        'headers': {
-            'X-YouTube-Client-Name': '1',
-            'X-YouTube-Client-Version': _INNERTUBE_WEB_VERSION,
-        },
-    },
-    {   # ANDROID client — often returns more data with fewer restrictions
-        'context': {
-            'client': {
-                'hl': 'en', 'gl': 'US',
-                'clientName': 'ANDROID',
-                'clientVersion': '19.29.37',
-                'platform': 'MOBILE',
-                'androidSdkVersion': 34,
-                'userAgent': 'com.google.android.youtube/19.29.37 (Linux; U; Android 14) gzip',
-            }
-        },
-        'headers': {
-            'X-YouTube-Client-Name': '3',
-            'X-YouTube-Client-Version': '19.29.37',
-            'User-Agent': 'com.google.android.youtube/19.29.37 (Linux; U; Android 14) gzip',
-        },
-    },
-    {   # MWEB client — mobile web, sometimes returns different data structure
-        'context': {
-            'client': {
-                'hl': 'en', 'gl': 'US',
-                'clientName': 'MWEB',
-                'clientVersion': '2.20260401.01.00',
-                'platform': 'MOBILE',
-            }
-        },
-        'headers': {
-            'X-YouTube-Client-Name': '2',
-            'X-YouTube-Client-Version': '2.20260401.01.00',
-        },
-    },
-]
+
+def _find_obj(obj, key, depth=0):
+    """Recursively find a key in nested dict/list structure."""
+    if depth > 15:
+        return None
+    if isinstance(obj, dict):
+        if key in obj:
+            return obj[key]
+        for v in obj.values():
+            r = _find_obj(v, key, depth + 1)
+            if r is not None:
+                return r
+    elif isinstance(obj, list):
+        for item in obj[:10]:
+            r = _find_obj(item, key, depth + 1)
+            if r is not None:
+                return r
+    return None
 
 
 def _extract_email_from_response(r) -> str:
@@ -202,6 +187,39 @@ def _extract_email_from_response(r) -> str:
     return ''
 
 
+def _extract_continuation_token(data: dict) -> str:
+    """
+    Extract the about-panel continuation token from InnerTube browse response.
+    YouTube lazy-loads the about panel via engagementPanel → continuationItemRenderer.
+    """
+    # Path: header → pageHeaderViewModel → description → descriptionPreviewViewModel
+    #       → rendererContext → commandContext → onTap → showEngagementPanelEndpoint
+    #       → engagementPanel → engagementPanelSectionListRenderer → content
+    #       → sectionListRenderer → contents[0] → itemSectionRenderer
+    #       → contents[0] → continuationItemRenderer → continuationEndpoint
+    #       → continuationCommand → token
+    token = _find_obj(data, 'continuationItemRenderer')
+    if token and isinstance(token, dict):
+        cmd = (token.get('continuationEndpoint', {})
+                     .get('continuationCommand', {}))
+        return cmd.get('token', '')
+    return ''
+
+
+def _innertube_session() -> requests.Session:
+    """Create a requests session with YouTube consent cookies."""
+    session = requests.Session()
+    try:
+        session.get('https://www.youtube.com/', headers=BROWSER_HEADERS, timeout=10)
+    except Exception:
+        pass
+    session.cookies.set('CONSENT', 'PENDING+987', domain='.youtube.com')
+    session.cookies.set('SOCS',
+        'CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwODI5LjA3X3AxGgJlbiACGgYIgJnPpwY',
+        domain='.youtube.com')
+    return session
+
+
 def _fetch_email_ydl_about(channel_url: str) -> str:
     """
     Full yt-dlp extraction on the channel /about URL (no extract_flat).
@@ -230,83 +248,97 @@ def _fetch_email_ydl_about(channel_url: str) -> str:
         return ''
 
 
-def _fetch_email_innertube(channel_id: str) -> str:
+def _fetch_email_innertube(channel_id: str) -> tuple[str, bool]:
     """
-    Call YouTube's InnerTube browse API for the channel's about tab.
-    Tries multiple client types (WEB, ANDROID, MWEB) with session cookies.
-    Searches the JSON response recursively for any email address.
+    Two-phase InnerTube API call to get channel's about data.
+
+    Phase 1: Browse with about params → get continuation token
+    Phase 2: Browse with continuation token → get aboutChannelViewModel
+
+    Returns: (email_str, has_hidden_email_bool)
+      - email_str: the email if found, else ''
+      - has_hidden_email: True if YouTube says 'Sign in to see email address'
     """
     if not channel_id:
-        return ''
+        return '', False
 
-    # Create session with cookies to bypass consent and get full data
-    session = requests.Session()
+    session = _innertube_session()
+    headers = {
+        **_INNERTUBE_WEB_HEADERS,
+        'Referer': f'https://www.youtube.com/channel/{channel_id}/about',
+    }
+
+    # Phase 1: initial browse → get continuation token
+    payload = {
+        'browseId': channel_id,
+        'params':   _INNERTUBE_ABOUT_PARAMS,
+        'context':  _INNERTUBE_WEB_CONTEXT,
+    }
     try:
-        session.get('https://www.youtube.com/', headers=BROWSER_HEADERS, timeout=10)
+        r = session.post(
+            'https://www.youtube.com/youtubei/v1/browse',
+            json=payload, headers=headers, timeout=15,
+        )
+        if r.status_code != 200:
+            return '', False
+
+        data = r.json()
+
+        # Check if email is directly in initial response (some channels)
+        email = _find_email_in_obj(data)
+        if email:
+            return email, False
+
+        # Extract continuation token for about panel
+        cont_token = _extract_continuation_token(data)
+        if not cont_token:
+            return '', False
+
     except Exception:
-        pass
-    # Set CONSENT cookie to avoid consent.youtube.com redirect
-    session.cookies.set('CONSENT', 'PENDING+987', domain='.youtube.com')
-    session.cookies.set('SOCS', 'CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwODI5LjA3X3AxGgJlbiACGgYIgJnPpwY',
-                        domain='.youtube.com')
+        return '', False
 
-    for client_cfg in _INNERTUBE_CLIENTS:
-        try:
-            payload = {
-                'browseId': channel_id,
-                'params':   _INNERTUBE_ABOUT_PARAMS,
-                'context':  client_cfg['context'],
-            }
-            headers = {
-                'Content-Type':    'application/json',
-                'Origin':          'https://www.youtube.com',
-                'Referer':         f'https://www.youtube.com/channel/{channel_id}/about',
-                'Accept-Encoding': 'gzip, deflate',
-                **client_cfg['headers'],
-            }
-            r = session.post(
-                'https://www.youtube.com/youtubei/v1/browse',
-                json=payload, headers=headers, timeout=15,
-            )
-            if r.status_code != 200:
-                continue
-
-            email = _extract_email_from_response(r)
-            if email:
-                return email
-        except Exception:
-            continue
-
-    # Last resort: try fetching the channel about page HTML directly
-    # and extract ytInitialData which may contain businessEmail
+    # Phase 2: continuation call → get aboutChannelViewModel
     try:
-        about_url = f'https://www.youtube.com/channel/{channel_id}/about'
-        r = session.get(about_url, headers=BROWSER_HEADERS, timeout=15)
-        if r.status_code == 200:
-            html = r.text
-            # Extract businessEmail from ytInitialData in page HTML
-            m = re.search(r'"businessEmail"\s*:\s*"([^"]{6,200})"', html)
-            if m:
-                decoded = _try_decode_b64_email(m.group(1))
-                if decoded:
-                    return decoded
-                if '@' in m.group(1):
-                    return m.group(1)
-            # Generic email search in about page HTML
-            for pat in RE_EMAIL_PAGE:
-                for e in pat.findall(html):
-                    e = e.strip()
-                    if '@' not in e and len(e) > 8:
-                        decoded = _try_decode_b64_email(e)
-                        if decoded:
-                            return decoded
-                    if '@' in e and '.' in e.split('@')[1]:
-                        if not any(x in e.lower() for x in EMAIL_BLACKLIST):
-                            return e
-    except Exception:
-        pass
+        cont_payload = {
+            'continuation': cont_token,
+            'context':      _INNERTUBE_WEB_CONTEXT,
+        }
+        r2 = session.post(
+            'https://www.youtube.com/youtubei/v1/browse',
+            json=cont_payload, headers=headers, timeout=15,
+        )
+        if r2.status_code != 200:
+            return '', False
 
-    return ''
+        data2 = r2.json()
+
+        # Check for signInForBusinessEmail → email exists but auth required
+        has_hidden_email = False
+        vm = _find_obj(data2, 'aboutChannelViewModel')
+        if vm and isinstance(vm, dict):
+            sign_in = vm.get('signInForBusinessEmail', {})
+            if sign_in:
+                has_hidden_email = True
+
+            # Check if email is directly exposed (some channels don't require auth)
+            for key in ('businessEmail', 'email', 'revealedBusinessEmail'):
+                val = vm.get(key, '')
+                if val:
+                    decoded = _try_decode_b64_email(val) if '@' not in val else ''
+                    if decoded:
+                        return decoded, False
+                    if '@' in val and not any(x in val.lower() for x in EMAIL_BLACKLIST):
+                        return val, False
+
+        # Full recursive search on continuation response
+        email = _extract_email_from_response(r2)
+        if email:
+            return email, False
+
+        return '', has_hidden_email
+
+    except Exception:
+        return '', False
 RE_COUNTRY     = re.compile(r'"country":\s*"([^"]+)"')
 RE_JOINED      = re.compile(r'Joined\s+([A-Za-z]+\s+\d+,\s+\d{4})')
 RE_JOINED_JSON = re.compile(r'"joinedDateText"[^}]{0,300}"content":\s*"Joined\s+([^"]+)"')
@@ -545,9 +577,10 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
     if not email:
         email = _fetch_email_ydl_about(channel_url)
 
-    # Last resort: InnerTube JSON API
+    # Last resort: InnerTube JSON API (two-phase with continuation token)
+    has_hidden_email = False
     if not email and channel_id:
-        email = _fetch_email_innertube(channel_id)
+        email, has_hidden_email = _fetch_email_innertube(channel_id)
 
     return (
         socials,
@@ -558,6 +591,7 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
         extra.get('views', ''),
         extra.get('video_count', ''),
         extra.get('last_video_date', ''),
+        has_hidden_email,
     )
 
 
@@ -712,7 +746,11 @@ def scrape_channel(url: str) -> dict:
         if m_id:
             channel_id = m_id.group(1)
 
-    about_socials, about_links, about_email, about_location, about_joined, about_views, about_video_count, about_last_video = fetch_about_page(channel_url, channel_id)
+    about_result = fetch_about_page(channel_url, channel_id)
+    about_socials, about_links, about_email = about_result[0], about_result[1], about_result[2]
+    about_location, about_joined, about_views = about_result[3], about_result[4], about_result[5]
+    about_video_count, about_last_video = about_result[6], about_result[7]
+    has_hidden_email = about_result[8] if len(about_result) > 8 else False
 
     for k, v in about_socials.items():
         if k not in socials:
@@ -753,8 +791,9 @@ def scrape_channel(url: str) -> dict:
         except Exception:
             pass
 
-    return {
+    result = {
         'channel_url':    channel_url,
+        'channel_id':     channel_id,
         'name':           name,
         'handle':         handle,
         'subscribers':    subscribers,
@@ -769,3 +808,6 @@ def scrape_channel(url: str) -> dict:
         **socials,
         'all_links':      all_links[:15],
     }
+    if has_hidden_email and not email:
+        result['has_hidden_email'] = True
+    return result

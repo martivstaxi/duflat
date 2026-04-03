@@ -94,11 +94,8 @@ def debug_email():
         return jsonify({'error': 'url parameter required'}), 400
 
     from modules.scraper import (normalize_url, _fetch_email_innertube,
-                                  _fetch_email_ydl_about, _find_email_in_obj,
-                                  _try_decode_b64_email, _extract_email_from_response,
-                                  _INNERTUBE_ABOUT_PARAMS, _INNERTUBE_CLIENTS)
-    import re as _re, requests as _req
-    from modules.constants import BROWSER_HEADERS, EMAIL_BLACKLIST
+                                  _fetch_email_ydl_about)
+    import re as _re
 
     url = normalize_url(url)
 
@@ -113,57 +110,19 @@ def debug_email():
     # yt-dlp full about extraction
     ydl_email = _fetch_email_ydl_about(channel_url)
 
-    # InnerTube API — try all clients with session cookies
-    client_results = []
+    # Two-phase InnerTube (browse → continuation → aboutChannelViewModel)
     it_email = ''
+    has_hidden_email = False
     if channel_id:
-        session = _req.Session()
-        try:
-            session.get('https://www.youtube.com/', headers=BROWSER_HEADERS, timeout=10)
-        except Exception:
-            pass
-        session.cookies.set('CONSENT', 'PENDING+987', domain='.youtube.com')
-
-        for client_cfg in _INNERTUBE_CLIENTS:
-            client_name = client_cfg['context']['client']['clientName']
-            cr = {'client': client_name, 'status': 0, 'email': '', 'be_raw': None, 'be_decoded': None, 'error': '', 'email_hits': []}
-            try:
-                payload = {'browseId': channel_id, 'params': _INNERTUBE_ABOUT_PARAMS,
-                           'context': client_cfg['context']}
-                hdrs = {'Content-Type': 'application/json',
-                        'Origin': 'https://www.youtube.com',
-                        'Referer': f'https://www.youtube.com/channel/{channel_id}/about',
-                        'Accept-Encoding': 'gzip, deflate',
-                        **client_cfg['headers']}
-                r = session.post('https://www.youtube.com/youtubei/v1/browse',
-                                  json=payload, headers=hdrs, timeout=15)
-                cr['status'] = r.status_code
-                cr['response_len'] = len(r.text)
-                bm = _re.search(r'"businessEmail"\s*:\s*"([^"]+)"', r.text)
-                if bm:
-                    cr['be_raw'] = bm.group(1)
-                    cr['be_decoded'] = _try_decode_b64_email(bm.group(1))
-                cr['email'] = _extract_email_from_response(r)
-                if cr['email'] and not it_email:
-                    it_email = cr['email']
-                # Find email-related snippets
-                for em in _re.finditer(r'.{0,60}(?:email|mail|contact|business).{0,60}', r.text[:5000], _re.I):
-                    cr['email_hits'].append(em.group())
-                cr['email_hits'] = cr['email_hits'][:10]
-            except Exception as e:
-                cr['error'] = str(e)
-            client_results.append(cr)
-
-    # Also test the main function
-    innertube_main = _fetch_email_innertube(channel_id) if channel_id else ''
+        it_email, has_hidden_email = _fetch_email_innertube(channel_id)
 
     return jsonify({
         'channel_id':           channel_id,
         'scraper_email':        result.get('email'),
+        'has_hidden_email':     result.get('has_hidden_email', False),
         'ydl_about_email':      ydl_email,
-        'innertube_main':       innertube_main,
         'innertube_email':      it_email,
-        'client_results':       client_results,
+        'innertube_has_hidden': has_hidden_email,
     })
 
 
@@ -272,7 +231,11 @@ def debug_about():
         return jsonify({'error': 'url parameter required'}), 400
     url = normalize_url(url)
     ps, _ = _extract_about_via_ytdlp(url)
-    socials, links, email, location, joined, views, video_count, last_video_date = fetch_about_page(url)
+    about_result = fetch_about_page(url)
+    socials, links, email = about_result[0], about_result[1], about_result[2]
+    location, joined, views = about_result[3], about_result[4], about_result[5]
+    video_count, last_video_date = about_result[6], about_result[7]
+    has_hidden_email = about_result[8] if len(about_result) > 8 else False
     return jsonify({
         'page_length':         len(ps),
         'has_ytInitialData':   'ytInitialData' in ps,
@@ -280,6 +243,7 @@ def debug_about():
         'has_viewCountText':   '"viewCountText"' in ps,
         'has_joinedDateText':  '"joinedDateText"' in ps,
         'has_videoCountText':  '"videoCountText"' in ps or '"videosCountText"' in ps,
+        'has_hidden_email':    has_hidden_email,
         'extracted': {
             'location':    location,
             'joined':      joined,

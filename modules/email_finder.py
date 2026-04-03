@@ -452,15 +452,15 @@ def find_email(channel_data: dict) -> dict:
     found_domains:     list[str]             = []   # corporate domains found
 
     # ── STEP -1: InnerTube API deep extraction ─────────────────
-    # Try InnerTube with session cookies + multiple clients
+    # Two-phase InnerTube: browse → continuation token → aboutChannelViewModel
     # This catches emails hidden behind YouTube's "View email address" button
-    channel_id = ''
-    if channel_url:
+    channel_id = channel_data.get('channel_id', '')
+    if not channel_id and channel_url:
         m = re.search(r'/channel/(UC[a-zA-Z0-9_-]{22})', channel_url)
         if m:
             channel_id = m.group(1)
     if channel_id:
-        it_email = _fetch_email_innertube(channel_id)
+        it_email, has_hidden = _fetch_email_innertube(channel_id)
         if it_email and _is_business_email(it_email):
             return {'found': True, 'email': it_email, 'source': 'youtube_hidden',
                     'confidence': 'high',
