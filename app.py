@@ -4,6 +4,8 @@ Duflat - YouTube Channel Investigator API
 
 import re
 import os
+import random
+import requests
 from urllib.parse import unquote, parse_qs, urlparse
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -66,6 +68,107 @@ def normalize_url(url):
         else:
             url = f'https://www.youtube.com/@{url}'
     return url
+
+RE_REDIRECT = re.compile(r'https?://(?:www\.)?youtube\.com(?:/|\\/)redirect\?[^"\s<>\\]+')
+RE_JSON_LINKS = [
+    re.compile(r'"channelExternalLinkViewModel"\s*:\s*\{(?:[^{}]|\{[^{}]*\})*?"link"\s*:\s*\{[^}]*?"content"\s*:\s*"(https?://[^"]+)"'),
+    re.compile(r'"primaryLinkViewModel"(?:[^{}]|\{[^{}]*\})*?"url"\s*:\s*"(https?://[^"]+)"'),
+    re.compile(r'"url"\s*:\s*"(https?://(?:www\.)?youtube\.com(?:/|\\/)redirect\?[^"]+)"'),
+    re.compile(r'"linkUrl"\s*:\s*"(https?://[^"]+)"'),
+]
+RE_EMAIL_PAGE = [
+    re.compile(r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
+    re.compile(r'"email":"([^"]+@[^"]+)"'),
+    re.compile(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
+]
+
+BROWSER_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+}
+
+def decode_redirect(url):
+    if 'youtube.com/redirect' not in url and 'youtube.com\\/redirect' not in url:
+        return url
+    try:
+        clean = url.replace('\\/', '/').replace('\\u0026', '&')
+        params = parse_qs(urlparse(clean).query)
+        if 'q' in params:
+            return unquote(params['q'][0])
+    except:
+        pass
+    return url
+
+def fetch_about_page(channel_url):
+    """About sayfasından email ve sosyal medya linklerini çek"""
+    base = RE_CLEAN.sub('', channel_url.rstrip('/'))
+    about_url = base + '/about'
+    try:
+        r = requests.get(about_url, headers=BROWSER_HEADERS, timeout=15)
+        if r.status_code != 200:
+            return {}, [], ''
+        ps = r.text
+    except Exception:
+        return {}, [], ''
+
+    # Redirect URL'leri çöz
+    redirect_urls = RE_REDIRECT.findall(ps)
+    decoded = [decode_redirect(u) for u in redirect_urls]
+    combined = ps + ' ' + ' '.join(decoded)
+
+    socials = {}
+    json_ext_links = []
+
+    # JSON link kartları
+    for pat in RE_JSON_LINKS:
+        for raw_url in pat.findall(ps):
+            u = raw_url.replace('\\u0026', '&').replace('\\/', '/')
+            if 'youtube.com/redirect' in u:
+                u = decode_redirect(u)
+            u = u.strip()
+            u_lower = u.lower()
+            for key, info in SOCIAL_PLATFORMS.items():
+                if key not in socials and info['check'] in u_lower:
+                    m = info['regex'].search(u)
+                    if m:
+                        uname = m.group(1)
+                        v = info.get('validator')
+                        if (v is None or is_valid_username(uname, v)) and len(uname) > 1:
+                            socials[key] = info['url_fmt'].format(uname)
+                            break
+            if u.startswith('http') and 'youtube.com' not in u_lower and not any(d in u_lower for d in NAV_DOMAINS):
+                if u not in json_ext_links:
+                    json_ext_links.append(u)
+
+    for u in decoded:
+        u = u.strip()
+        if u.startswith('http') and 'youtube.com' not in u.lower() and not any(d in u.lower() for d in NAV_DOMAINS):
+            if u not in json_ext_links:
+                json_ext_links.append(u)
+
+    # Sosyal medya fallback: combined text'ten
+    for key, info in SOCIAL_PLATFORMS.items():
+        if key not in socials:
+            for uname in info['regex'].findall(combined):
+                v = info.get('validator')
+                if (v is None or is_valid_username(uname, v)) and len(uname) > 1 and '...' not in uname:
+                    socials[key] = info['url_fmt'].format(uname)
+                    break
+
+    # Email
+    email = ''
+    for pat in RE_EMAIL_PAGE:
+        for e in pat.findall(ps):
+            if '@' in e and '.' in e.split('@')[1]:
+                if not any(x in e.lower() for x in EMAIL_BLACKLIST):
+                    email = e
+                    break
+        if email:
+            break
+
+    return socials, json_ext_links[:15], email
+
 
 def extract_socials_from_text(text):
     """Metin (açıklama + linkler) içinden sosyal medya hesaplarını çıkar"""
@@ -203,7 +306,19 @@ def scrape_channel(url):
         if isinstance(val, list):
             combined_text += ' ' + ' '.join(str(v) for v in val)
 
+    # Açıklamadan sosyal çek
     socials, all_links, email = extract_socials_from_text(combined_text)
+
+    # About sayfasından link kartları + email (daha güvenilir kaynak)
+    about_socials, about_links, about_email = fetch_about_page(channel_url)
+    for k, v in about_socials.items():
+        if k not in socials:
+            socials[k] = v
+    if not email and about_email:
+        email = about_email
+    for lnk in about_links:
+        if lnk not in all_links:
+            all_links.append(lnk)
 
     # Son video tarihi: iç içe yapıdan gerçek videoyu bul
     last_video_date = ''
