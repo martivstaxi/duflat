@@ -136,31 +136,16 @@ def extract_video_count(ps):
 
 
 def _fetch_page_html(url):
-    """YouTube about sayfasını consent bypass ile çek"""
-    consent_cookies = {
-        'SOCS': 'CAE=',
-        'CONSENT': 'YES+cb.20210328-17-p0.en+FX+667',
-        'PREF': 'tz=UTC&f6=40000000',
-    }
-    headers = {
-        **BROWSER_HEADERS,
-        'Cookie': '; '.join(f'{k}={v}' for k, v in consent_cookies.items()),
-    }
+    """YouTube about sayfasını yt-dlp extractor ile çek (consent otomatik handle edilir)"""
     try:
-        session = requests.Session()
-        for k, v in consent_cookies.items():
-            session.cookies.set(k, v, domain='.youtube.com')
-        r = session.get(url, headers=headers, timeout=15, allow_redirects=True)
-        if r.status_code == 200 and 'consent.youtube.com' not in r.url:
-            return r.text
-    except Exception:
-        pass
-    # Fallback: yt-dlp urlopen
-    try:
+        from yt_dlp.extractor.youtube import YoutubeTabIE
         ydl_opts = {'quiet': True, 'no_warnings': True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            response = ydl.urlopen(url)
-            return response.read().decode('utf-8', errors='replace')
+            ie = YoutubeTabIE(ydl)
+            webpage = ie._download_webpage(url, 'channel_about', fatal=False,
+                                            note=False, errnote=False)
+            if webpage and 'consent.youtube.com' not in webpage[:500]:
+                return webpage
     except Exception:
         pass
     return ''
