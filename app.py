@@ -86,6 +86,78 @@ def find_email_endpoint():
 # DEBUG ROUTES (development / diagnostics)
 # ─────────────────────────────────────────────
 
+@app.route('/debug-email', methods=['GET'])
+def debug_email():
+    """Debug endpoint: shows exactly what InnerTube API + scraper finds for email."""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'url parameter required'}), 400
+    from modules.scraper import normalize_url, _fetch_email_innertube, _find_email_in_obj, _try_decode_b64_email
+    import re, requests as req
+    from modules.constants import BROWSER_HEADERS, EMAIL_BLACKLIST
+
+    url = normalize_url(url)
+
+    # Step 1: scrape_channel to get channel_id
+    result = scrape_channel(url)
+    channel_url = result.get('channel_url', url)
+    channel_id = ''
+    m = re.search(r'/channel/(UC[a-zA-Z0-9_-]{22})', channel_url)
+    if m:
+        channel_id = m.group(1)
+
+    # Step 2: Raw InnerTube API call — return first 3000 chars of response
+    innertube_raw = ''
+    innertube_email = ''
+    innertube_status = 0
+    if channel_id:
+        try:
+            payload = {
+                'browseId': channel_id,
+                'params':   'EgVhYm91dA==',
+                'context':  {
+                    'client': {
+                        'hl': 'en', 'gl': 'US',
+                        'clientName': 'WEB',
+                        'clientVersion': '2.20240701.09.00',
+                    }
+                },
+            }
+            headers = {
+                **BROWSER_HEADERS,
+                'X-YouTube-Client-Name': '1',
+                'X-YouTube-Client-Version': '2.20240701.09.00',
+                'Content-Type': 'application/json',
+                'Origin':  'https://www.youtube.com',
+                'Referer': 'https://www.youtube.com/',
+            }
+            r = req.post('https://www.youtube.com/youtubei/v1/browse',
+                         json=payload, headers=headers, timeout=15)
+            innertube_status = r.status_code
+            innertube_raw    = r.text[:4000]
+            data = r.json()
+            innertube_email  = _find_email_in_obj(data)
+
+            # businessEmail scan
+            import re as _re
+            bm = _re.search(r'"businessEmail"\s*:\s*"([^"]+)"', r.text)
+            business_email_raw    = bm.group(1) if bm else None
+            business_email_decoded = _try_decode_b64_email(business_email_raw) if business_email_raw else None
+        except Exception as e:
+            innertube_raw = str(e)
+
+    return jsonify({
+        'channel_id':             channel_id,
+        'channel_url':            channel_url,
+        'scraper_email':          result.get('email'),
+        'innertube_status':       innertube_status,
+        'innertube_email_found':  innertube_email,
+        'business_email_raw':     locals().get('business_email_raw'),
+        'business_email_decoded': locals().get('business_email_decoded'),
+        'innertube_snippet':      innertube_raw[:2000],
+    })
+
+
 @app.route('/debug', methods=['GET'])
 def debug():
     """Raw yt-dlp scalar output for a given URL."""
