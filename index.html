@@ -3,30 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat</title>
+    <title>Duflat — YouTube Channel Investigator</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d0d0d;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
         }
+
+        header {
+            padding: 28px 40px;
+            border-bottom: 1px solid #1e1e1e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .logo-dot { color: #a855f7; }
+
+        main {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
+        }
+
         h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
             color: #fff;
-            font-size: 4rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+
+        .search-wrap {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        #urlInput {
+            flex: 1;
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        #urlInput::placeholder { color: #444; }
+        #urlInput:focus { border-color: #667eea; }
+
+        #searchBtn {
+            background: linear-gradient(135deg, #667eea, #a855f7);
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .2s, transform .1s;
+            white-space: nowrap;
+        }
+
+        #searchBtn:hover { opacity: 0.88; }
+        #searchBtn:active { transform: scale(0.98); }
+        #searchBtn:disabled { opacity: 0.4; cursor: default; }
+
+        /* Status / hata */
+        #statusMsg {
+            display: none;
+            font-size: 0.88rem;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+
+        /* Loading */
+        #loader {
+            display: none;
             text-align: center;
-            letter-spacing: 2px;
+            padding: 60px 0;
+            color: #555;
+        }
+
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid #222;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Sonuç kartı */
+        #result { display: none; }
+
+        .card {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .channel-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #a855f7);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .channel-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .channel-handle {
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .channel-url-link {
+            color: #444;
+            font-size: 0.8rem;
+            text-decoration: none;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .channel-url-link:hover { color: #667eea; }
+
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .stat-item {
+            flex: 1;
+            padding: 18px 20px;
+            border-right: 1px solid #1a1a1a;
+            text-align: center;
+        }
+
+        .stat-item:last-child { border-right: none; }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        /* Info grid */
+        .info-grid {
+            padding: 24px 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .info-label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: .5px; }
+        .info-value { font-size: 0.9rem; color: #ccc; word-break: break-word; }
+        .info-value a { color: #667eea; text-decoration: none; }
+        .info-value a:hover { text-decoration: underline; }
+        .info-value.empty { color: #333; font-style: italic; }
+
+        .info-full { grid-column: 1 / -1; }
+
+        /* Description */
+        .description-box {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        /* Sosyal medya linkleri */
+        .social-grid {
+            padding: 0 28px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .social-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #181818;
+            border: 1px solid #252525;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            color: #bbb;
+            text-decoration: none;
+            transition: border-color .2s, color .2s;
+        }
+
+        .social-badge:hover { border-color: #667eea; color: #fff; }
+
+        /* All links */
+        .all-links-section {
+            padding: 0 28px 28px;
+        }
+
+        .all-links-title {
+            font-size: 0.72rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 10px;
+        }
+
+        .link-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .link-list a {
+            font-size: 0.82rem;
+            color: #555;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-list a:hover { color: #667eea; }
+
+        /* Lokal API uyarısı */
+        #apiWarning {
+            display: none;
+            background: #1a1000;
+            border: 1px solid #3a2800;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-size: 0.88rem;
+            color: #aaa;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+
+        #apiWarning code {
+            background: #111;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e0b0ff;
+            font-size: 0.82rem;
+        }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .stats-row { flex-wrap: wrap; }
+            .stat-item { min-width: 50%; }
         }
     </style>
 </head>
 <body>
-    <h1>Welcome</h1>
+    <header>
+        <span class="logo">Duflat</span>
+    </header>
+
+    <main>
+        <h1>YouTube Channel Investigator</h1>
+        <p class="subtitle">Video veya kanal linki yapıştır, kanal bilgilerini ve sosyal medya hesaplarını bul.</p>
+
+        <div id="apiWarning">
+            ⚠️ Bu araç yerel bir Python sunucusuna ihtiyaç duyar.<br>
+            Çalıştırmak için: <code>pip install flask flask-cors selenium</code> ardından <code>python app.py</code><br>
+            Sonra <strong>http://localhost:5000</strong> adresini kullan.
+        </div>
+
+        <div class="search-wrap">
+            <input
+                id="urlInput"
+                type="text"
+                placeholder="https://youtube.com/watch?v=... veya https://youtube.com/@channel"
+                autocomplete="off"
+                spellcheck="false"
+            />
+            <button id="searchBtn" onclick="doSearch()">Ara</button>
+        </div>
+
+        <div id="statusMsg"></div>
+        <div id="loader">
+            <div class="spinner"></div>
+            <div id="loaderText">Kanal bilgileri çekiliyor...</div>
+        </div>
+        <div id="result"></div>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        document.getElementById('urlInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        // duflat.com'dan açılıyorsa uyarı göster
+        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            document.getElementById('apiWarning').style.display = 'block';
+        }
+
+        async function doSearch() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return;
+
+            setStatus('');
+            showLoader(true);
+            showResult(false);
+            document.getElementById('searchBtn').disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/scrape`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || data.error) {
+                    setStatus(data.error || 'Bir hata oluştu');
+                } else {
+                    renderResult(data);
+                }
+            } catch (err) {
+                setStatus('API\'ye bağlanılamadı. app.py çalışıyor mu? (python app.py)');
+            } finally {
+                showLoader(false);
+                document.getElementById('searchBtn').disabled = false;
+            }
+        }
+
+        function renderResult(d) {
+            const name = d.name || 'İsimsiz Kanal';
+            const initial = name.charAt(0).toUpperCase();
+
+            const socials = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
+            const socialIcons = {
+                instagram: '📷', tiktok: '🎵', twitter: '𝕏',
+                facebook: '👤', discord: '💬', twitch: '🎮', myanimelist: '🎌'
+            };
+            const socialNames = {
+                instagram: 'Instagram', tiktok: 'TikTok', twitter: 'X / Twitter',
+                facebook: 'Facebook', discord: 'Discord', twitch: 'Twitch', myanimelist: 'MyAnimeList'
+            };
+
+            const socialBadges = socials
+                .filter(s => d[s])
+                .map(s => `<a class="social-badge" href="${esc(d[s])}" target="_blank" rel="noopener">${socialIcons[s]} ${socialNames[s]}</a>`)
+                .join('');
+
+            const allLinks = Array.isArray(d.all_links) ? d.all_links : [];
+            const linkItems = allLinks
+                .slice(0, 12)
+                .map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`)
+                .join('');
+
+            const html = `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="channel-avatar">${initial}</div>
+                        <div>
+                            <div class="channel-name">${esc(name)}</div>
+                            ${d.handle ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
+                            ${d.channel_url ? `<a class="channel-url-link" href="${esc(d.channel_url)}" target="_blank" rel="noopener">${esc(d.channel_url)}</a>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="stats-row">
+                        ${statItem(d.subscribers, 'Abone')}
+                        ${statItem(d.videos, 'Video')}
+                        ${statItem(d.views, 'Görüntülenme')}
+                        ${statItem(d.last_video_date, 'Son Video')}
+                    </div>
+
+                    <div class="info-grid">
+                        ${infoItem('Email', d.email ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : null)}
+                        ${infoItem('Konum', d.location)}
+                        ${infoItem('Katılma', d.joined)}
+                        ${d.description ? `
+                        <div class="info-item info-full">
+                            <span class="info-label">Açıklama</span>
+                            <div class="description-box">${esc(d.description)}</div>
+                        </div>` : ''}
+                    </div>
+
+                    ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
+
+                    ${linkItems ? `
+                    <div class="all-links-section">
+                        <div class="all-links-title">Tüm Harici Linkler</div>
+                        <div class="link-list">${linkItems}</div>
+                    </div>` : ''}
+                </div>
+            `;
+
+            document.getElementById('result').innerHTML = html;
+            showResult(true);
+        }
+
+        function statItem(val, label) {
+            return `<div class="stat-item">
+                <div class="stat-value">${val ? esc(val) : '<span style="color:#333">—</span>'}</div>
+                <div class="stat-label">${label}</div>
+            </div>`;
+        }
+
+        function infoItem(label, val) {
+            if (!val) return `<div class="info-item">
+                <span class="info-label">${label}</span>
+                <span class="info-value empty">Bulunamadı</span>
+            </div>`;
+            return `<div class="info-item">
+                <span class="info-label">${label}</span>
+                <span class="info-value">${val}</span>
+            </div>`;
+        }
+
+        function esc(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function setStatus(msg) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'block' : 'none';
+        }
+
+        function showResult(show) {
+            document.getElementById('result').style.display = show ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>
