@@ -39,9 +39,25 @@ RE_JSON_LINKS  = [
 ]
 RE_EMAIL_PAGE  = [
     re.compile(r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
-    re.compile(r'"email":"([^"]+@[^"]+)"'),
+    # YouTube channelExternalLinkViewModel stores email as plain "content" value
+    re.compile(r'"channelExternalLinkViewModel"[^}]{0,400}"content"\s*:\s*"([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})"'),
+    # YouTube channelAboutFullMetadataRenderer businessEmail (sometimes base64)
+    re.compile(r'"businessEmail"\s*:\s*"([^"]{5,200})"'),
+    re.compile(r'"email"\s*:\s*"([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})"'),
     re.compile(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'),
 ]
+
+# Tries to base64-decode a string and return if it looks like an email
+import base64 as _base64
+def _try_decode_b64_email(s: str) -> str:
+    """If s is base64-encoded and decodes to an email, return the email."""
+    try:
+        decoded = _base64.b64decode(s + '==').decode('utf-8', errors='ignore').strip()
+        if '@' in decoded and '.' in decoded.split('@')[1] and len(decoded) < 120:
+            return decoded
+    except Exception:
+        pass
+    return ''
 RE_COUNTRY     = re.compile(r'"country":\s*"([^"]+)"')
 RE_JOINED      = re.compile(r'Joined\s+([A-Za-z]+\s+\d+,\s+\d{4})')
 RE_JOINED_JSON = re.compile(r'"joinedDateText"[^}]{0,300}"content":\s*"Joined\s+([^"]+)"')
@@ -263,6 +279,12 @@ def fetch_about_page(channel_url: str) -> tuple:
     email = ''
     for pat in RE_EMAIL_PAGE:
         for e in pat.findall(ps):
+            e = e.strip()
+            # Try base64 decode first (YouTube's businessEmail obfuscation)
+            if '@' not in e and len(e) > 8:
+                decoded = _try_decode_b64_email(e)
+                if decoded:
+                    e = decoded
             if '@' in e and '.' in e.split('@')[1]:
                 if not any(x in e.lower() for x in EMAIL_BLACKLIST):
                     email = e
@@ -401,6 +423,23 @@ def scrape_channel(url: str) -> dict:
     description = (info.get('description') or '')[:1000]
     thumbnail   = info.get('thumbnail') or ''
 
+    # yt-dlp may directly expose channel email in the info dict
+    ydl_email = ''
+    for field in ('email', 'channel_email', 'uploader_email'):
+        v = info.get(field, '')
+        if v and '@' in v and not any(x in v.lower() for x in EMAIL_BLACKLIST):
+            ydl_email = v
+            break
+    # Also check first entry's channel metadata
+    if not ydl_email:
+        entries = info.get('entries') or []
+        first = entries[0] if entries and isinstance(entries[0], dict) else {}
+        for field in ('email', 'channel_email'):
+            v = first.get(field, '')
+            if v and '@' in v and not any(x in v.lower() for x in EMAIL_BLACKLIST):
+                ydl_email = v
+                break
+
     combined_text = description
     for field in ('tags', 'categories'):
         val = info.get(field)
@@ -414,6 +453,8 @@ def scrape_channel(url: str) -> dict:
     for k, v in about_socials.items():
         if k not in socials:
             socials[k] = v
+    if not email and ydl_email:
+        email = ydl_email
     if not email and about_email:
         email = about_email
     for lnk in about_links:
