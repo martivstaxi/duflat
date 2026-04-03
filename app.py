@@ -231,72 +231,50 @@ def scrape_channel(url):
     if not info:
         return {'error': 'Kanal bilgisi alınamadı'}
 
-    # Video URL'si geldiyse önce kanalı bul, sonra kanal sayfasını çek
-    if info.get('extractor') == 'youtube' and info.get('channel_url') and info.get('_type') != 'playlist':
-        channel_url_found = info.get('channel_url') or info.get('uploader_url')
-        if channel_url_found:
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(channel_url_found, download=False) or info
-            except:
-                pass
-
-    # ---- Yapıyı düzelt: YouTube tab playlist içinde iç içe entries var ----
-    # info.entries[0] = "Videos" tab (playlist), info.entries[0].entries[0] = gerçek video
-    entries = info.get('entries') or []
-    tab_entry = None   # İlk tab (Videos sekmesi)
-    first_video = None # İlk gerçek video
-
-    for e in entries:
-        if not isinstance(e, dict):
-            continue
-        if e.get('_type') == 'playlist' or e.get('entries') is not None:
-            tab_entry = e
-            sub = e.get('entries') or []
-            for v in sub:
-                if isinstance(v, dict) and v.get('upload_date'):
-                    first_video = v
-                    break
-            break
-        elif e.get('upload_date'):
-            first_video = e
-            break
+    is_video = info.get('extractor') == 'youtube' and info.get('_type') != 'playlist'
 
     # ---- Temel alanlar ----
     name = info.get('uploader') or info.get('channel') or info.get('title') or ''
-    handle_raw = info.get('uploader_id') or info.get('channel_id') or ''
+    handle_raw = info.get('uploader_id') or ''
     handle = ('@' + handle_raw.lstrip('@')) if handle_raw and not handle_raw.startswith('UC') else ''
 
-    channel_url = (
-        info.get('channel_url')
-        or info.get('uploader_url')
-        or info.get('webpage_url')
-        or url
-    )
-    channel_url = RE_CLEAN.sub('', channel_url.rstrip('/'))
+    channel_url = RE_CLEAN.sub('', (
+        info.get('channel_url') or info.get('uploader_url') or info.get('webpage_url') or url
+    ).rstrip('/'))
 
-    # Abone sayısı — top-level'da geliyor
     sub_count = info.get('channel_follower_count') or info.get('subscriber_count')
-    if not sub_count and tab_entry:
-        sub_count = tab_entry.get('channel_follower_count') or tab_entry.get('subscriber_count')
     subscribers = f"{sub_count:,}" if sub_count else ''
 
-    views = info.get('view_count')
-    views = f"{views:,}" if views else ''
+    # Video URL'si için: view_count videonun görüntülenmesi, kanal için boş bırak
+    views = '' if is_video else (f"{info['view_count']:,}" if info.get('view_count') else '')
 
-    # Video sayısı: top-level playlist_count = tab sayısı (2-3), kullanma
-    # tab_entry.playlist_count = gerçek video sayısı
-    video_count = None
-    if tab_entry:
-        video_count = tab_entry.get('playlist_count') or tab_entry.get('video_count')
-    if not video_count:
-        vc = info.get('playlist_count') or info.get('video_count')
+    # Son video tarihi: video URL'sinden direkt upload_date gelir
+    last_video_date = ''
+    if is_video:
+        d = info.get('upload_date') or ''
+        if d and len(d) == 8 and d.isdigit():
+            last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+
+    # Video sayısı: kanal tab'ından gelir, video URL'sinde yok
+    video_count = ''
+    if not is_video:
+        entries = info.get('entries') or []
+        tab_entry = next((e for e in entries if isinstance(e, dict) and
+                          (e.get('_type') == 'playlist' or e.get('entries') is not None)), None)
+        vc = (tab_entry.get('playlist_count') if tab_entry else None) or info.get('playlist_count')
         if vc and int(vc) > 3:
-            video_count = vc
-    video_count = str(video_count) if video_count else ''
+            video_count = str(vc)
+        # Son video tarihini kanal tabından bul
+        if not last_video_date and tab_entry:
+            for v in (tab_entry.get('entries') or []):
+                if isinstance(v, dict) and v.get('upload_date'):
+                    d = v['upload_date']
+                    if len(d) == 8 and d.isdigit():
+                        last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+                    break
 
-    description = (info.get('description') or info.get('channel_description') or '')[:1000]
-
+    # Açıklama: video URL'sinde video açıklaması (sosyal linkler burada olur)
+    description = (info.get('description') or '')[:1000]
     thumbnail = info.get('thumbnail') or ''
 
     # ---- Sosyal + email ----
@@ -306,10 +284,9 @@ def scrape_channel(url):
         if isinstance(val, list):
             combined_text += ' ' + ' '.join(str(v) for v in val)
 
-    # Açıklamadan sosyal çek
     socials, all_links, email = extract_socials_from_text(combined_text)
 
-    # About sayfasından link kartları + email (daha güvenilir kaynak)
+    # About sayfasından link kartları + email
     about_socials, about_links, about_email = fetch_about_page(channel_url)
     for k, v in about_socials.items():
         if k not in socials:
@@ -319,13 +296,6 @@ def scrape_channel(url):
     for lnk in about_links:
         if lnk not in all_links:
             all_links.append(lnk)
-
-    # Son video tarihi: iç içe yapıdan gerçek videoyu bul
-    last_video_date = ''
-    if first_video:
-        d = first_video.get('upload_date') or ''
-        if d and len(d) == 8 and d.isdigit():
-            last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
 
     data = {
         'channel_url': channel_url,
