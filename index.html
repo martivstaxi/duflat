@@ -133,6 +133,37 @@
             border-radius: 8px;
         }
 
+        /* ── Find Email button ───────────────────────────────── */
+        .find-email-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 5px;
+            padding: 3px 10px;
+            font-size: 0.78rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+            margin-top: 2px;
+        }
+        .find-email-btn:hover  { border-color: var(--accent); color: var(--accent); }
+        .find-email-btn:disabled { opacity: .4; cursor: default; }
+
+        .email-found-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.88rem;
+            color: var(--text);
+        }
+        .email-confidence {
+            font-size: 0.68rem;
+            color: var(--faint);
+            margin-left: 4px;
+        }
+
         /* ── Loader ──────────────────────────────────────────── */
         #loader {
             display: none;
@@ -565,6 +596,8 @@
             ? 'http://localhost:5000'
             : 'https://duflat-production.up.railway.app';
 
+        let _currentChannelData = null;  // saved for Find Email
+
         document.getElementById('urlInput').addEventListener('keydown', e => {
             if (e.key === 'Enter') doSearch();
         });
@@ -581,6 +614,7 @@
             showLoader(true);
             showResult(false);
             hideAgency();
+            _currentChannelData = null;
             document.getElementById('searchBtn').disabled = true;
 
             let channelData = null;
@@ -596,6 +630,7 @@
                     setStatus(data.error || 'An error occurred.');
                 } else {
                     channelData = data;
+                    _currentChannelData = data;
                     renderResult(data);
                 }
             } catch (err) {
@@ -639,6 +674,58 @@
             }
         }
 
+        async function investigateEmail() {
+            if (!_currentChannelData) return;
+
+            const btn = document.getElementById('findEmailBtn');
+            const emailItem = document.getElementById('emailInfoItem');
+            if (!emailItem) return;
+
+            // Show spinner
+            if (btn) btn.disabled = true;
+            emailItem.querySelector('.info-value').innerHTML =
+                `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
+                    <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
+                    Investigating...
+                </span>`;
+
+            try {
+                const res = await fetch(`${API_URL}/find-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel_data: _currentChannelData })
+                });
+                const data = await res.json();
+
+                if (data.found && data.email) {
+                    const sourceLabel = {
+                        'channel':        'from channel page',
+                        'external_link':  'from external link',
+                        'instagram_bio':  'from Instagram bio',
+                        'web_search':     'via web search',
+                        'ai_analysis':    'identified by AI',
+                    }[data.source] || data.source;
+
+                    const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
+                                          : data.confidence === 'medium' ? '#b8a06a'
+                                          : 'var(--faint)';
+
+                    emailItem.querySelector('.info-value').innerHTML =
+                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>` +
+                        `<span class="email-confidence" style="color:${confidenceColor}">${esc(sourceLabel)}</span>`;
+
+                    // Update saved channel data so agency investigation can use it
+                    _currentChannelData = { ..._currentChannelData, email: data.email };
+                } else {
+                    emailItem.querySelector('.info-value').innerHTML =
+                        `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
+                }
+            } catch (err) {
+                emailItem.querySelector('.info-value').innerHTML =
+                    `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
+            }
+        }
+
         function renderResult(d) {
             const name    = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
@@ -676,7 +763,17 @@
                     </div>
 
                     <div class="info-grid">
-                        ${infoItem('Email',    d.email    ? `<a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : null)}
+                        <div class="info-item" id="emailInfoItem">
+                            <span class="info-label">Email</span>
+                            ${d.email
+                                ? `<span class="info-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
+                                : `<span class="info-value">
+                                       <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
+                                           🔍 Find Email
+                                       </button>
+                                   </span>`
+                            }
+                        </div>
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
                         ${d.description ? `
