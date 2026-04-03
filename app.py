@@ -481,6 +481,16 @@ def scrape_channel(url):
     if not last_video_date and about_last_video:
         last_video_date = about_last_video
 
+    # Duplicate link temizle: trailing slash farkını normalize et
+    seen_normalized = set()
+    deduped = []
+    for lnk in all_links:
+        norm = lnk.rstrip('/')
+        if norm not in seen_normalized:
+            seen_normalized.add(norm)
+            deduped.append(lnk)
+    all_links = deduped
+
     data = {
         'channel_url': channel_url,
         'name': name,
