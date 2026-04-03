@@ -466,9 +466,9 @@ def debug():
     url = normalize_url(url)
     ydl_opts = {
         'skip_download': True,
-        'quiet': True,
-        'no_warnings': True,
-        'ignoreerrors': True,
+        'quiet': False,
+        'no_warnings': False,
+        'ignoreerrors': False,
         'playlistend': 1,
     }
     try:
@@ -478,7 +478,7 @@ def debug():
         return jsonify({'error': str(e)}), 500
 
     if not info:
-        return jsonify({'error': 'Boş sonuç döndü'}), 500
+        return jsonify({'error': 'Boş sonuç döndü (info=None)'}), 500
 
     # Sadece skaler alanları döndür (entries vs. çok büyük)
     safe = {k: v for k, v in info.items()
