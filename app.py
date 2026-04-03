@@ -110,13 +110,13 @@ def scrape_channel(url):
     if not url:
         return {'error': 'Geçersiz URL'}
 
+    # İlk geçiş: tam meta veri (extract_flat yok), sadece ilk 1 videoyu işle
     ydl_opts = {
         'skip_download': True,
         'quiet': True,
         'no_warnings': True,
-        'extract_flat': True,          # Playlist içeriğini indirme, sadece meta
-        'playlist_items': '0',         # Video listesini getirme
         'ignoreerrors': True,
+        'playlistend': 1,   # Sadece son videoyu al (tarih için), kanal meta verisinin tamamı gelir
     }
 
     try:
@@ -128,13 +128,13 @@ def scrape_channel(url):
     if not info:
         return {'error': 'Kanal bilgisi alınamadı'}
 
-    # Video URL'si gelirse channel_url'ye yönlendir
-    if info.get('_type') == 'url' or (info.get('extractor') == 'youtube' and 'entries' not in info and info.get('channel_url')):
-        channel_url = info.get('channel_url') or info.get('uploader_url')
-        if channel_url:
+    # Video URL'si geldiyse önce kanalı bul, sonra kanal sayfasını çek
+    if info.get('extractor') == 'youtube' and info.get('channel_url') and info.get('_type') != 'playlist':
+        channel_url_found = info.get('channel_url') or info.get('uploader_url')
+        if channel_url_found:
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(channel_url, download=False) or info
+                    info = ydl.extract_info(channel_url_found, download=False) or info
             except:
                 pass
 
@@ -159,11 +159,19 @@ def scrape_channel(url):
     if views:
         views = f"{views:,}"
 
-    video_count = info.get('playlist_count') or info.get('video_count') or ''
-    if video_count:
-        video_count = str(video_count)
+    # Video sayısı: yt-dlp channel extraction'da 'playlist_count' döner
+    video_count = (
+        info.get('playlist_count')
+        or info.get('video_count')
+        or (len(info['entries']) if info.get('entries') else None)
+    )
+    # playlist_count bazen entries sayısından gelir (1 = playlistend:1 sınırı), güvenilmez
+    # Gerçek sayı genellikle channel_tab metadata'sında olur, yoksa boş bırak
+    if video_count and int(video_count) <= 1:
+        video_count = ''  # 1 = sadece bizim indirdiğimiz, gerçek değil
+    video_count = str(video_count) if video_count else ''
 
-    description = (info.get('description') or '')[:600]
+    description = (info.get('description') or info.get('channel_description') or '')[:1000]
 
     # Thumbnail → avatar için ilk harf yeterli, ama thumbnail URL'ini de verelim
     thumbnail = info.get('thumbnail') or ''
@@ -180,14 +188,16 @@ def scrape_channel(url):
 
     socials, all_links, email = extract_socials_from_text(combined_text)
 
-    # yt-dlp bazen 'entries' içindeki ilk videonun upload_date'ini verir
+    # Son video tarihi: entries[0] = en son video
     last_video_date = ''
     entries = info.get('entries') or []
-    if entries:
-        first = entries[0] if isinstance(entries[0], dict) else {}
-        last_video_date = first.get('upload_date') or first.get('timestamp') or ''
-        if last_video_date and len(last_video_date) == 8:
-            last_video_date = f"{last_video_date[:4]}-{last_video_date[4:6]}-{last_video_date[6:]}"
+    for entry in entries[:3]:
+        if not isinstance(entry, dict):
+            continue
+        d = entry.get('upload_date') or ''
+        if d and len(d) == 8 and d.isdigit():
+            last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+            break
 
     data = {
         'channel_url': channel_url,
