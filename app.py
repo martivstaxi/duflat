@@ -48,15 +48,20 @@ RE_CLEAN   = re.compile(r'/(about|videos|shorts|streams|playlists|community|chan
 RE_COUNTRY    = re.compile(r'"country":\s*"([^"]+)"')
 RE_JOINED     = re.compile(r'Joined\s+([A-Za-z]+\s+\d+,\s+\d{4})')
 RE_JOINED_JSON = re.compile(r'"joinedDateText"[^}]{0,300}"content":\s*"Joined\s+([^"]+)"')
-RE_VIEW_COUNT = re.compile(r'"viewCountText"[^}]{0,200}"simpleText":\s*"([\d,\.]+)')
+# Kanal toplam görüntülenme: aboutChannelViewModel içinde doğrudan string ("viewCountText":"33,974,997 views")
+# Video view count'ı değil, kanal total'ı — subscriberCountText yakınında olur
+RE_VIEW_COUNT = re.compile(
+    r'"subscriberCountText":[^}]{0,200}"viewCountText":\s*"([\d,\.]+)\s*views?"'
+    r'|"viewCountText":\s*"([\d,\.]+)\s*views?(?:",|\s*})',
+    re.I
+)
 RE_VIDEO_COUNT_PATTERNS = [
+    re.compile(r'"videoCountText":\s*"([\d,.\s]+)\s*video', re.I),   # aboutChannelViewModel format
     re.compile(r'"videosCountText":\s*\{\s*"simpleText":\s*"([\d,.\s]+)\s*video', re.I),
     re.compile(r'"videosCountText":\s*"([\d,.\s]+)\s*video', re.I),
     re.compile(r'"videoCount":\s*"(\d+)"'),
     re.compile(r'"videoCount":\s*(\d+)'),
-    re.compile(r'"aboutChannelViewModel"[^}]{0,800}"videoCountText":\s*"([\d,.\s]+)', re.I | re.DOTALL),
     re.compile(r'"videoCountText":\s*\{\s*"runs"[^}]{0,200}"text":\s*"([\d,.\s]+)"'),
-    re.compile(r'"text":\s*"([\d,.\s]+)\s*videos?"', re.I),
 ]
 
 # ============================================================
@@ -201,10 +206,11 @@ def _parse_about_from_html(html):
         if m:
             result['joined'] = m.group(1).strip()
 
-    # Total views
+    # Total views (kanal toplam — aboutChannelViewModel'den)
     m = RE_VIEW_COUNT.search(html)
     if m:
-        cs = m.group(1).replace(',', '').replace('.', '')
+        raw_val = m.group(1) or m.group(2) or ''
+        cs = raw_val.replace(',', '').replace('.', '').strip()
         if cs.isdigit() and int(cs) > 0:
             result['views'] = format(int(cs), ',')
 
