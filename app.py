@@ -147,16 +147,25 @@ def debug_email():
         except Exception as e:
             it_err = str(e)
 
+    # Search raw InnerTube text for anything email-related
+    email_hits = []
+    if it_text:
+        import re as _re2
+        for m in _re2.finditer(r'.{0,60}(?:email|mail|contact|business).{0,60}', it_text, _re2.I):
+            email_hits.append(m.group())
+
     return jsonify({
-        'channel_id':          channel_id,
-        'scraper_email':       result.get('email'),
-        'ydl_about_email':     ydl_email,
-        'innertube_status':    it_status,
-        'innertube_email':     it_email,
-        'innertube_be_raw':    it_be_raw,
-        'innertube_be_decoded':it_be_dec,
-        'innertube_error':     it_err,
-        'innertube_snippet':   it_text[:1500],
+        'channel_id':           channel_id,
+        'scraper_email':        result.get('email'),
+        'ydl_about_email':      ydl_email,
+        'innertube_status':     it_status,
+        'innertube_email':      it_email,
+        'innertube_be_raw':     it_be_raw,
+        'innertube_be_decoded': it_be_dec,
+        'innertube_error':      it_err,
+        'innertube_response_len': len(it_text),
+        'innertube_email_hits': email_hits[:20],
+        'innertube_snippet':    it_text[:800],
     })
 
 
