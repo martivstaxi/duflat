@@ -466,8 +466,8 @@ def debug():
     url = normalize_url(url)
     ydl_opts = {
         'skip_download': True,
-        'quiet': False,
-        'no_warnings': False,
+        'quiet': True,
+        'no_warnings': True,
         'ignoreerrors': False,
         'playlistend': 1,
     }
