@@ -111,6 +111,34 @@ _INNERTUBE_CONTEXT = {
 }
 
 
+def _fetch_email_ydl_about(channel_url: str) -> str:
+    """
+    Full yt-dlp extraction on the channel /about URL (no extract_flat).
+    yt-dlp internally decodes YouTube's businessEmail base64 and handles
+    consent redirects — returns whatever email it finds in the info dict.
+    Must be called OUTSIDE _about_patch_lock.
+    """
+    try:
+        target = channel_url.rstrip('/') + '/about'
+        opts   = {'skip_download': True, 'quiet': True, 'no_warnings': True,
+                  'ignoreerrors': True, 'playlistend': 1}
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(target, download=False) or {}
+
+        # yt-dlp field names vary across versions — check all candidates
+        for field in ('email', 'channel_email', 'business_email',
+                      'uploader_email', 'businessEmail'):
+            v = str(info.get(field) or '')
+            if '@' in v and '.' in v.split('@')[-1]:
+                if not any(x in v.lower() for x in EMAIL_BLACKLIST):
+                    return v
+
+        # Recursive scan of the whole info dict
+        return _find_email_in_obj(info)
+    except Exception:
+        return ''
+
+
 def _fetch_email_innertube(channel_id: str) -> str:
     """
     Call YouTube's InnerTube browse API for the channel's about tab.
@@ -402,7 +430,11 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
         if email:
             break
 
-    # If still no email, try YouTube InnerTube API (bypasses 'View email' button)
+    # If still no email: try yt-dlp full about extraction (decodes businessEmail)
+    if not email:
+        email = _fetch_email_ydl_about(channel_url)
+
+    # Last resort: InnerTube JSON API
     if not email and channel_id:
         email = _fetch_email_innertube(channel_id)
 
