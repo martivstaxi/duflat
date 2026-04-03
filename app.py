@@ -990,7 +990,84 @@ def find_agency(channel_data):
         if r:
             return _make_result(r, 'web_search')
 
+    # 6. Claude Haiku fallback — tüm diğer yöntemler başarısız olduysa
+    r = _llm_find_agency(channel_data)
+    if r:
+        return _make_result(r, 'ai_analysis')
+
     return {'found': False}
+
+
+def _llm_find_agency(channel_data):
+    """
+    Claude Haiku ile ajans/şirket tespiti.
+    Sadece ANTHROPIC_API_KEY ortam değişkeni varsa çalışır.
+    """
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return None
+
+    try:
+        import anthropic
+
+        # Channel verisini prompt'a ekle
+        parts = []
+        for field, label in [('name', 'Channel name'), ('handle', 'Handle'),
+                              ('description', 'Description'), ('email', 'Email'),
+                              ('location', 'Location'), ('joined', 'Joined')]:
+            val = channel_data.get(field, '')
+            if val:
+                parts.append(f"{label}: {val}")
+
+        social_keys = ['instagram', 'twitter', 'tiktok', 'facebook', 'linkedin', 'twitch']
+        socials = [f"{k}: {channel_data[k]}" for k in social_keys if channel_data.get(k)]
+        if socials:
+            parts.append("Social media: " + ", ".join(socials))
+
+        ext_links = channel_data.get('all_links', [])
+        if ext_links:
+            parts.append("External links: " + ", ".join(ext_links[:10]))
+
+        context = "\n".join(parts)
+
+        prompt = f"""Analyze this YouTube channel data and identify the management company, talent agency, MCN, or production company behind it.
+
+{context}
+
+Respond ONLY with a JSON object. Use null for unknown fields.
+If an agency/company can be identified:
+{{"found": true, "name": "company name", "website": "URL or domain", "email": "contact email or null", "reasoning": "one sentence"}}
+
+If no agency can be identified:
+{{"found": false}}"""
+
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=200,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = message.content[0].text.strip()
+
+        # JSON bloğunu çıkar
+        m = re.search(r'\{.*\}', text, re.DOTALL)
+        if not m:
+            return None
+        data = json.loads(m.group())
+
+        if not data.get('found'):
+            return None
+
+        result = {}
+        for key in ('name', 'website', 'email', 'reasoning'):
+            val = data.get(key)
+            if val and val != 'null':
+                result[key] = val
+
+        return result if (result.get('name') or result.get('website')) else None
+
+    except Exception:
+        return None
 
 
 # ============================================================
