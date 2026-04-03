@@ -943,12 +943,26 @@ def find_agency(channel_data):
     # 1. Email domain → corporate site
     if email_domain:
         r = _investigate_url(f'https://{email_domain}')
+        if not r:
+            r = _investigate_url(f'https://www.{email_domain}')
         if r:
             return _make_result(r, 'email_domain')
-        # www. dene
-        r = _investigate_url(f'https://www.{email_domain}')
+
+        # Scraping başarısız — DDG ile domain adını ara
+        r = _search_and_investigate(f'site:{email_domain} OR "{email_domain}"')
         if r:
             return _make_result(r, 'email_domain')
+
+        # Hâlâ bulunamadı — domain'i minimal lead olarak döndür
+        # (scraping çalışmasa da email domain değerli bir ipucu)
+        domain_brand = email_domain.rsplit('.', 1)[0]  # "iamxlive.com" → "iamxlive"
+        # Camel-case veya dash'leri boşluğa çevir
+        domain_brand = re.sub(r'[-_]', ' ', domain_brand).title()
+        return _make_result({
+            'website': f'https://{email_domain}',
+            'name': domain_brand,
+            'note': 'Website could not be scraped — identified from email domain.',
+        }, 'email_domain')
 
     # 2. External company links
     for lnk in company_links[:3]:

@@ -718,6 +718,7 @@
                         ${desc ? `<div class="agency-desc">${esc(desc)}</div>` : ''}
                         ${(emailHtml || phoneHtml) ? `<div class="agency-fields">${emailHtml}${phoneHtml}</div>` : ''}
                         ${socialBadges ? `<div class="agency-social-grid">${socialBadges}</div>` : ''}
+                        ${d.note ? `<div class="agency-source" style="color:#555;font-style:italic;font-size:0.78rem;margin-top:10px;">${esc(d.note)}</div>` : ''}
                         ${source ? `<div class="agency-source"><span class="source-badge">${esc(sourceLabels[source] || source)}</span></div>` : ''}
                     </div>
                 </div>`;
