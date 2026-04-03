@@ -40,6 +40,7 @@ SOCIAL_PLATFORMS = {
 RE_EMAIL = re.compile(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
 EMAIL_BLACKLIST = {'example', 'test', 'noreply', 'google', 'gstatic', 'youtube', 'sentry', 'wix', 'squarespace'}
 NAV_DOMAINS = ('developers.google.com','support.google.com','policies.google.com','accounts.google.com','gstatic.com','googleapis.com','ggpht.com','ytimg.com','googleusercontent.com')
+YT_DOMAINS = ('youtube.com', 'youtu.be', 'yt.be')
 
 RE_EMBED   = re.compile(r'youtube\.com/v/([a-zA-Z0-9_-]+)')
 RE_CLEAN   = re.compile(r'/(about|videos|shorts|streams|playlists|community|channels|featured)/?$')
@@ -272,13 +273,13 @@ def fetch_about_page(channel_url):
                         if (v is None or is_valid_username(uname, v)) and len(uname) > 1:
                             socials[key] = info['url_fmt'].format(uname)
                             break
-            if u.startswith('http') and 'youtube.com' not in u_lower and not any(d in u_lower for d in NAV_DOMAINS):
+            if u.startswith('http') and not any(d in u_lower for d in YT_DOMAINS) and not any(d in u_lower for d in NAV_DOMAINS):
                 if u not in json_ext_links:
                     json_ext_links.append(u)
 
     for u in decoded:
         u = u.strip()
-        if u.startswith('http') and 'youtube.com' not in u.lower() and not any(d in u.lower() for d in NAV_DOMAINS):
+        if u.startswith('http') and not any(d in u.lower() for d in YT_DOMAINS) and not any(d in u.lower() for d in NAV_DOMAINS):
             if u not in json_ext_links:
                 json_ext_links.append(u)
 
@@ -325,7 +326,7 @@ def extract_socials_from_text(text):
     url_pat = re.compile(r'https?://[^\s<>"\']+', re.I)
     for u in url_pat.findall(text):
         u = u.rstrip('.,)')
-        if 'youtube.com' not in u.lower() and not any(d in u.lower() for d in NAV_DOMAINS):
+        if not any(d in u.lower() for d in YT_DOMAINS) and not any(d in u.lower() for d in NAV_DOMAINS):
             if u not in all_links:
                 all_links.append(u)
 
@@ -490,6 +491,29 @@ def scrape_channel(url):
             seen_normalized.add(norm)
             deduped.append(lnk)
     all_links = deduped
+
+    # Tarih formatı: YYYY-MM-DD → "X time ago"
+    if last_video_date and len(last_video_date) == 10 and last_video_date[4] == '-':
+        try:
+            from datetime import date
+            upload = date(int(last_video_date[:4]), int(last_video_date[5:7]), int(last_video_date[8:]))
+            today = date.today()
+            days = (today - upload).days
+            if days == 0:
+                last_video_date = 'today'
+            elif days < 7:
+                last_video_date = f'{days} day{"s" if days > 1 else ""} ago'
+            elif days < 30:
+                weeks = days // 7
+                last_video_date = f'{weeks} week{"s" if weeks > 1 else ""} ago'
+            elif days < 365:
+                months = days // 30
+                last_video_date = f'{months} month{"s" if months > 1 else ""} ago'
+            else:
+                years = days // 365
+                last_video_date = f'{years} year{"s" if years > 1 else ""} ago'
+        except Exception:
+            pass
 
     data = {
         'channel_url': channel_url,
