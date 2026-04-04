@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duflat — YouTube Channel Investigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #262624;
+            --surface:  #1E1E1C;
+            --accent:   #C15F3C;
+            --muted:    #B1ADA1;
+            --border:   rgba(177,173,161,.10);
+            --border-m: rgba(177,173,161,.18);
+            --text:     #FFFFFF;
+            --faint:    rgba(177,173,161,.38);
+
+            --font-sans:  'Inter', system-ui, sans-serif;
+            --font-serif: 'Merriweather', Georgia, serif;
+            --font-mono:  'Roboto Mono', 'Courier New', monospace;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,.18);
+            --shadow:    0 4px 24px rgba(0,0,0,.28);
+            --radius:    16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: var(--font-sans);
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ── Main ───────────────────────────────────────────── */
+        main {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px 100px;
+        }
+
+        /* ── Hero ───────────────────────────────────────────── */
+        .hero {
+            text-align: center;
+            padding: 120px 0 56px;
+        }
+
+        .page-title {
+            font-family: var(--font-sans);
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
+            letter-spacing: -.6px;
+            line-height: 1.15;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.65;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ── Search ─────────────────────────────────────────── */
+        .search-wrap {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border-m);
+            border-radius: 14px;
+            padding: 6px 6px 6px 18px;
+            box-shadow: var(--shadow);
+            transition: border-color .25s;
+        }
+
+        .search-wrap:focus-within { border-color: var(--accent); }
+
+        #urlInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 0;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text);
+            outline: none;
+        }
+
+        #urlInput::placeholder { color: var(--faint); }
+
+        #searchBtn {
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            color: #fff;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: .2px;
+            transition: background .2s, transform .1s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        #searchBtn:hover  { background: #d4694a; }
+        #searchBtn:active { transform: scale(.97); }
+        #searchBtn:disabled { opacity: .35; cursor: default; }
+
+        /* ── Status / Error ──────────────────────────────────── */
+        #statusMsg {
+            display: none;
+            font-size: 0.85rem;
+            color: #e07060;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            background: rgba(193,95,60,.06);
+            border: 1px solid rgba(193,95,60,.15);
+            border-radius: 12px;
+        }
+
+        /* ── Find Email button ───────────────────────────────── */
+        .find-email-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+        .find-email-btn:hover  { border-color: var(--accent); color: var(--accent); }
+        .find-email-btn:disabled { opacity: .4; cursor: default; }
+
+        .email-found-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.88rem;
+            color: var(--text);
+        }
+        .email-confidence {
+            font-size: 0.68rem;
+            color: var(--faint);
+            margin-left: 4px;
+        }
+
+        /* ── Loader ──────────────────────────────────────────── */
+        #loader {
+            display: none;
+            text-align: center;
+            padding: 64px 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .spinner {
+            width: 28px; height: 28px;
+            border: 2px solid rgba(177,173,161,.12);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Cards ───────────────────────────────────────────── */
+        #result { display: none; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .section-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--faint);
+            margin-bottom: 14px;
+        }
+
+        /* ── Channel card header ─────────────────────────────── */
+        .card-header {
+            padding: 28px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .channel-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .channel-name {
+            font-family: var(--font-sans);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .channel-handle {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 0.82rem;
+        }
+
+        .channel-url-link {
+            font-family: var(--font-mono);
+            color: var(--faint);
+            font-size: 0.72rem;
+            text-decoration: none;
+            margin-top: 4px;
+            display: block;
+            transition: color .2s;
+        }
+
+        .channel-url-link:hover { color: var(--muted); }
+
+        /* ── Stats row ───────────────────────────────────────── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-item {
+            padding: 20px 12px;
+            text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-item:last-child { border-right: none; }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.66rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        /* ── Info grid ───────────────────────────────────────── */
+        .info-grid {
+            padding: 24px 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+
+        .info-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .info-value {
+            font-family: var(--font-mono);
+            font-size: 0.83rem;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .info-value a { color: var(--accent); text-decoration: none; }
+        .info-value a:hover { text-decoration: underline; }
+        .info-value.empty { font-family: var(--font-sans); color: var(--faint); font-style: italic; }
+
+        .info-full { grid-column: 1 / -1; }
+
+        /* ── Metadata rows (Email / Location / Joined) ───────── */
+        .meta-section {
+            padding: 0 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta-row:last-child { border-bottom: none; }
+
+        .meta-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            width: 68px;
+            flex-shrink: 0;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 0.83rem;
+            color: var(--text);
+            word-break: break-word;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .meta-value a { color: var(--accent); text-decoration: none; }
+        .meta-value a:hover { text-decoration: underline; }
+
+        /* ── About section ───────────────────────────────────── */
+        .about-section {
+            padding: 22px 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .about-section-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        /* ── Description box ────────────────────────────────── */
+        .description-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* ── AI Report button ────────────────────────────────── */
+        .ai-report-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-family: var(--font-sans);
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color .2s, color .2s, background .2s;
+        }
+        .ai-report-btn:hover  { border-color: var(--accent); color: var(--accent); background: rgba(193,95,60,.05); }
+        .ai-report-btn:disabled { opacity: .45; cursor: default; background: transparent; }
+
+        .description-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--faint);
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .topic-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .topic-tag {
+            background: rgba(177,173,161,.06);
+            border: 1px solid var(--border-m);
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-family: var(--font-sans);
+        }
+
+        /* ── Social badges ──────────────────────────────────── */
+        .social-grid {
+            padding: 18px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .social-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-decoration: none;
+            transition: border-color .2s, color .2s, background .2s;
+        }
+
+        .social-badge:hover { border-color: var(--accent); color: var(--text); background: rgba(193,95,60,.04); }
+
+        /* ── External links ────────────────────────────────── */
+        .all-links-section { padding: 18px 30px 24px; }
+
+        .all-links-title {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 10px;
+        }
+
+        .link-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .link-list a {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--faint);
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color .2s;
+        }
+
+        .link-list a:hover { color: var(--accent); }
+
+        /* ── Agency card ────────────────────────────────────── */
+        #agencyResult {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .agency-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--accent);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .agency-header {
+            padding: 16px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agency-header-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .agency-header-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--muted);
+        }
+
+        .agency-loading {
+            padding: 26px 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .agency-loading .spinner {
+            width: 18px; height: 18px;
+            border-width: 2px;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .agency-not-found {
+            padding: 26px 30px;
+            color: var(--faint);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        .agency-body { padding: 26px 30px; }
+
+        .agency-name {
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .agency-website {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 16px;
+            transition: opacity .2s;
+        }
+
+        .agency-website:hover { opacity: .8; text-decoration: underline; }
+
+        .agency-summary {
+            font-size: 0.86rem;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .agency-desc {
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.7;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+
+        .agency-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .agency-social-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .agency-tags-section { margin-top: 16px; }
+
+        .agency-tags-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 8px;
+        }
+
+        .agency-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .agency-tag {
+            background: rgba(177,173,161,.06);
+            border: 1px solid var(--border-m);
+            border-radius: 6px;
+            padding: 4px 11px;
+            font-size: 0.76rem;
+            color: var(--muted);
+        }
+
+        .agency-tag-client {
+            border-color: rgba(193,95,60,.2);
+            color: var(--accent);
+            background: rgba(193,95,60,.05);
+        }
+
+        .agency-note {
+            margin-top: 12px;
+            font-size: 0.76rem;
+            color: var(--faint);
+            font-style: italic;
+        }
+
+        .agency-source { margin-top: 18px; }
+
+        .source-badge {
+            font-family: var(--font-mono);
+            display: inline-block;
+            background: rgba(193,95,60,.06);
+            border: 1px solid rgba(193,95,60,.15);
+            border-radius: 10px;
+            padding: 4px 12px;
+            font-size: 0.68rem;
+            color: var(--accent);
+            letter-spacing: .2px;
+        }
+
+        /* ── API Warning ────────────────────────────────────── */
+        #apiWarning {
+            display: none;
+            background: rgba(193,95,60,.06);
+            border: 1px solid rgba(193,95,60,.15);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        /* ── Responsive ─────────────────────────────────────── */
+        @media (max-width: 600px) {
+            main { padding: 0 16px 60px; }
+            .hero { padding: 72px 0 40px; }
+            .page-title { font-size: 1.65rem; }
+            .search-wrap { flex-direction: column; padding: 6px; }
+            #urlInput { padding: 14px 12px; }
+            #searchBtn { width: 100%; padding: 14px; }
+            .card-header { padding: 22px 20px; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .stat-item { border-bottom: 1px solid var(--border); }
+            .stat-item:nth-child(2) { border-right: none; }
+            .meta-section, .about-section, .social-grid, .all-links-section { padding-left: 20px; padding-right: 20px; }
+            .info-grid { grid-template-columns: 1fr; padding: 20px; }
+            .agency-fields { grid-template-columns: 1fr; }
+            .agency-header, .agency-loading, .agency-not-found, .agency-body { padding-left: 20px; padding-right: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="hero">
+            <h1 class="page-title">Who's behind this channel?</h1>
+            <p class="page-sub">Paste a YouTube link to uncover contact details, management info, and a full channel profile.</p>
+        </div>
+
+        <div id="apiWarning">
+            API not connected. Update the Railway URL after deploying.
+        </div>
+
+        <div class="search-wrap">
+            <input
+                id="urlInput"
+                type="text"
+                placeholder="Paste a YouTube URL..."
+                autocomplete="off"
+                spellcheck="false"
+            />
+            <button id="searchBtn" onclick="doSearch()">Investigate</button>
+        </div>
+
+        <div id="statusMsg"></div>
+
+        <div id="loader">
+            <div class="spinner"></div>
+            <div id="loaderText">Fetching channel info...</div>
+        </div>
+
+        <div id="result"></div>
+        <div id="agencyResult"></div>
+    </main>
+
+    <script>
+        const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : 'https://duflat-production.up.railway.app';
+
+        let _currentChannelData = null;  // saved for Find Email
+
+        document.getElementById('urlInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        if (API_URL.includes('RAILWAY_URL_BURAYA')) {
+            document.getElementById('apiWarning').style.display = 'block';
+        }
+
+        async function doSearch() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return;
+
+            setStatus('');
+            showLoader(true);
+            showResult(false);
+            hideAgency();
+            _currentChannelData = null;
+            document.getElementById('searchBtn').disabled = true;
+
+            let channelData = null;
+
+            try {
+                const res = await fetch(`${API_URL}/scrape`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    setStatus(data.error || 'An error occurred.');
+                } else {
+                    channelData = data;
+                    _currentChannelData = data;
+                    renderResult(data);
+                }
+            } catch (err) {
+                setStatus('Could not reach the API. Is app.py running?');
+            } finally {
+                showLoader(false);
+                document.getElementById('searchBtn').disabled = false;
+            }
+
+            if (channelData) {
+                investigateAgency(channelData);  // parallel — fills agency card
+            }
+        }
+
+        async function summarizeChannel() {
+            const channelData = _currentChannelData;
+            if (!channelData) return;
+            const btn = document.getElementById('summarizeBtn');
+            const box = document.getElementById('summaryBox');
+            if (!box) return;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Analyzing...'; }
+            box.innerHTML = `<div class="description-loading" style="margin-top:4px">
+                <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                Fetching recent videos & building report...
+            </div>`;
+
+            try {
+                const res = await fetch(`${API_URL}/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel_data: channelData })
+                });
+                const data = await res.json();
+
+                if (data.report) {
+                    const LABELS = {
+                        content_language: 'Content Language',
+                        niche:            'Niche',
+                        audience:         'Audience',
+                        upload_frequency: 'Upload Frequency',
+                        content_style:    'Content Style',
+                        brand_fit:        'Brand Fit',
+                        key_insight:      'Key Insight',
+                    };
+                    const rows = Object.entries(LABELS)
+                        .filter(([k]) => data.report[k])
+                        .map(([k, label]) => `
+                            <tr>
+                                <td style="color:var(--muted);white-space:nowrap;padding:5px 12px 5px 0;font-size:.8rem;vertical-align:top">${label}</td>
+                                <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${esc(data.report[k])}</td>
+                            </tr>`).join('');
+                    const tags = Array.isArray(data.tags) && data.tags.length
+                        ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
+                        : '';
+                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}</div>`;
+                    if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
+                } else {
+                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not generate report.</span>`;
+                    if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
+                }
+            } catch (_) {
+                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
+                if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
+            }
+        }
+
+        async function investigateAgency(channelData) {
+            showAgencyLoading();
+            const steps = [
+                'Checking email domain...',
+                'Scanning external links...',
+                'Analyzing social profiles...',
+                'Searching the web...',
+                'Compiling report...',
+            ];
+            let stepIdx = 0;
+            const stepInterval = setInterval(() => {
+                stepIdx = (stepIdx + 1) % steps.length;
+                const el = document.getElementById('agencyStepText');
+                if (el) el.textContent = steps[stepIdx];
+            }, 3000);
+
+            try {
+                const res = await fetch(`${API_URL}/agency`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel_data: channelData })
+                });
+                const data = await res.json();
+                clearInterval(stepInterval);
+                renderAgency(data);
+            } catch (err) {
+                clearInterval(stepInterval);
+                renderAgency({ found: false });
+            }
+        }
+
+        async function investigateEmail() {
+            if (!_currentChannelData) return;
+
+            const btn = document.getElementById('findEmailBtn');
+            const emailItem = document.getElementById('emailInfoItem');
+            if (!emailItem) return;
+
+            // Show spinner
+            if (btn) btn.disabled = true;
+            emailItem.querySelector('.meta-value').innerHTML =
+                `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
+                    <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
+                    Investigating...
+                </span>`;
+
+            // Cycle through detective steps while waiting
+            const detectiveSteps = [
+                'Scanning external links...',
+                'Checking social media bios...',
+                'Reading latest video description...',
+                'Searching the web...',
+                'Guessing domain patterns...',
+                'Running AI analysis...',
+            ];
+            let stepIdx = 0;
+            const stepTimer = setInterval(() => {
+                stepIdx = (stepIdx + 1) % detectiveSteps.length;
+                const el = emailItem.querySelector('.meta-value');
+                if (el) el.innerHTML =
+                    `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem">
+                        <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                        ${detectiveSteps[stepIdx]}
+                    </span>`;
+            }, 2500);
+
+            try {
+                const res = await fetch(`${API_URL}/find-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel_data: _currentChannelData })
+                });
+                clearInterval(stepTimer);
+                const data = await res.json();
+
+                if (data.found && data.email) {
+                    const sourceLabel = {
+                        'channel':            'from channel page',
+                        'description':        'from channel description',
+                        'external_link':      'from external link',
+                        'linktree':           'via link aggregator',
+                        'instagram':          'from Instagram',
+                        'twitter':            'from Twitter/X',
+                        'tiktok':             'from TikTok',
+                        'facebook':           'from Facebook',
+                        'video_description':  'from video description',
+                        'web_search':         'via web search',
+                        'ai_analysis':        'identified by AI',
+                    }[data.source] || data.source;
+
+                    const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
+                                          : data.confidence === 'medium' ? '#b8a06a'
+                                          : 'var(--faint)';
+
+                    emailItem.querySelector('.meta-value').innerHTML =
+                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>` +
+                        `<span class="email-confidence" style="color:${confidenceColor}">${esc(sourceLabel)}</span>`;
+
+                    // Update saved channel data so agency investigation can use it
+                    _currentChannelData = { ..._currentChannelData, email: data.email };
+                } else {
+                    const hiddenMsg = _currentChannelData?.has_hidden_email
+                        ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
+                        : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
+                    emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
+                }
+            } catch (err) {
+                clearInterval(stepTimer);
+                emailItem.querySelector('.meta-value').innerHTML =
+                    `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
+            }
+        }
+
+        function renderResult(d) {
+            const name    = d.name || 'Unknown Channel';
+            const initial = name.charAt(0).toUpperCase();
+            const socialKeys  = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
+            const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', myanimelist:'🎌' };
+            const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', myanimelist:'MyAnimeList' };
+
+            const socialBadges = socialKeys
+                .filter(s => d[s])
+                .map(s => `<a class="social-badge" href="${esc(d[s])}" target="_blank" rel="noopener">${socialIcons[s]} ${socialNames[s]}</a>`)
+                .join('');
+
+            const allLinks = Array.isArray(d.all_links) ? d.all_links : [];
+            const linkItems = allLinks.slice(0, 12)
+                .map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`)
+                .join('');
+
+            document.getElementById('result').innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        ${d.thumbnail && d.thumbnail.includes('yt3.ggpht.com')
+                            ? `<img class="channel-avatar" src="${esc(d.thumbnail)}" alt="" style="object-fit:cover" onerror="this.outerHTML='<div class=channel-avatar>${initial}</div>'">`
+                            : `<div class="channel-avatar">${initial}</div>`
+                        }
+                        <div>
+                            <div class="channel-name">${esc(name)}</div>
+                            ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
+                            ${d.channel_url? `<a class="channel-url-link" href="${esc(d.channel_url)}" target="_blank" rel="noopener">${esc(d.channel_url)}</a>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="stats-row">
+                        ${statItem(d.subscribers,    'Subscribers')}
+                        ${statItem(d.videos,         'Videos')}
+                        ${statItem(d.views,          'Total Views')}
+                        ${statItem(d.last_video_date,'Last Video')}
+                    </div>
+
+                    <div class="meta-section">
+                        <div class="meta-row" id="emailInfoItem">
+                            <span class="meta-label">Email</span>
+                            ${d.email
+                                ? `<span class="meta-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
+                                : `<span class="meta-value">
+                                       ${d.has_hidden_email
+                                           ? `<span style="color:var(--accent);font-size:.85rem" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
+                                           : ''}
+                                       <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
+                                           🔍 Find Email
+                                       </button>
+                                   </span>`
+                            }
+                        </div>
+                        ${d.location ? `
+                        <div class="meta-row">
+                            <span class="meta-label">Location</span>
+                            <span class="meta-value">${esc(d.location)}</span>
+                        </div>` : ''}
+                        ${d.joined ? `
+                        <div class="meta-row">
+                            <span class="meta-label">Joined</span>
+                            <span class="meta-value">${esc(d.joined)}</span>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="about-section" id="summaryBlock">
+                        <div class="about-section-header">
+                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
+                                ✨ Generate AI Report
+                            </button>
+                            <span class="section-label" style="margin-left:3px">About</span>
+                        </div>
+                        <div id="summaryBox"></div>
+                        <div class="description-box">
+                            ${d.description
+                                ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
+                                : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
+                            }
+                        </div>
+                    </div>
+
+                    ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
+
+                    ${linkItems ? `
+                    <div class="all-links-section">
+                        <div class="all-links-title">External Links</div>
+                        <div class="link-list">${linkItems}</div>
+                    </div>` : ''}
+                </div>`;
+            showResult(true);
+        }
+
+        function statItem(val, label) {
+            return `<div class="stat-item">
+                <div class="stat-value">${val ? esc(val) : `<span style="color:var(--faint)">—</span>`}</div>
+                <div class="stat-label">${label}</div>
+            </div>`;
+        }
+
+        function infoItem(label, val) {
+            if (!val) return `<div class="info-item">
+                <span class="info-label">${label}</span>
+                <span class="info-value empty">—</span>
+            </div>`;
+            return `<div class="info-item">
+                <span class="info-label">${label}</span>
+                <span class="info-value">${val}</span>
+            </div>`;
+        }
+
+        function showAgencyLoading() {
+            document.getElementById('agencyResult').innerHTML = `
+                <div class="agency-card">
+                    <div class="agency-header">
+                        <div class="agency-header-dot"></div>
+                        <span class="agency-header-title">Agency Investigation</span>
+                    </div>
+                    <div class="agency-loading">
+                        <div class="spinner"></div>
+                        <span id="agencyStepText">Checking email domain...</span>
+                    </div>
+                </div>`;
+            document.getElementById('agencyResult').style.display = 'block';
+        }
+
+        function hideAgency() {
+            const el = document.getElementById('agencyResult');
+            el.style.display = 'none';
+            el.innerHTML = '';
+        }
+
+        function renderAgency(d) {
+            const sourceLabels = {
+                'email_domain':     'Found via email domain',
+                'external_link':    'Found via external link',
+                'linktree':         'Found via Linktree',
+                'description_regex':'Found via description',
+                'web_search':       'Found via web search',
+                'ai_analysis':      'Identified by AI',
+            };
+
+            if (!d.found) {
+                document.getElementById('agencyResult').innerHTML = `
+                    <div class="agency-card">
+                        <div class="agency-header">
+                            <div class="agency-header-dot"></div>
+                            <span class="agency-header-title">Agency Investigation</span>
+                        </div>
+                        <div class="agency-not-found">No agency or management company could be identified.</div>
+                    </div>`;
+                return;
+            }
+
+            const name     = d.name || '';
+            const website  = d.website || '';
+            const email    = d.contact_email || d.email || '';
+            const phone    = d.contact_phone || d.phone || '';
+            const address  = d.address || '';
+            const founded  = d.founded || '';
+            const desc     = d.description || '';
+            const summary  = d.summary || '';
+            const services = Array.isArray(d.services) ? d.services : [];
+            const clients  = Array.isArray(d.notable_clients) ? d.notable_clients : [];
+            const socials  = d.socials || {};
+            const source   = d.source || '';
+
+            const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', linkedin:'💼', myanimelist:'🎌' };
+            const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', linkedin:'LinkedIn', myanimelist:'MyAnimeList' };
+
+            const socialBadges = Object.entries(socials)
+                .filter(([, v]) => v && v !== 'null')
+                .map(([k, v]) => `<a class="social-badge" href="${esc(v)}" target="_blank" rel="noopener">${socialIcons[k]||'🔗'} ${socialNames[k]||k}</a>`)
+                .join('');
+
+            const infoFields = [
+                email   ? `<div class="info-item"><span class="info-label">Email</span><span class="info-value"><a href="mailto:${esc(email)}">${esc(email)}</a></span></div>` : '',
+                phone   ? `<div class="info-item"><span class="info-label">Phone</span><span class="info-value">${esc(phone)}</span></div>` : '',
+                address ? `<div class="info-item"><span class="info-label">Location</span><span class="info-value">${esc(address)}</span></div>` : '',
+                founded ? `<div class="info-item"><span class="info-label">Founded</span><span class="info-value">${esc(founded)}</span></div>` : '',
+            ].filter(Boolean).join('');
+
+            const servicesTags = services.length
+                ? `<div class="agency-tags-section">
+                     <div class="agency-tags-label">Services</div>
+                     <div class="agency-tags">${services.map(s=>`<span class="agency-tag">${esc(s)}</span>`).join('')}</div>
+                   </div>` : '';
+
+            const clientsTags = clients.length
+                ? `<div class="agency-tags-section">
+                     <div class="agency-tags-label">Notable Clients</div>
+                     <div class="agency-tags">${clients.map(c=>`<span class="agency-tag agency-tag-client">${esc(c)}</span>`).join('')}</div>
+                   </div>` : '';
+
+            document.getElementById('agencyResult').innerHTML = `
+                <div class="agency-card">
+                    <div class="agency-header">
+                        <div class="agency-header-dot"></div>
+                        <span class="agency-header-title">Agency / Management</span>
+                    </div>
+                    <div class="agency-body">
+                        ${name    ? `<div class="agency-name">${esc(name)}</div>` : ''}
+                        ${website ? `<a class="agency-website" href="${esc(website)}" target="_blank" rel="noopener">${esc(website)}</a>` : ''}
+                        ${summary ? `<div class="agency-summary">${esc(summary)}</div>` : ''}
+                        ${desc    ? `<div class="agency-desc">${esc(desc)}</div>` : ''}
+                        ${infoFields ? `<div class="agency-fields">${infoFields}</div>` : ''}
+                        ${servicesTags}
+                        ${clientsTags}
+                        ${socialBadges ? `<div class="agency-social-grid">${socialBadges}</div>` : ''}
+                        ${d.note      ? `<div class="agency-note">${esc(d.note)}</div>` : ''}
+                        ${d.reasoning ? `<div class="agency-note">${esc(d.reasoning)}</div>` : ''}
+                        ${source      ? `<div class="agency-source"><span class="source-badge">${esc(sourceLabels[source]||source)}</span></div>` : ''}
+                    </div>
+                </div>`;
+        }
+
+        function esc(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function setStatus(msg) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
+        function showResult(show) { document.getElementById('result').style.display = show ? 'block' : 'none'; }
+    </script>
+</body>
+</html>
