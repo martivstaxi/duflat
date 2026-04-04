@@ -195,6 +195,13 @@
         .report-tags { animation: fadeInUp .4s ease both; }
         .report-meta { animation: fadeInUp .4s ease both; }
 
+        /* ── Result reveal animation ─────────────────────────── */
+        @keyframes resultReveal {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #result.reveal { animation: resultReveal .5s ease both; }
+
         /* ── Cards ───────────────────────────────────────────── */
         #result { display: none; }
 
@@ -858,6 +865,11 @@
                     channelData = data;
                     _currentChannelData = data;
                     renderResult(data);
+                    const resultEl = document.getElementById('result');
+                    resultEl.classList.remove('reveal');
+                    void resultEl.offsetWidth;
+                    resultEl.classList.add('reveal');
+                    setTimeout(() => { resultEl.querySelector('.card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
                 }
             } catch (err) {
                 setStatus('Could not reach the API. Is app.py running?');
@@ -942,7 +954,7 @@
                     const emailBtn = document.getElementById('emailGenBtn');
                     if (arrow) arrow.style.display = '';
                     if (emailBtn) emailBtn.style.display = '';
-                    setTimeout(() => { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+                    setTimeout(() => { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
