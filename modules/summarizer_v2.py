@@ -55,7 +55,7 @@ def _fetch_videos(channel_url: str, n: int = 30) -> list[dict]:
             'no_warnings':   True,
             'ignoreerrors':  True,
             'playlistend':   n,
-            'extract_flat':  True,
+            'extract_flat':  'in_playlist',
         }
         target = channel_url.rstrip('/') + '/videos'
         with yt_dlp.YoutubeDL(opts) as ydl:
@@ -106,25 +106,79 @@ def _select_videos(videos: list[dict]) -> tuple[list[dict], list[dict]]:
 
 def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
     """
-    Fetch transcript for a single video. Tries youtube-transcript-api.
+    Fetch transcript for a single video via yt-dlp subtitle extraction.
+    Tries manual subtitles first, then auto-generated captions.
     Returns truncated plain text or empty string on failure.
     """
     try:
-        from youtube_transcript_api import YouTubeTranscriptApi
+        import yt_dlp
+        import requests as _req
 
-        # Try new API (0.6.3+)
-        try:
-            ytt = YouTubeTranscriptApi()
-            result = ytt.fetch(video_id)
-            snippets = result.to_raw_data()
-            text = ' '.join(s.get('text', '') for s in snippets)
-        except (TypeError, AttributeError):
-            # Fall back to old API (static method)
-            segments = YouTubeTranscriptApi.get_transcript(video_id)
-            text = ' '.join(seg['text'] for seg in segments)
+        url = f'https://www.youtube.com/watch?v={video_id}'
+        opts = {
+            'skip_download': True,
+            'quiet': True,
+            'no_warnings': True,
+            'ignoreerrors': True,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+        if not info:
+            return ''
 
-        # Clean up auto-caption artifacts
-        text = re.sub(r'\[.*?\]', '', text)       # [Music], [Applause] etc.
+        # Try manual subtitles first, then auto-generated
+        sub_url = ''
+        for source in [info.get('subtitles') or {}, info.get('automatic_captions') or {}]:
+            if sub_url:
+                break
+            # Prefer any language that exists — try common ones first
+            for lang in list(source.keys())[:5]:
+                formats = source[lang]
+                # Prefer json3 or vtt format
+                for fmt in formats:
+                    if isinstance(fmt, dict) and fmt.get('ext') in ('json3', 'vtt', 'srv1'):
+                        sub_url = fmt.get('url', '')
+                        sub_ext = fmt.get('ext', '')
+                        if sub_url:
+                            break
+                if sub_url:
+                    break
+
+        if not sub_url:
+            return ''
+
+        # Download subtitle content
+        resp = _req.get(sub_url, timeout=10)
+        if resp.status_code != 200:
+            return ''
+
+        raw = resp.text
+
+        # Parse based on format
+        if sub_ext == 'json3':
+            try:
+                import json as _json
+                data = _json.loads(raw)
+                events = data.get('events') or []
+                parts = []
+                for ev in events:
+                    for seg in (ev.get('segs') or []):
+                        t = seg.get('utf8', '').strip()
+                        if t and t != '\n':
+                            parts.append(t)
+                text = ' '.join(parts)
+            except Exception:
+                text = raw
+        else:
+            # VTT/SRV1: strip timestamps and tags
+            text = re.sub(r'<[^>]+>', '', raw)
+            text = re.sub(r'\d{2}:\d{2}[:\.][\d.]+\s*-->\s*\d{2}:\d{2}[:\.][\d.]+', '', text)
+            text = re.sub(r'WEBVTT.*?\n', '', text)
+            text = re.sub(r'Kind:.*?\n', '', text)
+            text = re.sub(r'Language:.*?\n', '', text)
+
+        # Clean up
+        text = re.sub(r'\[.*?\]', '', text)
         text = re.sub(r'\s+', ' ', text).strip()
         return text[:max_chars]
     except Exception:
