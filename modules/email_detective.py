@@ -69,7 +69,7 @@ _RE_OBFUSCATED = re.compile(
 )
 
 MAX_ROUNDS = 6
-MODEL = 'claude-sonnet-4-6-20250514'
+MODEL = 'claude-sonnet-4-6'
 
 # ─────────────────────────────────────────────
 # TOOL IMPLEMENTATIONS (executed server-side)
