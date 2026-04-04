@@ -23,6 +23,7 @@ Public API:
 import re
 import os
 import json
+import time
 import requests
 
 from .constants import BROWSER_HEADERS, RE_EMAIL, EMAIL_BLACKLIST
@@ -224,6 +225,15 @@ def _is_site_own_email(email: str, page_url: str) -> bool:
                 site_domain.endswith('.' + email_domain))
     except Exception:
         return False
+
+
+def _scrape_url_shallow(url: str) -> tuple[list[str], str]:
+    """Scrape only the main URL — no subpages. Used for web search results."""
+    html = _fetch(url)
+    if not html:
+        return [], ''
+    emails = [e for e in _extract_emails_html(html) if not _is_site_own_email(e, url)]
+    return _clean_emails(emails), _page_text(html, 400)
 
 
 def _scrape_url_deep(url: str) -> tuple[list[str], str]:
@@ -435,6 +445,8 @@ def find_email(channel_data: dict) -> dict:
     Tries every available method before giving up.
     """
 
+    deadline = time.time() + 45  # hard cap: 45 seconds total
+
     # Already have a clean business email
     existing = channel_data.get('email', '')
     if existing and _is_business_email(existing):
@@ -595,9 +607,9 @@ def find_email(channel_data: dict) -> dict:
             if bio:
                 evidence.append(('facebook_bio', bio))
 
-    # ── STEP 4: Last 5 video descriptions ────────────────────
-    if channel_url:
-        video_descs = _fetch_video_descriptions(channel_url, n=5)
+    # ── STEP 4: Last 3 video descriptions ────────────────────
+    if channel_url and time.time() < deadline:
+        video_descs = _fetch_video_descriptions(channel_url, n=3)
         for i, vid_desc in enumerate(video_descs):
             if not vid_desc:
                 continue
@@ -639,12 +651,14 @@ def find_email(channel_data: dict) -> dict:
 
     seen_urls: set[str] = set()
 
-    for query in ddg_queries[:8]:
-        for url in _ddg_search(query, max_results=5):
+    for query in ddg_queries[:4]:
+        if time.time() > deadline or len(seen_urls) >= 10:
+            break
+        for url in _ddg_search(query, max_results=3):
             if url in seen_urls or any(d in url.lower() for d in _SKIP_DOMAINS):
                 continue
             seen_urls.add(url)
-            emails, hint = _scrape_url_deep(url)
+            emails, hint = _scrape_url_shallow(url)
             if hint:
                 evidence.append((f'ddg:{url}', hint))
             if emails:
@@ -658,12 +672,14 @@ def find_email(channel_data: dict) -> dict:
     if handle:
         bing_queries.append(f'{handle} youtube email')
 
-    for query in bing_queries[:3]:
-        for url in _bing_search(query, max_results=5):
+    for query in bing_queries[:2]:
+        if time.time() > deadline or len(seen_urls) >= 15:
+            break
+        for url in _bing_search(query, max_results=3):
             if url in seen_urls or any(d in url.lower() for d in _SKIP_DOMAINS):
                 continue
             seen_urls.add(url)
-            emails, hint = _scrape_url_deep(url)
+            emails, hint = _scrape_url_shallow(url)
             if hint:
                 evidence.append((f'bing:{url}', hint))
             if emails:
