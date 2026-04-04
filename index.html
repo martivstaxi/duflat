@@ -232,6 +232,7 @@
             font-weight: 700;
             color: #fff;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         .channel-name {
@@ -319,6 +320,13 @@
         .info-value.empty { font-family: var(--font-sans); color: var(--faint); font-style: italic; }
 
         .info-full { grid-column: 1 / -1; }
+
+        .about-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
 
         /* ── Description box ────────────────────────────────── */
         .description-box {
@@ -874,6 +882,9 @@
         function renderResult(d) {
             const name    = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
+            const avatarContent = d.thumbnail
+                ? `<img src="${esc(d.thumbnail)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.textContent='${initial}'">`
+                : initial;
 
             const socialKeys  = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
             const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', myanimelist:'🎌' };
@@ -892,7 +903,7 @@
             document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <div class="channel-avatar">${initial}</div>
+                        <div class="channel-avatar">${avatarContent}</div>
                         <div>
                             <div class="channel-name">${esc(name)}</div>
                             ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
@@ -908,7 +919,7 @@
                     </div>
 
                     <div class="info-grid">
-                        <div class="info-item" id="emailInfoItem">
+                        <div class="info-item info-full" id="emailInfoItem">
                             <span class="info-label">Email</span>
                             ${d.email
                                 ? `<span class="info-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
@@ -925,12 +936,12 @@
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
                         <div class="info-item info-full" id="summaryBlock">
-                            <span class="info-label" style="display:flex;justify-content:space-between;align-items:center">
-                                About
+                            <div class="about-header">
+                                <span class="info-label">About</span>
                                 <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
                                     ✨ Generate AI Report
                                 </button>
-                            </span>
+                            </div>
                             <div id="summaryBox"></div>
                             <div class="description-box">
                                 ${d.description
