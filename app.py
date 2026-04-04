@@ -4,11 +4,11 @@ All business logic lives in modules/. This file wires routes to modules.
 
 Routes:
     POST /scrape          → modules.scraper.scrape_channel()
-    POST /agency          → modules.agency.find_agency()
-    GET  /debug           → raw yt-dlp output (dev only)
-    GET  /debug-about     → about page extraction (dev only)
-    GET  /debug-rawpage   → raw ytInitialData HTML snippets (dev only)
-    GET  /debug-deep      → full yt-dlp info dict (dev only)
+    POST /summarize-v2    → modules.summarizer_v2.summarize_channel_v2()
+    POST /find-email      → modules.email_finder.find_email()
+    POST /find-email-v2   → modules.email_detective.find_email_v2()
+    POST /generate-email  → modules.email_generator.generate_email()
+    GET  /debug-*         → various debug endpoints (dev only)
 """
 
 import os
@@ -17,10 +17,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from modules.scraper      import scrape_channel, normalize_url, _extract_about_via_ytdlp, fetch_about_page
-from modules.agency       import find_agency
 from modules.email_finder import find_email
 from modules.email_detective import find_email_v2
-from modules.summarizer   import summarize_channel
 from modules.summarizer_v2 import summarize_channel_v2
 from modules.email_generator import generate_email
 
@@ -50,34 +48,6 @@ def scrape():
     result = scrape_channel(url)
     if 'error' in result:
         return jsonify(result), 500
-    return jsonify(result)
-
-
-@app.route('/agency', methods=['POST'])
-def agency_endpoint():
-    body = request.get_json(silent=True) or {}
-
-    # Accept pre-scraped channel_data (preferred — avoids re-scraping)
-    channel_data = body.get('channel_data')
-    if not channel_data:
-        url = body.get('url', '').strip()
-        if not url:
-            return jsonify({'error': 'channel_data or url required'}), 400
-        channel_data = scrape_channel(url)
-        if 'error' in channel_data:
-            return jsonify({'error': channel_data['error']}), 400
-
-    result = find_agency(channel_data)
-    return jsonify(result)
-
-
-@app.route('/summarize', methods=['POST'])
-def summarize_endpoint():
-    body         = request.get_json(silent=True) or {}
-    channel_data = body.get('channel_data', {})
-    if not channel_data:
-        return jsonify({'error': 'channel_data required'}), 400
-    result = summarize_channel(channel_data)
     return jsonify(result)
 
 

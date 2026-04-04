@@ -567,196 +567,6 @@
 
         .link-list a:hover { color: var(--accent); }
 
-        /* ── Agency trigger button ───────────────────────────── */
-        .agency-trigger-btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: var(--surface);
-            border: 1px solid var(--border-m);
-            border-radius: var(--radius);
-            color: var(--muted);
-            font-family: var(--font-sans);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all .2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .agency-trigger-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: rgba(193,95,60,.04);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,.2);
-        }
-
-        .agency-trigger-btn:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
-
-        /* ── Agency card ────────────────────────────────────── */
-        #agencyResult {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .agency-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-left: 2px solid var(--accent);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        .agency-header {
-            padding: 16px 30px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .agency-header-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--accent);
-            flex-shrink: 0;
-        }
-
-        .agency-header-title {
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .8px;
-            color: var(--muted);
-        }
-
-        .agency-loading {
-            padding: 26px 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .agency-loading .spinner {
-            width: 18px; height: 18px;
-            border-width: 2px;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        .agency-not-found {
-            padding: 26px 30px;
-            color: var(--faint);
-            font-size: 0.85rem;
-            font-style: italic;
-        }
-
-        .agency-body { padding: 26px 30px; }
-
-        .agency-name {
-            font-family: var(--font-sans);
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .agency-website {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--accent);
-            text-decoration: none;
-            display: inline-block;
-            margin-bottom: 16px;
-            transition: opacity .2s;
-        }
-
-        .agency-website:hover { opacity: .8; text-decoration: underline; }
-
-        .agency-summary {
-            font-size: 0.86rem;
-            color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 16px;
-        }
-
-        .agency-desc {
-            font-size: 0.83rem;
-            color: var(--muted);
-            line-height: 1.7;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 18px;
-        }
-
-        .agency-fields {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-
-        .agency-social-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 18px;
-        }
-
-        .agency-tags-section { margin-top: 16px; }
-
-        .agency-tags-label {
-            font-size: 0.68rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin-bottom: 8px;
-        }
-
-        .agency-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-
-        .agency-tag {
-            background: rgba(177,173,161,.06);
-            border: 1px solid var(--border-m);
-            border-radius: 6px;
-            padding: 4px 11px;
-            font-size: 0.76rem;
-            color: var(--muted);
-        }
-
-        .agency-tag-client {
-            border-color: rgba(193,95,60,.2);
-            color: var(--accent);
-            background: rgba(193,95,60,.05);
-        }
-
-        .agency-note {
-            margin-top: 12px;
-            font-size: 0.76rem;
-            color: var(--faint);
-            font-style: italic;
-        }
-
-        .agency-source { margin-top: 18px; }
-
-        .source-badge {
-            font-family: var(--font-mono);
-            display: inline-block;
-            background: rgba(193,95,60,.06);
-            border: 1px solid rgba(193,95,60,.15);
-            border-radius: 10px;
-            padding: 4px 12px;
-            font-size: 0.68rem;
-            color: var(--accent);
-            letter-spacing: .2px;
-        }
-
         /* ── API Warning ────────────────────────────────────── */
         #apiWarning {
             display: none;
@@ -783,9 +593,7 @@
             .stat-item:nth-child(2) { border-right: none; }
             .meta-section, .about-section, .social-grid, .all-links-section { padding-left: 20px; padding-right: 20px; }
             .info-grid { grid-template-columns: 1fr; padding: 20px; }
-            .agency-fields { grid-template-columns: 1fr; }
-            .agency-header, .agency-loading, .agency-not-found, .agency-body { padding-left: 20px; padding-right: 20px; }
-        }
+}
     </style>
 </head>
 <body>
@@ -819,7 +627,6 @@
         </div>
 
         <div id="result"></div>
-        <div id="agencyResult"></div>
     </main>
 
     <script>
@@ -845,7 +652,6 @@
             setStatus('');
             showLoader(true);
             showResult(false);
-            hideAgency();
             _currentChannelData = null;
             _currentReportData = null;
             document.getElementById('searchBtn').disabled = true;
@@ -872,15 +678,12 @@
                     setTimeout(() => { resultEl.querySelector('.card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
                 }
             } catch (err) {
-                setStatus('Could not reach the API. Is app.py running?');
+                setStatus('Could not reach the API - <a href="#" onclick="doSearch();return false" style="color:var(--accent)">retry</a>', true);
             } finally {
                 showLoader(false);
                 document.getElementById('searchBtn').disabled = false;
             }
 
-            if (channelData) {
-                showAgencyButton();
-            }
         }
 
         async function summarizeChannel() {
@@ -957,12 +760,12 @@
                     setTimeout(() => { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
-                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
+                    box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">${esc(errMsg)} - <a href="#" onclick="summarizeChannel();return false" style="color:var(--accent)">retry</a></span>`;
                     if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
                 }
             } catch (_) {
                 clearInterval(stepTimer);
-                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
+                box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">Could not reach the API - <a href="#" onclick="summarizeChannel();return false" style="color:var(--accent)">retry</a></span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
             }
         }
@@ -1018,11 +821,11 @@
                     setTimeout(() => { box.querySelector('.email-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
-                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
+                    box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">${esc(errMsg)} - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
                     if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
                 }
             } catch (_) {
-                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
+                box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">Could not reach the API - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
             }
         }
@@ -1043,50 +846,6 @@
             });
         }
 
-        function showAgencyButton() {
-            const el = document.getElementById('agencyResult');
-            el.innerHTML = `
-                <button class="agency-trigger-btn" id="agencyTriggerBtn" onclick="investigateAgency()">
-                    Investigate Agency
-                </button>`;
-            el.style.display = 'block';
-        }
-
-        async function investigateAgency() {
-            if (!_currentChannelData) return;
-            const triggerBtn = document.getElementById('agencyTriggerBtn');
-            if (triggerBtn) triggerBtn.remove();
-
-            showAgencyLoading();
-            const steps = [
-                'Checking email domain...',
-                'Scanning external links...',
-                'Analyzing social profiles...',
-                'Searching the web...',
-                'Compiling report...',
-            ];
-            let stepIdx = 0;
-            const stepInterval = setInterval(() => {
-                stepIdx = (stepIdx + 1) % steps.length;
-                const el = document.getElementById('agencyStepText');
-                if (el) el.textContent = steps[stepIdx];
-            }, 3000);
-
-            try {
-                const res = await fetch(`${API_URL}/agency`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel_data: _currentChannelData })
-                });
-                const data = await res.json();
-                clearInterval(stepInterval);
-                renderAgency(data);
-            } catch (err) {
-                clearInterval(stepInterval);
-                renderAgency({ found: false });
-            }
-        }
-
         async function investigateEmail() {
             if (!_currentChannelData) return;
 
@@ -1094,12 +853,14 @@
             const emailItem = document.getElementById('emailInfoItem');
             if (!emailItem) return;
 
-            // Show spinner
-            if (btn) btn.disabled = true;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(177,173,161,.15);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite"></span> Searching<span class="dots-anim"></span></span>`;
+            }
             emailItem.querySelector('.meta-value').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
-                    <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
-                    AI Detective starting investigation...
+                    <span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
+                    Investigating email sources<span class="dots-anim"></span>
                 </span>`;
 
             try {
@@ -1112,21 +873,21 @@
 
                 if (data.found && data.email) {
                     emailItem.querySelector('.meta-value').innerHTML =
-                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>`;
-
-                    // Update saved channel data so agency investigation can use it
+                        `<span class="report-row" style="animation-delay:0ms"><a href="mailto:${esc(data.email)}">${esc(data.email)}</a></span>`;
                     _currentChannelData = { ..._currentChannelData, email: data.email };
+                    if (btn) { btn.disabled = true; btn.textContent = '\u2713 Email Found'; }
                 } else {
                     const hiddenMsg = _currentChannelData?.has_hidden_email
                         ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
                         : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
                     emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
+                    if (btn) { btn.disabled = false; btn.innerHTML = '🔍 Find Email'; }
                 }
             } catch (err) {
                 emailItem.querySelector('.meta-value').innerHTML =
-                    `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
+                    `<span style="color:var(--faint);font-size:.83rem">Search failed - <a href="#" onclick="investigateEmail();return false" style="color:var(--accent)">retry</a></span>`;
+                if (btn) { btn.disabled = false; btn.innerHTML = '🔍 Find Email'; }
             }
-            if (btn) btn.disabled = false;
         }
 
         function renderResult(d) {
@@ -1248,118 +1009,13 @@
             </div>`;
         }
 
-        function showAgencyLoading() {
-            document.getElementById('agencyResult').innerHTML = `
-                <div class="agency-card">
-                    <div class="agency-header">
-                        <div class="agency-header-dot"></div>
-                        <span class="agency-header-title">Agency Investigation</span>
-                    </div>
-                    <div class="agency-loading">
-                        <div class="spinner"></div>
-                        <span id="agencyStepText">Checking email domain...</span>
-                    </div>
-                </div>`;
-            document.getElementById('agencyResult').style.display = 'block';
-        }
-
-        function hideAgency() {
-            const el = document.getElementById('agencyResult');
-            el.style.display = 'none';
-            el.innerHTML = '';
-        }
-
-        function renderAgency(d) {
-            const sourceLabels = {
-                'email_domain':     'Found via email domain',
-                'external_link':    'Found via external link',
-                'linktree':         'Found via Linktree',
-                'description_regex':'Found via description',
-                'web_search':       'Found via web search',
-                'ai_analysis':      'Identified by AI',
-            };
-
-            if (!d.found) {
-                document.getElementById('agencyResult').innerHTML = `
-                    <div class="agency-card">
-                        <div class="agency-header">
-                            <div class="agency-header-dot"></div>
-                            <span class="agency-header-title">Agency Investigation</span>
-                        </div>
-                        <div class="agency-not-found">No agency or management company could be identified.</div>
-                    </div>`;
-                return;
-            }
-
-            const name     = d.name || '';
-            const website  = d.website || '';
-            const email    = d.contact_email || d.email || '';
-            const phone    = d.contact_phone || d.phone || '';
-            const address  = d.address || '';
-            const founded  = d.founded || '';
-            const desc     = d.description || '';
-            const summary  = d.summary || '';
-            const services = Array.isArray(d.services) ? d.services : [];
-            const clients  = Array.isArray(d.notable_clients) ? d.notable_clients : [];
-            const socials  = d.socials || {};
-            const source   = d.source || '';
-
-            const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', linkedin:'💼', myanimelist:'🎌' };
-            const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', linkedin:'LinkedIn', myanimelist:'MyAnimeList' };
-
-            const socialBadges = Object.entries(socials)
-                .filter(([, v]) => v && v !== 'null')
-                .map(([k, v]) => `<a class="social-badge" href="${esc(v)}" target="_blank" rel="noopener">${socialIcons[k]||'🔗'} ${socialNames[k]||k}</a>`)
-                .join('');
-
-            const infoFields = [
-                email   ? `<div class="info-item"><span class="info-label">Email</span><span class="info-value"><a href="mailto:${esc(email)}">${esc(email)}</a></span></div>` : '',
-                phone   ? `<div class="info-item"><span class="info-label">Phone</span><span class="info-value">${esc(phone)}</span></div>` : '',
-                address ? `<div class="info-item"><span class="info-label">Location</span><span class="info-value">${esc(address)}</span></div>` : '',
-                founded ? `<div class="info-item"><span class="info-label">Founded</span><span class="info-value">${esc(founded)}</span></div>` : '',
-            ].filter(Boolean).join('');
-
-            const servicesTags = services.length
-                ? `<div class="agency-tags-section">
-                     <div class="agency-tags-label">Services</div>
-                     <div class="agency-tags">${services.map(s=>`<span class="agency-tag">${esc(s)}</span>`).join('')}</div>
-                   </div>` : '';
-
-            const clientsTags = clients.length
-                ? `<div class="agency-tags-section">
-                     <div class="agency-tags-label">Notable Clients</div>
-                     <div class="agency-tags">${clients.map(c=>`<span class="agency-tag agency-tag-client">${esc(c)}</span>`).join('')}</div>
-                   </div>` : '';
-
-            document.getElementById('agencyResult').innerHTML = `
-                <div class="agency-card">
-                    <div class="agency-header">
-                        <div class="agency-header-dot"></div>
-                        <span class="agency-header-title">Agency / Management</span>
-                    </div>
-                    <div class="agency-body">
-                        ${name    ? `<div class="agency-name">${esc(name)}</div>` : ''}
-                        ${website ? `<a class="agency-website" href="${esc(website)}" target="_blank" rel="noopener">${esc(website)}</a>` : ''}
-                        ${summary ? `<div class="agency-summary">${esc(summary)}</div>` : ''}
-                        ${desc    ? `<div class="agency-desc">${esc(desc)}</div>` : ''}
-                        ${infoFields ? `<div class="agency-fields">${infoFields}</div>` : ''}
-                        ${servicesTags}
-                        ${clientsTags}
-                        ${socialBadges ? `<div class="agency-social-grid">${socialBadges}</div>` : ''}
-                        ${d.note      ? `<div class="agency-note">${esc(d.note)}</div>` : ''}
-                        ${d.reasoning ? `<div class="agency-note">${esc(d.reasoning)}</div>` : ''}
-                        ${source      ? `<div class="agency-source"><span class="source-badge">${esc(sourceLabels[source]||source)}</span></div>` : ''}
-                    </div>
-                </div>`;
-        }
-
         function esc(s) {
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
-        function setStatus(msg) {
+        function setStatus(msg, html) {
             const el = document.getElementById('statusMsg');
-            el.textContent = msg;
+            if (html) el.innerHTML = msg; else el.textContent = msg;
             el.style.display = msg ? 'block' : 'none';
         }
 
