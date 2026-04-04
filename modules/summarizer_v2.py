@@ -115,6 +115,31 @@ def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
         import yt_dlp
 
         url = f'https://www.youtube.com/watch?v={video_id}'
+
+        # First: quick extract_info to find available subtitle languages
+        with yt_dlp.YoutubeDL({'skip_download': True, 'quiet': True, 'no_warnings': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+        if not info:
+            return ''
+
+        # Pick best language: prefer manual subs, then auto-captions
+        subs = info.get('subtitles') or {}
+        auto = info.get('automatic_captions') or {}
+        preferred = ['en', 'tr', 'de', 'fr', 'es', 'pt', 'ja', 'ko', 'ru', 'ar']
+        lang = ''
+        for source in [subs, auto]:
+            for pl in preferred:
+                if pl in source:
+                    lang = pl
+                    break
+            if not lang and source:
+                lang = list(source.keys())[0]
+            if lang:
+                break
+
+        if not lang:
+            return ''
+
         with tempfile.TemporaryDirectory() as tmpdir:
             outtmpl = os.path.join(tmpdir, '%(id)s')
             opts = {
@@ -122,7 +147,7 @@ def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
                 'writesubtitles':   True,
                 'writeautomaticsub': True,
                 'subtitlesformat':  'json3',
-                'subtitleslangs':   ['all'],
+                'subtitleslangs':   [lang],
                 'outtmpl':          outtmpl,
                 'quiet':            True,
                 'no_warnings':      True,
