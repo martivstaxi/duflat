@@ -20,3 +20,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_2](./pro_version_2/VERSION_INFO.md) | 2026-04-04 | Bug fixes + AI Summary yeniden yazıldı: manuel buton, tablo rapor, algoritmik dil tespiti |
 | [pro_version_3](./pro_version_3/VERSION_INFO.md) | 2026-04-04 | UI yeniden yapılandırıldı + kanal avatar + description fix (video desc bug) + email finder timeout |
 | [pro_version_4](./pro_version_4/VERSION_INFO.md) | 2026-04-04 | Apple-inspired UI redesign — header kaldırıldı, shadow kartlar, refined spacing, profesyonel görünüm |
+| [pro_version_5](./pro_version_5/VERSION_INFO.md) | 2026-04-04 | Manuel agency butonu + description bug kalıcı fix (4 kaynak + yt-dlp fallback) |
