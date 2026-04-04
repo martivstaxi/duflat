@@ -363,11 +363,7 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 0;
-            margin-bottom: 0;
-        }
-        .about-section-header .section-label {
-            margin-top: 20px;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
 
         /* ── Description box ────────────────────────────────── */
@@ -401,6 +397,19 @@
         .ai-report-btn:active { transform: translateY(0); box-shadow: none; }
         .ai-report-btn:disabled { opacity: .4; cursor: default; background: rgba(193,95,60,.05); transform: none; box-shadow: none; }
 
+        /* ── Report button row ───────────────────────────────── */
+        .report-btn-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .btn-arrow {
+            font-size: 1.2rem;
+            color: var(--faint);
+            margin: 0 10px;
+            user-select: none;
+        }
+
         /* ── Email Generator button ─────────────────────────── */
         .email-gen-btn {
             display: inline-flex;
@@ -415,7 +424,6 @@
             font-family: var(--font-sans);
             color: var(--accent);
             cursor: pointer;
-            margin-top: 14px;
             transition: all .2s ease;
         }
         .email-gen-btn:hover  { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); color: #d4694a; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(193,95,60,.15); }
@@ -910,11 +918,13 @@
                     const meta = data.videos_analyzed
                         ? `<div style="color:var(--faint);font-size:.75rem;margin-top:8px">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
                         : '';
-                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>
-                        <button class="email-gen-btn" id="emailGenBtn" onclick="generateEmail()">✉️ Customize Email</button>
-                        <div id="emailResultBox"></div>`;
+                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>`;
                     _currentReportData = data;
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
+                    const arrow = document.getElementById('emailArrow');
+                    const emailBtn = document.getElementById('emailGenBtn');
+                    if (arrow) arrow.style.display = '';
+                    if (emailBtn) emailBtn.style.display = '';
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
@@ -1135,13 +1145,22 @@
 
                     <div class="about-section" id="summaryBlock">
                         <div class="about-section-header">
-                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
-                                ✨ Generate AI Report
-                            </button>
-                            <span class="section-label" style="margin-left:3px">About</span>
+                            <div class="report-btn-row">
+                                <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
+                                    ✨ Generate AI Report
+                                </button>
+                                <span class="btn-arrow" id="emailArrow" style="display:none">›</span>
+                                <button class="email-gen-btn" id="emailGenBtn" onclick="generateEmail()" style="display:none">
+                                    ✉️ Customize Email
+                                </button>
+                            </div>
                         </div>
                         <div id="summaryBox"></div>
-                        <div class="description-box">
+                        <div id="emailResultBox"></div>
+                        <div style="margin-top:16px">
+                            <span class="section-label" style="margin-left:3px">About</span>
+                        </div>
+                        <div class="description-box" style="margin-top:8px">
                             ${d.description
                                 ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
                                 : `<span style="color:var(--faint);font-style:italic">No description available.</span>`

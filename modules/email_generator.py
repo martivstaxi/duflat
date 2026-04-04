@@ -47,8 +47,8 @@ def generate_email(channel_data: dict, report_data: dict, transcripts: list = No
         if not match:
             return {'error': 'Invalid AI response'}
         data = json.loads(match.group())
-        subject = data.get('subject', '').strip()
-        body = data.get('body', '').strip()
+        subject = data.get('subject', '').strip().replace('—', '-')
+        body = data.get('body', '').strip().replace('—', '-')
         if not subject or not body:
             return {'error': 'Empty email generated'}
         return {'subject': subject, 'body': body}
@@ -112,15 +112,17 @@ def _build_prompt(channel_data: dict, report_data: dict, transcripts: list = Non
 TASK: Write a short, personalized email inviting this creator to also share their content on Bilibili.
 
 RULES:
-- Write the email in the creator's content language ({lang}). If {lang} is English or Unknown, write in English.
-- The email must feel personal — reference specific things about their content, style, or niche.
+- Write the ENTIRE email in the creator's content language ({lang}). If {lang} is Unknown, write in English. The email MUST be in {lang}, not in English (unless {lang} is English).
+- The email must feel personal. Reference specific things about their content, style, or niche.
 - Tone: warm, genuine, motivating. Like a message from someone who actually watches their content.
+- The email should boost the creator's motivation and make them feel their content has real value.
 - Do NOT sound like corporate marketing or a mass email template.
 - Do NOT use excessive flattery or hype words.
-- Keep it concise — 150-250 words for the body.
+- NEVER use the em dash character. Use a comma, period, or hyphen instead.
+- Keep it concise: 150-250 words for the body.
 - The goal is to make the creator curious and excited about reaching Bilibili's audience.
 - Mention how their specific content style/niche could resonate with Bilibili's audience.
-- End with a soft, low-pressure call to action (not "sign up now" — more like "would love to chat about this").
+- End with a soft, low-pressure call to action (not "sign up now", more like "would love to chat about this").
 - Subject line: short, personal, intriguing (not salesy).
 
 Respond ONLY with valid JSON:
