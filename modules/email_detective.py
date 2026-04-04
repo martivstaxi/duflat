@@ -70,6 +70,7 @@ _RE_OBFUSCATED = re.compile(
 
 MAX_ROUNDS = 6
 MODEL = 'claude-sonnet-4-6'
+CC_API_URL = 'https://api.channelcrawler.com'
 
 # ─────────────────────────────────────────────
 # TOOL IMPLEMENTATIONS (executed server-side)
@@ -302,6 +303,44 @@ def _tool_extract_linktree(url: str) -> dict:
         'emails': emails[:5],
         'url': url,
     }
+
+
+# ─────────────────────────────────────────────
+# CHANNELCRAWLER API
+# ─────────────────────────────────────────────
+
+def _channelcrawler_lookup(channel_id: str, api_key: str) -> str | None:
+    """
+    Look up a YouTube channel's email via ChannelCrawler API.
+    Uses POST /v1/channels/email endpoint.
+    Returns email string or None.
+    """
+    try:
+        r = requests.post(
+            f'{CC_API_URL}/v1/channels/email',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            json={'channel_id': channel_id},
+            timeout=15,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            # Try common response field names
+            email = (data.get('email') or data.get('business_email')
+                     or data.get('contact_email') or '')
+            if email and '@' in email and _is_valid_email(email):
+                return email.lower().strip()
+            # Maybe nested under 'data' or 'channel'
+            inner = data.get('data') or data.get('channel') or {}
+            if isinstance(inner, dict):
+                email = (inner.get('email') or inner.get('business_email') or '')
+                if email and '@' in email and _is_valid_email(email):
+                    return email.lower().strip()
+    except Exception:
+        pass
+    return None
 
 
 # ─────────────────────────────────────────────
@@ -665,6 +704,24 @@ def find_email_v2(channel_data: dict) -> dict:
         # If stop_reason is end_turn (no more tool calls expected), break
         if response.stop_reason == 'end_turn':
             break
+
+    # ── FALLBACK: ChannelCrawler API ──
+    cc_key = os.environ.get('CC_API_KEY', '')
+    if cc_key and channel_id:
+        steps.append('AI Detective could not find email. Trying ChannelCrawler API...')
+        cc_result = _channelcrawler_lookup(channel_id, cc_key)
+        if cc_result:
+            steps.append(f'ChannelCrawler found: {cc_result}')
+            return {
+                'found': True,
+                'email': cc_result,
+                'source': 'channelcrawler',
+                'confidence': 'high',
+                'reasoning': 'Found via ChannelCrawler database.',
+                'steps': steps,
+            }
+        else:
+            steps.append('ChannelCrawler: no email in database.')
 
     steps.append('Investigation complete — no email found.')
     return {'found': False, 'steps': steps}
