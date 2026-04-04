@@ -26,3 +26,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_8](./pro_version_8/VERSION_INFO.md) | 2026-04-04 | AI Report v2 — video transkript analizi, avatar fix, bullet point key insight |
 | [pro_version_9](./pro_version_9/VERSION_INFO.md) | 2026-04-04 | UI polish — Apple-style butonlar, spacing fix, profesyonel görünüm |
 | [pro_version_10](./pro_version_10/VERSION_INFO.md) | 2026-04-04 | Personalized Email Generator — Bilibili davet emaili, Sonnet ile |
+| [pro_version_11](./pro_version_11/VERSION_INFO.md) | 2026-04-04 | Email prompt profesyonel ton + UX juice animasyonlari |
