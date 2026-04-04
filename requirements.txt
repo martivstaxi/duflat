@@ -4,4 +4,5 @@ yt-dlp
 requests
 beautifulsoup4
 anthropic
+apify-client
 gunicorn==22.0.0

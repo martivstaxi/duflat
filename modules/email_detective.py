@@ -344,6 +344,51 @@ def _channelcrawler_lookup(channel_id: str, api_key: str) -> str | None:
 
 
 # ─────────────────────────────────────────────
+# APIFY DATAOVERCOFFEE — YouTube hidden email
+# ─────────────────────────────────────────────
+
+def _apify_email_lookup(channel_url: str, api_token: str) -> str | None:
+    """
+    Use Apify DataOverCoffee actor to extract YouTube hidden business email.
+    This actor uses logged-in Google accounts + CAPTCHA solving to click
+    YouTube's "View email address" button.
+
+    Cost: $0.12 per email found (cached), $0.40 fresh. No charge if no email.
+    """
+    try:
+        from apify_client import ApifyClient
+
+        client = ApifyClient(token=api_token)
+        run = client.actor('dataovercoffee/youtube-channel-business-email-scraper').call(
+            run_input={
+                'channelUrls': [channel_url],
+                'forceFreshEmailScrape': False,
+            },
+            timeout_secs=120,
+        )
+
+        items = client.dataset(run['defaultDatasetId']).list_items().items
+        if not items:
+            return None
+
+        item = items[0]
+        # Try common field names — exact schema needs one test run to confirm
+        email = (item.get('email') or item.get('business_email')
+                 or item.get('businessEmail') or item.get('contact_email') or '')
+        if email and '@' in email and _is_valid_email(email):
+            return email.lower().strip()
+
+        # Search all string values in result for email pattern
+        for val in item.values():
+            if isinstance(val, str) and '@' in val and _is_valid_email(val):
+                return val.lower().strip()
+
+    except Exception:
+        pass
+    return None
+
+
+# ─────────────────────────────────────────────
 # TOOL DEFINITIONS FOR CLAUDE
 # ─────────────────────────────────────────────
 
@@ -698,7 +743,7 @@ def find_email_v2(channel_data: dict) -> dict:
         if response.stop_reason == 'end_turn':
             break
 
-    # ── FALLBACK: ChannelCrawler API ──
+    # ── FALLBACK 1: ChannelCrawler API ──
     cc_key = os.environ.get('CC_API_KEY', '')
     if cc_key and channel_id:
         steps.append('AI Detective could not find email. Trying ChannelCrawler API...')
@@ -715,6 +760,24 @@ def find_email_v2(channel_data: dict) -> dict:
             }
         else:
             steps.append('ChannelCrawler: no email in database.')
+
+    # ── FALLBACK 2: Apify DataOverCoffee (YouTube hidden email) ──
+    apify_token = os.environ.get('APIFY_API_TOKEN', '')
+    if apify_token and channel_url:
+        steps.append('Trying Apify DataOverCoffee (YouTube hidden email extraction)...')
+        apify_result = _apify_email_lookup(channel_url, apify_token)
+        if apify_result:
+            steps.append(f'Apify found: {apify_result}')
+            return {
+                'found': True,
+                'email': apify_result,
+                'source': 'apify',
+                'confidence': 'high',
+                'reasoning': 'Found via Apify DataOverCoffee (YouTube hidden business email).',
+                'steps': steps,
+            }
+        else:
+            steps.append('Apify: no email found.')
 
     steps.append('Investigation complete — no email found.')
     return {'found': False, 'steps': steps}
