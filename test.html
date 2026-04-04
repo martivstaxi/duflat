@@ -991,7 +991,7 @@
                                 ? `<span class="meta-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
                                 : `<span class="meta-value">
                                        ${d.has_hidden_email
-                                           ? `<span style="color:var(--accent);font-size:.85rem" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
+                                           ? `<span style="color:var(--faint);font-size:.78rem;font-style:italic" title="YouTube requires login to reveal this email">🔒 Hidden email</span>`
                                            : ''}
                                        <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
                                            🔍 Find Email
