@@ -933,7 +933,7 @@
             document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        ${d.thumbnail && d.thumbnail.includes('yt3.ggpht.com')
+                        ${d.thumbnail && d.thumbnail.includes('yt3.')
                             ? `<img class="channel-avatar" src="${esc(d.thumbnail)}" alt="" style="object-fit:cover" onerror="this.outerHTML='<div class=channel-avatar>${initial}</div>'">`
                             : `<div class="channel-avatar">${initial}</div>`
                         }

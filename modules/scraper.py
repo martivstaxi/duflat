@@ -639,7 +639,10 @@ def _parse_about_from_html(html: str) -> dict:
                 break
 
     if avatar_url:
-        result['avatar'] = avatar_url.replace('\\/', '/').replace('\\u0026', '&')
+        avatar_url = avatar_url.replace('\\/', '/').replace('\\u0026', '&')
+        # Upscale small avatars to s176 for display
+        avatar_url = re.sub(r'=s\d+-', '=s176-', avatar_url)
+        result['avatar'] = avatar_url
 
     return result
 
