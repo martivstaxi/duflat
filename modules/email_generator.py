@@ -105,25 +105,39 @@ def _build_prompt(channel_data: dict, report_data: dict, transcripts: list = Non
     # Detect if creator likely speaks a non-English language
     lang = report.get('content_language', 'English')
 
-    return f"""You are writing a personalized outreach email to invite a YouTube creator to Bilibili.
+    return f"""You are a Bilibili partnership representative writing a professional outreach email to a YouTube creator.
 
 {context}
 
-TASK: Write a short, personalized email inviting this creator to also share their content on Bilibili.
+TASK: Write a professional, personalized email inviting this creator to expand their content to Bilibili.
 
-RULES:
-- Write the ENTIRE email in the creator's content language ({lang}). If {lang} is Unknown, write in English. The email MUST be in {lang}, not in English (unless {lang} is English).
-- The email must feel personal. Reference specific things about their content, style, or niche.
-- Tone: warm, genuine, motivating. Like a message from someone who actually watches their content.
-- The email should boost the creator's motivation and make them feel their content has real value.
-- Do NOT sound like corporate marketing or a mass email template.
-- Do NOT use excessive flattery or hype words.
+WRITING STYLE:
+- Study the transcript excerpts and creator's style carefully. Mirror the creator's own tone, vocabulary, and communication patterns in the email. If they are casual and witty, reflect that subtly. If they are analytical and precise, match that register. The email should feel like it was written by someone who genuinely understands how they communicate.
+- Write the ENTIRE email in the creator's content language ({lang}). If {lang} is Unknown, write in English.
+
+TONE:
+- Professional and respectful, but approachable. Think "business email from someone friendly", not "fan letter" or "corporate template".
+- Do NOT be overly familiar, enthusiastic, or casual. No excessive compliments, no hype words, no exclamation marks overuse.
+- Be confident and straightforward. State the opportunity clearly without overselling.
+
+PERSONALIZATION:
+- Show that you have genuinely reviewed their channel. Reference their content area, approach, or what makes their channel distinctive.
+- Do NOT cite specific video titles, quotes, or timestamps. The personalization should feel natural and observant, not like a checklist. The reader should think "this person actually looked at my channel" without feeling like their content was dissected.
+- Briefly connect their content strengths to why Bilibili's audience would appreciate them.
+
+STRUCTURE:
+- Short professional greeting
+- 1-2 sentences showing you know their work (subtle, not forced)
+- The opportunity: Bilibili has a large audience interested in their niche
+- What you can offer (support with localization, promotion, onboarding)
+- Soft call to action: suggest a brief call or reply, no pressure
+- Professional sign-off
+
+CONSTRAINTS:
+- 150-250 words for the body
 - NEVER use the em dash character. Use a comma, period, or hyphen instead.
-- Keep it concise: 150-250 words for the body.
-- The goal is to make the creator curious and excited about reaching Bilibili's audience.
-- Mention how their specific content style/niche could resonate with Bilibili's audience.
-- End with a soft, low-pressure call to action (not "sign up now", more like "would love to chat about this").
-- Subject line: short, personal, intriguing (not salesy).
+- No marketing buzzwords, no "exciting opportunity", no "we'd be thrilled"
+- Subject line: short, professional, relevant to their niche (not clickbait)
 
 Respond ONLY with valid JSON:
 {{
