@@ -260,8 +260,11 @@ Fields:
    - What specific themes, products, or cultural references appear repeatedly in the spoken content?
    - What makes this creator different from others in the same niche?
    RULES for key_insight:
+   - Write in PLAIN, simple English. Short sentences. Easy to read and understand.
+   - Do NOT use corporate/marketing buzzwords like "leverages", "drives engagement", "narrative arc", "content strategy", "positions itself", "resonates with", "ecosystem".
+   - Write like you're explaining to a friend, not writing a McKinsey report.
+   - Be professional but human. Say "their most watched videos are about X" not "highest-performing content leverages X".
    - Every claim must be backed by evidence from transcript content or video data
-   - No generic statements like "the creator engages well with audience"
    - No subscriber/view counts — focus on CONTENT patterns
    - No video titles — describe the content instead
    - All text in English, translate everything
