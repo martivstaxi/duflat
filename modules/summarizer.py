@@ -90,7 +90,7 @@ Generate a professional channel report with these exact 7 fields. Each value mus
 CRITICAL RULE: Base every field ONLY on hard evidence visible in the data above. Never speculate or add things not supported by the data. If unsure, say "Unclear from available data."
 
 Fields:
-1. content_language — Look at the video titles above. What language are they written in? That is the content language. Only mark bilingual if you see titles clearly in TWO different languages. E.g. "Turkish", "English", "Bilingual (TR + EN)"
+1. content_language — Look at the video titles above. What language are they written in? Report just the primary language. E.g. "Turkish", "English", "Spanish"
 2. niche — Primary content category from titles and description. E.g. "Anime reviews & seasonal rankings"
 3. audience — Must match content_language. If content is Turkish → audience is Turkish-speaking. Never add a secondary audience language unless there is explicit evidence. E.g. "Turkish-speaking anime fans, likely 16–28"
 4. upload_frequency — Infer from how many recent titles exist and their pattern. E.g. "~1–2 videos/week", "Irregular bursts"
