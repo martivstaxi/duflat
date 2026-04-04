@@ -100,6 +100,60 @@ def find_email_endpoint():
     return jsonify(result)
 
 
+@app.route('/debug-subs', methods=['GET'])
+def debug_subs():
+    """Debug: test subtitle extraction for a video."""
+    vid = request.args.get('v', '').strip()
+    if not vid:
+        return jsonify({'error': 'v parameter required (video ID)'}), 400
+    import tempfile, os as _os
+    url = f'https://www.youtube.com/watch?v={vid}'
+    result = {'video_id': vid, 'steps': []}
+
+    # Step 1: extract_info — check what subtitle data exists
+    try:
+        with yt_dlp.YoutubeDL({'skip_download': True, 'quiet': True, 'no_warnings': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+        subs = info.get('subtitles') or {}
+        auto = info.get('automatic_captions') or {}
+        result['subtitles_langs'] = list(subs.keys())[:10]
+        result['auto_captions_langs'] = list(auto.keys())[:10]
+        result['has_subtitles'] = len(subs) > 0
+        result['has_auto_captions'] = len(auto) > 0
+        if auto:
+            first_lang = list(auto.keys())[0]
+            result['first_auto_formats'] = [f.get('ext') for f in auto[first_lang][:5]]
+        result['steps'].append('extract_info OK')
+    except Exception as e:
+        result['steps'].append(f'extract_info FAIL: {e}')
+        return jsonify(result)
+
+    # Step 2: try yt-dlp download to temp dir
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            outtmpl = _os.path.join(tmpdir, '%(id)s')
+            opts = {
+                'skip_download': True, 'writesubtitles': True, 'writeautomaticsub': True,
+                'subtitlesformat': 'json3', 'subtitleslangs': ['en', 'tr'],
+                'outtmpl': outtmpl, 'quiet': True, 'no_warnings': True, 'ignoreerrors': True,
+            }
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                ydl.download([url])
+            files = _os.listdir(tmpdir)
+            result['temp_files'] = files
+            result['steps'].append(f'download OK, {len(files)} files')
+            for f in files[:3]:
+                fpath = _os.path.join(tmpdir, f)
+                sz = _os.path.getsize(fpath)
+                result[f'file_{f}_size'] = sz
+                if sz > 0 and sz < 5000:
+                    result[f'file_{f}_preview'] = open(fpath, encoding='utf-8', errors='ignore').read()[:500]
+    except Exception as e:
+        result['steps'].append(f'download FAIL: {e}')
+
+    return jsonify(result)
+
+
 @app.route('/find-email-v2', methods=['POST'])
 def find_email_v2_endpoint():
     body         = request.get_json(silent=True) or {}
