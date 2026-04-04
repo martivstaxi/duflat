@@ -883,41 +883,22 @@
             emailItem.querySelector('.meta-value').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
                     <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
-                    Investigating...
+                    AI Detective starting investigation...
                 </span>`;
 
-            // Cycle through detective steps while waiting
-            const detectiveSteps = [
-                'Scanning external links...',
-                'Checking social media bios...',
-                'Reading latest video description...',
-                'Searching the web...',
-                'Guessing domain patterns...',
-                'Running AI analysis...',
-            ];
-            let stepIdx = 0;
-            const stepTimer = setInterval(() => {
-                stepIdx = (stepIdx + 1) % detectiveSteps.length;
-                const el = emailItem.querySelector('.meta-value');
-                if (el) el.innerHTML =
-                    `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem">
-                        <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                        ${detectiveSteps[stepIdx]}
-                    </span>`;
-            }, 2500);
-
             try {
-                const res = await fetch(`${API_URL}/find-email`, {
+                const res = await fetch(`${API_URL}/find-email-v2`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel_data: _currentChannelData })
                 });
-                clearInterval(stepTimer);
                 const data = await res.json();
 
                 if (data.found && data.email) {
                     const sourceLabel = {
                         'channel':            'from channel page',
+                        'youtube_hidden':     'YouTube hidden email',
+                        'youtube_about':      'from YouTube about',
                         'description':        'from channel description',
                         'external_link':      'from external link',
                         'linktree':           'via link aggregator',
@@ -928,6 +909,7 @@
                         'video_description':  'from video description',
                         'web_search':         'via web search',
                         'ai_analysis':        'identified by AI',
+                        'ai_detective':       'found by AI Detective',
                     }[data.source] || data.source;
 
                     const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
@@ -946,11 +928,31 @@
                         : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
                     emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
                 }
+
+                // Show investigation steps log
+                if (data.steps && data.steps.length > 0) {
+                    let stepsEl = document.getElementById('emailDetectiveLog');
+                    if (!stepsEl) {
+                        stepsEl = document.createElement('div');
+                        stepsEl.id = 'emailDetectiveLog';
+                        stepsEl.style.cssText = 'margin-top:12px;padding:12px 16px;background:rgba(0,0,0,.2);border-radius:10px;font-family:var(--font-mono);font-size:.75rem;color:var(--muted);max-height:200px;overflow-y:auto;line-height:1.7;border:1px solid var(--border)';
+                        emailItem.parentElement.appendChild(stepsEl);
+                    }
+                    stepsEl.innerHTML = data.steps
+                        .map(s => {
+                            if (s.includes('EMAIL FOUND')) return `<div style="color:var(--accent);font-weight:600">${esc(s)}</div>`;
+                            if (s.includes('Found')) return `<div style="color:#7aba6e">${esc(s)}</div>`;
+                            if (s.includes('error') || s.includes('failed')) return `<div style="color:#c15f3c">${esc(s)}</div>`;
+                            return `<div>${esc(s)}</div>`;
+                        })
+                        .join('');
+                    stepsEl.scrollTop = stepsEl.scrollHeight;
+                }
             } catch (err) {
-                clearInterval(stepTimer);
                 emailItem.querySelector('.meta-value').innerHTML =
                     `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
             }
+            if (btn) btn.disabled = false;
         }
 
         function renderResult(d) {

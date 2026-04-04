@@ -19,6 +19,7 @@ from flask_cors import CORS
 from modules.scraper      import scrape_channel, normalize_url, _extract_about_via_ytdlp, fetch_about_page
 from modules.agency       import find_agency
 from modules.email_finder import find_email
+from modules.email_detective import find_email_v2
 from modules.summarizer   import summarize_channel
 
 app = Flask(__name__, static_folder='.')
@@ -85,6 +86,16 @@ def find_email_endpoint():
     if not channel_data:
         return jsonify({'error': 'channel_data required'}), 400
     result = find_email(channel_data)
+    return jsonify(result)
+
+
+@app.route('/find-email-v2', methods=['POST'])
+def find_email_v2_endpoint():
+    body         = request.get_json(silent=True) or {}
+    channel_data = body.get('channel_data', {})
+    if not channel_data:
+        return jsonify({'error': 'channel_data required'}), 400
+    result = find_email_v2(channel_data)
     return jsonify(result)
 
 # ─────────────────────────────────────────────
