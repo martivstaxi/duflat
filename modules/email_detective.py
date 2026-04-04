@@ -344,65 +344,83 @@ def _channelcrawler_lookup(channel_id: str, api_key: str) -> str | None:
 
 
 # ─────────────────────────────────────────────
-# APIFY DATAOVERCOFFEE — YouTube hidden email
+# APIFY — YouTube hidden email (two actors)
 # ─────────────────────────────────────────────
 
-def _apify_email_lookup(channel_url: str, channel_id: str, api_token: str) -> tuple[str | None, str]:
+def _apify_exporter24(channel_url: str, channel_id: str, api_token: str) -> tuple[str | None, str]:
     """
-    Use Apify DataOverCoffee actor to extract YouTube hidden business email.
-    Validates that the returned channel matches our channel_id to prevent wrong-channel results.
-    Returns: (email_or_none, debug_info_string)
+    Primary Apify actor: exporter24/youtube-email-scraper ($0.03/result).
+    Accepts channel URL. Returns email list.
     """
     try:
         from apify_client import ApifyClient
 
-        # Use channel ID URL for precision (avoids handle resolution issues)
         target_url = f'https://www.youtube.com/channel/{channel_id}' if channel_id else channel_url
 
         client = ApifyClient(token=api_token)
-        run = client.actor('dataovercoffee/youtube-channel-business-email-scraper').call(
-            run_input={
-                'channelUrls': [target_url],
-                'forceFreshEmailScrape': True,
-            },
+        run = client.actor('exporter24/youtube-email-scraper').call(
+            run_input={'url': target_url},
             timeout_secs=120,
         )
 
         items = client.dataset(run['defaultDatasetId']).list_items().items
         if not items:
-            return None, 'Apify returned 0 items'
+            return None, 'exporter24: 0 items'
 
         item = items[0]
         debug = json.dumps(item, ensure_ascii=False, default=str)[:500]
 
-        # ── Channel ID validation — reject if Apify returned a different channel ──
-        if channel_id:
-            returned_id = (item.get('channelId') or item.get('ChannelId')
-                           or item.get('channel_id') or '')
-            returned_url = (item.get('channelUrl') or item.get('ChannelUrl')
-                            or item.get('channel_url') or item.get('url') or '')
-            # Check if returned channel ID matches ours
-            if returned_id and returned_id != channel_id:
-                return None, f'REJECTED: Apify returned different channel ({returned_id} != {channel_id}). Raw: {debug}'
-            # Fallback: check URL contains our channel ID
-            if not returned_id and returned_url and channel_id not in returned_url:
-                return None, f'REJECTED: Apify URL mismatch ({returned_url} does not contain {channel_id}). Raw: {debug}'
-
-        # Try common field names
-        email = (item.get('email') or item.get('business_email')
-                 or item.get('businessEmail') or item.get('contact_email') or '')
-        if email and '@' in email and _is_valid_email(email):
-            return email.lower().strip(), debug
-
-        # Search all string values for email pattern
-        for val in item.values():
-            if isinstance(val, str) and '@' in val and _is_valid_email(val):
-                return val.lower().strip(), debug
+        # email field can be a list or string
+        email_field = item.get('email', '')
+        if isinstance(email_field, list):
+            for e in email_field:
+                if isinstance(e, str) and _is_valid_email(e):
+                    return e.lower().strip(), debug
+        elif isinstance(email_field, str) and _is_valid_email(email_field):
+            return email_field.lower().strip(), debug
 
         return None, debug
 
     except Exception as e:
-        return None, f'Apify error: {e}'
+        return None, f'exporter24 error: {e}'
+
+
+def _apify_endspec_instant(handle: str, api_token: str) -> tuple[str | None, str]:
+    """
+    Fallback Apify actor: endspec/youtube-instant-email-scraper ($0.075/result).
+    Only works with channelHandle (not channelId).
+    """
+    if not handle:
+        return None, 'endspec: no handle available'
+
+    try:
+        from apify_client import ApifyClient
+
+        if not handle.startswith('@'):
+            handle = '@' + handle
+
+        client = ApifyClient(token=api_token)
+        run = client.actor('endspec/youtube-instant-email-scraper').call(
+            run_input={'channelHandle': handle},
+            timeout_secs=120,
+        )
+
+        items = client.dataset(run['defaultDatasetId']).list_items().items
+        if not items:
+            return None, 'endspec: 0 items'
+
+        item = items[0]
+        debug = json.dumps(item, ensure_ascii=False, default=str)[:500]
+
+        if item.get('found') and item.get('email'):
+            email = item['email']
+            if _is_valid_email(email):
+                return email.lower().strip(), debug
+
+        return None, debug
+
+    except Exception as e:
+        return None, f'endspec error: {e}'
 
 
 # ─────────────────────────────────────────────
@@ -664,25 +682,39 @@ def find_email_v2(channel_data: dict) -> dict:
         else:
             steps.append('ChannelCrawler: no email in database.')
 
-    # ── FALLBACK 2: Apify DataOverCoffee (YouTube hidden email) ──
+    # ── FALLBACK 2: Apify exporter24 ($0.03/result) ──
     apify_token = os.environ.get('APIFY_API_TOKEN', '')
     if apify_token and (channel_url or channel_id):
-        target = f'https://www.youtube.com/channel/{channel_id}' if channel_id else channel_url
-        steps.append(f'Trying Apify DataOverCoffee for {target}...')
-        apify_result, apify_debug = _apify_email_lookup(channel_url, channel_id, apify_token)
-        steps.append(f'Apify raw response: {apify_debug[:300]}')
+        steps.append('Trying Apify exporter24 email scraper...')
+        apify_result, apify_debug = _apify_exporter24(channel_url, channel_id, apify_token)
+        steps.append(f'exporter24: {apify_debug[:300]}')
         if apify_result:
-            steps.append(f'Apify found: {apify_result}')
+            steps.append(f'exporter24 found: {apify_result}')
             return {
                 'found': True,
                 'email': apify_result,
-                'source': 'apify',
+                'source': 'apify_exporter24',
                 'confidence': 'high',
-                'reasoning': 'Found via Apify DataOverCoffee (YouTube hidden business email).',
+                'reasoning': 'Found via Apify exporter24 (YouTube hidden business email).',
                 'steps': steps,
             }
-        else:
-            steps.append('Apify: no email found.')
+
+    # ── FALLBACK 3: Apify endspec instant ($0.075/result, handle only) ──
+    handle = channel_data.get('handle', '')
+    if apify_token and handle:
+        steps.append(f'Trying Apify endspec instant for {handle}...')
+        endspec_result, endspec_debug = _apify_endspec_instant(handle, apify_token)
+        steps.append(f'endspec: {endspec_debug[:300]}')
+        if endspec_result:
+            steps.append(f'endspec found: {endspec_result}')
+            return {
+                'found': True,
+                'email': endspec_result,
+                'source': 'apify_endspec',
+                'confidence': 'high',
+                'reasoning': 'Found via Apify endspec instant (YouTube hidden business email).',
+                'steps': steps,
+            }
 
     steps.append('Investigation complete — no email found.')
     return {'found': False, 'steps': steps}
