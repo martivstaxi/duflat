@@ -401,6 +401,68 @@
         .ai-report-btn:active { transform: translateY(0); box-shadow: none; }
         .ai-report-btn:disabled { opacity: .4; cursor: default; background: rgba(193,95,60,.05); transform: none; box-shadow: none; }
 
+        /* ── Email Generator button ─────────────────────────── */
+        .email-gen-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.22);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: var(--font-sans);
+            color: var(--accent);
+            cursor: pointer;
+            margin-top: 14px;
+            transition: all .2s ease;
+        }
+        .email-gen-btn:hover  { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); color: #d4694a; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(193,95,60,.15); }
+        .email-gen-btn:active { transform: translateY(0); box-shadow: none; }
+        .email-gen-btn:disabled { opacity: .4; cursor: default; background: rgba(193,95,60,.05); transform: none; box-shadow: none; }
+
+        /* ── Email Preview ──────────────────────────────────── */
+        .email-preview {
+            margin-top: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .email-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .email-copy-btn {
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.22);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            font-family: var(--font-sans);
+            color: var(--accent);
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+        .email-copy-btn:hover { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); }
+        .email-subject {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        .email-body {
+            padding: 14px 16px;
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
         .description-loading {
             display: flex;
             align-items: center;
@@ -739,6 +801,7 @@
             : 'https://duflat-production.up.railway.app';
 
         let _currentChannelData = null;  // saved for Find Email
+        let _currentReportData = null;  // saved for Email Generator
 
         document.getElementById('urlInput').addEventListener('keydown', e => {
             if (e.key === 'Enter') doSearch();
@@ -757,6 +820,7 @@
             showResult(false);
             hideAgency();
             _currentChannelData = null;
+            _currentReportData = null;
             document.getElementById('searchBtn').disabled = true;
 
             let channelData = null;
@@ -846,7 +910,10 @@
                     const meta = data.videos_analyzed
                         ? `<div style="color:var(--faint);font-size:.75rem;margin-top:8px">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
                         : '';
-                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>`;
+                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>
+                        <button class="email-gen-btn" id="emailGenBtn" onclick="generateEmail()">✉️ Customize Email</button>
+                        <div id="emailResultBox"></div>`;
+                    _currentReportData = data;
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
@@ -858,6 +925,61 @@
                 box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
             }
+        }
+
+        async function generateEmail() {
+            if (!_currentChannelData || !_currentReportData) return;
+            const btn = document.getElementById('emailGenBtn');
+            const box = document.getElementById('emailResultBox');
+            if (!box) return;
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing email...'; }
+            box.innerHTML = `<div class="description-loading" style="margin-top:10px">
+                <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                <span>Crafting personalized email with AI...</span>
+            </div>`;
+
+            try {
+                const res = await fetch(`${API_URL}/generate-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channel_data: _currentChannelData,
+                        report_data: _currentReportData,
+                    })
+                });
+                const data = await res.json();
+
+                if (data.subject && data.body) {
+                    box.innerHTML = `
+                        <div class="email-preview">
+                            <div class="email-preview-header">
+                                <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Email Preview</span>
+                                <button class="email-copy-btn" onclick="copyEmail()">Copy</button>
+                            </div>
+                            <div class="email-subject"><strong>Subject:</strong> ${esc(data.subject)}</div>
+                            <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
+                        </div>`;
+                    window._generatedEmail = { subject: data.subject, body: data.body };
+                    if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
+                } else {
+                    const errMsg = data.error || 'Could not generate email.';
+                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
+                    if (btn) { btn.disabled = false; btn.textContent = '✉️ Customize Email'; }
+                }
+            } catch (_) {
+                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
+                if (btn) { btn.disabled = false; btn.textContent = '✉️ Customize Email'; }
+            }
+        }
+
+        function copyEmail() {
+            if (!window._generatedEmail) return;
+            const text = `Subject: ${window._generatedEmail.subject}\n\n${window._generatedEmail.body}`;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.email-copy-btn');
+                if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
+            });
         }
 
         function showAgencyButton() {

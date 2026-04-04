@@ -22,6 +22,7 @@ from modules.email_finder import find_email
 from modules.email_detective import find_email_v2
 from modules.summarizer   import summarize_channel
 from modules.summarizer_v2 import summarize_channel_v2
+from modules.email_generator import generate_email
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -97,6 +98,22 @@ def find_email_endpoint():
     if not channel_data:
         return jsonify({'error': 'channel_data required'}), 400
     result = find_email(channel_data)
+    return jsonify(result)
+
+
+@app.route('/generate-email', methods=['POST'])
+def generate_email_endpoint():
+    body = request.get_json(silent=True) or {}
+    channel_data = body.get('channel_data', {})
+    report_data = body.get('report_data', {})
+    transcripts = body.get('transcripts', [])
+    if not channel_data:
+        return jsonify({'error': 'channel_data required'}), 400
+    if not report_data:
+        return jsonify({'error': 'report_data required'}), 400
+    result = generate_email(channel_data, report_data, transcripts)
+    if 'error' in result:
+        return jsonify(result), 500
     return jsonify(result)
 
 
