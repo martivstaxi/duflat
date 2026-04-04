@@ -825,7 +825,7 @@
                         .map(([k, label]) => `
                             <tr>
                                 <td style="color:var(--muted);white-space:nowrap;padding:5px 12px 5px 0;font-size:.8rem;vertical-align:top">${label}</td>
-                                <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${k === 'key_insight' ? esc(data.report[k]).replace(/[•\-]\s*/g, '').split(/\n+/).filter(Boolean).map(l => '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--accent);margin-bottom:5px">' + l.trim() + '</div>').join('') : esc(data.report[k])}</td>
+                                <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${k === 'key_insight' ? esc(data.report[k]).split(/\n+/).filter(Boolean).map(l => l.replace(/^[•]\s*/, '').trim()).filter(Boolean).map(l => '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--accent);margin-bottom:5px">' + l + '</div>').join('') : esc(data.report[k])}</td>
                             </tr>`).join('');
                     const tags = Array.isArray(data.tags) && data.tags.length
                         ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
