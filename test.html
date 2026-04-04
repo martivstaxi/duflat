@@ -675,7 +675,7 @@
                     resultEl.classList.remove('reveal');
                     void resultEl.offsetWidth;
                     resultEl.classList.add('reveal');
-                    setTimeout(() => { resultEl.querySelector('.card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+                    setTimeout(() => { smoothScrollTo(resultEl.querySelector('.card'), 1200); }, 300);
                 }
             } catch (err) {
                 setStatus('Could not reach the API - <a href="#" onclick="doSearch();return false" style="color:var(--accent)">retry</a>', true);
@@ -757,7 +757,7 @@
                     const emailBtn = document.getElementById('emailGenBtn');
                     if (arrow) arrow.style.display = '';
                     if (emailBtn) emailBtn.style.display = '';
-                    setTimeout(() => { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+                    setTimeout(() => { smoothScrollTo(btn, 900); }, 300);
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
                     box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">${esc(errMsg)} - <a href="#" onclick="summarizeChannel();return false" style="color:var(--accent)">retry</a></span>`;
@@ -818,7 +818,7 @@
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
-                    setTimeout(() => { box.querySelector('.email-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
+                    setTimeout(() => { smoothScrollTo(box.querySelector('.email-preview'), 1000); }, 400);
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
                     box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">${esc(errMsg)} - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
@@ -1017,6 +1017,22 @@
             const el = document.getElementById('statusMsg');
             if (html) el.innerHTML = msg; else el.textContent = msg;
             el.style.display = msg ? 'block' : 'none';
+        }
+
+        function smoothScrollTo(el, duration) {
+            if (!el) return;
+            const target = el.getBoundingClientRect().top + window.pageYOffset - 20;
+            const start = window.pageYOffset;
+            const diff = target - start;
+            let startTime = null;
+            function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+            function step(time) {
+                if (!startTime) startTime = time;
+                const progress = Math.min((time - startTime) / duration, 1);
+                window.scrollTo(0, start + diff * ease(progress));
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
         }
 
         function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
