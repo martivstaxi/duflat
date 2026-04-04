@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat</title>
+    <title>Duflat — YouTube Channel Investigator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        /* ── Palette ───────────────────────────────────────────
+           #262624  Koyu Kömür     main background
+           #1E1E1C  Koyu Kömür–   surface (cards, panels)
+           #C15F3C  Crail          accent, buttons, links
+           #B1ADA1  Cloudy         labels, borders, secondary text
+           #FFFFFF  Saf Beyaz      primary text
+        ─────────────────────────────────────────────────────── */
+
         :root {
             --bg:       #262624;
             --surface:  #1E1E1C;
             --accent:   #C15F3C;
             --muted:    #B1ADA1;
-            --border:   rgba(177,173,161,.10);
-            --border-m: rgba(177,173,161,.18);
+            --border:   rgba(177,173,161,.13);
+            --border-m: rgba(177,173,161,.25);
             --text:     #FFFFFF;
             --faint:    rgba(177,173,161,.38);
 
             --font-sans:  'Inter', system-ui, sans-serif;
             --font-serif: 'Merriweather', Georgia, serif;
             --font-mono:  'Roboto Mono', 'Courier New', monospace;
-
-            --shadow-sm: 0 1px 2px rgba(0,0,0,.18);
-            --shadow:    0 4px 24px rgba(0,0,0,.28);
-            --radius:    16px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,87 +40,96 @@
             color: var(--text);
             font-size: 15px;
             line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ── Header ─────────────────────────────────────────── */
+        header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo-sub {
+            font-size: 0.72rem;
+            color: var(--faint);
+            letter-spacing: .5px;
+            margin-top: 2px;
         }
 
         /* ── Main ───────────────────────────────────────────── */
         main {
-            max-width: 720px;
+            max-width: 860px;
             margin: 0 auto;
-            padding: 0 24px 100px;
-        }
-
-        /* ── Hero ───────────────────────────────────────────── */
-        .hero {
-            text-align: center;
-            padding: 120px 0 56px;
+            padding: 56px 24px 80px;
         }
 
         .page-title {
-            font-family: var(--font-sans);
-            font-size: 2.4rem;
-            font-weight: 600;
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 700;
             color: var(--text);
-            margin-bottom: 14px;
-            letter-spacing: -.6px;
-            line-height: 1.15;
+            margin-bottom: 6px;
+            letter-spacing: -.3px;
         }
 
         .page-sub {
             color: var(--muted);
-            font-size: 1rem;
-            line-height: 1.65;
-            max-width: 480px;
-            margin: 0 auto;
+            font-size: 0.9rem;
+            margin-bottom: 36px;
         }
 
         /* ── Search ─────────────────────────────────────────── */
         .search-wrap {
             display: flex;
             gap: 10px;
-            margin-bottom: 40px;
-            background: var(--surface);
-            border: 1px solid var(--border-m);
-            border-radius: 14px;
-            padding: 6px 6px 6px 18px;
-            box-shadow: var(--shadow);
-            transition: border-color .25s;
+            margin-bottom: 36px;
         }
-
-        .search-wrap:focus-within { border-color: var(--accent); }
 
         #urlInput {
             flex: 1;
-            background: transparent;
-            border: none;
-            padding: 12px 0;
+            background: var(--surface);
+            border: 1px solid var(--border-m);
+            border-radius: 8px;
+            padding: 13px 16px;
             font-family: var(--font-mono);
             font-size: 0.85rem;
             color: var(--text);
             outline: none;
+            transition: border-color .15s;
         }
 
         #urlInput::placeholder { color: var(--faint); }
+        #urlInput:focus { border-color: var(--accent); }
 
         #searchBtn {
             background: var(--accent);
             border: none;
-            border-radius: 10px;
-            padding: 12px 28px;
+            border-radius: 8px;
+            padding: 13px 26px;
             color: #fff;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             letter-spacing: .2px;
-            transition: background .2s, transform .1s;
+            transition: opacity .15s, transform .1s;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        #searchBtn:hover  { background: #d4694a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(193,95,60,.3); }
-        #searchBtn:active { transform: translateY(0); box-shadow: none; }
-        #searchBtn:disabled { opacity: .35; cursor: default; transform: none; box-shadow: none; }
+        #searchBtn:hover  { opacity: .88; }
+        #searchBtn:active { transform: scale(.98); }
+        #searchBtn:disabled { opacity: .35; cursor: default; }
 
         /* ── Status / Error ──────────────────────────────────── */
         #statusMsg {
@@ -124,32 +137,29 @@
             font-size: 0.85rem;
             color: #e07060;
             margin-bottom: 20px;
-            padding: 14px 18px;
-            background: rgba(193,95,60,.06);
-            border: 1px solid rgba(193,95,60,.15);
-            border-radius: 12px;
+            padding: 12px 16px;
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 8px;
         }
 
         /* ── Find Email button ───────────────────────────────── */
         .find-email-btn {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            background: rgba(193,95,60,.08);
-            border: 1px solid rgba(193,95,60,.22);
-            border-radius: 10px;
-            padding: 8px 16px;
+            gap: 5px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 5px;
+            padding: 3px 10px;
             font-size: 0.78rem;
-            font-weight: 500;
-            font-family: var(--font-sans);
-            color: var(--accent);
+            color: var(--muted);
             cursor: pointer;
-            margin-left: 8px;
-            transition: all .2s ease;
+            transition: border-color .15s, color .15s;
+            margin-top: 2px;
         }
-        .find-email-btn:hover  { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); color: #d4694a; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(193,95,60,.15); }
-        .find-email-btn:active { transform: translateY(0); box-shadow: none; }
-        .find-email-btn:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
+        .find-email-btn:hover  { border-color: var(--accent); color: var(--accent); }
+        .find-email-btn:disabled { opacity: .4; cursor: default; }
 
         .email-found-badge {
             display: inline-flex;
@@ -168,18 +178,18 @@
         #loader {
             display: none;
             text-align: center;
-            padding: 64px 0;
+            padding: 56px 0;
             color: var(--muted);
             font-size: 0.88rem;
         }
 
         .spinner {
-            width: 28px; height: 28px;
-            border: 2px solid rgba(177,173,161,.12);
+            width: 32px; height: 32px;
+            border: 2.5px solid rgba(177,173,161,.15);
             border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin .8s linear infinite;
-            margin: 0 auto 16px;
+            animation: spin .75s linear infinite;
+            margin: 0 auto 14px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -190,32 +200,31 @@
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: box-shadow .3s ease;
         }
 
+        /* card section label */
         .section-label {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: .8px;
             color: var(--faint);
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         /* ── Channel card header ─────────────────────────────── */
         .card-header {
-            padding: 28px 30px;
+            padding: 22px 26px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
         }
 
         .channel-avatar {
-            width: 56px; height: 56px;
+            width: 52px; height: 52px;
             border-radius: 50%;
             background: var(--accent);
             display: flex; align-items: center; justify-content: center;
@@ -223,21 +232,20 @@
             font-weight: 700;
             color: #fff;
             flex-shrink: 0;
-            overflow: hidden;
         }
 
         .channel-name {
-            font-family: var(--font-sans);
+            font-family: var(--font-serif);
             font-size: 1.15rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         .channel-handle {
             font-family: var(--font-mono);
             color: var(--accent);
-            font-size: 0.82rem;
+            font-size: 0.83rem;
         }
 
         .channel-url-link {
@@ -245,24 +253,24 @@
             color: var(--faint);
             font-size: 0.72rem;
             text-decoration: none;
-            margin-top: 4px;
+            margin-top: 3px;
             display: block;
-            transition: color .2s;
+            transition: color .15s;
         }
 
         .channel-url-link:hover { color: var(--muted); }
 
         /* ── Stats row ───────────────────────────────────────── */
         .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            display: flex;
             border-bottom: 1px solid var(--border);
         }
 
         .stat-item {
-            padding: 20px 12px;
-            text-align: center;
+            flex: 1;
+            padding: 16px 18px;
             border-right: 1px solid var(--border);
+            text-align: center;
         }
 
         .stat-item:last-child { border-right: none; }
@@ -272,11 +280,11 @@
             font-size: 1rem;
             font-weight: 500;
             color: var(--text);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 0.66rem;
+            font-size: 0.68rem;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: .5px;
@@ -284,7 +292,7 @@
 
         /* ── Info grid ───────────────────────────────────────── */
         .info-grid {
-            padding: 24px 30px;
+            padding: 22px 26px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 18px;
@@ -312,94 +320,16 @@
 
         .info-full { grid-column: 1 / -1; }
 
-        /* ── Metadata rows (Email / Location / Joined) ───────── */
-        .meta-section {
-            padding: 0 30px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .meta-row {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .meta-row:last-child { border-bottom: none; }
-
-        .meta-label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: var(--muted);
-            width: 68px;
-            flex-shrink: 0;
-        }
-
-        .meta-value {
-            font-family: var(--font-mono);
-            font-size: 0.83rem;
-            color: var(--text);
-            word-break: break-word;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .meta-value a { color: var(--accent); text-decoration: none; }
-        .meta-value a:hover { text-decoration: underline; }
-
-        /* ── About section ───────────────────────────────────── */
-        .about-section {
-            padding: 22px 30px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .about-section-header {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0;
-            margin-bottom: 0;
-        }
-        .about-section-header .section-label {
-            margin-top: 20px;
-            margin-bottom: 8px;
-        }
-
         /* ── Description box ────────────────────────────────── */
         .description-box {
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 16px;
+            border-radius: 6px;
+            padding: 11px 13px;
             font-size: 0.83rem;
             color: var(--muted);
-            line-height: 1.7;
+            line-height: 1.65;
         }
-
-        /* ── AI Report button ────────────────────────────────── */
-        .ai-report-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(193,95,60,.08);
-            border: 1px solid rgba(193,95,60,.22);
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            font-family: var(--font-sans);
-            color: var(--accent);
-            cursor: pointer;
-            transition: all .2s ease;
-        }
-        .ai-report-btn:hover  { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); color: #d4694a; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(193,95,60,.15); }
-        .ai-report-btn:active { transform: translateY(0); box-shadow: none; }
-        .ai-report-btn:disabled { opacity: .4; cursor: default; background: rgba(193,95,60,.05); transform: none; box-shadow: none; }
 
         .description-loading {
             display: flex;
@@ -413,15 +343,15 @@
         .topic-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 5px;
+            margin-top: 8px;
         }
 
         .topic-tag {
-            background: rgba(177,173,161,.06);
+            background: rgba(177,173,161,.07);
             border: 1px solid var(--border-m);
-            border-radius: 6px;
-            padding: 3px 10px;
+            border-radius: 4px;
+            padding: 2px 9px;
             font-size: 0.72rem;
             color: var(--muted);
             font-family: var(--font-sans);
@@ -429,31 +359,30 @@
 
         /* ── Social badges ──────────────────────────────────── */
         .social-grid {
-            padding: 18px 30px;
-            border-bottom: 1px solid var(--border);
+            padding: 0 26px 22px;
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 7px;
         }
 
         .social-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(177,173,161,.04);
+            background: transparent;
             border: 1px solid var(--border-m);
             border-radius: 20px;
-            padding: 6px 14px;
+            padding: 5px 13px;
             font-size: 0.8rem;
             color: var(--muted);
             text-decoration: none;
-            transition: all .2s ease;
+            transition: border-color .15s, color .15s;
         }
 
-        .social-badge:hover { border-color: var(--accent); color: var(--text); background: rgba(193,95,60,.06); transform: translateY(-1px); }
+        .social-badge:hover { border-color: var(--accent); color: var(--text); }
 
         /* ── External links ────────────────────────────────── */
-        .all-links-section { padding: 18px 30px 24px; }
+        .all-links-section { padding: 0 26px 26px; }
 
         .all-links-title {
             font-size: 0.68rem;
@@ -463,7 +392,7 @@
             margin-bottom: 10px;
         }
 
-        .link-list { display: flex; flex-direction: column; gap: 6px; }
+        .link-list { display: flex; flex-direction: column; gap: 5px; }
 
         .link-list a {
             font-family: var(--font-mono);
@@ -473,59 +402,31 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            transition: color .2s;
+            transition: color .15s;
         }
 
         .link-list a:hover { color: var(--accent); }
 
-        /* ── Agency trigger button ───────────────────────────── */
-        .agency-trigger-btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: var(--surface);
-            border: 1px solid var(--border-m);
-            border-radius: var(--radius);
-            color: var(--muted);
-            font-family: var(--font-sans);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all .2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .agency-trigger-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: rgba(193,95,60,.04);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,.2);
-        }
-
-        .agency-trigger-btn:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
-
         /* ── Agency card ────────────────────────────────────── */
         #agencyResult {
             display: none;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
         .agency-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-left: 2px solid var(--accent);
-            border-radius: var(--radius);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow);
         }
 
         .agency-header {
-            padding: 16px 30px;
+            padding: 14px 26px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .agency-header-dot {
@@ -544,7 +445,7 @@
         }
 
         .agency-loading {
-            padding: 26px 30px;
+            padding: 24px 26px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -560,18 +461,18 @@
         }
 
         .agency-not-found {
-            padding: 26px 30px;
+            padding: 24px 26px;
             color: var(--faint);
             font-size: 0.85rem;
             font-style: italic;
         }
 
-        .agency-body { padding: 26px 30px; }
+        .agency-body { padding: 22px 26px; }
 
         .agency-name {
-            font-family: var(--font-sans);
+            font-family: var(--font-serif);
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
             margin-bottom: 4px;
         }
@@ -582,8 +483,8 @@
             color: var(--accent);
             text-decoration: none;
             display: inline-block;
-            margin-bottom: 16px;
-            transition: opacity .2s;
+            margin-bottom: 14px;
+            transition: opacity .15s;
         }
 
         .agency-website:hover { opacity: .8; text-decoration: underline; }
@@ -591,36 +492,36 @@
         .agency-summary {
             font-size: 0.86rem;
             color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 16px;
+            line-height: 1.65;
+            margin-bottom: 14px;
         }
 
         .agency-desc {
             font-size: 0.83rem;
             color: var(--muted);
-            line-height: 1.7;
+            line-height: 1.65;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 18px;
+            border-radius: 6px;
+            padding: 11px 13px;
+            margin-bottom: 16px;
         }
 
         .agency-fields {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 18px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
         .agency-social-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 18px;
+            gap: 7px;
+            margin-top: 16px;
         }
 
-        .agency-tags-section { margin-top: 16px; }
+        .agency-tags-section { margin-top: 14px; }
 
         .agency-tags-label {
             font-size: 0.68rem;
@@ -633,36 +534,36 @@
         .agency-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
         .agency-tag {
-            background: rgba(177,173,161,.06);
+            background: rgba(177,173,161,.07);
             border: 1px solid var(--border-m);
-            border-radius: 6px;
-            padding: 4px 11px;
+            border-radius: 5px;
+            padding: 3px 10px;
             font-size: 0.76rem;
             color: var(--muted);
         }
 
         .agency-tag-client {
-            border-color: rgba(193,95,60,.2);
+            border-color: rgba(193,95,60,.25);
             color: var(--accent);
-            background: rgba(193,95,60,.05);
+            background: rgba(193,95,60,.06);
         }
 
         .agency-note {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 0.76rem;
             color: var(--faint);
             font-style: italic;
         }
 
-        .agency-source { margin-top: 18px; }
+        .agency-source { margin-top: 16px; }
 
         .source-badge {
             font-family: var(--font-mono);
             display: inline-block;
-            background: rgba(193,95,60,.06);
-            border: 1px solid rgba(193,95,60,.15);
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.2);
             border-radius: 10px;
-            padding: 4px 12px;
+            padding: 3px 10px;
             font-size: 0.68rem;
             color: var(--accent);
             letter-spacing: .2px;
@@ -671,9 +572,9 @@
         /* ── API Warning ────────────────────────────────────── */
         #apiWarning {
             display: none;
-            background: rgba(193,95,60,.06);
-            border: 1px solid rgba(193,95,60,.15);
-            border-radius: 12px;
+            background: rgba(193,95,60,.07);
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 8px;
             padding: 14px 18px;
             font-size: 0.85rem;
             color: var(--muted);
@@ -682,29 +583,29 @@
 
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
-            main { padding: 0 16px 60px; }
-            .hero { padding: 72px 0 40px; }
-            .page-title { font-size: 1.65rem; }
-            .search-wrap { flex-direction: column; padding: 6px; }
-            #urlInput { padding: 14px 12px; }
-            #searchBtn { width: 100%; padding: 14px; }
-            .card-header { padding: 22px 20px; }
-            .stats-row { grid-template-columns: 1fr 1fr; }
-            .stat-item { border-bottom: 1px solid var(--border); }
-            .stat-item:nth-child(2) { border-right: none; }
-            .meta-section, .about-section, .social-grid, .all-links-section { padding-left: 20px; padding-right: 20px; }
-            .info-grid { grid-template-columns: 1fr; padding: 20px; }
+            header { padding: 16px 20px; }
+            main { padding: 36px 16px 60px; }
+            .page-title { font-size: 1.4rem; }
+            .search-wrap { flex-direction: column; }
+            #searchBtn { width: 100%; }
+            .info-grid { grid-template-columns: 1fr; }
+            .stats-row { flex-wrap: wrap; }
+            .stat-item { min-width: 50%; border-bottom: 1px solid var(--border); }
             .agency-fields { grid-template-columns: 1fr; }
-            .agency-header, .agency-loading, .agency-not-found, .agency-body { padding-left: 20px; padding-right: 20px; }
         }
     </style>
 </head>
 <body>
-    <main>
-        <div class="hero">
-            <h1 class="page-title">Who's behind this channel?</h1>
-            <p class="page-sub">Paste a YouTube link to uncover contact details, management info, and a full channel profile.</p>
+    <header>
+        <div>
+            <div class="logo">Duflat</div>
+            <div class="logo-sub">YouTube Channel Investigator</div>
         </div>
+    </header>
+
+    <main>
+        <h1 class="page-title">Investigate a Channel</h1>
+        <p class="page-sub">Paste any YouTube video or channel link to reveal the team behind it.</p>
 
         <div id="apiWarning">
             API not connected. Update the Railway URL after deploying.
@@ -714,7 +615,7 @@
             <input
                 id="urlInput"
                 type="text"
-                placeholder="Paste a YouTube URL..."
+                placeholder="https://youtube.com/watch?v=...  or  https://youtube.com/@channel"
                 autocomplete="off"
                 spellcheck="false"
             />
@@ -782,97 +683,46 @@
             }
 
             if (channelData) {
-                showAgencyButton();
+                summarizeChannel(channelData);   // parallel — fills description box
+                investigateAgency(channelData);  // parallel — fills agency card
             }
         }
 
-        async function summarizeChannel() {
-            const channelData = _currentChannelData;
-            if (!channelData) return;
-            const btn = document.getElementById('summarizeBtn');
-            const box = document.getElementById('summaryBox');
-            if (!box) return;
-
-            if (btn) { btn.disabled = true; btn.textContent = '⏳ Analyzing...'; }
-
-            const steps = [
-                'Fetching video list...',
-                'Downloading transcripts (last 5 videos)...',
-                'Downloading transcripts (top 5 popular)...',
-                'Analyzing spoken content with AI...',
-                'Building intelligence report...',
-            ];
-            let stepIdx = 0;
-            box.innerHTML = `<div class="description-loading" style="margin-top:4px">
-                <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                <span id="reportStep">${steps[0]}</span>
-            </div>`;
-            const stepTimer = setInterval(() => {
-                stepIdx++;
-                const el = document.getElementById('reportStep');
-                if (el && stepIdx < steps.length) el.textContent = steps[stepIdx];
-            }, 4000);
-
+        async function summarizeChannel(channelData) {
             try {
-                const res = await fetch(`${API_URL}/summarize-v2`, {
+                const res = await fetch(`${API_URL}/summarize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel_data: channelData })
                 });
-                clearInterval(stepTimer);
                 const data = await res.json();
+                const box = document.getElementById('summaryBox');
+                if (!box) return;
 
-                if (data.report) {
-                    const LABELS = {
-                        content_language:  'Content Language',
-                        niche:             'Niche',
-                        content_themes:    'Content Themes',
-                        audience:          'Audience',
-                        content_style:     'Content Style',
-                        brand_fit:         'Brand Fit',
-                        key_insight:       'Key Insight',
-                    };
-                    const rows = Object.entries(LABELS)
-                        .filter(([k]) => data.report[k])
-                        .map(([k, label]) => `
-                            <tr>
-                                <td style="color:var(--muted);white-space:nowrap;padding:5px 12px 5px 0;font-size:.8rem;vertical-align:top">${label}</td>
-                                <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${k === 'key_insight' ? esc(data.report[k]).split(/\n+/).filter(Boolean).map(l => l.replace(/^[•]\s*/, '').trim()).filter(Boolean).map(l => '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--accent);margin-bottom:5px">' + l + '</div>').join('') : esc(data.report[k])}</td>
-                            </tr>`).join('');
-                    const tags = Array.isArray(data.tags) && data.tags.length
-                        ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
+                if (data.summary) {
+                    const tags = Array.isArray(data.topics) && data.topics.length
+                        ? `<div class="topic-tags">${data.topics.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
                         : '';
-                    const meta = data.videos_analyzed
-                        ? `<div style="color:var(--faint);font-size:.75rem;margin-top:8px">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
-                        : '';
-                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>`;
-                    if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
+                    box.innerHTML = `<div style="font-family:var(--font-sans)">${esc(data.summary)}</div>${tags}`;
                 } else {
-                    const errMsg = data.error || 'Could not generate report.';
-                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
-                    if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
+                    // Fallback: show raw description if summary failed
+                    const raw = channelData.description || '';
+                    box.innerHTML = raw
+                        ? `<div style="font-family:var(--font-sans);white-space:pre-wrap">${esc(raw)}</div>`
+                        : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
                 }
             } catch (_) {
-                clearInterval(stepTimer);
-                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
-                if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
+                const box = document.getElementById('summaryBox');
+                if (box) {
+                    const raw = channelData.description || '';
+                    box.innerHTML = raw
+                        ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
+                        : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
+                }
             }
         }
 
-        function showAgencyButton() {
-            const el = document.getElementById('agencyResult');
-            el.innerHTML = `
-                <button class="agency-trigger-btn" id="agencyTriggerBtn" onclick="investigateAgency()">
-                    Investigate Agency
-                </button>`;
-            el.style.display = 'block';
-        }
-
-        async function investigateAgency() {
-            if (!_currentChannelData) return;
-            const triggerBtn = document.getElementById('agencyTriggerBtn');
-            if (triggerBtn) triggerBtn.remove();
-
+        async function investigateAgency(channelData) {
             showAgencyLoading();
             const steps = [
                 'Checking email domain...',
@@ -892,7 +742,7 @@
                 const res = await fetch(`${API_URL}/agency`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel_data: _currentChannelData })
+                    body: JSON.stringify({ channel_data: channelData })
                 });
                 const data = await res.json();
                 clearInterval(stepInterval);
@@ -912,23 +762,63 @@
 
             // Show spinner
             if (btn) btn.disabled = true;
-            emailItem.querySelector('.meta-value').innerHTML =
+            emailItem.querySelector('.info-value').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
                     <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
-                    AI Detective starting investigation...
+                    Investigating...
                 </span>`;
 
+            // Cycle through detective steps while waiting
+            const detectiveSteps = [
+                'Scanning external links...',
+                'Checking social media bios...',
+                'Reading latest video description...',
+                'Searching the web...',
+                'Guessing domain patterns...',
+                'Running AI analysis...',
+            ];
+            let stepIdx = 0;
+            const stepTimer = setInterval(() => {
+                stepIdx = (stepIdx + 1) % detectiveSteps.length;
+                const el = emailItem.querySelector('.info-value');
+                if (el) el.innerHTML =
+                    `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem">
+                        <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                        ${detectiveSteps[stepIdx]}
+                    </span>`;
+            }, 2500);
+
             try {
-                const res = await fetch(`${API_URL}/find-email-v2`, {
+                const res = await fetch(`${API_URL}/find-email`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel_data: _currentChannelData })
                 });
+                clearInterval(stepTimer);
                 const data = await res.json();
 
                 if (data.found && data.email) {
-                    emailItem.querySelector('.meta-value').innerHTML =
-                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>`;
+                    const sourceLabel = {
+                        'channel':            'from channel page',
+                        'description':        'from channel description',
+                        'external_link':      'from external link',
+                        'linktree':           'via link aggregator',
+                        'instagram':          'from Instagram',
+                        'twitter':            'from Twitter/X',
+                        'tiktok':             'from TikTok',
+                        'facebook':           'from Facebook',
+                        'video_description':  'from video description',
+                        'web_search':         'via web search',
+                        'ai_analysis':        'identified by AI',
+                    }[data.source] || data.source;
+
+                    const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
+                                          : data.confidence === 'medium' ? '#b8a06a'
+                                          : 'var(--faint)';
+
+                    emailItem.querySelector('.info-value').innerHTML =
+                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>` +
+                        `<span class="email-confidence" style="color:${confidenceColor}">${esc(sourceLabel)}</span>`;
 
                     // Update saved channel data so agency investigation can use it
                     _currentChannelData = { ..._currentChannelData, email: data.email };
@@ -936,18 +826,19 @@
                     const hiddenMsg = _currentChannelData?.has_hidden_email
                         ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
                         : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
-                    emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
+                    emailItem.querySelector('.info-value').innerHTML = hiddenMsg;
                 }
             } catch (err) {
-                emailItem.querySelector('.meta-value').innerHTML =
+                clearInterval(stepTimer);
+                emailItem.querySelector('.info-value').innerHTML =
                     `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
             }
-            if (btn) btn.disabled = false;
         }
 
         function renderResult(d) {
             const name    = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
+
             const socialKeys  = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
             const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', myanimelist:'🎌' };
             const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', myanimelist:'MyAnimeList' };
@@ -965,10 +856,7 @@
             document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        ${d.thumbnail && d.thumbnail.includes('yt3.')
-                            ? `<img class="channel-avatar" src="${esc(d.thumbnail)}" alt="" style="object-fit:cover" onerror="this.outerHTML='<div class=channel-avatar>${initial}</div>'">`
-                            : `<div class="channel-avatar">${initial}</div>`
-                        }
+                        <div class="channel-avatar">${initial}</div>
                         <div>
                             <div class="channel-name">${esc(name)}</div>
                             ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
@@ -983,14 +871,14 @@
                         ${statItem(d.last_video_date,'Last Video')}
                     </div>
 
-                    <div class="meta-section">
-                        <div class="meta-row" id="emailInfoItem">
-                            <span class="meta-label">Email</span>
+                    <div class="info-grid">
+                        <div class="info-item" id="emailInfoItem">
+                            <span class="info-label">Email</span>
                             ${d.email
-                                ? `<span class="meta-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
-                                : `<span class="meta-value">
+                                ? `<span class="info-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
+                                : `<span class="info-value">
                                        ${d.has_hidden_email
-                                           ? `<span style="color:var(--faint);font-size:.78rem" title="YouTube requires login to reveal this email">🔒 Hidden email</span>`
+                                           ? `<span style="color:var(--accent);font-size:.85rem;margin-right:8px" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
                                            : ''}
                                        <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
                                            🔍 Find Email
@@ -998,31 +886,16 @@
                                    </span>`
                             }
                         </div>
-                        ${d.location ? `
-                        <div class="meta-row">
-                            <span class="meta-label">Location</span>
-                            <span class="meta-value">${esc(d.location)}</span>
-                        </div>` : ''}
-                        ${d.joined ? `
-                        <div class="meta-row">
-                            <span class="meta-label">Joined</span>
-                            <span class="meta-value">${esc(d.joined)}</span>
-                        </div>` : ''}
-                    </div>
-
-                    <div class="about-section" id="summaryBlock">
-                        <div class="about-section-header">
-                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
-                                ✨ Generate AI Report
-                            </button>
-                            <span class="section-label" style="margin-left:3px">About</span>
-                        </div>
-                        <div id="summaryBox"></div>
-                        <div class="description-box">
-                            ${d.description
-                                ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
-                                : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
-                            }
+                        ${infoItem('Location', d.location)}
+                        ${infoItem('Joined',   d.joined)}
+                        <div class="info-item info-full" id="summaryBlock">
+                            <span class="info-label">About</span>
+                            <div class="description-box" id="summaryBox">
+                                <div class="description-loading">
+                                    <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
+                                    Generating summary...
+                                </div>
+                            </div>
                         </div>
                     </div>
 
