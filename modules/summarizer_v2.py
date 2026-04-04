@@ -1,0 +1,312 @@
+"""
+Channel Analyst V2
+------------------
+Deep-analysis report that fetches and analyzes actual video transcripts.
+
+Pipeline:
+1. Fetch 30 recent videos (flat extract with view_count)
+2. Select last 5 (recent) + top 5 by views (popular), deduplicated
+3. Fetch transcripts via youtube-transcript-api
+4. Send channel data + transcript excerpts to Claude Haiku
+5. Return structured professional report
+
+Public API:
+    summarize_channel_v2(channel_data: dict) -> dict
+"""
+
+import os
+import re
+import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+def _detect_language(text: str) -> str:
+    if not text or len(text) < 10:
+        return 'Unknown'
+    turkish  = sum(text.count(c) for c in 'ğşıöüçîâûĞŞİÖÜÇ')
+    arabic   = sum(1 for c in text if '\u0600' <= c <= '\u06FF')
+    cyrillic = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+    japanese = sum(1 for c in text if '\u3040' <= c <= '\u30FF' or '\u4E00' <= c <= '\u9FFF')
+    korean   = sum(1 for c in text if '\uAC00' <= c <= '\uD7A3')
+    greek    = sum(1 for c in text if '\u0370' <= c <= '\u03FF')
+    thai     = sum(1 for c in text if '\u0E00' <= c <= '\u0E7F')
+    hindi    = sum(1 for c in text if '\u0900' <= c <= '\u097F')
+    scores = {
+        'Turkish': turkish, 'Arabic': arabic, 'Russian': cyrillic,
+        'Japanese': japanese, 'Korean': korean, 'Greek': greek,
+        'Thai': thai, 'Hindi': hindi,
+    }
+    best_lang, best_score = max(scores.items(), key=lambda x: x[1])
+    return best_lang if best_score >= 3 else 'English'
+
+
+def _fetch_videos(channel_url: str, n: int = 30) -> list[dict]:
+    """
+    Fetch last N videos with id, title, view_count via yt-dlp flat extraction.
+    Returns list of dicts sorted by recency (newest first).
+    """
+    if not channel_url:
+        return []
+    try:
+        import yt_dlp
+        opts = {
+            'skip_download': True,
+            'quiet':         True,
+            'no_warnings':   True,
+            'ignoreerrors':  True,
+            'playlistend':   n,
+            'extract_flat':  True,
+        }
+        target = channel_url.rstrip('/') + '/videos'
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(target, download=False)
+        if not info:
+            return []
+        entries = info.get('entries') or []
+        videos = []
+        for e in entries:
+            if not e or not e.get('id'):
+                continue
+            videos.append({
+                'id':         e['id'],
+                'title':      e.get('title', '').strip(),
+                'view_count': e.get('view_count') or 0,
+            })
+        return videos[:n]
+    except Exception:
+        return []
+
+
+def _select_videos(videos: list[dict]) -> tuple[list[dict], list[dict]]:
+    """
+    Select last 5 (recent) and top 5 by views (popular).
+    Returns (recent, popular) — deduplicated.
+    """
+    recent = videos[:5]
+    recent_ids = {v['id'] for v in recent}
+
+    by_views = sorted(videos, key=lambda v: v['view_count'], reverse=True)
+    popular = []
+    for v in by_views:
+        if v['id'] not in recent_ids:
+            popular.append(v)
+            if len(popular) >= 5:
+                break
+
+    # If not enough unique popular videos, just take what we have
+    if len(popular) < 5:
+        for v in by_views:
+            if v['id'] not in recent_ids and v not in popular:
+                popular.append(v)
+                if len(popular) >= 5:
+                    break
+
+    return recent, popular
+
+
+def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
+    """
+    Fetch transcript for a single video. Tries youtube-transcript-api.
+    Returns truncated plain text or empty string on failure.
+    """
+    try:
+        from youtube_transcript_api import YouTubeTranscriptApi
+
+        # Try new API (0.6.3+)
+        try:
+            ytt = YouTubeTranscriptApi()
+            result = ytt.fetch(video_id)
+            snippets = result.to_raw_data()
+            text = ' '.join(s.get('text', '') for s in snippets)
+        except (TypeError, AttributeError):
+            # Fall back to old API (static method)
+            segments = YouTubeTranscriptApi.get_transcript(video_id)
+            text = ' '.join(seg['text'] for seg in segments)
+
+        # Clean up auto-caption artifacts
+        text = re.sub(r'\[.*?\]', '', text)       # [Music], [Applause] etc.
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text[:max_chars]
+    except Exception:
+        return ''
+
+
+def _fetch_transcripts(videos: list[dict]) -> dict[str, str]:
+    """
+    Fetch transcripts for multiple videos in parallel.
+    Returns {video_id: transcript_text}.
+    """
+    results = {}
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        futures = {pool.submit(_get_transcript, v['id']): v['id'] for v in videos}
+        for future in as_completed(futures):
+            vid = futures[future]
+            try:
+                results[vid] = future.result()
+            except Exception:
+                results[vid] = ''
+    return results
+
+
+def _format_views(count: int) -> str:
+    if count >= 1_000_000:
+        return f'{count / 1_000_000:.1f}M'
+    if count >= 1_000:
+        return f'{count / 1_000:.0f}K'
+    return str(count)
+
+
+def _build_prompt(channel_data: dict, recent: list[dict], popular: list[dict],
+                  transcripts: dict[str, str], lang: str) -> str:
+    lines = ['=== Channel Data ===']
+    for field, label in [
+        ('name',            'Channel name'),
+        ('handle',          'Handle'),
+        ('subscribers',     'Subscribers'),
+        ('views',           'Total views'),
+        ('videos',          'Video count'),
+        ('location',        'Location'),
+        ('description',     'About text'),
+        ('last_video_date', 'Last video uploaded'),
+    ]:
+        val = channel_data.get(field)
+        if val:
+            lines.append(f'{label}: {val}')
+
+    # Recent videos with transcripts
+    lines.append('\n=== Last 5 Videos (Recent Content) ===')
+    for i, v in enumerate(recent, 1):
+        t = transcripts.get(v['id'], '')
+        lines.append(f'\n--- Video {i}: {v["title"]} ---')
+        if t:
+            lines.append(f'Transcript excerpt: {t}')
+        else:
+            lines.append('(No transcript available)')
+
+    # Popular videos with transcripts
+    lines.append('\n=== Top 5 Most Popular Videos ===')
+    for i, v in enumerate(popular, 1):
+        t = transcripts.get(v['id'], '')
+        lines.append(f'\n--- Video {i}: {v["title"]} ({_format_views(v["view_count"])} views) ---')
+        if t:
+            lines.append(f'Transcript excerpt: {t}')
+        else:
+            lines.append('(No transcript available)')
+
+    context = '\n'.join(lines)
+    transcript_count = sum(1 for v in recent + popular if transcripts.get(v['id']))
+
+    return f"""You are a senior analyst at an influencer marketing agency. You have access to actual video transcripts from this YouTube channel. Analyze the SPOKEN CONTENT to produce a deep intelligence report.
+
+{context}
+
+FACT (pre-detected): Content Language = {lang}
+FACT: {transcript_count} out of {len(recent) + len(popular)} videos had transcripts available.
+
+Generate a professional intelligence report with these exact 8 fields. Each value should be evidence-based from the actual video content.
+
+RULES:
+- Base every field on evidence from the transcripts and channel data
+- Quote or reference specific video content when relevant
+- Be specific, not generic. Mention actual topics, products, people discussed in videos
+- If transcripts are unavailable, note this and analyze what you can from titles
+
+Fields:
+1. niche — Primary content category based on what is actually discussed in videos
+2. content_themes — Top 3-5 recurring themes/topics from the transcripts. Be specific.
+3. audience — Who watches this, based on the content language ({lang}), topics, and tone of speech
+4. content_style — Speaking style, format, tone (e.g. casual tutorial, professional analysis, entertainment, storytelling)
+5. upload_frequency — Infer from available data
+6. popular_vs_recent — How has the channel's content evolved? Compare what popular videos discuss vs recent ones.
+7. brand_fit — Which specific brand categories would be a good sponsorship fit, based on actual content topics
+8. key_insights — 2-3 non-obvious insights from the actual video content that a marketing researcher would find valuable. Be specific.
+
+Also list 4-8 specific topic tags based on transcript content.
+
+Respond ONLY with valid JSON, no markdown:
+{{
+  "report": {{
+    "niche": "...",
+    "content_themes": "...",
+    "audience": "...",
+    "content_style": "...",
+    "upload_frequency": "...",
+    "popular_vs_recent": "...",
+    "brand_fit": "...",
+    "key_insights": "..."
+  }},
+  "tags": ["Tag1", "Tag2", "Tag3"]
+}}"""
+
+
+def summarize_channel_v2(channel_data: dict) -> dict:
+    """
+    V2 report: analyzes actual video transcripts.
+    - Last 5 videos (recent content direction)
+    - Top 5 most popular videos (what resonates with audience)
+
+    Returns:
+        {'report': dict, 'tags': list, 'videos_analyzed': dict}
+     or {'error': str}
+    """
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return {'error': 'ANTHROPIC_API_KEY not set'}
+
+    channel_url = channel_data.get('channel_url', '')
+
+    # Step 1: Fetch video list
+    videos = _fetch_videos(channel_url, n=30)
+    if not videos:
+        return {'error': 'Could not fetch video list'}
+
+    # Step 2: Select recent + popular
+    recent, popular = _select_videos(videos)
+    all_selected = recent + popular
+
+    # Step 3: Fetch transcripts in parallel
+    transcripts = _fetch_transcripts(all_selected)
+    transcript_count = sum(1 for t in transcripts.values() if t)
+
+    # Step 4: Detect language
+    all_text = ' '.join(t for t in transcripts.values() if t)
+    titles_text = ' '.join(v['title'] for v in all_selected)
+    detection_text = (channel_data.get('description') or '') + ' ' + titles_text + ' ' + all_text[:3000]
+    lang = _detect_language(detection_text)
+
+    # Step 5: Build prompt and call Haiku
+    prompt = _build_prompt(channel_data, recent, popular, transcripts, lang)
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=1200,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = message.content[0].text.strip()
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if not match:
+            return {'error': 'Invalid AI response'}
+        data = json.loads(match.group())
+        report = data.get('report') or {}
+        tags = [t for t in (data.get('tags') or []) if isinstance(t, str) and t.strip()]
+        if not report:
+            return {'error': 'Empty report'}
+
+        # Inject pre-detected language as first field
+        report = {'content_language': lang, **report}
+
+        return {
+            'report': report,
+            'tags': tags,
+            'videos_analyzed': {
+                'recent': len(recent),
+                'popular': len(popular),
+                'transcripts_found': transcript_count,
+                'total': len(all_selected),
+            },
+        }
+    except Exception as e:
+        return {'error': str(e)}

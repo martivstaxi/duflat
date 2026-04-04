@@ -5,4 +5,5 @@ requests
 beautifulsoup4
 anthropic
 apify-client
+youtube-transcript-api
 gunicorn==22.0.0

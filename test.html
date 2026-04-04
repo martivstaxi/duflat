@@ -782,28 +782,45 @@
             if (!box) return;
 
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Analyzing...'; }
+
+            const steps = [
+                'Fetching video list...',
+                'Downloading transcripts (last 5 videos)...',
+                'Downloading transcripts (top 5 popular)...',
+                'Analyzing spoken content with AI...',
+                'Building intelligence report...',
+            ];
+            let stepIdx = 0;
             box.innerHTML = `<div class="description-loading" style="margin-top:4px">
                 <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                Fetching recent videos & building report...
+                <span id="reportStep">${steps[0]}</span>
             </div>`;
+            const stepTimer = setInterval(() => {
+                stepIdx++;
+                const el = document.getElementById('reportStep');
+                if (el && stepIdx < steps.length) el.textContent = steps[stepIdx];
+            }, 4000);
 
             try {
-                const res = await fetch(`${API_URL}/summarize`, {
+                const res = await fetch(`${API_URL}/summarize-v2`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel_data: channelData })
                 });
+                clearInterval(stepTimer);
                 const data = await res.json();
 
                 if (data.report) {
                     const LABELS = {
-                        content_language: 'Content Language',
-                        niche:            'Niche',
-                        audience:         'Audience',
-                        upload_frequency: 'Upload Frequency',
-                        content_style:    'Content Style',
-                        brand_fit:        'Brand Fit',
-                        key_insight:      'Key Insight',
+                        content_language:  'Content Language',
+                        niche:             'Niche',
+                        content_themes:    'Content Themes',
+                        audience:          'Audience',
+                        content_style:     'Content Style',
+                        upload_frequency:  'Upload Frequency',
+                        popular_vs_recent: 'Popular vs Recent',
+                        brand_fit:         'Brand Fit',
+                        key_insights:      'Key Insights',
                     };
                     const rows = Object.entries(LABELS)
                         .filter(([k]) => data.report[k])
@@ -815,13 +832,18 @@
                     const tags = Array.isArray(data.tags) && data.tags.length
                         ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
                         : '';
-                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}</div>`;
+                    const meta = data.videos_analyzed
+                        ? `<div style="color:var(--faint);font-size:.75rem;margin-top:8px">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
+                        : '';
+                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>`;
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
                 } else {
-                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not generate report.</span>`;
+                    const errMsg = data.error || 'Could not generate report.';
+                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
                     if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
                 }
             } catch (_) {
+                clearInterval(stepTimer);
                 box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
             }

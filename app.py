@@ -21,6 +21,7 @@ from modules.agency       import find_agency
 from modules.email_finder import find_email
 from modules.email_detective import find_email_v2
 from modules.summarizer   import summarize_channel
+from modules.summarizer_v2 import summarize_channel_v2
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -76,6 +77,16 @@ def summarize_endpoint():
     if not channel_data:
         return jsonify({'error': 'channel_data required'}), 400
     result = summarize_channel(channel_data)
+    return jsonify(result)
+
+
+@app.route('/summarize-v2', methods=['POST'])
+def summarize_v2_endpoint():
+    body         = request.get_json(silent=True) or {}
+    channel_data = body.get('channel_data', {})
+    if not channel_data:
+        return jsonify({'error': 'channel_data required'}), 400
+    result = summarize_channel_v2(channel_data)
     return jsonify(result)
 
 
