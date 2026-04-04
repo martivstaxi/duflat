@@ -467,6 +467,31 @@
 
         .link-list a:hover { color: var(--accent); }
 
+        /* ── Agency trigger button ───────────────────────────── */
+        .agency-trigger-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border-m);
+            border-radius: var(--radius);
+            color: var(--muted);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color .2s, color .2s, background .2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .agency-trigger-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(193,95,60,.04);
+        }
+
+        .agency-trigger-btn:active { transform: scale(.99); }
+
         /* ── Agency card ────────────────────────────────────── */
         #agencyResult {
             display: none;
@@ -744,7 +769,7 @@
             }
 
             if (channelData) {
-                investigateAgency(channelData);  // parallel — fills agency card
+                showAgencyButton();
             }
         }
 
@@ -801,7 +826,20 @@
             }
         }
 
-        async function investigateAgency(channelData) {
+        function showAgencyButton() {
+            const el = document.getElementById('agencyResult');
+            el.innerHTML = `
+                <button class="agency-trigger-btn" id="agencyTriggerBtn" onclick="investigateAgency()">
+                    Investigate Agency
+                </button>`;
+            el.style.display = 'block';
+        }
+
+        async function investigateAgency() {
+            if (!_currentChannelData) return;
+            const triggerBtn = document.getElementById('agencyTriggerBtn');
+            if (triggerBtn) triggerBtn.remove();
+
             showAgencyLoading();
             const steps = [
                 'Checking email domain...',
@@ -821,7 +859,7 @@
                 const res = await fetch(`${API_URL}/agency`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel_data: channelData })
+                    body: JSON.stringify({ channel_data: _currentChannelData })
                 });
                 const data = await res.json();
                 clearInterval(stepInterval);
