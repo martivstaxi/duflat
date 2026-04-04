@@ -215,7 +215,13 @@ Fields:
 3. audience — Who watches, in one phrase. Must match content language ({lang}).
 4. content_style — Format + tone in a few words.
 5. brand_fit — 2-3 specific brand categories that match the actual content.
-6. key_insight — ONE non-obvious, data-backed finding a brand manager would care about.
+6. key_insight — This is the MOST IMPORTANT field. Write 3-5 sentences. Analyze ALL transcripts deeply and extract:
+   - Patterns across videos (what topics keep coming back, what's the creator's unique angle)
+   - Audience engagement signals (what kind of content gets most views and WHY based on transcript content)
+   - Specific data points: mention actual names, brands, products, events, numbers discussed in videos
+   - Compare recent vs popular content: is the channel evolving or staying consistent?
+   - What makes this creator different from others in the same niche?
+   Every claim must reference actual transcript content. No generic statements.
 
 Also list 3-5 topic tags.
 
@@ -276,7 +282,7 @@ def summarize_channel_v2(channel_data: dict) -> dict:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=600,
+            max_tokens=900,
             messages=[{'role': 'user', 'content': prompt}],
         )
         text = message.content[0].text.strip()
