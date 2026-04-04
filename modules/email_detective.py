@@ -350,6 +350,7 @@ def _channelcrawler_lookup(channel_id: str, api_key: str) -> str | None:
 def _apify_email_lookup(channel_url: str, channel_id: str, api_token: str) -> tuple[str | None, str]:
     """
     Use Apify DataOverCoffee actor to extract YouTube hidden business email.
+    Validates that the returned channel matches our channel_id to prevent wrong-channel results.
     Returns: (email_or_none, debug_info_string)
     """
     try:
@@ -362,7 +363,7 @@ def _apify_email_lookup(channel_url: str, channel_id: str, api_token: str) -> tu
         run = client.actor('dataovercoffee/youtube-channel-business-email-scraper').call(
             run_input={
                 'channelUrls': [target_url],
-                'forceFreshEmailScrape': False,
+                'forceFreshEmailScrape': True,
             },
             timeout_secs=120,
         )
@@ -373,6 +374,19 @@ def _apify_email_lookup(channel_url: str, channel_id: str, api_token: str) -> tu
 
         item = items[0]
         debug = json.dumps(item, ensure_ascii=False, default=str)[:500]
+
+        # ── Channel ID validation — reject if Apify returned a different channel ──
+        if channel_id:
+            returned_id = (item.get('channelId') or item.get('ChannelId')
+                           or item.get('channel_id') or '')
+            returned_url = (item.get('channelUrl') or item.get('ChannelUrl')
+                            or item.get('channel_url') or item.get('url') or '')
+            # Check if returned channel ID matches ours
+            if returned_id and returned_id != channel_id:
+                return None, f'REJECTED: Apify returned different channel ({returned_id} != {channel_id}). Raw: {debug}'
+            # Fallback: check URL contains our channel ID
+            if not returned_id and returned_url and channel_id not in returned_url:
+                return None, f'REJECTED: Apify URL mismatch ({returned_url} does not contain {channel_id}). Raw: {debug}'
 
         # Try common field names
         email = (item.get('email') or item.get('business_email')
@@ -590,10 +604,6 @@ def find_email_v2(channel_data: dict) -> dict:
               'reasoning': str, 'steps': list[str]}
     Or:      {'found': False, 'steps': list[str]}
     """
-    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
-    if not api_key:
-        return {'found': False, 'error': 'ANTHROPIC_API_KEY not set', 'steps': []}
-
     deadline = time.time() + 90  # 90 second hard cap
 
     steps: list[str] = []  # Human-readable investigation log
@@ -632,124 +642,14 @@ def find_email_v2(channel_data: dict) -> dict:
                 'confidence': 'high', 'steps': steps,
                 'reasoning': 'Listed on the channel about page.'}
 
-    # ── Start AI Agent Loop ──
-    steps.append('Starting AI detective investigation...')
-
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-    except Exception as e:
-        return {'found': False, 'error': f'Anthropic client error: {e}', 'steps': steps}
-
-    messages = [
-        {'role': 'user', 'content': _build_user_message(channel_data)}
-    ]
-
-    for round_num in range(1, MAX_ROUNDS + 1):
-        if time.time() > deadline:
-            steps.append(f'[Round {round_num}] Time limit reached.')
-            break
-
-        steps.append(f'[Round {round_num}] AI is thinking...')
-
-        try:
-            response = client.messages.create(
-                model=MODEL,
-                max_tokens=1024,
-                system=_build_system_prompt(),
-                tools=_TOOLS,
-                messages=messages,
-            )
-        except Exception as e:
-            steps.append(f'[Round {round_num}] API error: {e}')
-            break
-
-        # Process response
-        assistant_content = response.content
-        messages.append({'role': 'assistant', 'content': assistant_content})
-
-        # Check if AI wants to use tools
-        tool_uses = [b for b in assistant_content if b.type == 'tool_use']
-
-        if not tool_uses:
-            # AI finished without finding — extract any text response
-            for b in assistant_content:
-                if hasattr(b, 'text') and b.text:
-                    steps.append(f'[Round {round_num}] AI conclusion: {b.text[:200]}')
-            break
-
-        # Execute tools and collect results
-        tool_results = []
-        for tu in tool_uses:
-            tool_name = tu.name
-            tool_input = tu.input
-
-            # Log what the AI is doing
-            if tool_name == 'web_search':
-                steps.append(f'[Round {round_num}] Searching: "{tool_input.get("query", "")}"')
-            elif tool_name == 'scrape_url':
-                steps.append(f'[Round {round_num}] Scraping: {tool_input.get("url", "")}')
-            elif tool_name == 'scrape_deep':
-                steps.append(f'[Round {round_num}] Deep-scraping: {tool_input.get("url", "")}')
-            elif tool_name == 'extract_linktree':
-                steps.append(f'[Round {round_num}] Extracting links from: {tool_input.get("url", "")}')
-            elif tool_name == 'report_email':
-                email = tool_input.get('email', '').lower().strip()
-                confidence = tool_input.get('confidence', 'medium')
-                reasoning = tool_input.get('reasoning', '')
-                steps.append(f'[Round {round_num}] EMAIL FOUND: {email} (confidence: {confidence})')
-
-                if _is_valid_email(email):
-                    return {
-                        'found': True,
-                        'email': email,
-                        'source': 'ai_detective',
-                        'confidence': confidence,
-                        'reasoning': reasoning,
-                        'steps': steps,
-                    }
-                else:
-                    steps.append(f'[Round {round_num}] Reported email failed validation, continuing...')
-
-            # Execute tool
-            if time.time() > deadline:
-                tool_results.append({
-                    'type': 'tool_result',
-                    'tool_use_id': tu.id,
-                    'content': json.dumps({'error': 'Time limit reached'}),
-                })
-                continue
-
-            result_str = _execute_tool(tool_name, tool_input)
-
-            # Log findings
-            try:
-                result_data = json.loads(result_str)
-                emails_found = result_data.get('emails', []) or result_data.get('emails_in_snippets', [])
-                if emails_found:
-                    steps.append(f'  → Found emails: {", ".join(emails_found[:3])}')
-                links_found = result_data.get('links', [])
-                if links_found and tool_name == 'extract_linktree':
-                    steps.append(f'  → Found {len(links_found)} links')
-            except Exception:
-                pass
-
-            tool_results.append({
-                'type': 'tool_result',
-                'tool_use_id': tu.id,
-                'content': result_str,
-            })
-
-        messages.append({'role': 'user', 'content': tool_results})
-
-        # If stop_reason is end_turn (no more tool calls expected), break
-        if response.stop_reason == 'end_turn':
-            break
+    # ── AI Agent Loop DISABLED — only paid services active ──
+    # To re-enable: uncomment the agent loop block above this line
+    steps.append('AI agent disabled — using direct lookup services only.')
 
     # ── FALLBACK 1: ChannelCrawler API ──
     cc_key = os.environ.get('CC_API_KEY', '')
     if cc_key and channel_id:
-        steps.append('AI Detective could not find email. Trying ChannelCrawler API...')
+        steps.append('Trying ChannelCrawler API...')
         cc_result = _channelcrawler_lookup(channel_id, cc_key)
         if cc_result:
             steps.append(f'ChannelCrawler found: {cc_result}')
