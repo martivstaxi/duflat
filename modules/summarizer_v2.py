@@ -248,26 +248,16 @@ RULES:
 - Each field (except key_insight): MAX 1 short sentence. No filler, no fluff.
 
 Fields:
-1. niche — One phrase. What does this channel make content about?
-2. content_themes — List 3-5 specific recurring topics as comma-separated keywords. Only topics clearly present in multiple videos.
-3. audience — Who watches, in one phrase. Must match content language ({lang}).
+1. niche — One phrase.
+2. content_themes — 3-5 specific recurring topics, comma-separated.
+3. audience — Who watches, one phrase. Must match content language ({lang}).
 4. content_style — Format + tone in a few words.
-5. brand_fit — 2-3 specific brand categories that match the actual content.
-6. key_insight — THIS IS THE MOST IMPORTANT FIELD. Write 3-5 sentences of deep, data-driven analysis:
-   - What patterns emerge across videos? What is the creator's unique angle or approach?
-   - Which content topics drive the highest engagement and why?
-   - How has the channel's content evolved (recent vs popular videos)?
-   - What specific themes, products, or cultural references appear repeatedly in the spoken content?
-   - What makes this creator different from others in the same niche?
-   RULES for key_insight:
-   - Write in PLAIN, simple English. Short sentences. Easy to read and understand.
-   - Do NOT use corporate/marketing buzzwords like "leverages", "drives engagement", "narrative arc", "content strategy", "positions itself", "resonates with", "ecosystem".
-   - Write like you're explaining to a friend, not writing a McKinsey report.
-   - Be professional but human. Say "their most watched videos are about X" not "highest-performing content leverages X".
-   - Every claim must be backed by evidence from transcript content or video data
-   - No subscriber/view counts — focus on CONTENT patterns
-   - No video titles — describe the content instead
-   - All text in English, translate everything
+5. brand_fit — 2-3 specific brand categories.
+6. key_insight — The most important field. 3-5 sentences. Write like a smart friend explaining this channel to you over coffee. Here's an example of GOOD key_insight writing:
+
+   "This creator mostly talks about budget cooking — almost every video mentions saving money on groceries. The older popular videos were simple recipe walkthroughs, but the recent ones have shifted to challenge formats like 'feeding a family of 4 for $20'. They mention Walmart and Aldi by name a lot. The tone is casual and funny, not preachy — they make fun of expensive food trends. A food delivery or grocery brand would be a natural fit here."
+
+   Match this tone and level of detail. Plain English, short sentences, specific observations from the actual content.
 
 Also list 3-5 topic tags (in English).
 
