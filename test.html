@@ -432,11 +432,12 @@
 
         /* ── Email Preview ──────────────────────────────────── */
         .email-preview {
-            margin-top: 14px;
-            background: var(--bg);
+            margin-top: 20px;
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
         .email-preview-header {
             display: flex;
@@ -965,10 +966,19 @@
                         <div class="email-preview">
                             <div class="email-preview-header">
                                 <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Email Preview</span>
-                                <button class="email-copy-btn" onclick="copyEmail()">Copy</button>
                             </div>
-                            <div class="email-subject"><strong>Subject:</strong> ${esc(data.subject)}</div>
-                            <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
+                            <div class="email-subject">
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <div><strong>Subject:</strong> ${esc(data.subject)}</div>
+                                    <button class="email-copy-btn" onclick="copySubject()">Copy</button>
+                                </div>
+                            </div>
+                            <div class="email-body-wrap">
+                                <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
+                                <div style="text-align:right;padding:0 16px 12px">
+                                    <button class="email-copy-btn" onclick="copyBody()">Copy</button>
+                                </div>
+                            </div>
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
@@ -984,12 +994,19 @@
             }
         }
 
-        function copyEmail() {
+        function copySubject() {
             if (!window._generatedEmail) return;
-            const text = `Subject: ${window._generatedEmail.subject}\n\n${window._generatedEmail.body}`;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.email-copy-btn');
-                if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
+            navigator.clipboard.writeText(window._generatedEmail.subject).then(() => {
+                const btns = document.querySelectorAll('.email-copy-btn');
+                if (btns[0]) { btns[0].textContent = 'Copied!'; setTimeout(() => { btns[0].textContent = 'Copy'; }, 2000); }
+            });
+        }
+
+        function copyBody() {
+            if (!window._generatedEmail) return;
+            navigator.clipboard.writeText(window._generatedEmail.body).then(() => {
+                const btns = document.querySelectorAll('.email-copy-btn');
+                if (btns[1]) { btns[1].textContent = 'Copied!'; setTimeout(() => { btns[1].textContent = 'Copy'; }, 2000); }
             });
         }
 
@@ -1166,7 +1183,6 @@
                                 : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
                             }
                         </div>
-                        <div id="emailResultBox"></div>
                     </div>
 
                     ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
@@ -1176,7 +1192,8 @@
                         <div class="all-links-title">External Links</div>
                         <div class="link-list">${linkItems}</div>
                     </div>` : ''}
-                </div>`;
+                </div>
+                <div id="emailResultBox"></div>`;
             showResult(true);
         }
 
