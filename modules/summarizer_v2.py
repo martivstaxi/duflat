@@ -196,46 +196,40 @@ def _build_prompt(channel_data: dict, recent: list[dict], popular: list[dict],
     context = '\n'.join(lines)
     transcript_count = sum(1 for v in recent + popular if transcripts.get(v['id']))
 
-    return f"""You are a senior analyst at an influencer marketing agency. You have access to actual video transcripts from this YouTube channel. Analyze the SPOKEN CONTENT to produce a deep intelligence report.
+    return f"""You are a data analyst. Analyze this YouTube channel's video transcripts and produce a SHORT, factual report.
 
 {context}
 
-FACT (pre-detected): Content Language = {lang}
-FACT: {transcript_count} out of {len(recent) + len(popular)} videos had transcripts available.
-
-Generate a professional intelligence report with these exact 8 fields. Each value should be evidence-based from the actual video content.
+Content Language = {lang}
+{transcript_count}/{len(recent) + len(popular)} videos had transcripts.
 
 RULES:
-- Base every field on evidence from the transcripts and channel data
-- Quote or reference specific video content when relevant
-- Be specific, not generic. Mention actual topics, products, people discussed in videos
-- If transcripts are unavailable, note this and analyze what you can from titles
+- ONLY state facts you can verify from the data above. No speculation.
+- If you're not confident about something, OMIT it entirely.
+- Each field: MAX 1 short sentence. No filler, no fluff, no generic phrases.
+- Use specific names, numbers, topics from the transcripts. Not "various topics" — name them.
 
 Fields:
-1. niche — Primary content category based on what is actually discussed in videos
-2. content_themes — Top 3-5 recurring themes/topics from the transcripts. Be specific.
-3. audience — Who watches this, based on the content language ({lang}), topics, and tone of speech
-4. content_style — Speaking style, format, tone (e.g. casual tutorial, professional analysis, entertainment, storytelling)
-5. upload_frequency — Infer from available data
-6. popular_vs_recent — How has the channel's content evolved? Compare what popular videos discuss vs recent ones.
-7. brand_fit — Which specific brand categories would be a good sponsorship fit, based on actual content topics
-8. key_insights — 2-3 non-obvious insights from the actual video content that a marketing researcher would find valuable. Be specific.
+1. niche — One phrase. What does this channel make content about?
+2. content_themes — List 3-5 specific recurring topics as comma-separated keywords. Only topics clearly present in multiple videos.
+3. audience — Who watches, in one phrase. Must match content language ({lang}).
+4. content_style — Format + tone in a few words.
+5. brand_fit — 2-3 specific brand categories that match the actual content.
+6. key_insight — ONE non-obvious, data-backed finding a brand manager would care about.
 
-Also list 4-8 specific topic tags based on transcript content.
+Also list 3-5 topic tags.
 
-Respond ONLY with valid JSON, no markdown:
+Respond ONLY with valid JSON:
 {{
   "report": {{
     "niche": "...",
     "content_themes": "...",
     "audience": "...",
     "content_style": "...",
-    "upload_frequency": "...",
-    "popular_vs_recent": "...",
     "brand_fit": "...",
-    "key_insights": "..."
+    "key_insight": "..."
   }},
-  "tags": ["Tag1", "Tag2", "Tag3"]
+  "tags": ["Tag1", "Tag2"]
 }}"""
 
 
@@ -282,7 +276,7 @@ def summarize_channel_v2(channel_data: dict) -> dict:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=1200,
+            max_tokens=600,
             messages=[{'role': 'user', 'content': prompt}],
         )
         text = message.content[0].text.strip()
