@@ -332,12 +332,6 @@
         }
 
         /* ── AI Report section ───────────────────────────────── */
-        .ai-report-section {
-            border-top: 1px solid var(--border);
-            margin-top: 18px;
-            padding-top: 16px;
-        }
-
         .ai-report-header {
             display: flex;
             align-items: center;
@@ -945,6 +939,15 @@
                         </div>
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
+                        <div class="info-item info-full" id="summaryBlock">
+                            <div class="ai-report-header">
+                                <span class="ai-report-label">Channel Intelligence</span>
+                                <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
+                                    ✨ Generate AI Report
+                                </button>
+                            </div>
+                            <div id="summaryBox"></div>
+                        </div>
                         <div class="info-item info-full">
                             <span class="info-label">About</span>
                             <div class="description-box">
@@ -954,16 +957,6 @@
                                 }
                             </div>
                         </div>
-                    </div>
-
-                    <div class="ai-report-section" id="summaryBlock">
-                        <div class="ai-report-header">
-                            <span class="ai-report-label">Channel Intelligence</span>
-                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
-                                ✨ Generate AI Report
-                            </button>
-                        </div>
-                        <div id="summaryBox"></div>
                     </div>
 
                     ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
