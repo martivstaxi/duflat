@@ -33,6 +33,11 @@ def index():
     return send_from_directory('.', 'index.html')
 
 
+@app.route('/test')
+def test_page():
+    return send_from_directory('.', 'test.html')
+
+
 @app.route('/scrape', methods=['POST'])
 def scrape():
     body = request.get_json(silent=True) or {}
