@@ -571,9 +571,9 @@ def _parse_about_from_html(html: str) -> dict:
                 break
 
     # Channel avatar — first yt3.ggpht.com URL in the page (always the channel profile picture)
-    m = re.search(r'"url"\s*:\s*"(https://yt3\.ggpht\.com/[A-Za-z0-9/_\-=?&.%]+)"', html)
+    m = re.search(r'"url"\s*:\s*"(https://yt3\.ggpht\.com/[^"]+)"', html)
     if m:
-        result['avatar'] = m.group(1)
+        result['avatar'] = m.group(1).replace('\\/', '/').replace('\\u0026', '&')
 
     return result
 
@@ -802,8 +802,22 @@ def scrape_channel(url: str) -> dict:
                     break
 
     description = (info.get('description') or '')[:1000]
-    thumbnail   = info.get('thumbnail') or ''
-    # about_description and about_avatar are set after fetch_about_page below
+    # Look for channel avatar in yt-dlp thumbnails list (yt3.ggpht.com = profile picture)
+    thumbnail = ''
+    for t in (info.get('thumbnails') or []):
+        if isinstance(t, dict):
+            t_url = t.get('url', '')
+            if 'yt3.ggpht.com' in t_url and 'avatar' in (t.get('id') or '').lower():
+                thumbnail = t_url
+                break
+    if not thumbnail:
+        for t in (info.get('thumbnails') or []):
+            if isinstance(t, dict) and 'yt3.ggpht.com' in (t.get('url') or ''):
+                thumbnail = t['url']
+                break
+    if not thumbnail:
+        thumbnail = info.get('thumbnail') or ''
+    # about_avatar (from about page HTML) will override below if found
 
     # yt-dlp may directly expose channel email in the info dict
     ydl_email = ''
