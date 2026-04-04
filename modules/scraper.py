@@ -816,7 +816,13 @@ def scrape_channel(url: str) -> dict:
                         last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
                     break
 
-    description = (info.get('description') or '')[:1000]
+    # CRITICAL: when is_video=True, info.get('description') is the VIDEO description,
+    # NOT the channel description. Never use it for channel display.
+    # Channel description comes from about_description (about page HTML) below.
+    if is_video:
+        description = ''
+    else:
+        description = (info.get('description') or '')[:1000]
     # Look for channel avatar in yt-dlp thumbnails list (yt3.ggpht.com = profile picture)
     thumbnail = ''
     for t in (info.get('thumbnails') or []):
