@@ -564,8 +564,8 @@ def _parse_about_from_html(html: str) -> dict:
     idx = html.find('"channelMetadataRenderer"')
     if idx >= 0:
         chunk = html[idx:idx + 5000]
-        dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
-        if dm:
+        dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)*)"', chunk)
+        if dm and dm.group(1).strip():
             result['description'] = _unescape(dm.group(1))
 
     # 2) aboutChannelViewModel — newer layout uses {"content":"..."} OR plain string
@@ -573,15 +573,38 @@ def _parse_about_from_html(html: str) -> dict:
         idx = html.find('"aboutChannelViewModel"')
         if idx >= 0:
             chunk = html[idx:idx + 5000]
-            # plain string form
-            dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
+            # object form: "description":{"content":"..."}
+            dm = re.search(
+                r'"description"\s*:\s*\{[^{}]*?"content"\s*:\s*"((?:[^"\\]|\\.)+)"',
+                chunk, re.DOTALL)
             if dm:
                 result['description'] = _unescape(dm.group(1))
             else:
-                # object form: "description":{"content":"..."}
-                dm = re.search(
-                    r'"description"\s*:\s*\{[^{}]*?"content"\s*:\s*"((?:[^"\\]|\\.)+)"',
-                    chunk, re.DOTALL)
+                # plain string form
+                dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
+                if dm:
+                    result['description'] = _unescape(dm.group(1))
+
+    # 3) microformatDataRenderer.description (fallback)
+    if not result.get('description'):
+        idx = html.find('"microformatDataRenderer"')
+        if idx >= 0:
+            chunk = html[idx:idx + 3000]
+            dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
+            if dm:
+                result['description'] = _unescape(dm.group(1))
+
+    # 4) channelAboutFullMetadataRenderer.description (legacy)
+    if not result.get('description'):
+        idx = html.find('"channelAboutFullMetadataRenderer"')
+        if idx >= 0:
+            chunk = html[idx:idx + 5000]
+            # simpleText form
+            dm = re.search(r'"description"\s*:\s*\{[^{}]*?"simpleText"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk, re.DOTALL)
+            if dm:
+                result['description'] = _unescape(dm.group(1))
+            else:
+                dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
                 if dm:
                     result['description'] = _unescape(dm.group(1))
 
@@ -907,6 +930,19 @@ def scrape_channel(url: str) -> dict:
         description = about_description[:1000]
     elif not description and about_description:
         description = about_description[:1000]
+
+    # Last resort: if description is still empty (about page parse failed),
+    # do a dedicated yt-dlp channel extraction to get channel description.
+    if not description and channel_url:
+        try:
+            with yt_dlp.YoutubeDL({'skip_download': True, 'quiet': True, 'no_warnings': True,
+                                    'ignoreerrors': True, 'playlistend': 1}) as ydl:
+                ch_info = ydl.extract_info(channel_url, download=False) or {}
+            ch_desc = ch_info.get('description') or ''
+            if ch_desc and ch_info.get('_type') == 'playlist':
+                description = ch_desc[:1000]
+        except Exception:
+            pass
     # About-page avatar is the real channel profile picture (yt3.ggpht.com)
     if about_avatar:
         thumbnail = about_avatar
