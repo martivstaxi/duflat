@@ -27,6 +27,40 @@ import re
 import json
 
 
+def _detect_language(text: str) -> str:
+    """
+    Detect primary content language from character distribution.
+    No AI, no external library — counts distinctive Unicode chars.
+    """
+    if not text or len(text) < 10:
+        return 'Unknown'
+
+    # Count distinctive characters per language family
+    turkish  = sum(text.count(c) for c in 'ğşıöüçîâûĞŞİÖÜÇ')
+    arabic   = sum(1 for c in text if '\u0600' <= c <= '\u06FF')
+    cyrillic = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+    japanese = sum(1 for c in text if '\u3040' <= c <= '\u30FF' or '\u4E00' <= c <= '\u9FFF')
+    korean   = sum(1 for c in text if '\uAC00' <= c <= '\uD7A3')
+    greek    = sum(1 for c in text if '\u0370' <= c <= '\u03FF')
+    thai     = sum(1 for c in text if '\u0E00' <= c <= '\u0E7F')
+    hindi    = sum(1 for c in text if '\u0900' <= c <= '\u097F')
+
+    scores = {
+        'Turkish':  turkish,
+        'Arabic':   arabic,
+        'Russian':  cyrillic,
+        'Japanese': japanese,
+        'Korean':   korean,
+        'Greek':    greek,
+        'Thai':     thai,
+        'Hindi':    hindi,
+    }
+    best_lang, best_score = max(scores.items(), key=lambda x: x[1])
+    if best_score >= 3:
+        return best_lang
+    return 'English'  # default for Latin-script content
+
+
 def _fetch_recent_titles(channel_url: str, n: int = 15) -> list[str]:
     """
     Fetch last N video titles via yt-dlp flat extraction (fast, no download).
@@ -54,7 +88,7 @@ def _fetch_recent_titles(channel_url: str, n: int = 15) -> list[str]:
         return []
 
 
-def _build_prompt(channel_data: dict, titles: list[str]) -> str:
+def _build_prompt(channel_data: dict, titles: list[str], lang: str) -> str:
     lines = ['=== Channel Data ===']
     for field, label in [
         ('name',            'Channel name'),
@@ -85,25 +119,25 @@ def _build_prompt(channel_data: dict, titles: list[str]) -> str:
 
 {context}
 
-Generate a professional channel report with these exact 7 fields. Each value must be a SHORT, sharp phrase (1 sentence max, no fluff).
+FACT (pre-detected, do not change): Content Language = {lang}
 
-CRITICAL RULE: Base every field ONLY on hard evidence visible in the data above. Never speculate or add things not supported by the data. If unsure, say "Unclear from available data."
+Generate a professional report with these exact 6 fields. Each value must be a SHORT, sharp phrase (1 sentence max, no fluff).
+
+RULE: Base every field ONLY on evidence visible in the data above. Never speculate. If unsure, write "Unclear from data."
 
 Fields:
-1. content_language — Look at the video titles above. What language are they written in? Report just the primary language. E.g. "Turkish", "English", "Spanish"
-2. niche — Primary content category from titles and description. E.g. "Anime reviews & seasonal rankings"
-3. audience — Must match content_language. If content is Turkish → audience is Turkish-speaking. Never add a secondary audience language unless there is explicit evidence. E.g. "Turkish-speaking anime fans, likely 16–28"
-4. upload_frequency — Infer from how many recent titles exist and their pattern. E.g. "~1–2 videos/week", "Irregular bursts"
-5. content_style — Format/tone inferred from titles and description. E.g. "Commentary, rankings, community polls"
-6. brand_fit — Relevant brand categories for sponsorship. E.g. "High — anime streaming platforms, gaming peripherals"
-7. key_insight — One non-obvious insight valuable to a marketing researcher. Must be specific to THIS channel, not generic. E.g. "Hosts annual anime awards as alternative to Crunchyroll, signaling community authority"
+1. niche — Primary content category from titles and description. E.g. "Anime reviews & seasonal rankings"
+2. audience — Who watches this. Must be consistent with the content language ({lang}). E.g. "{lang}-speaking anime fans, likely 16–28"
+3. upload_frequency — Infer from how many recent titles exist. E.g. "~1–2 videos/week", "Irregular bursts"
+4. content_style — Format and tone from titles and description. E.g. "Commentary, rankings, community polls"
+5. brand_fit — Relevant brand categories for sponsorship. E.g. "High — anime streaming platforms, gaming peripherals"
+6. key_insight — One non-obvious insight specific to THIS channel that a marketing researcher would find valuable.
 
 Also list 3–6 short topic tags.
 
 Respond ONLY with valid JSON, no markdown:
 {{
   "report": {{
-    "content_language": "...",
     "niche": "...",
     "audience": "...",
     "upload_frequency": "...",
@@ -130,7 +164,11 @@ def summarize_channel(channel_data: dict) -> dict:
     channel_url = channel_data.get('channel_url', '')
     titles = _fetch_recent_titles(channel_url, n=15)
 
-    prompt = _build_prompt(channel_data, titles)
+    # Detect language programmatically — no AI tokens needed
+    detection_text = (channel_data.get('description') or '') + ' ' + ' '.join(titles)
+    lang = _detect_language(detection_text)
+
+    prompt = _build_prompt(channel_data, titles, lang)
 
     try:
         import anthropic
@@ -149,6 +187,8 @@ def summarize_channel(channel_data: dict) -> dict:
         tags   = [t for t in (data.get('tags') or []) if isinstance(t, str) and t.strip()]
         if not report:
             return {'error': 'empty report'}
+        # Inject pre-detected language as first field
+        report = {'content_language': lang, **report}
         return {'report': report, 'tags': tags}
     except Exception as e:
         return {'error': str(e)}
