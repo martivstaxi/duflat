@@ -331,6 +331,45 @@
             line-height: 1.65;
         }
 
+        /* ── AI Report section ───────────────────────────────── */
+        .ai-report-section {
+            border-top: 1px solid var(--border);
+            margin-top: 18px;
+            padding-top: 16px;
+        }
+
+        .ai-report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .ai-report-label {
+            font-size: 0.72rem;
+            font-family: var(--font-sans);
+            color: var(--faint);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .ai-report-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1px solid var(--border-m);
+            border-radius: 6px;
+            padding: 5px 14px;
+            font-size: 0.8rem;
+            font-family: var(--font-sans);
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color .15s, color .15s, background .15s;
+        }
+        .ai-report-btn:hover  { border-color: var(--accent); color: var(--accent); background: rgba(193,95,60,.06); }
+        .ai-report-btn:disabled { opacity: .45; cursor: default; background: transparent; }
+
         .description-loading {
             display: flex;
             align-items: center;
@@ -695,9 +734,9 @@
             if (!box) return;
 
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Analyzing...'; }
-            box.innerHTML = `<div class="description-loading">
+            box.innerHTML = `<div class="description-loading" style="margin-top:4px">
                 <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                Scanning channel — fetching recent videos & building report...
+                Fetching recent videos & building report...
             </div>`;
 
             try {
@@ -731,18 +770,12 @@
                     box.innerHTML = `<table style="width:100%;border-collapse:collapse">${rows}</table>${tags}`;
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
                 } else {
-                    const raw = channelData.description || '';
-                    box.innerHTML = raw
-                        ? `<div style="white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
-                        : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
-                    if (btn) { btn.disabled = false; btn.textContent = '✨ AI Summary'; }
+                    box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not generate report.</span>`;
+                    if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
                 }
             } catch (_) {
-                const raw = channelData.description || '';
-                box.innerHTML = raw
-                    ? `<div style="white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
-                    : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
-                if (btn) { btn.disabled = false; btn.textContent = '✨ AI Summary'; }
+                box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
+                if (btn) { btn.disabled = false; btn.textContent = '✨ Generate AI Report'; }
             }
         }
 
@@ -912,20 +945,25 @@
                         </div>
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
-                        <div class="info-item info-full" id="summaryBlock">
-                            <span class="info-label" style="display:flex;align-items:center;gap:8px">
-                                About
-                                <button class="find-email-btn" id="summarizeBtn" onclick="summarizeChannel()" style="font-size:.75rem;padding:2px 9px">
-                                    ✨ AI Summary
-                                </button>
-                            </span>
-                            <div class="description-box" id="summaryBox">
+                        <div class="info-item info-full">
+                            <span class="info-label">About</span>
+                            <div class="description-box">
                                 ${d.description
                                     ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
                                     : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
                                 }
                             </div>
                         </div>
+                    </div>
+
+                    <div class="ai-report-section" id="summaryBlock">
+                        <div class="ai-report-header">
+                            <span class="ai-report-label">Channel Intelligence</span>
+                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
+                                ✨ Generate AI Report
+                            </button>
+                        </div>
+                        <div id="summaryBox"></div>
                     </div>
 
                     ${socialBadges ? `<div class="social-grid">${socialBadges}</div>` : ''}
