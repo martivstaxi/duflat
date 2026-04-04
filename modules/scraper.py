@@ -738,7 +738,13 @@ def scrape_channel(url: str) -> dict:
         info.get('channel_url') or info.get('uploader_url') or info.get('webpage_url') or url
     ).rstrip('/'))
 
-    sub_count   = info.get('channel_follower_count') or info.get('subscriber_count')
+    # channel_follower_count may be at top-level or inside entries[0]
+    entries_raw = info.get('entries') or []
+    first_entry = next((e for e in entries_raw if isinstance(e, dict)), {})
+    sub_count = (info.get('channel_follower_count')
+                 or info.get('subscriber_count')
+                 or first_entry.get('channel_follower_count')
+                 or first_entry.get('subscriber_count'))
     subscribers = f"{sub_count:,}" if sub_count else ''
     views       = '' if is_video else (f"{info['view_count']:,}" if info.get('view_count') else '')
 
