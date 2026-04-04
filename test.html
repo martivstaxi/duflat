@@ -134,20 +134,22 @@
         .find-email-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(177,173,161,.06);
-            border: 1px solid rgba(177,173,161,.16);
-            border-radius: 8px;
-            padding: 6px 14px;
+            gap: 7px;
+            background: rgba(193,95,60,.08);
+            border: 1px solid rgba(193,95,60,.22);
+            border-radius: 10px;
+            padding: 8px 16px;
             font-size: 0.78rem;
             font-weight: 500;
-            color: var(--muted);
+            font-family: var(--font-sans);
+            color: var(--accent);
             cursor: pointer;
+            margin-left: 8px;
             transition: all .2s ease;
         }
-        .find-email-btn:hover  { background: rgba(193,95,60,.08); border-color: rgba(193,95,60,.22); color: var(--accent); transform: translateY(-1px); }
-        .find-email-btn:active { transform: translateY(0); }
-        .find-email-btn:disabled { opacity: .4; cursor: default; transform: none; }
+        .find-email-btn:hover  { background: rgba(193,95,60,.14); border-color: rgba(193,95,60,.35); color: #d4694a; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(193,95,60,.15); }
+        .find-email-btn:active { transform: translateY(0); box-shadow: none; }
+        .find-email-btn:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
 
         .email-found-badge {
             display: inline-flex;
