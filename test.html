@@ -895,34 +895,8 @@
                 const data = await res.json();
 
                 if (data.found && data.email) {
-                    const sourceLabel = {
-                        'channel':            'from channel page',
-                        'youtube_hidden':     'YouTube hidden email',
-                        'youtube_about':      'from YouTube about',
-                        'description':        'from channel description',
-                        'external_link':      'from external link',
-                        'linktree':           'via link aggregator',
-                        'instagram':          'from Instagram',
-                        'twitter':            'from Twitter/X',
-                        'tiktok':             'from TikTok',
-                        'facebook':           'from Facebook',
-                        'video_description':  'from video description',
-                        'web_search':         'via web search',
-                        'ai_analysis':        'identified by AI',
-                        'ai_detective':       'found by AI Detective',
-                        'channelcrawler':     'via ChannelCrawler DB',
-                        'apify':              'YouTube hidden email (Apify)',
-                        'apify_exporter24':   'YouTube hidden email (Apify)',
-                        'apify_endspec':      'YouTube hidden email (Apify)',
-                    }[data.source] || data.source;
-
-                    const confidenceColor = data.confidence === 'high' ? 'var(--accent)'
-                                          : data.confidence === 'medium' ? '#b8a06a'
-                                          : 'var(--faint)';
-
                     emailItem.querySelector('.meta-value').innerHTML =
-                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>` +
-                        `<span class="email-confidence" style="color:${confidenceColor}">${esc(sourceLabel)}</span>`;
+                        `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>`;
 
                     // Update saved channel data so agency investigation can use it
                     _currentChannelData = { ..._currentChannelData, email: data.email };
@@ -931,26 +905,6 @@
                         ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
                         : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
                     emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
-                }
-
-                // Show investigation steps log
-                if (data.steps && data.steps.length > 0) {
-                    let stepsEl = document.getElementById('emailDetectiveLog');
-                    if (!stepsEl) {
-                        stepsEl = document.createElement('div');
-                        stepsEl.id = 'emailDetectiveLog';
-                        stepsEl.style.cssText = 'margin-top:12px;padding:12px 16px;background:rgba(0,0,0,.2);border-radius:10px;font-family:var(--font-mono);font-size:.75rem;color:var(--muted);max-height:200px;overflow-y:auto;line-height:1.7;border:1px solid var(--border)';
-                        emailItem.parentElement.appendChild(stepsEl);
-                    }
-                    stepsEl.innerHTML = data.steps
-                        .map(s => {
-                            if (s.includes('EMAIL FOUND')) return `<div style="color:var(--accent);font-weight:600">${esc(s)}</div>`;
-                            if (s.includes('Found')) return `<div style="color:#7aba6e">${esc(s)}</div>`;
-                            if (s.includes('error') || s.includes('failed')) return `<div style="color:#c15f3c">${esc(s)}</div>`;
-                            return `<div>${esc(s)}</div>`;
-                        })
-                        .join('');
-                    stepsEl.scrollTop = stepsEl.scrollHeight;
                 }
             } catch (err) {
                 emailItem.querySelector('.meta-value').innerHTML =
