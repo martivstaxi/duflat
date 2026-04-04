@@ -947,7 +947,10 @@
             document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <div class="channel-avatar">${initial}</div>
+                        ${d.thumbnail && d.thumbnail.includes('yt3.ggpht.com')
+                            ? `<img class="channel-avatar" src="${esc(d.thumbnail)}" alt="" style="object-fit:cover" onerror="this.outerHTML='<div class=channel-avatar>${initial}</div>'">`
+                            : `<div class="channel-avatar">${initial}</div>`
+                        }
                         <div>
                             <div class="channel-name">${esc(name)}</div>
                             ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}
