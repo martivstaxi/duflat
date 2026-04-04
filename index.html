@@ -930,10 +930,6 @@
         function renderResult(d) {
             const name    = d.name || 'Unknown Channel';
             const initial = name.charAt(0).toUpperCase();
-            const avatarContent = d.thumbnail
-                ? `<img src="${esc(d.thumbnail)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.textContent='${initial}'">`
-                : initial;
-
             const socialKeys  = ['instagram', 'tiktok', 'twitter', 'facebook', 'discord', 'twitch', 'myanimelist'];
             const socialIcons = { instagram:'📷', tiktok:'🎵', twitter:'𝕏', facebook:'👤', discord:'💬', twitch:'🎮', myanimelist:'🎌' };
             const socialNames = { instagram:'Instagram', tiktok:'TikTok', twitter:'X / Twitter', facebook:'Facebook', discord:'Discord', twitch:'Twitch', myanimelist:'MyAnimeList' };
@@ -951,7 +947,7 @@
             document.getElementById('result').innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <div class="channel-avatar">${avatarContent}</div>
+                        <div class="channel-avatar">${initial}</div>
                         <div>
                             <div class="channel-name">${esc(name)}</div>
                             ${d.handle     ? `<div class="channel-handle">${esc(d.handle)}</div>` : ''}

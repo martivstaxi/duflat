@@ -82,20 +82,27 @@ _RE_OBFUSCATED = re.compile(
 
 def _is_business_email(email: str) -> bool:
     e = email.lower().strip()
-    if len(e) < 6 or '@' not in e:
+    if len(e) < 10 or '@' not in e:
         return False
     if any(x in e for x in EMAIL_BLACKLIST):
         return False
     parts = e.split('@')
     if len(parts) != 2:
         return False
-    domain = parts[1]
+    local, domain = parts[0], parts[1]
+    # Local part must be at least 3 chars
+    if len(local) < 3:
+        return False
     # TLD must exist, be 2-12 chars, only letters, and not a common English word
     tld_match = re.search(r'\.([a-z]{2,12})$', domain)
     if not tld_match:
         return False
     tld = tld_match.group(1)
     if tld in _FAKE_TLDS:
+        return False
+    # Domain name before TLD must be at least 2 chars (e.g. reject "x.com" → "x")
+    domain_body = domain[:domain.rfind('.')]
+    if len(domain_body.lstrip('www.')) < 2:
         return False
     # Reject if domain is a known platform
     if any(skip in domain for skip in _SKIP_DOMAINS):
