@@ -528,7 +528,7 @@ def _extract_about_via_ytdlp(channel_url: str) -> tuple[str, dict]:
 
 
 def _parse_about_from_html(html: str) -> dict:
-    """Extract location, joined, views, video_count from raw ytInitialData HTML."""
+    """Extract location, joined, views, video_count, description, avatar from raw ytInitialData HTML."""
     if not html:
         return {}
     result = {}
@@ -555,6 +555,25 @@ def _parse_about_from_html(html: str) -> dict:
     vc = extract_video_count(html)
     if vc:
         result['video_count'] = vc
+
+    # Channel description — try channelMetadataRenderer first, then aboutChannelViewModel
+    for marker in ('"channelMetadataRenderer"', '"aboutChannelViewModel"'):
+        idx = html.find(marker)
+        if idx >= 0:
+            chunk = html[idx:idx + 4000]
+            dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
+            if dm:
+                raw = dm.group(1)
+                result['description'] = (raw
+                    .replace('\\n', '\n')
+                    .replace('\\"', '"')
+                    .replace('\\\\', '\\'))
+                break
+
+    # Channel avatar — first yt3.ggpht.com URL in the page (always the channel profile picture)
+    m = re.search(r'"url"\s*:\s*"(https://yt3\.ggpht\.com/[A-Za-z0-9/_\-=?&.%]+)"', html)
+    if m:
+        result['avatar'] = m.group(1)
 
     return result
 
@@ -654,6 +673,8 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
         extra.get('last_video_date', ''),
         has_hidden_email,
         sub_text,
+        extra.get('description', ''),   # index 10
+        extra.get('avatar', ''),         # index 11
     )
 
 
@@ -782,6 +803,7 @@ def scrape_channel(url: str) -> dict:
 
     description = (info.get('description') or '')[:1000]
     thumbnail   = info.get('thumbnail') or ''
+    # about_description and about_avatar are set after fetch_about_page below
 
     # yt-dlp may directly expose channel email in the info dict
     ydl_email = ''
@@ -819,8 +841,10 @@ def scrape_channel(url: str) -> dict:
     about_socials, about_links, about_email = about_result[0], about_result[1], about_result[2]
     about_location, about_joined, about_views = about_result[3], about_result[4], about_result[5]
     about_video_count, about_last_video = about_result[6], about_result[7]
-    has_hidden_email = about_result[8] if len(about_result) > 8 else False
-    about_subscribers = about_result[9] if len(about_result) > 9 else ''
+    has_hidden_email    = about_result[8]  if len(about_result) > 8  else False
+    about_subscribers   = about_result[9]  if len(about_result) > 9  else ''
+    about_description   = about_result[10] if len(about_result) > 10 else ''
+    about_avatar        = about_result[11] if len(about_result) > 11 else ''
 
     # Fallback: use subscriber count from about page HTML if yt-dlp didn't return it
     if not subscribers and about_subscribers:
@@ -842,6 +866,12 @@ def scrape_channel(url: str) -> dict:
         views = about_views
     if about_last_video:
         last_video_date = about_last_video
+    # About-page description is authoritative (channel author's own text, not a video desc)
+    if about_description:
+        description = about_description[:1000]
+    # About-page avatar is the real channel profile picture (yt3.ggpht.com)
+    if about_avatar:
+        thumbnail = about_avatar
 
     # Deduplicate links (ignore trailing slash differences)
     seen, deduped = set(), []
