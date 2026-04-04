@@ -321,11 +321,57 @@
 
         .info-full { grid-column: 1 / -1; }
 
-        .about-header {
+        /* ── Metadata rows (Email / Location / Joined) ───────── */
+        .meta-section {
+            padding: 0 26px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta-row:last-child { border-bottom: none; }
+
+        .meta-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            width: 66px;
+            flex-shrink: 0;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 0.83rem;
+            color: var(--text);
+            word-break: break-word;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .meta-value a { color: var(--accent); text-decoration: none; }
+        .meta-value a:hover { text-decoration: underline; }
+
+        /* ── About section ───────────────────────────────────── */
+        .about-section {
+            padding: 18px 26px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .about-section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 12px;
         }
 
         /* ── Description box ────────────────────────────────── */
@@ -385,7 +431,8 @@
 
         /* ── Social badges ──────────────────────────────────── */
         .social-grid {
-            padding: 0 26px 22px;
+            padding: 16px 26px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             flex-wrap: wrap;
             gap: 7px;
@@ -408,7 +455,7 @@
         .social-badge:hover { border-color: var(--accent); color: var(--text); }
 
         /* ── External links ────────────────────────────────── */
-        .all-links-section { padding: 0 26px 26px; }
+        .all-links-section { padding: 16px 26px 22px; }
 
         .all-links-title {
             font-size: 0.68rem;
@@ -806,7 +853,7 @@
 
             // Show spinner
             if (btn) btn.disabled = true;
-            emailItem.querySelector('.info-value').innerHTML =
+            emailItem.querySelector('.meta-value').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem">
                     <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block"></span>
                     Investigating...
@@ -824,7 +871,7 @@
             let stepIdx = 0;
             const stepTimer = setInterval(() => {
                 stepIdx = (stepIdx + 1) % detectiveSteps.length;
-                const el = emailItem.querySelector('.info-value');
+                const el = emailItem.querySelector('.meta-value');
                 if (el) el.innerHTML =
                     `<span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem">
                         <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
@@ -860,7 +907,7 @@
                                           : data.confidence === 'medium' ? '#b8a06a'
                                           : 'var(--faint)';
 
-                    emailItem.querySelector('.info-value').innerHTML =
+                    emailItem.querySelector('.meta-value').innerHTML =
                         `<a href="mailto:${esc(data.email)}">${esc(data.email)}</a>` +
                         `<span class="email-confidence" style="color:${confidenceColor}">${esc(sourceLabel)}</span>`;
 
@@ -870,11 +917,11 @@
                     const hiddenMsg = _currentChannelData?.has_hidden_email
                         ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
                         : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
-                    emailItem.querySelector('.info-value').innerHTML = hiddenMsg;
+                    emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
                 }
             } catch (err) {
                 clearInterval(stepTimer);
-                emailItem.querySelector('.info-value').innerHTML =
+                emailItem.querySelector('.meta-value').innerHTML =
                     `<span style="color:var(--faint);font-style:italic;font-size:.85rem">Search failed</span>`;
             }
         }
@@ -918,14 +965,14 @@
                         ${statItem(d.last_video_date,'Last Video')}
                     </div>
 
-                    <div class="info-grid">
-                        <div class="info-item info-full" id="emailInfoItem">
-                            <span class="info-label">Email</span>
+                    <div class="meta-section">
+                        <div class="meta-row" id="emailInfoItem">
+                            <span class="meta-label">Email</span>
                             ${d.email
-                                ? `<span class="info-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
-                                : `<span class="info-value">
+                                ? `<span class="meta-value"><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span>`
+                                : `<span class="meta-value">
                                        ${d.has_hidden_email
-                                           ? `<span style="color:var(--accent);font-size:.85rem;margin-right:8px" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
+                                           ? `<span style="color:var(--accent);font-size:.85rem" title="YouTube requires login to reveal this email">🔒 Hidden email exists</span>`
                                            : ''}
                                        <button class="find-email-btn" id="findEmailBtn" onclick="investigateEmail()">
                                            🔍 Find Email
@@ -933,22 +980,31 @@
                                    </span>`
                             }
                         </div>
-                        ${infoItem('Location', d.location)}
-                        ${infoItem('Joined',   d.joined)}
-                        <div class="info-item info-full" id="summaryBlock">
-                            <div class="about-header">
-                                <span class="info-label">About</span>
-                                <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
-                                    ✨ Generate AI Report
-                                </button>
-                            </div>
-                            <div id="summaryBox"></div>
-                            <div class="description-box">
-                                ${d.description
-                                    ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
-                                    : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
-                                }
-                            </div>
+                        ${d.location ? `
+                        <div class="meta-row">
+                            <span class="meta-label">Location</span>
+                            <span class="meta-value">${esc(d.location)}</span>
+                        </div>` : ''}
+                        ${d.joined ? `
+                        <div class="meta-row">
+                            <span class="meta-label">Joined</span>
+                            <span class="meta-value">${esc(d.joined)}</span>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="about-section" id="summaryBlock">
+                        <div class="about-section-header">
+                            <span class="section-label">About</span>
+                            <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
+                                ✨ Generate AI Report
+                            </button>
+                        </div>
+                        <div id="summaryBox"></div>
+                        <div class="description-box">
+                            ${d.description
+                                ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
+                                : `<span style="color:var(--faint);font-style:italic">No description available.</span>`
+                            }
                         </div>
                     </div>
 
