@@ -893,7 +893,7 @@ def scrape_channel(url: str) -> dict:
                 t_url = t.get('url', '')
                 if 'yt3' in t_url and 'fcrop64' not in t_url:
                     thumbnail = t_url
-                break
+                    break
     if not thumbnail:
         thumbnail = info.get('thumbnail') or ''
     # about_avatar (from about page HTML) will override below if found
@@ -981,6 +981,30 @@ def scrape_channel(url: str) -> dict:
     # About-page avatar is the real channel profile picture (yt3.ggpht.com)
     if about_avatar:
         thumbnail = about_avatar
+
+    # Last resort avatar: if thumbnail is still not a yt3 URL (e.g. video URL scrape
+    # where about page didn't contain channelMetadataRenderer), do a dedicated
+    # channel extraction to grab the avatar from yt-dlp thumbnails list.
+    if 'yt3' not in thumbnail and channel_url:
+        try:
+            with yt_dlp.YoutubeDL({'skip_download': True, 'quiet': True, 'no_warnings': True,
+                                    'ignoreerrors': True, 'playlistend': 1}) as ydl:
+                ch_info = ydl.extract_info(channel_url, download=False) or {}
+            for t in (ch_info.get('thumbnails') or []):
+                if isinstance(t, dict):
+                    t_url = t.get('url', '')
+                    if 'yt3' in t_url and 'avatar' in (t.get('id') or '').lower() and 'fcrop64' not in t_url:
+                        thumbnail = t_url
+                        break
+            if 'yt3' not in thumbnail:
+                for t in (ch_info.get('thumbnails') or []):
+                    if isinstance(t, dict):
+                        t_url = t.get('url', '')
+                        if 'yt3' in t_url and 'fcrop64' not in t_url:
+                            thumbnail = t_url
+                            break
+        except Exception:
+            pass
 
     # Deduplicate links (ignore trailing slash differences)
     seen, deduped = set(), []
