@@ -331,22 +331,7 @@
             line-height: 1.65;
         }
 
-        /* ── AI Report section ───────────────────────────────── */
-        .ai-report-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .ai-report-label {
-            font-size: 0.72rem;
-            font-family: var(--font-sans);
-            color: var(--faint);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-        }
-
+        /* ── AI Report button ────────────────────────────────── */
         .ai-report-btn {
             display: inline-flex;
             align-items: center;
@@ -761,7 +746,7 @@
                     const tags = Array.isArray(data.tags) && data.tags.length
                         ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
                         : '';
-                    box.innerHTML = `<table style="width:100%;border-collapse:collapse">${rows}</table>${tags}`;
+                    box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}</div>`;
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
                 } else {
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not generate report.</span>`;
@@ -940,16 +925,13 @@
                         ${infoItem('Location', d.location)}
                         ${infoItem('Joined',   d.joined)}
                         <div class="info-item info-full" id="summaryBlock">
-                            <div class="ai-report-header">
-                                <span class="ai-report-label">Channel Intelligence</span>
+                            <span class="info-label" style="display:flex;justify-content:space-between;align-items:center">
+                                About
                                 <button class="ai-report-btn" id="summarizeBtn" onclick="summarizeChannel()">
                                     ✨ Generate AI Report
                                 </button>
-                            </div>
+                            </span>
                             <div id="summaryBox"></div>
-                        </div>
-                        <div class="info-item info-full">
-                            <span class="info-label">About</span>
                             <div class="description-box">
                                 ${d.description
                                     ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(d.description)}</div>`
