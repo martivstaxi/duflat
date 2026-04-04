@@ -961,13 +961,14 @@
             const box = document.getElementById('emailResultBox');
             if (!box) return;
 
-            if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing email...'; }
-            const loadingHtml = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(177,173,161,.15);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite"></span> Writing email<span class="dots-anim"></span></span>`;
+            }
+            box.innerHTML = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
                 <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
                 <span>Writing personalized email<span class="dots-anim"></span></span>
             </div>`;
-            box.innerHTML = loadingHtml;
-            setTimeout(() => { const el = document.getElementById('emailLoading'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
 
             try {
                 const res = await fetch(`${API_URL}/generate-email`, {
@@ -1002,7 +1003,7 @@
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
-                    setTimeout(() => { box.querySelector('.email-preview')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400);
+                    setTimeout(() => { box.querySelector('.email-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400);
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
