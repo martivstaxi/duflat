@@ -694,11 +694,10 @@
             const box = document.getElementById('summaryBox');
             if (!box) return;
 
-            // Show loading state
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Analyzing...'; }
             box.innerHTML = `<div class="description-loading">
                 <span class="spinner" style="width:13px;height:13px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                Generating AI summary...
+                Scanning channel — fetching recent videos & building report...
             </div>`;
 
             try {
@@ -709,23 +708,39 @@
                 });
                 const data = await res.json();
 
-                if (data.summary) {
-                    const tags = Array.isArray(data.topics) && data.topics.length
-                        ? `<div class="topic-tags">${data.topics.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
+                if (data.report) {
+                    const LABELS = {
+                        content_language: 'Content Language',
+                        niche:            'Niche',
+                        audience:         'Audience',
+                        upload_frequency: 'Upload Frequency',
+                        content_style:    'Content Style',
+                        brand_fit:        'Brand Fit',
+                        key_insight:      'Key Insight',
+                    };
+                    const rows = Object.entries(LABELS)
+                        .filter(([k]) => data.report[k])
+                        .map(([k, label]) => `
+                            <tr>
+                                <td style="color:var(--muted);white-space:nowrap;padding:5px 12px 5px 0;font-size:.8rem;vertical-align:top">${label}</td>
+                                <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${esc(data.report[k])}</td>
+                            </tr>`).join('');
+                    const tags = Array.isArray(data.tags) && data.tags.length
+                        ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
                         : '';
-                    box.innerHTML = `<div style="font-family:var(--font-sans)">${esc(data.summary)}</div>${tags}`;
-                    if (btn) { btn.disabled = true; btn.textContent = '✅ Summarized'; }
+                    box.innerHTML = `<table style="width:100%;border-collapse:collapse">${rows}</table>${tags}`;
+                    if (btn) { btn.disabled = true; btn.textContent = '✅ Report Ready'; }
                 } else {
                     const raw = channelData.description || '';
                     box.innerHTML = raw
-                        ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
+                        ? `<div style="white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
                         : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
                     if (btn) { btn.disabled = false; btn.textContent = '✨ AI Summary'; }
                 }
             } catch (_) {
                 const raw = channelData.description || '';
                 box.innerHTML = raw
-                    ? `<div style="font-family:var(--font-sans);white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
+                    ? `<div style="white-space:pre-wrap;max-height:110px;overflow-y:auto">${esc(raw)}</div>`
                     : `<span style="color:var(--faint);font-style:italic">No description available.</span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ AI Summary'; }
             }
