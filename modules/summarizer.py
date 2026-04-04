@@ -85,22 +85,18 @@ def _build_prompt(channel_data: dict, titles: list[str]) -> str:
 
 {context}
 
-Generate a professional channel report with these exact 7 fields. Each value must be a SHORT, sharp phrase (not a full paragraph — 1 sentence max, no fluff).
+Generate a professional channel report with these exact 7 fields. Each value must be a SHORT, sharp phrase (1 sentence max, no fluff).
 
-Fields to fill:
-1. content_language — Language(s) used in content. E.g. "Turkish", "English", "Bilingual (TR + EN subtitles)"
-2. niche — Primary content category and topic. E.g. "Anime reviews & seasonal rankings"
-3. audience — Who watches this channel. E.g. "Turkish-speaking anime fans, likely 16-28"
-4. upload_frequency — Estimated posting rhythm inferred from titles/data. E.g. "~2 videos/week", "Irregular, burst uploads"
-5. content_style — Format and tone. E.g. "Commentary-style rankings, community polls, event coverage"
-6. brand_fit — Sponsorship/partnership potential and relevant brand categories. E.g. "High — anime streaming, gaming peripherals, digital products"
-7. key_insight — One non-obvious insight a marketing researcher would find valuable. E.g. "Runs annual anime awards event, suggesting strong community ownership"
+CRITICAL RULE: Base every field ONLY on hard evidence visible in the data above. Never speculate or add things not supported by the data. If unsure, say "Unclear from available data."
 
-Rules:
-- English only
-- Be factual — infer only what the data clearly supports
-- Do NOT repeat stats already shown (subscriber count, join date, video count, total views)
-- key_insight must be genuinely insightful, not a generic statement
+Fields:
+1. content_language — Look at the video titles above. What language are they written in? That is the content language. Only mark bilingual if you see titles clearly in TWO different languages. E.g. "Turkish", "English", "Bilingual (TR + EN)"
+2. niche — Primary content category from titles and description. E.g. "Anime reviews & seasonal rankings"
+3. audience — Must match content_language. If content is Turkish → audience is Turkish-speaking. Never add a secondary audience language unless there is explicit evidence. E.g. "Turkish-speaking anime fans, likely 16–28"
+4. upload_frequency — Infer from how many recent titles exist and their pattern. E.g. "~1–2 videos/week", "Irregular bursts"
+5. content_style — Format/tone inferred from titles and description. E.g. "Commentary, rankings, community polls"
+6. brand_fit — Relevant brand categories for sponsorship. E.g. "High — anime streaming platforms, gaming peripherals"
+7. key_insight — One non-obvious insight valuable to a marketing researcher. Must be specific to THIS channel, not generic. E.g. "Hosts annual anime awards as alternative to Crunchyroll, signaling community authority"
 
 Also list 3–6 short topic tags.
 
