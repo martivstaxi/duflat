@@ -106,54 +106,68 @@ def _select_videos(videos: list[dict]) -> tuple[list[dict], list[dict]]:
 
 def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
     """
-    Fetch transcript for a single video via yt-dlp subtitle download.
-    Single yt-dlp call with English auto-captions (works for any language).
+    Fetch transcript via yt-dlp extract_info + urlopen on subtitle URL.
+    Uses yt-dlp's session (cookies/consent handled) to download subtitle JSON.
     Returns truncated plain text or empty string on failure.
     """
-    import tempfile
     try:
         import yt_dlp
 
         url = f'https://www.youtube.com/watch?v={video_id}'
-        with tempfile.TemporaryDirectory() as tmpdir:
-            outtmpl = os.path.join(tmpdir, '%(id)s')
-            opts = {
-                'skip_download':     True,
-                'writesubtitles':    True,
-                'writeautomaticsub': True,
-                'subtitlesformat':   'json3',
-                'subtitleslangs':    ['en'],
-                'outtmpl':           outtmpl,
-                'quiet':             True,
-                'no_warnings':       True,
-                'ignoreerrors':      True,
-            }
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                ydl.download([url])
+        opts = {
+            'skip_download': True,
+            'quiet':         True,
+            'no_warnings':   True,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if not info:
+                return ''
 
-            # Read the first subtitle file found
-            for fname in os.listdir(tmpdir):
-                fpath = os.path.join(tmpdir, fname)
-                if not os.path.isfile(fpath) or not fname.endswith('.json3'):
-                    continue
-                raw = open(fpath, encoding='utf-8', errors='ignore').read()
-                if not raw:
-                    continue
-                data = json.loads(raw)
-                events = data.get('events') or []
-                parts = []
-                for ev in events:
-                    for seg in (ev.get('segs') or []):
-                        t = seg.get('utf8', '').strip()
-                        if t and t != '\n':
-                            parts.append(t)
-                text = ' '.join(parts)
-                if len(text.strip()) > 50:
-                    text = re.sub(r'\[.*?\]', '', text)
-                    text = re.sub(r'\s+', ' ', text).strip()
-                    return text[:max_chars]
+            # Find English json3 subtitle URL (manual subs first, then auto-captions)
+            sub_url = ''
+            for source in [info.get('subtitles') or {}, info.get('automatic_captions') or {}]:
+                for lang_key in ['en', 'en-orig']:
+                    if lang_key in source:
+                        for fmt in source[lang_key]:
+                            if isinstance(fmt, dict) and fmt.get('ext') == 'json3':
+                                sub_url = fmt.get('url', '')
+                                break
+                    if sub_url:
+                        break
+                # If no English, try first available language
+                if not sub_url and source:
+                    first_lang = list(source.keys())[0]
+                    for fmt in source[first_lang]:
+                        if isinstance(fmt, dict) and fmt.get('ext') == 'json3':
+                            sub_url = fmt.get('url', '')
+                            break
+                if sub_url:
+                    break
 
-        return ''
+            if not sub_url:
+                return ''
+
+            # Download using yt-dlp's session (handles cookies/consent)
+            raw = ydl.urlopen(sub_url).read().decode('utf-8', errors='ignore')
+
+        if not raw:
+            return ''
+
+        data = json.loads(raw)
+        events = data.get('events') or []
+        parts = []
+        for ev in events:
+            for seg in (ev.get('segs') or []):
+                t = seg.get('utf8', '').strip()
+                if t and t != '\n':
+                    parts.append(t)
+        text = ' '.join(parts)
+        if len(text.strip()) < 50:
+            return ''
+        text = re.sub(r'\[.*?\]', '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text[:max_chars]
     except Exception:
         return ''
 
@@ -230,6 +244,7 @@ RULES:
 - EVERYTHING must be written in English. Translate all non-English content (titles, quotes, terms) to English.
 - Do NOT mention subscriber count, view count, or video count — these are already shown elsewhere.
 - Do NOT write video titles — describe what they discuss instead.
+- NEVER mention transcript availability, absence, or limitations. Do not say "transcripts are unavailable" or "limiting analysis". Just analyze what you have.
 - Each field (except key_insight): MAX 1 short sentence. No filler, no fluff.
 
 Fields:
