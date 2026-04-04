@@ -186,6 +186,15 @@
         .dots-anim::after { content: ''; animation: dots 1.5s steps(4,end) infinite; }
         @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 
+        /* ── Fade-in animation for report rows ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .report-row { animation: fadeInUp .4s ease both; }
+        .report-tags { animation: fadeInUp .4s ease both; }
+        .report-meta { animation: fadeInUp .4s ease both; }
+
         /* ── Cards ───────────────────────────────────────────── */
         #result { display: none; }
 
@@ -908,18 +917,23 @@
                         brand_fit:         'Brand Fit',
                         key_insight:       'Key Insight',
                     };
+                    let delay = 0;
                     const rows = Object.entries(LABELS)
                         .filter(([k]) => data.report[k])
-                        .map(([k, label]) => `
-                            <tr>
+                        .map(([k, label]) => {
+                            delay += 80;
+                            return `<tr class="report-row" style="animation-delay:${delay}ms">
                                 <td style="color:var(--muted);white-space:nowrap;padding:5px 12px 5px 0;font-size:.8rem;vertical-align:top">${label}</td>
                                 <td style="padding:5px 0;font-size:.85rem;line-height:1.5">${k === 'key_insight' ? esc(data.report[k]).split(/\n+/).filter(Boolean).map(l => l.replace(/^[•]\s*/, '').trim()).filter(Boolean).map(l => '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--accent);margin-bottom:5px">' + l + '</div>').join('') : esc(data.report[k])}</td>
-                            </tr>`).join('');
+                            </tr>`;
+                        }).join('');
+                    delay += 80;
                     const tags = Array.isArray(data.tags) && data.tags.length
-                        ? `<div class="topic-tags" style="margin-top:10px">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
+                        ? `<div class="topic-tags report-tags" style="margin-top:10px;animation-delay:${delay}ms">${data.tags.map(t => `<span class="topic-tag">${esc(t)}</span>`).join('')}</div>`
                         : '';
+                    delay += 80;
                     const meta = data.videos_analyzed
-                        ? `<div style="color:var(--faint);font-size:.75rem;margin-top:8px">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
+                        ? `<div class="report-meta" style="color:var(--faint);font-size:.75rem;margin-top:8px;animation-delay:${delay}ms">Analyzed ${data.videos_analyzed.total} videos (${data.videos_analyzed.transcripts_found} transcripts found)</div>`
                         : '';
                     box.innerHTML = `<div style="margin-bottom:10px"><table style="width:100%;border-collapse:collapse">${rows}</table>${tags}${meta}</div>`;
                     _currentReportData = data;
@@ -928,6 +942,7 @@
                     const emailBtn = document.getElementById('emailGenBtn');
                     if (arrow) arrow.style.display = '';
                     if (emailBtn) emailBtn.style.display = '';
+                    setTimeout(() => { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
                 } else {
                     const errMsg = data.error || 'Could not generate report.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
@@ -948,9 +963,9 @@
 
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing email...'; }
             box.innerHTML = `<div class="email-preview" style="margin-top:20px">
-                <div style="padding:24px 20px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem">
-                    <span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;display:inline-block;flex-shrink:0"></span>
-                    <span>Writing personalized email</span><span class="dots-anim"></span>
+                <div style="padding:40px 20px;text-align:center;color:var(--muted)">
+                    <div class="spinner" style="width:22px;height:22px;border-width:2px;margin:0 auto 14px"></div>
+                    <div style="font-size:.85rem">Writing personalized email<span class="dots-anim"></span></div>
                 </div>
             </div>`;
 
