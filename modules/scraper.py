@@ -556,19 +556,34 @@ def _parse_about_from_html(html: str) -> dict:
     if vc:
         result['video_count'] = vc
 
-    # Channel description — try channelMetadataRenderer first, then aboutChannelViewModel
-    for marker in ('"channelMetadataRenderer"', '"aboutChannelViewModel"'):
-        idx = html.find(marker)
+    # Channel description — try multiple locations in ytInitialData
+    def _unescape(s):
+        return s.replace('\\n', '\n').replace('\\"', '"').replace('\\\\', '\\')
+
+    # 1) channelMetadataRenderer.description  (plain string)
+    idx = html.find('"channelMetadataRenderer"')
+    if idx >= 0:
+        chunk = html[idx:idx + 5000]
+        dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
+        if dm:
+            result['description'] = _unescape(dm.group(1))
+
+    # 2) aboutChannelViewModel — newer layout uses {"content":"..."} OR plain string
+    if not result.get('description'):
+        idx = html.find('"aboutChannelViewModel"')
         if idx >= 0:
-            chunk = html[idx:idx + 4000]
+            chunk = html[idx:idx + 5000]
+            # plain string form
             dm = re.search(r'"description"\s*:\s*"((?:[^"\\]|\\.)+)"', chunk)
             if dm:
-                raw = dm.group(1)
-                result['description'] = (raw
-                    .replace('\\n', '\n')
-                    .replace('\\"', '"')
-                    .replace('\\\\', '\\'))
-                break
+                result['description'] = _unescape(dm.group(1))
+            else:
+                # object form: "description":{"content":"..."}
+                dm = re.search(
+                    r'"description"\s*:\s*\{[^{}]*?"content"\s*:\s*"((?:[^"\\]|\\.)+)"',
+                    chunk, re.DOTALL)
+                if dm:
+                    result['description'] = _unescape(dm.group(1))
 
     # Channel avatar — first yt3.ggpht.com URL in the page (always the channel profile picture)
     m = re.search(r'"url"\s*:\s*"(https://yt3\.ggpht\.com/[^"]+)"', html)
@@ -880,8 +895,11 @@ def scrape_channel(url: str) -> dict:
         views = about_views
     if about_last_video:
         last_video_date = about_last_video
-    # Use about-page description only when yt-dlp returned nothing (e.g. video URL fallback)
-    if not description and about_description:
+    # When yt-dlp scraped a video (not a channel), its description is the video's description.
+    # In that case, always use the about-page channel description instead.
+    if is_video and about_description:
+        description = about_description[:1000]
+    elif not description and about_description:
         description = about_description[:1000]
     # About-page avatar is the real channel profile picture (yt3.ggpht.com)
     if about_avatar:
