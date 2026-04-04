@@ -630,10 +630,11 @@ def _parse_about_from_html(html: str) -> dict:
             if am:
                 avatar_url = am.group(1)
 
-    # 3) Fallback: first yt3 URL without fcrop64 (fcrop64 = banner/cropped image)
+    # 3) Fallback: look for yt3 URL inside an "avatar" or "owner" context only
+    #    Avoid grabbing random yt3 URLs (video thumbnails, banners, etc.)
     if not avatar_url:
-        for m in re.finditer(r'"url"\s*:\s*"(https://yt3\.[^"]+)"', html):
-            url = m.group(1)
+        for m in re.finditer(r'("avatar"|"owner")[^{}]{0,300}"url"\s*:\s*"(https://yt3[^"]+)"', html):
+            url = m.group(2)
             if 'fcrop64' not in url:
                 avatar_url = url
                 break
