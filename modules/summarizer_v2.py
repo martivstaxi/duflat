@@ -231,33 +231,34 @@ def _build_prompt(channel_data: dict, recent: list[dict], popular: list[dict],
     context = '\n'.join(lines)
     transcript_count = sum(1 for v in recent + popular if transcripts.get(v['id']))
 
-    return f"""You are a data analyst. Analyze this YouTube channel's video transcripts and produce a SHORT, factual report.
+    return f"""Analyze this YouTube channel based on its video transcripts and data.
 
 {context}
 
 Content Language = {lang}
-{transcript_count}/{len(recent) + len(popular)} videos had transcripts.
 
-RULES:
-- ONLY state facts you can verify from the data above. No speculation.
-- If you're not confident about something, OMIT it entirely.
-- EVERYTHING must be written in English. Translate all non-English content (titles, quotes, terms) to English.
-- Do NOT mention subscriber count, view count, or video count — these are already shown elsewhere.
-- Do NOT write video titles — describe what they discuss instead.
-- NEVER mention transcript availability, absence, or limitations. Do not say "transcripts are unavailable" or "limiting analysis". Just analyze what you have.
-- Each field (except key_insight): MAX 1 short sentence. No filler, no fluff.
+Write everything in English. Translate non-English content. Do not mention subscriber/view counts or video titles. Do not mention transcript availability. Only state what you can verify from the data.
 
-Fields:
-1. niche — One phrase.
-2. content_themes — 3-5 specific recurring topics, comma-separated.
-3. audience — Who watches, one phrase. Must match content language ({lang}).
-4. content_style — Format + tone in a few words.
-5. brand_fit — 2-3 specific brand categories.
-6. key_insight — The most important field. 3-5 sentences. Write like a smart friend explaining this channel to you over coffee. Here's an example of GOOD key_insight writing:
+Fields 1-5: one short sentence each.
+1. niche — What does this channel make?
+2. content_themes — 3-5 recurring topics, comma-separated.
+3. audience — Who watches? Must match content language ({lang}).
+4. content_style — Format and tone.
+5. brand_fit — 2-3 matching brand categories.
 
-   "This creator mostly talks about budget cooking — almost every video mentions saving money on groceries. The older popular videos were simple recipe walkthroughs, but the recent ones have shifted to challenge formats like 'feeding a family of 4 for $20'. They mention Walmart and Aldi by name a lot. The tone is casual and funny, not preachy — they make fun of expensive food trends. A food delivery or grocery brand would be a natural fit here."
+6. key_insight — Write 4-6 bullet points. Each bullet is one clear, specific observation. Use simple words.
 
-   Match this tone and level of detail. Plain English, short sentences, specific observations from the actual content.
+BAD example (too corporate, vague):
+"The channel positions itself as a quality-focused alternative, leveraging engagement-driven formats and building community trust through curated content experiences."
+
+GOOD example (clear, specific, useful):
+• "Most videos are about ranking and comparing things — best horror games, worst movie sequels, etc."
+• "The creator keeps coming back to Nintendo and PlayStation in almost every video."
+• "Older popular videos were calm reviews. Recent ones are louder, faster, more reaction-style."
+• "They often joke about being broke — probably connects well with younger viewers."
+• "A gaming peripherals or streaming service brand would fit naturally here."
+
+Write key_insight like the GOOD example. Each bullet = one simple fact or observation.
 
 Also list 3-5 topic tags (in English).
 
