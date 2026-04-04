@@ -400,6 +400,7 @@ RE_VIEW_COUNT  = re.compile(
     r'|"viewCountText":\s*"([\d,\.]+)\s*views?(?:",|\s*})',
     re.I,
 )
+RE_SUBSCRIBER_TEXT = re.compile(r'"subscriberCountText"\s*:\s*"([^"]{1,40})"')
 RE_VIDEO_COUNT_PATTERNS = [
     re.compile(r'"videoCountText":\s*"([\d,.\s]+)\s*video', re.I),
     re.compile(r'"videosCountText":\s*\{\s*"simpleText":\s*"([\d,.\s]+)\s*video', re.I),
@@ -635,6 +636,13 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
     if not email and channel_id:
         email, has_hidden_email = _fetch_email_innertube(channel_id)
 
+    # Extract subscriber count from HTML (fallback for video URL scrapes)
+    sub_text = ''
+    m_sub = RE_SUBSCRIBER_TEXT.search(ps)
+    if m_sub:
+        raw_sub = m_sub.group(1)  # e.g. "32.4K subscribers"
+        sub_text = re.sub(r'\s*subscribers?\s*$', '', raw_sub, flags=re.I).strip()
+
     return (
         socials,
         json_ext_links[:15],
@@ -645,6 +653,7 @@ def fetch_about_page(channel_url: str, channel_id: str = '') -> tuple:
         extra.get('video_count', ''),
         extra.get('last_video_date', ''),
         has_hidden_email,
+        sub_text,
     )
 
 
@@ -739,6 +748,7 @@ def scrape_channel(url: str) -> dict:
     ).rstrip('/'))
 
     # channel_follower_count may be at top-level or inside entries[0]
+    # If still missing (e.g. video URL), about_subscribers from HTML is used below as fallback
     entries_raw = info.get('entries') or []
     first_entry = next((e for e in entries_raw if isinstance(e, dict)), {})
     sub_count = (info.get('channel_follower_count')
@@ -810,6 +820,11 @@ def scrape_channel(url: str) -> dict:
     about_location, about_joined, about_views = about_result[3], about_result[4], about_result[5]
     about_video_count, about_last_video = about_result[6], about_result[7]
     has_hidden_email = about_result[8] if len(about_result) > 8 else False
+    about_subscribers = about_result[9] if len(about_result) > 9 else ''
+
+    # Fallback: use subscriber count from about page HTML if yt-dlp didn't return it
+    if not subscribers and about_subscribers:
+        subscribers = about_subscribers
 
     for k, v in about_socials.items():
         if k not in socials:
