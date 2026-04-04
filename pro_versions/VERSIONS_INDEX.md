@@ -23,3 +23,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_5](./pro_version_5/VERSION_INFO.md) | 2026-04-04 | Manuel agency butonu + description bug kalıcı fix (4 kaynak + yt-dlp fallback) |
 | [pro_version_6](./pro_version_6/VERSION_INFO.md) | 2026-04-04 | Apify email finder yenilendi (exporter24 + endspec), UI temizlendi, Haiku geçici kapalı |
 | [pro_version_7](./pro_version_7/VERSION_INFO.md) | 2026-04-04 | Avatar bug fix (shorts/video URL'lerinde yanlış resim sorunu çözüldü) |
+| [pro_version_8](./pro_version_8/VERSION_INFO.md) | 2026-04-04 | AI Report v2 — video transkript analizi, avatar fix, bullet point key insight |
