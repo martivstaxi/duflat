@@ -49,10 +49,12 @@ RE_EMAIL_PAGE  = [
 ]
 
 def _try_decode_b64_email(s: str) -> str:
-    """If s is base64-encoded and decodes to an email, return the email."""
+    """If s is base64-encoded and decodes to a valid email, return the email."""
     try:
-        decoded = base64.b64decode(s + '==').decode('utf-8', errors='ignore').strip()
-        if '@' in decoded and '.' in decoded.split('@')[1] and len(decoded) < 120:
+        # Correct padding: base64 strings must be a multiple of 4 chars
+        pad = (4 - len(s) % 4) % 4
+        decoded = base64.b64decode(s + '=' * pad).decode('utf-8').strip()  # strict — no errors='ignore'
+        if re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', decoded):
             return decoded
     except Exception:
         pass
