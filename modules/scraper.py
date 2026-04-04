@@ -880,8 +880,8 @@ def scrape_channel(url: str) -> dict:
         views = about_views
     if about_last_video:
         last_video_date = about_last_video
-    # About-page description is authoritative (channel author's own text, not a video desc)
-    if about_description:
+    # Use about-page description only when yt-dlp returned nothing (e.g. video URL fallback)
+    if not description and about_description:
         description = about_description[:1000]
     # About-page avatar is the real channel profile picture (yt3.ggpht.com)
     if about_avatar:
