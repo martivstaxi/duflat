@@ -107,7 +107,7 @@ def _select_videos(videos: list[dict]) -> tuple[list[dict], list[dict]]:
 def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
     """
     Fetch transcript for a single video via yt-dlp subtitle download.
-    Uses yt-dlp's own download mechanism (handles cookies/consent).
+    Single yt-dlp call with English auto-captions (works for any language).
     Returns truncated plain text or empty string on failure.
     """
     import tempfile
@@ -115,106 +115,57 @@ def _get_transcript(video_id: str, max_chars: int = 1500) -> str:
         import yt_dlp
 
         url = f'https://www.youtube.com/watch?v={video_id}'
-
-        # First: quick extract_info to find available subtitle languages
-        with yt_dlp.YoutubeDL({'skip_download': True, 'quiet': True, 'no_warnings': True}) as ydl:
-            info = ydl.extract_info(url, download=False)
-        if not info:
-            return ''
-
-        # Pick best language: prefer manual subs, then auto-captions
-        subs = info.get('subtitles') or {}
-        auto = info.get('automatic_captions') or {}
-        preferred = ['en', 'tr', 'de', 'fr', 'es', 'pt', 'ja', 'ko', 'ru', 'ar']
-        lang = ''
-        for source in [subs, auto]:
-            for pl in preferred:
-                if pl in source:
-                    lang = pl
-                    break
-            if not lang and source:
-                lang = list(source.keys())[0]
-            if lang:
-                break
-
-        if not lang:
-            return ''
-
         with tempfile.TemporaryDirectory() as tmpdir:
             outtmpl = os.path.join(tmpdir, '%(id)s')
             opts = {
-                'skip_download':    True,
-                'writesubtitles':   True,
+                'skip_download':     True,
+                'writesubtitles':    True,
                 'writeautomaticsub': True,
-                'subtitlesformat':  'json3',
-                'subtitleslangs':   [lang],
-                'outtmpl':          outtmpl,
-                'quiet':            True,
-                'no_warnings':      True,
-                'ignoreerrors':     True,
+                'subtitlesformat':   'json3',
+                'subtitleslangs':    ['en'],
+                'outtmpl':           outtmpl,
+                'quiet':             True,
+                'no_warnings':       True,
+                'ignoreerrors':      True,
             }
             with yt_dlp.YoutubeDL(opts) as ydl:
                 ydl.download([url])
 
-            # Find any subtitle file written by yt-dlp
-            text = ''
+            # Read the first subtitle file found
             for fname in os.listdir(tmpdir):
                 fpath = os.path.join(tmpdir, fname)
-                if not os.path.isfile(fpath):
+                if not os.path.isfile(fpath) or not fname.endswith('.json3'):
                     continue
-
                 raw = open(fpath, encoding='utf-8', errors='ignore').read()
                 if not raw:
                     continue
+                data = json.loads(raw)
+                events = data.get('events') or []
+                parts = []
+                for ev in events:
+                    for seg in (ev.get('segs') or []):
+                        t = seg.get('utf8', '').strip()
+                        if t and t != '\n':
+                            parts.append(t)
+                text = ' '.join(parts)
+                if len(text.strip()) > 50:
+                    text = re.sub(r'\[.*?\]', '', text)
+                    text = re.sub(r'\s+', ' ', text).strip()
+                    return text[:max_chars]
 
-                if fname.endswith('.json3'):
-                    try:
-                        data = json.loads(raw)
-                        events = data.get('events') or []
-                        parts = []
-                        for ev in events:
-                            for seg in (ev.get('segs') or []):
-                                t = seg.get('utf8', '').strip()
-                                if t and t != '\n':
-                                    parts.append(t)
-                        text = ' '.join(parts)
-                    except Exception:
-                        continue
-                elif fname.endswith('.vtt') or fname.endswith('.srt'):
-                    text = re.sub(r'<[^>]+>', '', raw)
-                    text = re.sub(r'\d{2}:\d{2}[:\.][\d.]+\s*-->\s*\d{2}:\d{2}[:\.][\d.]+', '', text)
-                    text = re.sub(r'WEBVTT.*?\n', '', text)
-                    text = re.sub(r'Kind:.*?\n', '', text)
-                    text = re.sub(r'Language:.*?\n', '', text)
-
-                if text and len(text.strip()) > 50:
-                    break
-                text = ''
-
-        if not text:
-            return ''
-
-        text = re.sub(r'\[.*?\]', '', text)
-        text = re.sub(r'\s+', ' ', text).strip()
-        return text[:max_chars]
+        return ''
     except Exception:
         return ''
 
 
 def _fetch_transcripts(videos: list[dict]) -> dict[str, str]:
     """
-    Fetch transcripts for multiple videos in parallel.
+    Fetch transcripts sequentially (yt-dlp not safe for concurrent use).
     Returns {video_id: transcript_text}.
     """
     results = {}
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        futures = {pool.submit(_get_transcript, v['id']): v['id'] for v in videos}
-        for future in as_completed(futures):
-            vid = futures[future]
-            try:
-                results[vid] = future.result()
-            except Exception:
-                results[vid] = ''
+    for v in videos:
+        results[v['id']] = _get_transcript(v['id'])
     return results
 
 
@@ -276,8 +227,10 @@ Content Language = {lang}
 RULES:
 - ONLY state facts you can verify from the data above. No speculation.
 - If you're not confident about something, OMIT it entirely.
-- Each field: MAX 1 short sentence. No filler, no fluff, no generic phrases.
-- Use specific names, numbers, topics from the transcripts. Not "various topics" — name them.
+- EVERYTHING must be written in English. Translate all non-English content (titles, quotes, terms) to English.
+- Do NOT mention subscriber count, view count, or video count — these are already shown elsewhere.
+- Do NOT write video titles — describe what they discuss instead.
+- Each field (except key_insight): MAX 1 short sentence. No filler, no fluff.
 
 Fields:
 1. niche — One phrase. What does this channel make content about?
@@ -285,15 +238,20 @@ Fields:
 3. audience — Who watches, in one phrase. Must match content language ({lang}).
 4. content_style — Format + tone in a few words.
 5. brand_fit — 2-3 specific brand categories that match the actual content.
-6. key_insight — This is the MOST IMPORTANT field. Write 3-5 sentences. Analyze ALL transcripts deeply and extract:
-   - Patterns across videos (what topics keep coming back, what's the creator's unique angle)
-   - Audience engagement signals (what kind of content gets most views and WHY based on transcript content)
-   - Specific data points: mention actual names, brands, products, events, numbers discussed in videos
-   - Compare recent vs popular content: is the channel evolving or staying consistent?
+6. key_insight — THIS IS THE MOST IMPORTANT FIELD. Write 3-5 sentences of deep, data-driven analysis:
+   - What patterns emerge across videos? What is the creator's unique angle or approach?
+   - Which content topics drive the highest engagement and why?
+   - How has the channel's content evolved (recent vs popular videos)?
+   - What specific themes, products, or cultural references appear repeatedly in the spoken content?
    - What makes this creator different from others in the same niche?
-   Every claim must reference actual transcript content. No generic statements.
+   RULES for key_insight:
+   - Every claim must be backed by evidence from transcript content or video data
+   - No generic statements like "the creator engages well with audience"
+   - No subscriber/view counts — focus on CONTENT patterns
+   - No video titles — describe the content instead
+   - All text in English, translate everything
 
-Also list 3-5 topic tags.
+Also list 3-5 topic tags (in English).
 
 Respond ONLY with valid JSON:
 {{
