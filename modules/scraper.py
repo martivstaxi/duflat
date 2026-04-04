@@ -608,10 +608,38 @@ def _parse_about_from_html(html: str) -> dict:
                 if dm:
                     result['description'] = _unescape(dm.group(1))
 
-    # Channel avatar — first yt3.ggpht.com URL in the page (always the channel profile picture)
-    m = re.search(r'"url"\s*:\s*"(https://yt3\.ggpht\.com/[^"]+)"', html)
-    if m:
-        result['avatar'] = m.group(1).replace('\\/', '/').replace('\\u0026', '&')
+    # Channel avatar — extract from known avatar containers in ytInitialData
+    # Priority: channelMetadataRenderer.avatar > c4TabbedHeaderRenderer.avatar
+    # Then fallback to any yt3 URL that does NOT contain fcrop64 (fcrop64 = banner crop)
+    avatar_url = ''
+
+    # 1) channelMetadataRenderer → avatar → thumbnails
+    idx_cm = html.find('"channelMetadataRenderer"')
+    if idx_cm >= 0:
+        chunk = html[idx_cm:idx_cm + 3000]
+        am = re.search(r'"avatar"\s*:\s*\{[^{}]*"url"\s*:\s*"(https://yt3[^"]+)"', chunk)
+        if am:
+            avatar_url = am.group(1)
+
+    # 2) c4TabbedHeaderRenderer → avatar → thumbnails
+    if not avatar_url:
+        idx_c4 = html.find('"c4TabbedHeaderRenderer"')
+        if idx_c4 >= 0:
+            chunk = html[idx_c4:idx_c4 + 3000]
+            am = re.search(r'"avatar"\s*:\s*\{[^{}]*"url"\s*:\s*"(https://yt3[^"]+)"', chunk)
+            if am:
+                avatar_url = am.group(1)
+
+    # 3) Fallback: first yt3 URL without fcrop64 (fcrop64 = banner/cropped image)
+    if not avatar_url:
+        for m in re.finditer(r'"url"\s*:\s*"(https://yt3\.[^"]+)"', html):
+            url = m.group(1)
+            if 'fcrop64' not in url:
+                avatar_url = url
+                break
+
+    if avatar_url:
+        result['avatar'] = avatar_url.replace('\\/', '/').replace('\\u0026', '&')
 
     return result
 
@@ -846,18 +874,21 @@ def scrape_channel(url: str) -> dict:
         description = ''
     else:
         description = (info.get('description') or '')[:1000]
-    # Look for channel avatar in yt-dlp thumbnails list (yt3.ggpht.com = profile picture)
+    # Look for channel avatar in yt-dlp thumbnails list
+    # Skip URLs with fcrop64 (banner crops) — only want actual profile picture
     thumbnail = ''
     for t in (info.get('thumbnails') or []):
         if isinstance(t, dict):
             t_url = t.get('url', '')
-            if 'yt3.ggpht.com' in t_url and 'avatar' in (t.get('id') or '').lower():
+            if 'yt3' in t_url and 'avatar' in (t.get('id') or '').lower() and 'fcrop64' not in t_url:
                 thumbnail = t_url
                 break
     if not thumbnail:
         for t in (info.get('thumbnails') or []):
-            if isinstance(t, dict) and 'yt3.ggpht.com' in (t.get('url') or ''):
-                thumbnail = t['url']
+            if isinstance(t, dict):
+                t_url = t.get('url', '')
+                if 'yt3' in t_url and 'fcrop64' not in t_url:
+                    thumbnail = t_url
                 break
     if not thumbnail:
         thumbnail = info.get('thumbnail') or ''
