@@ -972,6 +972,7 @@
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
+                    setTimeout(() => { box.querySelector('.email-preview')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400);
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
