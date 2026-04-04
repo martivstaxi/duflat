@@ -976,11 +976,11 @@
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
                     box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">${esc(errMsg)}</span>`;
-                    if (btn) { btn.disabled = false; btn.textContent = '✉️ Customize Email'; }
+                    if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
                 }
             } catch (_) {
                 box.innerHTML = `<span style="color:var(--faint);font-style:italic;font-size:.83rem">Could not reach the API.</span>`;
-                if (btn) { btn.disabled = false; btn.textContent = '✉️ Customize Email'; }
+                if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
             }
         }
 
@@ -1152,7 +1152,7 @@
                                 </button>
                                 <span class="btn-arrow" id="emailArrow" style="display:none">›</span>
                                 <button class="email-gen-btn" id="emailGenBtn" onclick="generateEmail()" style="display:none">
-                                    ✉️ Customize Email
+                                    ✨ Personalized Email
                                 </button>
                             </div>
                         </div>
