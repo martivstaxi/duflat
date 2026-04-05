@@ -1027,24 +1027,33 @@
                 let chunkIndex = 0;
                 let posInChunk = 0;
 
+                function scrollToCursor() {
+                    const cur = element.querySelector('.tw-cursor');
+                    if (!cur) return;
+                    const rect = cur.getBoundingClientRect();
+                    const bottomGap = window.innerHeight - rect.bottom;
+                    if (bottomGap < 80) {
+                        window.scrollBy({ top: 60, behavior: 'smooth' });
+                    }
+                }
+
                 function tick() {
                     if (chunkIndex >= chunks.length) { resolve(); return; }
                     const chunk = chunks[chunkIndex];
                     if (chunk === '<br>') {
                         fullOutput += '<br>';
                         element.innerHTML = fullOutput + '<span class="tw-cursor">|</span>';
+                        scrollToCursor();
                         chunkIndex++;
                         posInChunk = 0;
                         setTimeout(tick, speed);
                         return;
                     }
                     if (posInChunk < chunk.length) {
-                        // Add chars in small bursts (2-4) for natural feel
                         const burst = Math.min(2 + Math.floor(Math.random() * 3), chunk.length - posInChunk);
                         fullOutput += chunk.substring(posInChunk, posInChunk + burst);
                         posInChunk += burst;
                         element.innerHTML = fullOutput + '<span class="tw-cursor">|</span>';
-                        // Vary speed slightly for realism
                         const jitter = speed + Math.floor(Math.random() * 10) - 4;
                         setTimeout(tick, Math.max(4, jitter));
                     } else {
