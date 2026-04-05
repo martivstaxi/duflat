@@ -1,0 +1,8 @@
+flask==3.0.3
+flask-cors==4.0.1
+yt-dlp
+requests
+beautifulsoup4
+anthropic
+apify-client
+gunicorn==22.0.0
