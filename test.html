@@ -999,7 +999,7 @@
                     }, 400);
                     // Typewriter effect on body
                     const bodyEl = document.getElementById('emailBodyTypewriter');
-                    await typewriterEffect(bodyEl, esc(data.body), 30);
+                    await typewriterEffect(bodyEl, esc(data.body), 60);
                     // Remove cursor after typing finishes
                     const cursor = bodyEl.querySelector('.tw-cursor');
                     if (cursor) cursor.remove();
@@ -1033,7 +1033,7 @@
                     const rect = cur.getBoundingClientRect();
                     const bottomGap = window.innerHeight - rect.bottom;
                     if (bottomGap < 120) {
-                        window.scrollBy({ top: 10, behavior: 'smooth' });
+                        window.scrollBy({ top: 5, behavior: 'smooth' });
                     }
                 }
 
