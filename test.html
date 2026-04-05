@@ -73,6 +73,7 @@
 
         /* ── Search ─────────────────────────────────────────── */
         .search-wrap {
+            position: relative;
             display: flex;
             gap: 10px;
             margin-bottom: 40px;
@@ -85,6 +86,42 @@
         }
 
         .search-wrap:focus-within { border-color: var(--accent); }
+
+        /* ── Autocomplete dropdown ─────────────────────────── */
+        .suggest-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border-m);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            z-index: 100;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .suggest-dropdown.open { display: block; }
+
+        .suggest-item {
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            border-bottom: 1px solid var(--border);
+        }
+        .suggest-item:last-child { border-bottom: none; }
+        .suggest-item:hover, .suggest-item.active {
+            background: rgba(193,95,60,.1);
+            color: var(--text);
+        }
+        .suggest-item .suggest-hint {
+            font-size: 0.72rem;
+            color: var(--faint);
+            margin-left: 6px;
+        }
 
         #urlInput {
             flex: 1;
@@ -617,6 +654,7 @@
                 spellcheck="false"
             />
             <button id="searchBtn" onclick="doSearch()">Investigate</button>
+            <div id="suggestDropdown" class="suggest-dropdown"></div>
         </div>
 
         <div id="statusMsg"></div>
@@ -637,8 +675,99 @@
         let _currentChannelData = null;  // saved for Find Email
         let _currentReportData = null;  // saved for Email Generator
 
-        document.getElementById('urlInput').addEventListener('keydown', e => {
+        /* ── Autocomplete ──────────────────────────────────── */
+        const urlInput = document.getElementById('urlInput');
+        const suggestBox = document.getElementById('suggestDropdown');
+        let _suggestTimer = null;
+        let _suggestIdx = -1;
+
+        function looksLikeUrl(v) {
+            return /^(https?:\/\/|www\.|youtu|m\.you)/.test(v) || v.includes('.com') || v.includes('.be/');
+        }
+
+        async function fetchSuggestions(query) {
+            try {
+                const url = `https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(query)}`;
+                const resp = await fetch(url);
+                const text = await resp.text();
+                // Response is JSONP: window.google.ac.h([...])
+                const match = text.match(/\[.+\]/s);
+                if (!match) return [];
+                const data = JSON.parse(match[0]);
+                if (!data[1]) return [];
+                return data[1].map(item => item[0]).slice(0, 7);
+            } catch { return []; }
+        }
+
+        function showSuggestions(items) {
+            if (!items.length) { hideSuggestions(); return; }
+            _suggestIdx = -1;
+            suggestBox.innerHTML = items.map((text, i) =>
+                `<div class="suggest-item" data-idx="${i}">${escapeHTML(text)}<span class="suggest-hint">YouTube</span></div>`
+            ).join('');
+            suggestBox.classList.add('open');
+
+            suggestBox.querySelectorAll('.suggest-item').forEach(el => {
+                el.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    pickSuggestion(el.textContent.replace('YouTube', '').trim());
+                });
+            });
+        }
+
+        function hideSuggestions() {
+            suggestBox.classList.remove('open');
+            suggestBox.innerHTML = '';
+            _suggestIdx = -1;
+        }
+
+        function pickSuggestion(text) {
+            urlInput.value = `https://www.youtube.com/@${text.replace(/\s+/g, '')}`;
+            hideSuggestions();
+            doSearch();
+        }
+
+        function escapeHTML(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        urlInput.addEventListener('input', () => {
+            const v = urlInput.value.trim();
+            clearTimeout(_suggestTimer);
+            if (v.length < 2 || looksLikeUrl(v)) { hideSuggestions(); return; }
+            _suggestTimer = setTimeout(async () => {
+                const items = await fetchSuggestions(v);
+                showSuggestions(items);
+            }, 300);
+        });
+
+        urlInput.addEventListener('keydown', e => {
+            const items = suggestBox.querySelectorAll('.suggest-item');
+            if (suggestBox.classList.contains('open') && items.length) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    _suggestIdx = Math.min(_suggestIdx + 1, items.length - 1);
+                    items.forEach((el, i) => el.classList.toggle('active', i === _suggestIdx));
+                    return;
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    _suggestIdx = Math.max(_suggestIdx - 1, 0);
+                    items.forEach((el, i) => el.classList.toggle('active', i === _suggestIdx));
+                    return;
+                }
+                if (e.key === 'Enter' && _suggestIdx >= 0) {
+                    e.preventDefault();
+                    pickSuggestion(items[_suggestIdx].textContent.replace('YouTube', '').trim());
+                    return;
+                }
+                if (e.key === 'Escape') { hideSuggestions(); return; }
+            }
             if (e.key === 'Enter') doSearch();
+        });
+
+        urlInput.addEventListener('blur', () => {
+            setTimeout(hideSuggestions, 150);
         });
 
         if (API_URL.includes('RAILWAY_URL_BURAYA')) {
