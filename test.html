@@ -980,7 +980,7 @@
                         </div>
                         <button onclick="generateEmail()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:14px 24px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);font-family:var(--font-sans);font-size:.85rem;font-weight:400;cursor:pointer;transition:all .25s ease;letter-spacing:.3px;opacity:.6" onmouseover="this.style.background='rgba(193,95,60,.1)';this.style.borderColor='rgba(193,95,60,.3)';this.style.color='var(--accent)';this.style.opacity='1'" onmouseout="this.style.background='transparent';this.style.borderColor='var(--border)';this.style.color='var(--muted)';this.style.opacity='.6'">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                            Regenerate Personalized Email with AI
+                            Regenerate Personalized Email <span style="opacity:.5;filter:grayscale(.7)">✨</span>
                         </button>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
