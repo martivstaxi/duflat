@@ -514,11 +514,11 @@
             gap: 7px;
             width: 100%;
             margin-top: 16px;
-            padding: 12px 20px;
+            padding: 16px 20px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            font-size: 0.82rem;
+            font-size: 0.84rem;
             font-weight: 500;
             font-family: var(--font-sans);
             color: var(--muted);
@@ -526,6 +526,8 @@
             transition: all .25s ease;
         }
         .email-regen-btn:hover { background: rgba(193,95,60,.1); border-color: rgba(193,95,60,.3); color: var(--accent); }
+        @keyframes emailFadeOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(.97)} }
+        @keyframes emailFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── Email Preview ──────────────────────────────────── */
         .email-preview {
@@ -960,11 +962,19 @@
 
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(177,173,161,.15);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite"></span> Writing email<span class="dots-anim"></span></span>`;
+                btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(177,173,161,.15);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite"></span> Writing email</span>`;
+            }
+            // Fade out existing email if regenerating
+            const existingPreview = box.querySelector('.email-preview');
+            if (existingPreview) {
+                existingPreview.style.animation = 'emailFadeOut .35s ease forwards';
+                const regenBtn = box.querySelector('.email-regen-btn');
+                if (regenBtn) regenBtn.style.animation = 'emailFadeOut .35s ease forwards';
+                await new Promise(r => setTimeout(r, 400));
             }
             box.innerHTML = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
                 <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
-                <span>Writing personalized email<span class="dots-anim"></span></span>
+                <span>Writing personalized email</span>
             </div>`;
 
             try {
@@ -980,7 +990,7 @@
 
                 if (data.subject && data.body) {
                     box.innerHTML = `
-                        <div class="email-preview">
+                        <div class="email-preview" style="animation:emailFadeIn .5s ease">
                             <div class="email-preview-header">
                                 <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Email Preview</span>
                             </div>
