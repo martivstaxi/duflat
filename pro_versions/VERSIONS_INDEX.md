@@ -30,3 +30,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_12](./pro_version_12/VERSION_INFO.md) | 2026-04-04 | Agency kaldirildi, UI sadeleşti, retry + custom smooth scroll |
 | [pro_version_13](./pro_version_13/VERSION_INFO.md) | 2026-04-05 | Hero text, YouTube kanal autocomplete (Data API v3), isim arama |
 | [pro_version_14](./pro_version_14/VERSION_INFO.md) | 2026-04-05 | UI polish: icon-only buton, placeholder, label guncellemeleri |
+| [pro_version_15](./pro_version_15/VERSION_INFO.md) | 2026-04-05 | Email regenerate butonu, fade animasyonlari, dots kaldirildi |
