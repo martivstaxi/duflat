@@ -685,18 +685,30 @@
             return /^(https?:\/\/|www\.|youtu|m\.you)/.test(v) || v.includes('.com') || v.includes('.be/');
         }
 
-        async function fetchSuggestions(query) {
-            try {
-                const url = `https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(query)}`;
-                const resp = await fetch(url);
-                const text = await resp.text();
-                // Response is JSONP: window.google.ac.h([...])
-                const match = text.match(/\[.+\]/s);
-                if (!match) return [];
-                const data = JSON.parse(match[0]);
-                if (!data[1]) return [];
-                return data[1].map(item => item[0]).slice(0, 7);
-            } catch { return []; }
+        function fetchSuggestions(query) {
+            return new Promise(resolve => {
+                const cbName = '_ytSuggestCb' + Date.now();
+                const timeout = setTimeout(() => { cleanup(); resolve([]); }, 3000);
+
+                window[cbName] = function(data) {
+                    cleanup();
+                    try {
+                        if (data[1]) resolve(data[1].map(item => item[0]).slice(0, 7));
+                        else resolve([]);
+                    } catch { resolve([]); }
+                };
+
+                function cleanup() {
+                    clearTimeout(timeout);
+                    delete window[cbName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                }
+
+                const script = document.createElement('script');
+                script.src = `https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&ds=yt&callback=${cbName}&q=${encodeURIComponent(query)}`;
+                document.head.appendChild(script);
+                script.onerror = () => { cleanup(); resolve([]); };
+            });
         }
 
         function showSuggestions(items) {
@@ -722,9 +734,8 @@
         }
 
         function pickSuggestion(text) {
-            urlInput.value = `https://www.youtube.com/@${text.replace(/\s+/g, '')}`;
+            urlInput.value = text;
             hideSuggestions();
-            doSearch();
         }
 
         function escapeHTML(s) {

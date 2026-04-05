@@ -433,6 +433,9 @@ def normalize_url(url: str) -> str | None:
             url = f'https://www.youtube.com/{url}'
         elif url.startswith(('youtube.com', 'www.youtube.com')):
             url = f'https://{url}'
+        elif ' ' in url:
+            # Name search (e.g. "mr beast") — use ytsearch to find a video first
+            url = f'ytsearch1:{url}'
         else:
             url = f'https://www.youtube.com/@{url}'
     return url
