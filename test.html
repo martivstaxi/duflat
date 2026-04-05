@@ -999,7 +999,7 @@
                     }, 400);
                     // Typewriter effect on body
                     const bodyEl = document.getElementById('emailBodyTypewriter');
-                    await typewriterEffect(bodyEl, esc(data.body), 15);
+                    await typewriterEffect(bodyEl, esc(data.body), 10);
                     // Remove cursor after typing finishes
                     const cursor = bodyEl.querySelector('.tw-cursor');
                     if (cursor) cursor.remove();
