@@ -1029,12 +1029,7 @@
 
                 function scrollToCursor() {
                     const cur = element.querySelector('.tw-cursor');
-                    if (!cur) return;
-                    const rect = cur.getBoundingClientRect();
-                    const bottomGap = window.innerHeight - rect.bottom;
-                    if (bottomGap < 120) {
-                        window.scrollBy({ top: 5, behavior: 'smooth' });
-                    }
+                    if (cur) cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
 
                 function tick() {
