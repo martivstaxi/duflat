@@ -548,6 +548,13 @@
             color: var(--muted);
             line-height: 1.7;
         }
+        .tw-cursor {
+            display: inline;
+            color: var(--accent);
+            font-weight: 400;
+            animation: tw-blink .6s step-end infinite;
+        }
+        @keyframes tw-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
         .description-loading {
             display: flex;
@@ -968,12 +975,18 @@
                                     <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Body</span>
                                     <button class="email-copy-btn" onclick="copyBody()">Copy</button>
                                 </div>
-                                <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
+                                <div class="email-body" id="emailBodyTypewriter"></div>
                             </div>
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
                     setTimeout(() => { smoothScrollTo(box.querySelector('.email-preview'), 1000); }, 400);
+                    // Typewriter effect on body
+                    const bodyEl = document.getElementById('emailBodyTypewriter');
+                    await typewriterEffect(bodyEl, esc(data.body), 12);
+                    // Remove cursor after typing finishes
+                    const cursor = bodyEl.querySelector('.tw-cursor');
+                    if (cursor) cursor.remove();
                 } else {
                     const errMsg = data.error || 'Could not generate email.';
                     box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">${esc(errMsg)} - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
@@ -983,6 +996,49 @@
                 box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">Could not reach the API - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
             }
+        }
+
+        function typewriterEffect(element, text, speed = 12) {
+            return new Promise(resolve => {
+                element.innerHTML = '';
+                let i = 0;
+                const len = text.length;
+                // Build HTML progressively, respecting <br> tags
+                const htmlText = text.replace(/\n/g, '<br>');
+                const chunks = htmlText.split(/(<br>)/);
+                let fullOutput = '';
+                let charIndex = 0;
+                let chunkIndex = 0;
+                let posInChunk = 0;
+
+                function tick() {
+                    if (chunkIndex >= chunks.length) { resolve(); return; }
+                    const chunk = chunks[chunkIndex];
+                    if (chunk === '<br>') {
+                        fullOutput += '<br>';
+                        element.innerHTML = fullOutput + '<span class="tw-cursor">|</span>';
+                        chunkIndex++;
+                        posInChunk = 0;
+                        setTimeout(tick, speed);
+                        return;
+                    }
+                    if (posInChunk < chunk.length) {
+                        // Add chars in small bursts (2-4) for natural feel
+                        const burst = Math.min(2 + Math.floor(Math.random() * 3), chunk.length - posInChunk);
+                        fullOutput += chunk.substring(posInChunk, posInChunk + burst);
+                        posInChunk += burst;
+                        element.innerHTML = fullOutput + '<span class="tw-cursor">|</span>';
+                        // Vary speed slightly for realism
+                        const jitter = speed + Math.floor(Math.random() * 10) - 4;
+                        setTimeout(tick, Math.max(4, jitter));
+                    } else {
+                        chunkIndex++;
+                        posInChunk = 0;
+                        tick();
+                    }
+                }
+                tick();
+            });
         }
 
         function copySubject() {
