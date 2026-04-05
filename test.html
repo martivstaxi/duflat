@@ -1032,8 +1032,8 @@
                     if (!cur) return;
                     const rect = cur.getBoundingClientRect();
                     const bottomGap = window.innerHeight - rect.bottom;
-                    if (bottomGap < 80) {
-                        window.scrollBy({ top: 60, behavior: 'smooth' });
+                    if (bottomGap < 120) {
+                        window.scrollBy({ top: 10, behavior: 'smooth' });
                     }
                 }
 
@@ -1054,6 +1054,7 @@
                         fullOutput += chunk.substring(posInChunk, posInChunk + burst);
                         posInChunk += burst;
                         element.innerHTML = fullOutput + '<span class="tw-cursor">|</span>';
+                        scrollToCursor();
                         const jitter = speed + Math.floor(Math.random() * 10) - 4;
                         setTimeout(tick, Math.max(4, jitter));
                     } else {
