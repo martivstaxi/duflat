@@ -28,3 +28,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_10](./pro_version_10/VERSION_INFO.md) | 2026-04-04 | Personalized Email Generator — Bilibili davet emaili, Sonnet ile |
 | [pro_version_11](./pro_version_11/VERSION_INFO.md) | 2026-04-04 | Email prompt profesyonel ton + UX juice animasyonlari |
 | [pro_version_12](./pro_version_12/VERSION_INFO.md) | 2026-04-04 | Agency kaldirildi, UI sadeleşti, retry + custom smooth scroll |
+| [pro_version_13](./pro_version_13/VERSION_INFO.md) | 2026-04-05 | Hero text, YouTube kanal autocomplete (Data API v3), isim arama |
