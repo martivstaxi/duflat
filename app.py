@@ -87,6 +87,57 @@ def generate_email_endpoint():
     return jsonify(result)
 
 
+@app.route('/suggest')
+def suggest():
+    q = request.args.get('q', '').strip()
+    if not q or len(q) < 2:
+        return jsonify([])
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return jsonify([])
+    try:
+        import requests as _req
+        resp = _req.get('https://www.googleapis.com/youtube/v3/search', params={
+            'part': 'snippet',
+            'type': 'channel',
+            'q': q,
+            'maxResults': 5,
+            'order': 'relevance',
+            'key': api_key,
+        }, timeout=5)
+        if resp.status_code != 200:
+            return jsonify([])
+        items = resp.json().get('items', [])
+        # Get subscriber counts in batch
+        channel_ids = [it['snippet']['channelId'] for it in items if it.get('snippet', {}).get('channelId')]
+        subs_map = {}
+        if channel_ids:
+            stats_resp = _req.get('https://www.googleapis.com/youtube/v3/channels', params={
+                'part': 'statistics',
+                'id': ','.join(channel_ids),
+                'key': api_key,
+            }, timeout=5)
+            if stats_resp.status_code == 200:
+                for ch in stats_resp.json().get('items', []):
+                    subs_map[ch['id']] = int(ch.get('statistics', {}).get('subscriberCount', 0))
+        results = []
+        for it in items:
+            snip = it.get('snippet', {})
+            cid = snip.get('channelId', '')
+            thumb = snip.get('thumbnails', {}).get('default', {}).get('url', '')
+            results.append({
+                'name': snip.get('channelTitle', ''),
+                'channel_id': cid,
+                'thumbnail': thumb,
+                'subscribers': subs_map.get(cid, 0),
+            })
+        # Sort by subscribers descending
+        results.sort(key=lambda x: x['subscribers'], reverse=True)
+        return jsonify(results)
+    except Exception:
+        return jsonify([])
+
+
 @app.route('/debug-subs', methods=['GET'])
 def debug_subs():
     """Debug: test subtitle extraction for a video."""

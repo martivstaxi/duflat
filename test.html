@@ -117,10 +117,27 @@
             background: rgba(193,95,60,.1);
             color: var(--text);
         }
-        .suggest-item .suggest-hint {
+        .suggest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .suggest-item img {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .suggest-item .suggest-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .suggest-item .suggest-subs {
             font-size: 0.72rem;
             color: var(--faint);
-            margin-left: 6px;
+            flex-shrink: 0;
         }
 
         #urlInput {
@@ -685,44 +702,36 @@
             return /^(https?:\/\/|www\.|youtu|m\.you)/.test(v) || v.includes('.com') || v.includes('.be/');
         }
 
-        function fetchSuggestions(query) {
-            return new Promise(resolve => {
-                const cbName = '_ytSuggestCb' + Date.now();
-                const timeout = setTimeout(() => { cleanup(); resolve([]); }, 3000);
+        async function fetchSuggestions(query) {
+            try {
+                const resp = await fetch(`${API_URL}/suggest?q=${encodeURIComponent(query)}`);
+                if (!resp.ok) return [];
+                return await resp.json();
+            } catch { return []; }
+        }
 
-                window[cbName] = function(data) {
-                    cleanup();
-                    try {
-                        if (data[1]) resolve(data[1].map(item => item[0]).slice(0, 7));
-                        else resolve([]);
-                    } catch { resolve([]); }
-                };
-
-                function cleanup() {
-                    clearTimeout(timeout);
-                    delete window[cbName];
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                }
-
-                const script = document.createElement('script');
-                script.src = `https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&ds=yt&callback=${cbName}&q=${encodeURIComponent(query)}`;
-                document.head.appendChild(script);
-                script.onerror = () => { cleanup(); resolve([]); };
-            });
+        function formatSubs(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0','') + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1).replace('.0','') + 'K';
+            return n.toString();
         }
 
         function showSuggestions(items) {
             if (!items.length) { hideSuggestions(); return; }
             _suggestIdx = -1;
-            suggestBox.innerHTML = items.map((text, i) =>
-                `<div class="suggest-item" data-idx="${i}">${escapeHTML(text)}<span class="suggest-hint">YouTube</span></div>`
+            suggestBox.innerHTML = items.map((ch, i) =>
+                `<div class="suggest-item" data-idx="${i}" data-cid="${escapeHTML(ch.channel_id)}">` +
+                `<img src="${escapeHTML(ch.thumbnail)}" alt="" onerror="this.style.display='none'">` +
+                `<span class="suggest-name">${escapeHTML(ch.name)}</span>` +
+                `<span class="suggest-subs">${ch.subscribers ? formatSubs(ch.subscribers) + ' subs' : ''}</span>` +
+                `</div>`
             ).join('');
             suggestBox.classList.add('open');
 
             suggestBox.querySelectorAll('.suggest-item').forEach(el => {
                 el.addEventListener('mousedown', e => {
                     e.preventDefault();
-                    pickSuggestion(el.textContent.replace('YouTube', '').trim());
+                    pickSuggestion(el.dataset.cid);
                 });
             });
         }
@@ -733,8 +742,8 @@
             _suggestIdx = -1;
         }
 
-        function pickSuggestion(text) {
-            urlInput.value = text;
+        function pickSuggestion(channelId) {
+            urlInput.value = `https://www.youtube.com/channel/${channelId}`;
             hideSuggestions();
             doSearch();
         }
@@ -770,7 +779,7 @@
                 }
                 if (e.key === 'Enter' && _suggestIdx >= 0) {
                     e.preventDefault();
-                    pickSuggestion(items[_suggestIdx].textContent.replace('YouTube', '').trim());
+                    pickSuggestion(items[_suggestIdx].dataset.cid);
                     return;
                 }
                 if (e.key === 'Escape') { hideSuggestions(); return; }
