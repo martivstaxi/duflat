@@ -980,10 +980,26 @@
                         </div>`;
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
-                    setTimeout(() => { smoothScrollTo(box.querySelector('.email-preview'), 1000); }, 400);
+                    setTimeout(() => {
+                        const preview = box.querySelector('.email-preview');
+                        if (preview) {
+                            const target = preview.getBoundingClientRect().top + window.pageYOffset + 150;
+                            const start = window.pageYOffset;
+                            const diff = target - start;
+                            let startTime = null;
+                            function ease(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+                            function step(time) {
+                                if (!startTime) startTime = time;
+                                const p = Math.min((time - startTime) / 1000, 1);
+                                window.scrollTo(0, start + diff * ease(p));
+                                if (p < 1) requestAnimationFrame(step);
+                            }
+                            requestAnimationFrame(step);
+                        }
+                    }, 400);
                     // Typewriter effect on body
                     const bodyEl = document.getElementById('emailBodyTypewriter');
-                    await typewriterEffect(bodyEl, esc(data.body), 12);
+                    await typewriterEffect(bodyEl, esc(data.body), 30);
                     // Remove cursor after typing finishes
                     const cursor = bodyEl.querySelector('.tw-cursor');
                     if (cursor) cursor.remove();
