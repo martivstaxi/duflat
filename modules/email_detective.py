@@ -113,8 +113,11 @@ def _is_valid_email(email: str) -> bool:
     local, domain = parts
     if len(local) < 2:
         return False
-    # Reject double dots in domain (e.g. com..tr)
-    if '..' in domain:
+    # Reject local part ending with dot (e.g. "campaign.@domain")
+    if local.endswith('.'):
+        return False
+    # Reject double dots anywhere
+    if '..' in e:
         return False
     tld_match = re.search(r'\.([a-z]{2,12})$', domain)
     if not tld_match:
@@ -122,13 +125,12 @@ def _is_valid_email(email: str) -> bool:
     tld = tld_match.group(1)
     if tld in _FAKE_TLDS:
         return False
-    # For TLDs > 3 chars, require them to be in the known list
-    # (catches fake TLDs like .sosyal, .official, .channel etc.)
-    if len(tld) > 3 and tld not in _KNOWN_TLDS:
+    # ALL TLDs must be in the known list (catches garbage like .um, .al fake domains)
+    if tld not in _KNOWN_TLDS:
         return False
-    # Domain body before TLD must be at least 2 chars (reject "t.he", "a.co" etc.)
+    # Domain body before TLD must be at least 3 chars (reject "z9r.um", "t.he" etc.)
     domain_body = domain[:domain.rfind('.')].lstrip('www.')
-    if len(domain_body) < 2:
+    if len(domain_body) < 3:
         return False
     return True
 
@@ -876,10 +878,8 @@ Include ALL emails in your response. Mark invalid ones as valid: false."""
     except Exception:
         pass
 
-    # Fallback: return all unique emails with medium confidence
-    return [{'email': e, 'confidence': 'medium',
-             'reasoning': sources.get(e, 'Found via web search')}
-            for e in unique]
+    # Fallback: AI failed — return nothing rather than unverified garbage
+    return []
 
 
 def _llm_synthesize_email(channel_data: dict, evidence: list[tuple[str, str]],
@@ -1173,12 +1173,24 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
 
     def agent_domain_guess() -> list[tuple[str, str]]:
         """Agent 15: Guess emails from personal domains found in links."""
+        # Skip major platforms — only guess for personal/company domains
+        _platform_domains = (
+            'spotify.com', 'open.spotify.com', 'apple.com', 'music.apple.com',
+            'amazon.com', 'music.amazon.com', 'soundcloud.com', 'deezer.com',
+            'tidal.com', 'bandcamp.com', 'shazam.com', 'genius.com',
+            'patreon.com', 'ko-fi.com', 'buymeacoffee.com', 'gofundme.com',
+            'etsy.com', 'redbubble.com', 'shopify.com', 'gumroad.com',
+            'medium.com', 'substack.com', 'wordpress.com', 'blogger.com',
+            'wix.com', 'squarespace.com', 'weebly.com',
+            'github.com', 'gitlab.com', 'bitbucket.org',
+            'fiverr.com', 'upwork.com', 'cameo.com',
+        )
         found = []
         from urllib.parse import urlparse
         for link in company_links[:3]:
             try:
                 domain = urlparse(link).netloc.lstrip('www.')
-                if domain:
+                if domain and not any(domain.endswith(p) for p in _platform_domains):
                     for prefix in ('contact', 'hello', 'info', 'business'):
                         found.append((f'{prefix}@{domain}', f'Domain guess: {domain}'))
             except Exception:
