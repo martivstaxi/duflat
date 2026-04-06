@@ -806,26 +806,24 @@ def _fetch_video_descriptions(channel_url: str, n: int = 3) -> list[str]:
 
 
 def _llm_verify_emails(channel_data: dict, emails: list[str],
-                       sources: dict[str, str]) -> list[dict]:
+                       sources: dict[str, str]) -> tuple[list[dict], list[dict]]:
     """
     Haiku verifies multiple email candidates.
     Deduplicates identical emails, validates each against channel context.
-    Returns list of verified emails with confidence.
+    Returns (verified_list, rejected_list) — both with email + reasoning.
     """
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
-        return [{'email': e, 'confidence': 'medium', 'reasoning': 'AI verification unavailable'}
-                for e in emails]
+        return ([{'email': e, 'confidence': 'medium', 'reasoning': 'AI verification unavailable'}
+                 for e in emails], [])
 
     # Deduplicate
     unique = list(dict.fromkeys(e.lower().strip() for e in emails))
     if not unique:
         return []
 
-    # If only one unique email, no need for AI
-    if len(unique) == 1:
-        return [{'email': unique[0], 'confidence': 'high',
-                 'reasoning': sources.get(unique[0], 'Found via free web search')}]
+    # If only one unique email, still verify with AI (don't auto-accept)
+    # Fall through to AI verification below
 
     try:
         import anthropic
@@ -873,20 +871,23 @@ Respond ONLY with JSON array:
         if match:
             data = json.loads(match.group())
             verified = []
+            rejected = []
             for item in data:
-                if item.get('valid') and item.get('email') and _is_valid_email(item['email']):
-                    verified.append({
-                        'email': item['email'].lower().strip(),
-                        'confidence': item.get('confidence', 'medium'),
-                        'reasoning': item.get('reasoning', ''),
-                    })
-            if verified:
-                return verified
+                entry = {
+                    'email': (item.get('email') or '').lower().strip(),
+                    'confidence': item.get('confidence', 'medium'),
+                    'reasoning': item.get('reasoning', ''),
+                }
+                if item.get('valid') and entry['email'] and _is_valid_email(entry['email']):
+                    verified.append(entry)
+                elif entry['email']:
+                    rejected.append(entry)
+            return verified, rejected
     except Exception:
         pass
 
     # Fallback: AI failed — return nothing rather than unverified garbage
-    return []
+    return [], []
 
 
 def _llm_synthesize_email(channel_data: dict, evidence: list[tuple[str, str]],
@@ -1391,8 +1392,13 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
     # ─────���─────────────────────────────────��─
 
     if unique_candidates:
+        # Log all candidates + sources so we can debug
+        for uc in unique_candidates:
+            steps.append(f'  Candidate: {uc} (via {email_sources.get(uc, "unknown")})')
         steps.append(f'{len(unique_candidates)} unique candidate(s), running AI verification...')
-        verified = _llm_verify_emails(channel_data, unique_candidates, email_sources)
+        verified, rejected = _llm_verify_emails(channel_data, unique_candidates, email_sources)
+        for r in rejected:
+            steps.append(f'  REJECTED: {r["email"]} — {r["reasoning"]}')
         if verified:
             steps.append(f'AI verified {len(verified)} email(s): {", ".join(v["email"] for v in verified)}')
             if len(verified) == 1:
