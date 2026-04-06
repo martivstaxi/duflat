@@ -956,20 +956,15 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
             evidence.append((f'{platform}_bio', bio[:300]))
 
     # ── Step 5: Video descriptions ──
+    # NOTE: Only use standard email regex here, NOT obfuscated regex.
+    # Video descriptions have many @mentions (collaborators, social handles)
+    # that the obfuscated regex falsely matches as emails.
     if channel_url and time.time() < deadline:
         steps.append('Checking recent video descriptions...')
         video_descs = _fetch_video_descriptions(channel_url, n=3)
         for i, vid_desc in enumerate(video_descs):
             if not vid_desc:
                 continue
-            for m in _RE_OBFUSCATED.finditer(vid_desc):
-                local, domain_part, tld = m.group(1), m.group(2), m.group(3)
-                e = f'{local}@{domain_part}.{tld}'.lower()
-                if _is_valid_email(e):
-                    steps.append(f'Obfuscated email in video #{i+1}: {e}')
-                    return {'found': True, 'email': e, 'source': 'video_description',
-                            'confidence': 'high', 'steps': steps,
-                            'reasoning': f'Obfuscated email in video #{i+1} description.'}
             for m in RE_EMAIL.finditer(vid_desc):
                 e = m.group(1).lower().strip().rstrip('.')
                 if _is_valid_email(e):
