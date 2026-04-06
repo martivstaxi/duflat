@@ -529,6 +529,8 @@
         .email-regen-btn:hover { opacity: .75; color: var(--accent); }
         @keyframes emailFadeOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(.97)} }
         @keyframes emailFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .dissolve-char { display: inline; transition: opacity .3s ease, filter .3s ease; }
+        .dissolve-char.gone { opacity: 0; filter: blur(2px); }
 
         /* ── Email Preview ──────────────────────────────────── */
         .email-preview {
@@ -965,18 +967,25 @@
                 btn.disabled = true;
                 btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(177,173,161,.15);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite"></span> Writing email</span>`;
             }
-            // Fade out existing email if regenerating
+            // Dissolve existing email text if regenerating
             const existingPreview = box.querySelector('.email-preview');
-            if (existingPreview) {
-                existingPreview.style.animation = 'emailFadeOut .35s ease forwards';
+            const isRegenerate = !!existingPreview;
+            if (isRegenerate) {
                 const regenBtn = box.querySelector('.email-regen-btn');
                 if (regenBtn) regenBtn.style.animation = 'emailFadeOut .35s ease forwards';
-                await new Promise(r => setTimeout(r, 400));
+                // Dissolve subject and body text
+                const subjectEl = existingPreview.querySelector('.email-subject');
+                const bodyEl = existingPreview.querySelector('.email-body');
+                const dissolves = [];
+                if (subjectEl) dissolves.push(dissolveText(subjectEl, 600));
+                if (bodyEl) dissolves.push(dissolveText(bodyEl, 800));
+                await Promise.all(dissolves);
+            } else {
+                box.innerHTML = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+                    <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
+                    <span>Writing personalized email</span>
+                </div>`;
             }
-            box.innerHTML = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
-                <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
-                <span>Writing personalized email</span>
-            </div>`;
 
             try {
                 const res = await fetch(`${API_URL}/generate-email`, {
@@ -990,29 +999,55 @@
                 const data = await res.json();
 
                 if (data.subject && data.body) {
-                    box.innerHTML = `
-                        <div class="email-preview" style="animation:emailFadeIn .5s ease">
-                            <div class="email-preview-header">
-                                <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Email Preview</span>
-                            </div>
-                            <div class="email-subject">
-                                <div style="display:flex;justify-content:space-between;align-items:center">
-                                    <div><strong>Subject:</strong> ${esc(data.subject)}</div>
-                                    <button class="email-copy-btn" onclick="copySubject()">Copy</button>
+                    if (isRegenerate && existingPreview) {
+                        // Update text content in-place, then resolve
+                        const subjectEl = existingPreview.querySelector('.email-subject');
+                        const bodyEl = existingPreview.querySelector('.email-body');
+                        if (subjectEl) {
+                            subjectEl.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+                                <div><strong>Subject:</strong> ${esc(data.subject)}</div>
+                                <button class="email-copy-btn" onclick="copySubject()">Copy</button>
+                            </div>`;
+                        }
+                        if (bodyEl) bodyEl.innerHTML = esc(data.body).replace(/\n/g, '<br>');
+                        // Add regen button back
+                        const oldRegen = box.querySelector('.email-regen-btn');
+                        if (oldRegen) oldRegen.remove();
+                        existingPreview.insertAdjacentHTML('afterend', `
+                            <button class="email-regen-btn" style="animation:emailFadeIn .5s ease" onclick="generateEmail()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                                Regenerate
+                            </button>`);
+                        // Resolve both
+                        const resolves = [];
+                        if (subjectEl) resolves.push(resolveText(subjectEl, 600));
+                        if (bodyEl) resolves.push(resolveText(bodyEl, 900));
+                        await Promise.all(resolves);
+                    } else {
+                        box.innerHTML = `
+                            <div class="email-preview" style="animation:emailFadeIn .5s ease">
+                                <div class="email-preview-header">
+                                    <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Email Preview</span>
+                                </div>
+                                <div class="email-subject">
+                                    <div style="display:flex;justify-content:space-between;align-items:center">
+                                        <div><strong>Subject:</strong> ${esc(data.subject)}</div>
+                                        <button class="email-copy-btn" onclick="copySubject()">Copy</button>
+                                    </div>
+                                </div>
+                                <div class="email-body-wrap">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 0">
+                                        <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Body</span>
+                                        <button class="email-copy-btn" onclick="copyBody()">Copy</button>
+                                    </div>
+                                    <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
                                 </div>
                             </div>
-                            <div class="email-body-wrap">
-                                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 0">
-                                    <span style="color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px">Body</span>
-                                    <button class="email-copy-btn" onclick="copyBody()">Copy</button>
-                                </div>
-                                <div class="email-body">${esc(data.body).replace(/\n/g, '<br>')}</div>
-                            </div>
-                        </div>
-                        <button class="email-regen-btn" onclick="generateEmail()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                            Regenerate
-                        </button>`;
+                            <button class="email-regen-btn" onclick="generateEmail()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                                Regenerate
+                            </button>`;
+                    }
                     window._generatedEmail = { subject: data.subject, body: data.body };
                     if (btn) { btn.disabled = true; btn.textContent = '✅ Email Ready'; }
                     setTimeout(() => { smoothScrollTo(box.querySelector('.email-preview'), 1000); }, 400);
@@ -1025,6 +1060,105 @@
                 box.innerHTML = `<span style="color:var(--faint);font-size:.83rem">Could not reach the API - <a href="#" onclick="generateEmail();return false" style="color:var(--accent)">retry</a></span>`;
                 if (btn) { btn.disabled = false; btn.textContent = '✨ Personalized Email'; }
             }
+        }
+
+        // Dissolve text: characters randomly fade to invisible, keeping layout
+        function dissolveText(container, duration = 600) {
+            return new Promise(resolve => {
+                const textNodes = [];
+                function walk(node) {
+                    if (node.nodeType === 3) { // text node
+                        if (node.textContent.trim().length > 0) textNodes.push(node);
+                    } else if (node.childNodes) {
+                        node.childNodes.forEach(walk);
+                    }
+                }
+                walk(container);
+
+                // Wrap each character in a span
+                const allSpans = [];
+                textNodes.forEach(tn => {
+                    const frag = document.createDocumentFragment();
+                    for (const ch of tn.textContent) {
+                        const span = document.createElement('span');
+                        span.className = 'dissolve-char';
+                        span.textContent = ch;
+                        frag.appendChild(span);
+                        if (ch.trim()) allSpans.push(span); // only track non-whitespace
+                    }
+                    tn.parentNode.replaceChild(frag, tn);
+                });
+
+                if (allSpans.length === 0) { resolve(); return; }
+
+                // Shuffle and dissolve in batches
+                const shuffled = allSpans.sort(() => Math.random() - 0.5);
+                const batchSize = Math.max(1, Math.ceil(shuffled.length / 15));
+                const interval = duration / Math.ceil(shuffled.length / batchSize);
+                let i = 0;
+
+                const timer = setInterval(() => {
+                    const end = Math.min(i + batchSize, shuffled.length);
+                    for (let j = i; j < end; j++) {
+                        shuffled[j].classList.add('gone');
+                    }
+                    i = end;
+                    if (i >= shuffled.length) {
+                        clearInterval(timer);
+                        setTimeout(resolve, 300); // wait for last transition
+                    }
+                }, interval);
+            });
+        }
+
+        // Resolve text: start invisible, characters randomly appear
+        function resolveText(container, duration = 800) {
+            return new Promise(resolve => {
+                const textNodes = [];
+                function walk(node) {
+                    if (node.nodeType === 3) {
+                        if (node.textContent.trim().length > 0) textNodes.push(node);
+                    } else if (node.childNodes) {
+                        node.childNodes.forEach(walk);
+                    }
+                }
+                walk(container);
+
+                const allSpans = [];
+                textNodes.forEach(tn => {
+                    const frag = document.createDocumentFragment();
+                    for (const ch of tn.textContent) {
+                        const span = document.createElement('span');
+                        span.className = 'dissolve-char';
+                        span.textContent = ch;
+                        if (ch.trim()) {
+                            span.classList.add('gone'); // start invisible
+                            allSpans.push(span);
+                        }
+                        frag.appendChild(span);
+                    }
+                    tn.parentNode.replaceChild(frag, tn);
+                });
+
+                if (allSpans.length === 0) { resolve(); return; }
+
+                const shuffled = allSpans.sort(() => Math.random() - 0.5);
+                const batchSize = Math.max(1, Math.ceil(shuffled.length / 20));
+                const interval = duration / Math.ceil(shuffled.length / batchSize);
+                let i = 0;
+
+                const timer = setInterval(() => {
+                    const end = Math.min(i + batchSize, shuffled.length);
+                    for (let j = i; j < end; j++) {
+                        shuffled[j].classList.remove('gone');
+                    }
+                    i = end;
+                    if (i >= shuffled.length) {
+                        clearInterval(timer);
+                        setTimeout(resolve, 300);
+                    }
+                }, interval);
+            });
         }
 
         function typewriterEffect(element, text, speed = 12) {
