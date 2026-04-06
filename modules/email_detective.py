@@ -72,6 +72,19 @@ _RE_OBFUSCATED = re.compile(
     re.I
 )
 
+# Known valid TLDs — used to reject false positives from obfuscated regex
+_KNOWN_TLDS = frozenset({
+    'com', 'net', 'org', 'io', 'co', 'edu', 'gov', 'info', 'biz', 'me',
+    'us', 'uk', 'de', 'fr', 'tr', 'ru', 'jp', 'kr', 'cn', 'au', 'ca',
+    'in', 'br', 'it', 'es', 'nl', 'be', 'ch', 'at', 'pl', 'se', 'no',
+    'dk', 'fi', 'pt', 'cz', 'ro', 'hu', 'gr', 'bg', 'hr', 'si', 'sk',
+    'lt', 'lv', 'ee', 'ie', 'lu', 'mt', 'cy', 'is', 'pro', 'app', 'dev',
+    'xyz', 'online', 'site', 'tech', 'store', 'live', 'club', 'space',
+    'tv', 'cc', 'gg', 'fm', 'ly', 'to', 'mx', 'za', 'nz', 'ar', 'cl',
+    'pe', 'co', 've', 'ua', 'il', 'ae', 'sa', 'sg', 'hk', 'tw', 'th',
+    'ph', 'id', 'vn', 'my', 'pk', 'bd', 'np',
+})
+
 MAX_ROUNDS = 8
 MODEL = 'claude-haiku-4-5-20251001'
 CC_API_URL = 'https://api.channelcrawler.com'
@@ -104,6 +117,10 @@ def _is_valid_email(email: str) -> bool:
         return False
     tld = tld_match.group(1)
     if tld in _FAKE_TLDS:
+        return False
+    # For TLDs > 3 chars, require them to be in the known list
+    # (catches fake TLDs like .sosyal, .official, .channel etc.)
+    if len(tld) > 3 and tld not in _KNOWN_TLDS:
         return False
     # Domain body before TLD must be at least 2 chars (reject "t.he", "a.co" etc.)
     domain_body = domain[:domain.rfind('.')].lstrip('www.')
