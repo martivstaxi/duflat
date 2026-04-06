@@ -423,6 +423,22 @@ def debug_about():
     })
 
 
+@app.route('/debug-search', methods=['GET'])
+def debug_search():
+    """Debug: test Serper/Brave/DDG search results for a query."""
+    q = request.args.get('q', '')
+    if not q:
+        return jsonify({'error': 'q parameter required: /debug-search?q=...'}), 400
+    from modules.email_detective import _search_serper, _search_brave, _search_ddg, _search_bing
+    return jsonify({
+        'query': q,
+        'serper': _search_serper(q),
+        'brave': _search_brave(q),
+        'ddg': _search_ddg(q),
+        'bing': _search_bing(q),
+    })
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f'Duflat API starting... http://localhost:{port}')
