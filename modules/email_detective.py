@@ -24,6 +24,7 @@ import os
 import json
 import time
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .constants import BROWSER_HEADERS, RE_EMAIL, EMAIL_BLACKLIST
 from .scraper import _fetch_email_innertube, _fetch_email_ydl_about
@@ -226,32 +227,6 @@ def _search_serper(query: str, num: int = 10) -> list[dict]:
         return []
 
 
-def _search_brave(query: str, count: int = 10) -> list[dict]:
-    """Web search via Brave Search API ($5 free credits/month)."""
-    api_key = os.environ.get('BRAVE_API_KEY', '')
-    if not api_key:
-        return []
-    try:
-        r = requests.get(
-            'https://api.search.brave.com/res/v1/web/search',
-            headers={'X-Subscription-Token': api_key, 'Accept': 'application/json'},
-            params={'q': query, 'count': count},
-            timeout=15,
-        )
-        if r.status_code != 200:
-            return []
-        data = r.json()
-        results = []
-        for item in data.get('web', {}).get('results', []):
-            results.append({
-                'url': item.get('url', ''),
-                'title': item.get('title', ''),
-                'snippet': item.get('description', ''),
-            })
-        return results
-    except Exception:
-        return []
-
 
 def _search_ddg(query: str) -> list[dict]:
     """DuckDuckGo HTML search (free, no API key, but rate-limited)."""
@@ -312,12 +287,9 @@ def _search_bing(query: str) -> list[dict]:
 
 def _tool_web_search(query: str) -> dict:
     """
-    Multi-engine web search. Priority order:
-    1. Serper.dev (Google results, best quality) — if SERPER_API_KEY set
-    2. Brave Search API — if BRAVE_API_KEY set
-    3. DuckDuckGo HTML scraping (free, no key)
-    4. Bing HTML scraping (free, no key)
-    Merges results from all available engines, deduplicates by URL.
+    Multi-engine web search — all engines run in PARALLEL.
+    Engines: Serper.dev (if API key set), DuckDuckGo, Bing.
+    Merges results from all engines, deduplicates by URL.
     """
     results = []
     seen_urls: set[str] = set()
@@ -329,21 +301,20 @@ def _tool_web_search(query: str) -> dict:
                 seen_urls.add(url)
                 results.append(item)
 
-    # Tier 1: API-based search (best quality)
-    serper_results = _search_serper(query)
-    if serper_results:
-        _merge(serper_results)
+    # Run all search engines in parallel
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(_search_ddg, query): 'ddg',
+            executor.submit(_search_bing, query): 'bing',
+        }
+        if os.environ.get('SERPER_API_KEY', ''):
+            futures[executor.submit(_search_serper, query)] = 'serper'
 
-    brave_results = _search_brave(query)
-    if brave_results:
-        _merge(brave_results)
-
-    # Tier 2: HTML scraping (free fallback)
-    if len(results) < 5:
-        _merge(_search_ddg(query))
-
-    if len(results) < 5:
-        _merge(_search_bing(query))
+        for future in as_completed(futures):
+            try:
+                _merge(future.result())
+            except Exception:
+                pass
 
     # Extract emails from snippets, filtering out site-owned emails
     # (e.g. iletisim@aksutv.com.tr found on aksutv.com.tr is the site's own email)
@@ -745,6 +716,85 @@ def _fetch_video_descriptions(channel_url: str, n: int = 3) -> list[str]:
         return []
 
 
+def _llm_verify_emails(channel_data: dict, emails: list[str],
+                       sources: dict[str, str]) -> list[dict]:
+    """
+    Haiku verifies multiple email candidates.
+    Deduplicates identical emails, validates each against channel context.
+    Returns list of verified emails with confidence.
+    """
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return [{'email': e, 'confidence': 'medium', 'reasoning': 'AI verification unavailable'}
+                for e in emails]
+
+    # Deduplicate
+    unique = list(dict.fromkeys(e.lower().strip() for e in emails))
+    if not unique:
+        return []
+
+    # If only one unique email, no need for AI
+    if len(unique) == 1:
+        return [{'email': unique[0], 'confidence': 'high',
+                 'reasoning': sources.get(unique[0], 'Found via free web search')}]
+
+    try:
+        import anthropic
+
+        name = channel_data.get('name', '')
+        handle = channel_data.get('handle', '')
+
+        email_list = '\n'.join(
+            f'- {e} (source: {sources.get(e, "unknown")})'
+            for e in unique
+        )
+
+        prompt = f"""You are verifying email addresses found for a YouTube creator.
+
+Channel: {name} (handle: {handle})
+
+Candidate emails:
+{email_list}
+
+For EACH email, decide if it likely belongs to this creator:
+- Check if email username relates to creator name/handle
+- Reject emails from unrelated companies or platforms
+- Gmail/Yahoo/Outlook are valid if username matches creator
+
+Respond ONLY with JSON array:
+[{{"email": "x@y.com", "valid": true, "confidence": "high|medium|low", "reasoning": "brief reason"}}]
+
+Include ALL emails in your response. Mark invalid ones as valid: false."""
+
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=400,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = message.content[0].text.strip()
+        match = re.search(r'\[.*\]', text, re.DOTALL)
+        if match:
+            data = json.loads(match.group())
+            verified = []
+            for item in data:
+                if item.get('valid') and item.get('email') and _is_valid_email(item['email']):
+                    verified.append({
+                        'email': item['email'].lower().strip(),
+                        'confidence': item.get('confidence', 'medium'),
+                        'reasoning': item.get('reasoning', ''),
+                    })
+            if verified:
+                return verified
+    except Exception:
+        pass
+
+    # Fallback: return all unique emails with medium confidence
+    return [{'email': e, 'confidence': 'medium',
+             'reasoning': sources.get(e, 'Found via web search')}
+            for e in unique]
+
+
 def _llm_synthesize_email(channel_data: dict, evidence: list[tuple[str, str]],
                           candidate_emails: list[str]) -> dict | None:
     """Claude Haiku last-resort: analyze ALL collected evidence to find/infer email."""
@@ -844,6 +894,7 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
 
     evidence: list[tuple[str, str]] = []
     candidate_emails: list[str] = []
+    email_sources: dict[str, str] = {}  # email -> source description
     found_domains: list[str] = []
 
     # ── Step 1: Obfuscated emails in description ──
@@ -1012,6 +1063,7 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
         for e in search_result.get('emails_in_snippets', []):
             if _is_valid_email(e) and e not in candidate_emails:
                 candidate_emails.append(e)
+                email_sources[e] = f'Search snippet for: {query}'
                 evidence.append((f'snippet_email', f'{e} (found in search snippet for: {query})'))
 
         # Scrape top results — prefer pages that mention the creator
@@ -1044,6 +1096,7 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 if e not in candidate_emails:
                     candidate_emails.append(e)
                     relevance = 'relevant' if page_mentions_creator else 'unrelated page'
+                    email_sources[e] = f'Scraped from {url} ({relevance})'
                     evidence.append((f'scraped_email:{url}',
                                      f'{e} (on {relevance} page: {url})'))
                     steps.append(f'Candidate email from {url}: {e} ({relevance})')
@@ -1055,8 +1108,39 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
         evidence.append((f'domain:{domain}',
                          f'Corporate domain. Possible: {", ".join(guesses[:5])}'))
 
-    # ── Step 8: Claude Haiku synthesis ──
-    if evidence or candidate_emails:
+    # ── Step 8: AI verification / synthesis ──
+    # Deduplicate candidate emails
+    unique_candidates = list(dict.fromkeys(e.lower().strip() for e in candidate_emails))
+
+    if len(unique_candidates) >= 2:
+        # Multiple different emails found — Haiku verifies which ones belong to creator
+        steps.append(f'Found {len(unique_candidates)} candidate emails, running AI verification...')
+        verified = _llm_verify_emails(channel_data, unique_candidates, email_sources)
+        if verified:
+            steps.append(f'AI verified {len(verified)} email(s): {", ".join(v["email"] for v in verified)}')
+            if len(verified) == 1:
+                return {'found': True, 'email': verified[0]['email'], 'source': 'web_search',
+                        'confidence': verified[0]['confidence'], 'steps': steps,
+                        'reasoning': verified[0]['reasoning']}
+            else:
+                # Multiple verified emails — return all
+                return {'found': True, 'email': verified[0]['email'],
+                        'all_emails': [v['email'] for v in verified],
+                        'email_details': verified,
+                        'source': 'web_search', 'confidence': verified[0]['confidence'],
+                        'steps': steps,
+                        'reasoning': f'Found {len(verified)} verified emails via web search.'}
+
+    elif len(unique_candidates) == 1:
+        # Single candidate — return directly
+        e = unique_candidates[0]
+        steps.append(f'Single candidate email: {e}')
+        return {'found': True, 'email': e, 'source': 'web_search',
+                'confidence': 'medium', 'steps': steps,
+                'reasoning': email_sources.get(e, 'Found via web search')}
+
+    # No candidates from web search — try AI synthesis as last resort
+    if evidence:
         steps.append('Running AI analysis on collected evidence...')
         result = _llm_synthesize_email(channel_data, evidence, candidate_emails)
         if result:

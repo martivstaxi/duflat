@@ -543,10 +543,14 @@ async function investigateEmail() {
         const data = await res.json();
 
         if (data.found && data.email) {
-            emailItem.querySelector('.meta-value').innerHTML =
-                `<span class="report-row" style="animation-delay:0ms"><a href="mailto:${esc(data.email)}">${esc(data.email)}</a></span>`;
-            _currentChannelData = { ..._currentChannelData, email: data.email };
-            if (btn) { btn.disabled = true; btn.textContent = '\u2713 Email Found'; }
+            const emails = data.all_emails || [data.email];
+            const emailHtml = emails.map((e, i) =>
+                `<span class="report-row" style="animation-delay:${i * 80}ms"><a href="mailto:${esc(e)}">${esc(e)}</a></span>`
+            ).join('<br>');
+            emailItem.querySelector('.meta-value').innerHTML = emailHtml;
+            _currentChannelData = { ..._currentChannelData, email: data.email, all_emails: emails };
+            const count = emails.length;
+            if (btn) { btn.disabled = true; btn.textContent = count > 1 ? `\u2713 ${count} Emails Found` : '\u2713 Email Found'; }
         } else {
             const hiddenMsg = _currentChannelData?.has_hidden_email
                 ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
