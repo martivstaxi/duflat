@@ -320,11 +320,15 @@ def _tool_web_search(query: str) -> dict:
     if len(results) < 5:
         _merge(_search_bing(query))
 
-    # Extract emails directly from search snippets
+    # Extract emails from snippets, filtering out site-owned emails
+    # (e.g. iletisim@aksutv.com.tr found on aksutv.com.tr is the site's own email)
     snippet_emails = []
     for r_item in results:
-        snippet_emails += _extract_emails_from_text(r_item.get('snippet', ''))
-        snippet_emails += _extract_emails_from_text(r_item.get('title', ''))
+        item_url = r_item.get('url', '')
+        for text_field in (r_item.get('snippet', ''), r_item.get('title', '')):
+            for e in _extract_emails_from_text(text_field):
+                if not _is_site_own_email(e, item_url):
+                    snippet_emails.append(e)
 
     return {
         'results': results[:15],
