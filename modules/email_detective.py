@@ -979,13 +979,11 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
             break
         search_result = _tool_web_search(query)
 
-        # Check emails found directly in snippets
+        # Collect snippet emails as evidence (don't trust blindly — too many false positives)
         for e in search_result.get('emails_in_snippets', []):
-            if _is_valid_email(e):
-                steps.append(f'Email found in search snippet: {e}')
-                return {'found': True, 'email': e, 'source': 'web_search',
-                        'confidence': 'medium', 'steps': steps,
-                        'reasoning': f'Found in search results for: {query}'}
+            if _is_valid_email(e) and e not in candidate_emails:
+                candidate_emails.append(e)
+                evidence.append((f'snippet_email', f'{e} (found in search snippet for: {query})'))
 
         # Scrape top results
         for item in search_result.get('results', [])[:3]:
