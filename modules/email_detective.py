@@ -72,6 +72,12 @@ MAX_ROUNDS = 8
 MODEL = 'claude-haiku-4-5-20251001'
 CC_API_URL = 'https://api.channelcrawler.com'
 
+_CONTACT_PREFIXES = (
+    'contact', 'info', 'hello', 'business', 'collab', 'collaboration',
+    'booking', 'management', 'press', 'media', 'partnerships',
+    'brand', 'sponsor', 'work',
+)
+
 # ─────────────────────────────────────────────
 # TOOL IMPLEMENTATIONS (executed server-side)
 # ─────────────────────────────────────────────
@@ -539,6 +545,371 @@ def _execute_tool(name: str, input_data: dict) -> str:
 
 
 # ─────────────────────────────────────────────
+# FREE WEB PIPELINE — deterministic, no paid APIs
+# ─────────────────────────────────────────────
+
+def _og_desc(html: str) -> str:
+    """Extract og:description meta tag content."""
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        tag = soup.find('meta', property='og:description')
+        if tag and tag.get('content'):
+            return tag['content']
+    except Exception:
+        pass
+    return ''
+
+
+def _is_site_own_email(email: str, page_url: str) -> bool:
+    """Return True if email belongs to the scraped site itself (not the creator)."""
+    try:
+        from urllib.parse import urlparse
+        site_domain = urlparse(page_url).netloc.lower().lstrip('www.')
+        email_domain = email.split('@')[1].lower() if '@' in email else ''
+        if not email_domain or not site_domain:
+            return False
+        return (email_domain == site_domain or
+                email_domain.endswith('.' + site_domain) or
+                site_domain.endswith('.' + email_domain))
+    except Exception:
+        return False
+
+
+def _scrape_for_creator_email(url: str) -> list[str]:
+    """Scrape a URL for emails, filtering out site-owned emails."""
+    result = _tool_scrape_url(url)
+    emails = result.get('emails', [])
+    return [e for e in emails if not _is_site_own_email(e, url)]
+
+
+def _fetch_video_descriptions(channel_url: str, n: int = 3) -> list[str]:
+    """Fetch descriptions of last N videos — creators often put email there."""
+    if not channel_url:
+        return []
+    try:
+        import yt_dlp
+        opts = {
+            'skip_download': True, 'quiet': True, 'no_warnings': True,
+            'ignoreerrors': True, 'playlistend': n, 'extract_flat': False,
+        }
+        target = channel_url.rstrip('/') + '/videos'
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(target, download=False)
+        if not info:
+            return []
+        entries = info.get('entries') or []
+        descs = []
+        for e in entries:
+            if isinstance(e, dict):
+                d = e.get('description', '') or ''
+                if d and d not in descs:
+                    descs.append(d)
+        return descs[:n]
+    except Exception:
+        return []
+
+
+def _llm_synthesize_email(channel_data: dict, evidence: list[tuple[str, str]],
+                          candidate_emails: list[str]) -> dict | None:
+    """Claude Haiku last-resort: analyze ALL collected evidence to find/infer email."""
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return None
+    try:
+        import anthropic
+
+        parts = ['=== YouTube Channel ===']
+        for field, label in [('name', 'Name'), ('handle', 'Handle'),
+                             ('description', 'Description'), ('location', 'Location')]:
+            if channel_data.get(field):
+                parts.append(f'{label}: {channel_data[field]}')
+        for k in ('instagram', 'twitter', 'tiktok', 'facebook', 'linkedin'):
+            if channel_data.get(k):
+                parts.append(f'{k.capitalize()}: {channel_data[k]}')
+        if channel_data.get('all_links'):
+            parts.append('Links: ' + ', '.join(channel_data['all_links'][:10]))
+
+        if evidence:
+            parts.append('\n=== Evidence Collected ===')
+            for label, content in evidence[:12]:
+                if content:
+                    parts.append(f'[{label}]\n{content[:500]}')
+
+        if candidate_emails:
+            parts.append('\n=== Candidate Emails ===')
+            parts.append(', '.join(candidate_emails[:10]))
+
+        context = '\n'.join(parts)[:6000]
+
+        prompt = f"""You are finding a YouTube creator's contact email.
+
+{context}
+
+Find the BEST contact email. Steps:
+1. Scan all evidence for email addresses (gmail/yahoo/hotmail are valid)
+2. Look for obfuscated emails: "name at domain dot com"
+3. If a personal domain was found, guess: contact@domain, info@domain, hello@domain
+4. Cross-reference channel name/handle with found domains
+
+REJECT: noreply@, support@platform.com, unrelated company emails.
+Gmail/Yahoo/Outlook ARE valid for creators.
+
+Respond ONLY with JSON:
+{{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence"}}
+or {{"found": false}}"""
+
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=200,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = message.content[0].text.strip()
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if not match:
+            return None
+        data = json.loads(match.group())
+        if data.get('found') and data.get('email'):
+            email = data['email'].lower().strip()
+            if _is_valid_email(email):
+                return {
+                    'found': True,
+                    'email': email,
+                    'source': 'ai_analysis',
+                    'confidence': data.get('confidence', 'low'),
+                    'reasoning': data.get('reasoning', ''),
+                }
+    except Exception:
+        pass
+    return None
+
+
+def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) -> dict | None:
+    """
+    Deterministic free web investigation pipeline.
+    Returns result dict if email found, None otherwise.
+    Uses only free resources: DDG, Bing, direct scraping, Haiku synthesis.
+    """
+    name = channel_data.get('name', '')
+    handle = channel_data.get('handle', '').lstrip('@')
+    description = channel_data.get('description', '')
+    all_links = channel_data.get('all_links', [])
+    channel_url = channel_data.get('channel_url', '')
+    location = channel_data.get('location', '')
+
+    evidence: list[tuple[str, str]] = []
+    candidate_emails: list[str] = []
+    found_domains: list[str] = []
+
+    # ── Step 1: Obfuscated emails in description ──
+    if description:
+        for m in _RE_OBFUSCATED.finditer(description):
+            local, domain_part, tld = m.group(1), m.group(2), m.group(3)
+            e = f'{local}@{domain_part}.{tld}'.lower()
+            if _is_valid_email(e):
+                steps.append(f'Obfuscated email in description: {e}')
+                return {'found': True, 'email': e, 'source': 'description',
+                        'confidence': 'high', 'steps': steps,
+                        'reasoning': 'Obfuscated email decoded from channel description.'}
+        evidence.append(('description', description[:500]))
+
+    # ── Step 2: External links (personal websites) ──
+    aggregator_links = []
+    company_links = []
+    for lnk in all_links:
+        lo = lnk.lower()
+        if any(d in lo for d in _LINK_AGGREGATORS):
+            aggregator_links.append(lnk)
+        elif not any(d in lo for d in (*_SKIP_DOMAINS, *_SOCIAL_DOMAINS)):
+            company_links.append(lnk)
+
+    steps.append(f'Checking {len(company_links)} external links + {len(aggregator_links)} link aggregators...')
+    for link in company_links[:4]:
+        if time.time() > deadline:
+            break
+        result = _tool_scrape_deep(link)
+        emails = [e for e in result.get('emails', []) if not _is_site_own_email(e, link)]
+        if result.get('text'):
+            evidence.append((f'link:{link}', result['text'][:400]))
+        try:
+            from urllib.parse import urlparse
+            domain = urlparse(link).netloc.lstrip('www.')
+            if domain and domain not in found_domains:
+                found_domains.append(domain)
+        except Exception:
+            pass
+        if emails:
+            steps.append(f'Found email via external link {link}: {emails[0]}')
+            return {'found': True, 'email': emails[0], 'source': 'external_link',
+                    'confidence': 'high', 'steps': steps,
+                    'reasoning': f'Found on external website: {link}'}
+
+    # ── Step 3: Link aggregators (Linktree etc.) ──
+    for agg in aggregator_links[:2]:
+        if time.time() > deadline:
+            break
+        lt_result = _tool_extract_linktree(agg)
+        if lt_result.get('emails'):
+            e = lt_result['emails'][0]
+            if _is_valid_email(e):
+                steps.append(f'Found email in linktree {agg}: {e}')
+                return {'found': True, 'email': e, 'source': 'linktree',
+                        'confidence': 'high', 'steps': steps,
+                        'reasoning': f'Found on link aggregator: {agg}'}
+        for link in lt_result.get('links', [])[:4]:
+            if time.time() > deadline:
+                break
+            emails = _scrape_for_creator_email(link)
+            if emails:
+                steps.append(f'Found email via linktree link {link}: {emails[0]}')
+                return {'found': True, 'email': emails[0], 'source': 'linktree',
+                        'confidence': 'high', 'steps': steps,
+                        'reasoning': f'Found via link aggregator → {link}'}
+
+    # ── Step 4: Social media bios ──
+    for platform in ('instagram', 'twitter', 'tiktok', 'facebook'):
+        if time.time() > deadline:
+            break
+        url = channel_data.get(platform, '')
+        if not url:
+            continue
+        steps.append(f'Checking {platform} profile...')
+        html = _fetch_html(url)
+        if not html:
+            # For Twitter/X try alternate domain
+            if platform == 'twitter':
+                alt = url.replace('x.com', 'twitter.com') if 'x.com' in url else url.replace('twitter.com', 'x.com')
+                html = _fetch_html(alt)
+            if not html:
+                continue
+        # Check full HTML for emails
+        emails = _extract_emails_from_text(html)
+        valid = [e for e in emails if _is_valid_email(e)]
+        if valid:
+            steps.append(f'Found email on {platform}: {valid[0]}')
+            return {'found': True, 'email': valid[0], 'source': platform,
+                    'confidence': 'high', 'steps': steps,
+                    'reasoning': f'Found in {platform.capitalize()} profile page.'}
+        # Check OG description for obfuscated emails
+        bio = _og_desc(html)
+        if bio:
+            for m in _RE_OBFUSCATED.finditer(bio):
+                local, domain_part, tld = m.group(1), m.group(2), m.group(3)
+                e = f'{local}@{domain_part}.{tld}'.lower()
+                if _is_valid_email(e):
+                    steps.append(f'Obfuscated email in {platform} bio: {e}')
+                    return {'found': True, 'email': e, 'source': platform,
+                            'confidence': 'high', 'steps': steps,
+                            'reasoning': f'Obfuscated email decoded from {platform.capitalize()} bio.'}
+            for m in RE_EMAIL.finditer(bio):
+                e = m.group(1).lower().strip().rstrip('.')
+                if _is_valid_email(e):
+                    steps.append(f'Email in {platform} bio: {e}')
+                    return {'found': True, 'email': e, 'source': platform,
+                            'confidence': 'high', 'steps': steps,
+                            'reasoning': f'Found in {platform.capitalize()} bio.'}
+            evidence.append((f'{platform}_bio', bio[:300]))
+
+    # ── Step 5: Video descriptions ──
+    if channel_url and time.time() < deadline:
+        steps.append('Checking recent video descriptions...')
+        video_descs = _fetch_video_descriptions(channel_url, n=3)
+        for i, vid_desc in enumerate(video_descs):
+            if not vid_desc:
+                continue
+            for m in _RE_OBFUSCATED.finditer(vid_desc):
+                local, domain_part, tld = m.group(1), m.group(2), m.group(3)
+                e = f'{local}@{domain_part}.{tld}'.lower()
+                if _is_valid_email(e):
+                    steps.append(f'Obfuscated email in video #{i+1}: {e}')
+                    return {'found': True, 'email': e, 'source': 'video_description',
+                            'confidence': 'high', 'steps': steps,
+                            'reasoning': f'Obfuscated email in video #{i+1} description.'}
+            for m in RE_EMAIL.finditer(vid_desc):
+                e = m.group(1).lower().strip().rstrip('.')
+                if _is_valid_email(e):
+                    steps.append(f'Email in video #{i+1}: {e}')
+                    return {'found': True, 'email': e, 'source': 'video_description',
+                            'confidence': 'high', 'steps': steps,
+                            'reasoning': f'Found in video #{i+1} description.'}
+            if i == 0:
+                evidence.append(('video_desc', vid_desc[:500]))
+
+    # ── Step 6: Web search (DDG + Bing) ──
+    queries = []
+    if name:
+        queries += [
+            f'"{name}" youtube email contact',
+            f'"{name}" business email inquiry',
+        ]
+    if handle:
+        queries += [
+            f'"{handle}" email contact',
+            f'"@{handle}" youtube business email',
+        ]
+    if name and location:
+        queries.append(f'"{name}" {location} youtube contact email')
+    if found_domains:
+        queries.append(f'site:{found_domains[0]} contact email')
+
+    seen_urls: set[str] = set()
+    steps.append(f'Running {min(len(queries), 4)} web searches...')
+
+    for query in queries[:4]:
+        if time.time() > deadline:
+            break
+        search_result = _tool_web_search(query)
+
+        # Check emails found directly in snippets
+        for e in search_result.get('emails_in_snippets', []):
+            if _is_valid_email(e):
+                steps.append(f'Email found in search snippet: {e}')
+                return {'found': True, 'email': e, 'source': 'web_search',
+                        'confidence': 'medium', 'steps': steps,
+                        'reasoning': f'Found in search results for: {query}'}
+
+        # Scrape top results
+        for item in search_result.get('results', [])[:3]:
+            url = item.get('url', '')
+            if not url or url in seen_urls:
+                continue
+            if any(d in url.lower() for d in (*_SKIP_DOMAINS, *_SOCIAL_DOMAINS)):
+                continue
+            seen_urls.add(url)
+            if time.time() > deadline:
+                break
+
+            snippet = item.get('snippet', '')
+            evidence.append((f'search:{url}', snippet[:300]))
+
+            emails = _scrape_for_creator_email(url)
+            if emails:
+                steps.append(f'Email found via web search → {url}: {emails[0]}')
+                return {'found': True, 'email': emails[0], 'source': 'web_search',
+                        'confidence': 'medium', 'steps': steps,
+                        'reasoning': f'Found via web search on {url}'}
+
+    # ── Step 7: Domain email guessing ──
+    for domain in found_domains[:3]:
+        guesses = [f'{prefix}@{domain}' for prefix in _CONTACT_PREFIXES]
+        candidate_emails.extend(guesses)
+        evidence.append((f'domain:{domain}',
+                         f'Corporate domain. Possible: {", ".join(guesses[:5])}'))
+
+    # ── Step 8: Claude Haiku synthesis ──
+    if evidence or candidate_emails:
+        steps.append('Running AI analysis on collected evidence...')
+        result = _llm_synthesize_email(channel_data, evidence, candidate_emails)
+        if result:
+            result['steps'] = steps
+            steps.append(f'AI found: {result["email"]} ({result["confidence"]})')
+            return result
+
+    return None
+
+
+# ─────────────────────────────────────────────
 # BUILD SYSTEM PROMPT
 # ─────────────────────────────────────────────
 
@@ -660,11 +1031,14 @@ def find_email_v2(channel_data: dict) -> dict:
                 'confidence': 'high', 'steps': steps,
                 'reasoning': 'Listed on the channel about page.'}
 
-    # ── AI Agent Loop DISABLED — only paid services active ──
-    # To re-enable: uncomment the agent loop block above this line
-    steps.append('AI agent disabled — using direct lookup services only.')
+    # ── FREE WEB PIPELINE — exhaustive free investigation ──
+    steps.append('Starting free web investigation pipeline...')
+    free_result = _free_web_pipeline(channel_data, steps, deadline)
+    if free_result:
+        return free_result
+    steps.append('Free pipeline exhausted — trying paid services...')
 
-    # ── FALLBACK 1: ChannelCrawler API ──
+    # ── PAID FALLBACK 1: ChannelCrawler API ──
     cc_key = os.environ.get('CC_API_KEY', '')
     if cc_key and channel_id:
         steps.append('Trying ChannelCrawler API...')
@@ -682,7 +1056,7 @@ def find_email_v2(channel_data: dict) -> dict:
         else:
             steps.append('ChannelCrawler: no email in database.')
 
-    # ── FALLBACK 2: Apify exporter24 ($0.03/result) ──
+    # ── PAID FALLBACK 2: Apify exporter24 ($0.03/result) ──
     apify_token = os.environ.get('APIFY_API_TOKEN', '')
     if apify_token and (channel_url or channel_id):
         steps.append('Trying Apify exporter24 email scraper...')
@@ -699,7 +1073,7 @@ def find_email_v2(channel_data: dict) -> dict:
                 'steps': steps,
             }
 
-    # ── FALLBACK 3: Apify endspec instant ($0.075/result, handle only) ──
+    # ── PAID FALLBACK 3: Apify endspec instant ($0.075/result, handle only) ──
     handle = channel_data.get('handle', '')
     if apify_token and handle:
         steps.append(f'Trying Apify endspec instant for {handle}...')
