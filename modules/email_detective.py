@@ -838,22 +838,29 @@ def _llm_verify_emails(channel_data: dict, emails: list[str],
             for e in unique
         )
 
-        prompt = f"""You are verifying email addresses found for a YouTube creator.
+        prompt = f"""You are a STRICT email verifier for YouTube creators. Your job is to REJECT false positives.
 
-Channel: {name} (handle: {handle})
+Creator: {name} (YouTube handle: {handle})
 
 Candidate emails:
 {email_list}
 
-For EACH email, decide if it likely belongs to this creator:
-- Check if email username relates to creator name/handle
-- Reject emails from unrelated companies or platforms
-- Gmail/Yahoo/Outlook are valid if username matches creator
+STRICT RULES — mark as valid: false if ANY of these apply:
+1. Email domain belongs to a company/brand/TV channel that is NOT this creator (e.g. iletisim@aksutv.com.tr for "Ece Ronay" = REJECT, aksutv is a TV channel)
+2. Email domain is a major platform (spotify.com, apple.com, amazon.com, etc.) = REJECT
+3. Email username has NO relation to the creator's name or handle = REJECT
+4. Email looks like a company's generic address (iletisim@, info@, contact@) for a company that is NOT the creator's own company = REJECT
+5. Email domain is a news/media/TV site = REJECT
+
+ONLY mark as valid: true if:
+- The email username clearly relates to the creator's name/handle (e.g. "eceronay@gmail.com" for "Ece Ronay")
+- OR the email is on the creator's OWN personal domain/website
+- OR it's a management/agency email specifically FOR this creator
+
+When in doubt, REJECT. It's better to miss an email than to return a wrong one.
 
 Respond ONLY with JSON array:
-[{{"email": "x@y.com", "valid": true, "confidence": "high|medium|low", "reasoning": "brief reason"}}]
-
-Include ALL emails in your response. Mark invalid ones as valid: false."""
+[{{"email": "x@y.com", "valid": true/false, "confidence": "high|medium|low", "reasoning": "brief reason"}}]"""
 
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
@@ -1173,7 +1180,6 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
 
     def agent_domain_guess() -> list[tuple[str, str]]:
         """Agent 15: Guess emails from personal domains found in links."""
-        # Skip major platforms — only guess for personal/company domains
         _platform_domains = (
             'spotify.com', 'open.spotify.com', 'apple.com', 'music.apple.com',
             'amazon.com', 'music.amazon.com', 'soundcloud.com', 'deezer.com',
@@ -1197,9 +1203,125 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 pass
         return found
 
+    def agent_noxinfluencer() -> list[tuple[str, str]]:
+        """Agent 16: NoxInfluencer database — scrape creator profile for email."""
+        found = []
+        search_name = handle or name
+        if not search_name:
+            return found
+        try:
+            # Search for the channel
+            url = f'https://www.noxinfluencer.com/youtube/channel/{channel_data.get("channel_id", "")}'
+            html = _fetch_html(url)
+            if html:
+                for e in _extract_emails_from_text(html):
+                    found.append((e, 'NoxInfluencer profile'))
+                # Also check page text for obfuscated emails
+                text = _page_text(html, max_chars=3000)
+                for m in _RE_OBFUSCATED.finditer(text):
+                    local, dp, tld = m.group(1), m.group(2), m.group(3)
+                    e = f'{local}@{dp}.{tld}'.lower()
+                    if _is_valid_email(e):
+                        found.append((e, 'NoxInfluencer profile (obfuscated)'))
+        except Exception:
+            pass
+        return found
+
+    def agent_socialblade() -> list[tuple[str, str]]:
+        """Agent 17: Social Blade — scrape channel page for contact info."""
+        found = []
+        search_target = handle.lstrip('@') if handle else name
+        if not search_target:
+            return found
+        try:
+            url = f'https://socialblade.com/youtube/channel/{channel_data.get("channel_id", "")}'
+            html = _fetch_html(url)
+            if html:
+                for e in _extract_emails_from_text(html):
+                    if not _is_site_own_email(e, url):
+                        found.append((e, 'Social Blade profile'))
+        except Exception:
+            pass
+        return found
+
+    def agent_hypeauditor() -> list[tuple[str, str]]:
+        """Agent 18: HypeAuditor — scrape channel overview page."""
+        found = []
+        channel_id = channel_data.get('channel_id', '')
+        if not channel_id:
+            return found
+        try:
+            url = f'https://hypeauditor.com/youtube/{channel_id}/'
+            html = _fetch_html(url)
+            if html:
+                for e in _extract_emails_from_text(html):
+                    if not _is_site_own_email(e, url):
+                        found.append((e, 'HypeAuditor profile'))
+        except Exception:
+            pass
+        return found
+
+    def agent_influencer_search() -> list[tuple[str, str]]:
+        """Agent 19: Search influencer databases via search engines."""
+        found = []
+        q_name = short_name or handle or name
+        if not q_name:
+            return found
+        queries = [
+            f'"{q_name}" email site:noxinfluencer.com',
+            f'"{q_name}" email site:socialblade.com',
+            f'"{q_name}" email site:modash.io OR site:upfluence.com OR site:creatordb.com',
+        ]
+        for q in queries:
+            try:
+                results = _search_ddg(q)
+                for item in results[:2]:
+                    snippet = item.get('snippet', '')
+                    for e in _extract_emails_from_text(snippet):
+                        if not _is_site_own_email(e, item.get('url', '')):
+                            found.append((e, f'Influencer DB search: {item.get("url", "")}'))
+                    url = item.get('url', '')
+                    if url:
+                        result = _tool_scrape_url(url)
+                        for e in result.get('emails', []):
+                            if not _is_site_own_email(e, url):
+                                found.append((e, f'Influencer DB: {url}'))
+            except Exception:
+                pass
+        return found
+
+    def agent_namecheck() -> list[tuple[str, str]]:
+        """Agent 20: Search for creator's personal website via name patterns."""
+        found = []
+        q_name = short_name or name
+        if not q_name:
+            return found
+        # Common patterns: creatorname.com, creatorname.net, etc.
+        clean_name = re.sub(r'[^a-zA-Z0-9]', '', q_name).lower()
+        if len(clean_name) < 3:
+            return found
+        for tld in ('com', 'net', 'co', 'me', 'io'):
+            try:
+                url = f'https://www.{clean_name}.{tld}'
+                html = _fetch_html(url)
+                if html:
+                    page_text = _page_text(html, 2000).lower()
+                    # Only consider if page mentions the creator
+                    name_lower = name.lower() if name else ''
+                    if name_lower and name_lower in page_text:
+                        for e in _extract_emails_from_text(html):
+                            found.append((e, f'Personal website: {url}'))
+                        result = _tool_scrape_deep(url)
+                        for e in result.get('emails', []):
+                            if _is_valid_email(e):
+                                found.append((e, f'Personal website deep: {url}'))
+            except Exception:
+                pass
+        return found
+
     # ─────────────────────────────────────────
     # RUN ALL AGENTS IN PARALLEL
-    # ────────��────────────────────────────────
+    # ─────────────────────────────────────────
 
     agents = {
         'External Links': agent_external_links,
@@ -1217,13 +1339,18 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
         'Startpage': agent_startpage_search,
         'Handle Search': agent_handle_search,
         'Domain Guess': agent_domain_guess,
+        'NoxInfluencer': agent_noxinfluencer,
+        'Social Blade': agent_socialblade,
+        'HypeAuditor': agent_hypeauditor,
+        'Influencer DB Search': agent_influencer_search,
+        'Personal Website': agent_namecheck,
     }
 
     steps.append(f'Launching {len(agents)} parallel email agents...')
     all_found: list[tuple[str, str]] = []  # (email, source)
     agent_results: dict[str, int] = {}  # agent_name -> email count
 
-    with ThreadPoolExecutor(max_workers=12) as executor:
+    with ThreadPoolExecutor(max_workers=16) as executor:
         future_map = {
             executor.submit(fn): agent_name
             for agent_name, fn in agents.items()
