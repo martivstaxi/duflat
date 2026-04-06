@@ -976,23 +976,34 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 evidence.append(('video_desc', vid_desc[:500]))
 
     # ── Step 6: Web search (multi-engine) ──
-    # Build diverse queries: English + creator's language, name + handle variants
+    # Build diverse queries: English + Turkish, name + handle, full + short name
     queries = []
+
+    # Short name: strip common suffixes like "Official", "Music", "VEVO"
+    short_name = name
+    if name:
+        for suffix in (' Official', ' Music', ' VEVO', ' TV', ' Channel', ' Resmi'):
+            if name.endswith(suffix):
+                short_name = name[:-len(suffix)].strip()
+                break
+
     if name:
         queries.append(f'"{name}" email contact')
-        queries.append(f'"{name}" iletisim email')  # Turkish (common for TR creators)
+    if short_name != name and short_name:
+        queries.append(f'"{short_name}" iletisim email')
+    elif name:
+        queries.append(f'"{name}" iletisim email')
     if handle:
         queries.append(f'"{handle}" email')
-    # Name without quotes — broader search
-    if name:
-        queries.append(f'{name} youtube creator email business inquiry')
+    if short_name:
+        queries.append(f'{short_name} youtube creator email business')
     if found_domains:
         queries.append(f'site:{found_domains[0]} contact email')
 
     seen_urls: set[str] = set()
-    steps.append(f'Running {min(len(queries), 4)} web searches...')
+    steps.append(f'Running {min(len(queries), 5)} web searches...')
 
-    for query in queries[:4]:
+    for query in queries[:5]:
         if time.time() > deadline:
             break
         search_result = _tool_web_search(query)
