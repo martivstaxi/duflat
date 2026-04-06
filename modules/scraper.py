@@ -412,6 +412,7 @@ RE_VIDEO_COUNT_PATTERNS = [
 RE_PUBLISHED_TIME = re.compile(
     r'"publishedTimeText":\s*\{\s*"simpleText":\s*"([^"]+)"\s*\}'
     r'|"publishedTimeText":\s*"([^"]+)"'
+    r'|"publishedTimeText":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"([^"]+)"'
 )
 
 _about_patch_lock = threading.Lock()
@@ -525,7 +526,12 @@ def _extract_about_via_ytdlp(channel_url: str) -> tuple[str, dict]:
     if not parsed.get('last_video_date'):
         m = RE_PUBLISHED_TIME.search(videos_html)
         if m:
-            parsed['last_video_date'] = (m.group(1) or m.group(2) or '').strip()
+            parsed['last_video_date'] = (m.group(1) or m.group(2) or m.group(3) or '').strip()
+    # Fallback: try about_html too (some channels embed video info there)
+    if not parsed.get('last_video_date'):
+        m = RE_PUBLISHED_TIME.search(about_html)
+        if m:
+            parsed['last_video_date'] = (m.group(1) or m.group(2) or m.group(3) or '').strip()
 
     return about_html, parsed
 
@@ -873,6 +879,14 @@ def scrape_channel(url: str) -> dict:
                     if len(d) == 8 and d.isdigit():
                         last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
                     break
+        # Fallback: scan all top-level entries for upload_date
+        if not last_video_date:
+            for e in entries:
+                if isinstance(e, dict):
+                    d = e.get('upload_date') or ''
+                    if d and len(d) == 8 and d.isdigit():
+                        last_video_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+                        break
 
     # CRITICAL: when is_video=True, info.get('description') is the VIDEO description,
     # NOT the channel description. Never use it for channel display.
