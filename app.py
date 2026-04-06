@@ -425,16 +425,22 @@ def debug_about():
 
 @app.route('/debug-search', methods=['GET'])
 def debug_search():
-    """Debug: test Serper/DDG/Bing search results for a query."""
+    """Debug: test all search engines for a query."""
     q = request.args.get('q', '')
     if not q:
         return jsonify({'error': 'q parameter required: /debug-search?q=...'}), 400
-    from modules.email_detective import _search_serper, _search_ddg, _search_bing
+    from modules.email_detective import (
+        _search_serper, _search_ddg, _search_bing,
+        _search_yahoo, _search_ecosia, _search_startpage,
+    )
     return jsonify({
         'query': q,
         'serper': _search_serper(q),
         'ddg': _search_ddg(q),
         'bing': _search_bing(q),
+        'yahoo': _search_yahoo(q),
+        'ecosia': _search_ecosia(q),
+        'startpage': _search_startpage(q),
     })
 
 

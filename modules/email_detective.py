@@ -288,6 +288,87 @@ def _search_bing(query: str) -> list[dict]:
     return results
 
 
+def _search_yahoo(query: str) -> list[dict]:
+    """Yahoo HTML search (free, no API key)."""
+    results = []
+    try:
+        r = requests.get(
+            'https://search.yahoo.com/search',
+            params={'p': query, 'n': 8},
+            headers={**BROWSER_HEADERS, 'Accept-Language': 'en-US,en;q=0.9'},
+            timeout=15,
+        )
+        if r.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for item in soup.select('.algo-sr'):
+                a = item.select_one('h3 a') or item.select_one('a')
+                snippet_el = item.select_one('.compText') or item.select_one('p')
+                if a and a.get('href'):
+                    results.append({
+                        'url': a['href'],
+                        'title': a.get_text(strip=True),
+                        'snippet': snippet_el.get_text(strip=True) if snippet_el else '',
+                    })
+    except Exception:
+        pass
+    return results
+
+
+def _search_ecosia(query: str) -> list[dict]:
+    """Ecosia HTML search (free, no API key)."""
+    results = []
+    try:
+        r = requests.get(
+            'https://www.ecosia.org/search',
+            params={'method': 'index', 'q': query},
+            headers={**BROWSER_HEADERS, 'Accept-Language': 'en-US,en;q=0.9'},
+            timeout=15,
+        )
+        if r.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for item in soup.select('.result'):
+                a = item.select_one('a.result-title') or item.select_one('a[href]')
+                snippet_el = item.select_one('.result-snippet') or item.select_one('p')
+                if a and a.get('href') and a['href'].startswith('http'):
+                    results.append({
+                        'url': a['href'],
+                        'title': a.get_text(strip=True),
+                        'snippet': snippet_el.get_text(strip=True) if snippet_el else '',
+                    })
+    except Exception:
+        pass
+    return results
+
+
+def _search_startpage(query: str) -> list[dict]:
+    """Startpage HTML search (Google proxy, free, no API key)."""
+    results = []
+    try:
+        r = requests.post(
+            'https://www.startpage.com/sp/search',
+            data={'query': query, 'cat': 'web'},
+            headers={**BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded'},
+            timeout=15,
+        )
+        if r.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for item in soup.select('.w-gl__result'):
+                a = item.select_one('a.w-gl__result-title') or item.select_one('a[href]')
+                snippet_el = item.select_one('.w-gl__description') or item.select_one('p')
+                if a and a.get('href') and a['href'].startswith('http'):
+                    results.append({
+                        'url': a['href'],
+                        'title': a.get_text(strip=True),
+                        'snippet': snippet_el.get_text(strip=True) if snippet_el else '',
+                    })
+    except Exception:
+        pass
+    return results
+
+
 def _tool_web_search(query: str) -> dict:
     """
     Multi-engine web search — all engines run in PARALLEL.
@@ -305,10 +386,13 @@ def _tool_web_search(query: str) -> dict:
                 results.append(item)
 
     # Run all search engines in parallel
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = {
             executor.submit(_search_ddg, query): 'ddg',
             executor.submit(_search_bing, query): 'bing',
+            executor.submit(_search_yahoo, query): 'yahoo',
+            executor.submit(_search_ecosia, query): 'ecosia',
+            executor.submit(_search_startpage, query): 'startpage',
         }
         if os.environ.get('SERPER_API_KEY', ''):
             futures[executor.submit(_search_serper, query)] = 'serper'
@@ -884,23 +968,17 @@ or {{"found": false}}"""
 
 def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) -> dict | None:
     """
-    Deterministic free web investigation pipeline.
-    Returns result dict if email found, None otherwise.
-    Uses only free resources: DDG, Bing, direct scraping, Haiku synthesis.
+    Parallel free email investigation — 10+ agents run simultaneously.
+    Each agent independently searches for emails using different methods.
+    All results collected, deduped, and verified by Haiku.
     """
     name = channel_data.get('name', '')
     handle = channel_data.get('handle', '').lstrip('@')
     description = channel_data.get('description', '')
     all_links = channel_data.get('all_links', [])
     channel_url = channel_data.get('channel_url', '')
-    location = channel_data.get('location', '')
 
-    evidence: list[tuple[str, str]] = []
-    candidate_emails: list[str] = []
-    email_sources: dict[str, str] = {}  # email -> source description
-    found_domains: list[str] = []
-
-    # ── Step 1: Obfuscated emails in description ──
+    # ── Quick check: Obfuscated emails in description (instant, no network) ──
     if description:
         for m in _RE_OBFUSCATED.finditer(description):
             local, domain_part, tld = m.group(1), m.group(2), m.group(3)
@@ -910,9 +988,8 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 return {'found': True, 'email': e, 'source': 'description',
                         'confidence': 'high', 'steps': steps,
                         'reasoning': 'Obfuscated email decoded from channel description.'}
-        evidence.append(('description', description[:500]))
 
-    # ── Step 2: External links (personal websites) ──
+    # ── Classify links ──
     aggregator_links = []
     company_links = []
     for lnk in all_links:
@@ -922,118 +999,7 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
         elif not any(d in lo for d in (*_SKIP_DOMAINS, *_SOCIAL_DOMAINS)):
             company_links.append(lnk)
 
-    steps.append(f'Checking {len(company_links)} external links + {len(aggregator_links)} link aggregators...')
-    for link in company_links[:4]:
-        if time.time() > deadline:
-            break
-        result = _tool_scrape_deep(link)
-        emails = [e for e in result.get('emails', []) if not _is_site_own_email(e, link)]
-        if result.get('text'):
-            evidence.append((f'link:{link}', result['text'][:400]))
-        try:
-            from urllib.parse import urlparse
-            domain = urlparse(link).netloc.lstrip('www.')
-            if domain and domain not in found_domains:
-                found_domains.append(domain)
-        except Exception:
-            pass
-        if emails:
-            steps.append(f'Found email via external link {link}: {emails[0]}')
-            return {'found': True, 'email': emails[0], 'source': 'external_link',
-                    'confidence': 'high', 'steps': steps,
-                    'reasoning': f'Found on external website: {link}'}
-
-    # ── Step 3: Link aggregators (Linktree etc.) ──
-    for agg in aggregator_links[:2]:
-        if time.time() > deadline:
-            break
-        lt_result = _tool_extract_linktree(agg)
-        if lt_result.get('emails'):
-            e = lt_result['emails'][0]
-            if _is_valid_email(e):
-                steps.append(f'Found email in linktree {agg}: {e}')
-                return {'found': True, 'email': e, 'source': 'linktree',
-                        'confidence': 'high', 'steps': steps,
-                        'reasoning': f'Found on link aggregator: {agg}'}
-        for link in lt_result.get('links', [])[:4]:
-            if time.time() > deadline:
-                break
-            emails = _scrape_for_creator_email(link)
-            if emails:
-                steps.append(f'Found email via linktree link {link}: {emails[0]}')
-                return {'found': True, 'email': emails[0], 'source': 'linktree',
-                        'confidence': 'high', 'steps': steps,
-                        'reasoning': f'Found via link aggregator → {link}'}
-
-    # ── Step 4: Social media bios ──
-    for platform in ('instagram', 'twitter', 'tiktok', 'facebook'):
-        if time.time() > deadline:
-            break
-        url = channel_data.get(platform, '')
-        if not url:
-            continue
-        steps.append(f'Checking {platform} profile...')
-        html = _fetch_html(url)
-        if not html:
-            # For Twitter/X try alternate domain
-            if platform == 'twitter':
-                alt = url.replace('x.com', 'twitter.com') if 'x.com' in url else url.replace('twitter.com', 'x.com')
-                html = _fetch_html(alt)
-            if not html:
-                continue
-        # Check full HTML for emails
-        emails = _extract_emails_from_text(html)
-        valid = [e for e in emails if _is_valid_email(e)]
-        if valid:
-            steps.append(f'Found email on {platform}: {valid[0]}')
-            return {'found': True, 'email': valid[0], 'source': platform,
-                    'confidence': 'high', 'steps': steps,
-                    'reasoning': f'Found in {platform.capitalize()} profile page.'}
-        # Check OG description for obfuscated emails
-        bio = _og_desc(html)
-        if bio:
-            for m in _RE_OBFUSCATED.finditer(bio):
-                local, domain_part, tld = m.group(1), m.group(2), m.group(3)
-                e = f'{local}@{domain_part}.{tld}'.lower()
-                if _is_valid_email(e):
-                    steps.append(f'Obfuscated email in {platform} bio: {e}')
-                    return {'found': True, 'email': e, 'source': platform,
-                            'confidence': 'high', 'steps': steps,
-                            'reasoning': f'Obfuscated email decoded from {platform.capitalize()} bio.'}
-            for m in RE_EMAIL.finditer(bio):
-                e = m.group(1).lower().strip().rstrip('.')
-                if _is_valid_email(e):
-                    steps.append(f'Email in {platform} bio: {e}')
-                    return {'found': True, 'email': e, 'source': platform,
-                            'confidence': 'high', 'steps': steps,
-                            'reasoning': f'Found in {platform.capitalize()} bio.'}
-            evidence.append((f'{platform}_bio', bio[:300]))
-
-    # ── Step 5: Video descriptions ──
-    # NOTE: Only use standard email regex here, NOT obfuscated regex.
-    # Video descriptions have many @mentions (collaborators, social handles)
-    # that the obfuscated regex falsely matches as emails.
-    if channel_url and time.time() < deadline:
-        steps.append('Checking recent video descriptions...')
-        video_descs = _fetch_video_descriptions(channel_url, n=3)
-        for i, vid_desc in enumerate(video_descs):
-            if not vid_desc:
-                continue
-            for m in RE_EMAIL.finditer(vid_desc):
-                e = m.group(1).lower().strip().rstrip('.')
-                if _is_valid_email(e):
-                    steps.append(f'Email in video #{i+1}: {e}')
-                    return {'found': True, 'email': e, 'source': 'video_description',
-                            'confidence': 'high', 'steps': steps,
-                            'reasoning': f'Found in video #{i+1} description.'}
-            if i == 0:
-                evidence.append(('video_desc', vid_desc[:500]))
-
-    # ── Step 6: Web search (multi-engine) ──
-    # Build diverse queries: English + Turkish, name + handle, full + short name
-    queries = []
-
-    # Short name: strip common suffixes like "Official", "Music", "VEVO"
+    # Short name for search queries
     short_name = name
     if name:
         for suffix in (' Official', ' Music', ' VEVO', ' TV', ' Channel', ' Resmi'):
@@ -1041,84 +1007,252 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 short_name = name[:-len(suffix)].strip()
                 break
 
-    if name:
-        queries.append(f'"{name}" email contact')
-    if short_name != name and short_name:
-        queries.append(f'"{short_name}" iletisim email')
-    elif name:
-        queries.append(f'"{name}" iletisim email')
-    if handle:
-        queries.append(f'"{handle}" email')
-    if short_name:
-        queries.append(f'{short_name} youtube creator email business')
-    if found_domains:
-        queries.append(f'site:{found_domains[0]} contact email')
+    # ─────────────────────────────────────────
+    # AGENT DEFINITIONS — each returns list of (email, source_label)
+    # ─────────────────────────────────────────
 
-    seen_urls: set[str] = set()
-    steps.append(f'Running {min(len(queries), 5)} web searches...')
+    def agent_external_links() -> list[tuple[str, str]]:
+        """Agent 1: Scrape external links from channel (personal websites)."""
+        found = []
+        for link in company_links[:3]:
+            result = _tool_scrape_deep(link)
+            for e in result.get('emails', []):
+                if _is_valid_email(e) and not _is_site_own_email(e, link):
+                    found.append((e, f'External link: {link}'))
+        return found
 
-    for query in queries[:5]:
-        if time.time() > deadline:
-            break
-        search_result = _tool_web_search(query)
+    def agent_linktree() -> list[tuple[str, str]]:
+        """Agent 2: Extract emails from link aggregators (Linktree, bio.link)."""
+        found = []
+        for agg in aggregator_links[:2]:
+            lt = _tool_extract_linktree(agg)
+            for e in lt.get('emails', []):
+                if _is_valid_email(e):
+                    found.append((e, f'Link aggregator: {agg}'))
+            for link in lt.get('links', [])[:3]:
+                for e in _scrape_for_creator_email(link):
+                    found.append((e, f'Linktree link: {link}'))
+        return found
 
-        # Collect snippet emails as evidence (don't trust blindly — too many false positives)
-        for e in search_result.get('emails_in_snippets', []):
-            if _is_valid_email(e) and e not in candidate_emails:
-                candidate_emails.append(e)
-                email_sources[e] = f'Search snippet for: {query}'
-                evidence.append((f'snippet_email', f'{e} (found in search snippet for: {query})'))
+    def _agent_social(platform: str) -> list[tuple[str, str]]:
+        """Generic social media bio scraper."""
+        url = channel_data.get(platform, '')
+        if not url:
+            return []
+        html = _fetch_html(url)
+        if not html and platform == 'twitter':
+            alt = url.replace('x.com', 'twitter.com') if 'x.com' in url else url.replace('twitter.com', 'x.com')
+            html = _fetch_html(alt)
+        if not html:
+            return []
+        found = []
+        for e in _extract_emails_from_text(html):
+            if _is_valid_email(e):
+                found.append((e, f'{platform.capitalize()} profile'))
+        bio = _og_desc(html)
+        if bio:
+            for m in _RE_OBFUSCATED.finditer(bio):
+                local, dp, tld = m.group(1), m.group(2), m.group(3)
+                e = f'{local}@{dp}.{tld}'.lower()
+                if _is_valid_email(e):
+                    found.append((e, f'{platform.capitalize()} bio (obfuscated)'))
+            for m in RE_EMAIL.finditer(bio):
+                e = m.group(1).lower().strip().rstrip('.')
+                if _is_valid_email(e):
+                    found.append((e, f'{platform.capitalize()} bio'))
+        return found
 
-        # Scrape top results — prefer pages that mention the creator
-        for item in search_result.get('results', [])[:4]:
+    def agent_instagram() -> list[tuple[str, str]]:
+        """Agent 3: Instagram profile."""
+        return _agent_social('instagram')
+
+    def agent_twitter() -> list[tuple[str, str]]:
+        """Agent 4: Twitter/X profile."""
+        return _agent_social('twitter')
+
+    def agent_tiktok() -> list[tuple[str, str]]:
+        """Agent 5: TikTok profile."""
+        return _agent_social('tiktok')
+
+    def agent_facebook() -> list[tuple[str, str]]:
+        """Agent 6: Facebook profile."""
+        return _agent_social('facebook')
+
+    def agent_video_descriptions() -> list[tuple[str, str]]:
+        """Agent 7: Scan recent video descriptions for emails."""
+        if not channel_url:
+            return []
+        found = []
+        descs = _fetch_video_descriptions(channel_url, n=3)
+        for i, desc in enumerate(descs):
+            if not desc:
+                continue
+            for m in RE_EMAIL.finditer(desc):
+                e = m.group(1).lower().strip().rstrip('.')
+                if _is_valid_email(e):
+                    found.append((e, f'Video #{i+1} description'))
+        return found
+
+    def _search_and_extract(search_fn, engine_name: str, query: str) -> list[tuple[str, str]]:
+        """Run a search engine, extract emails from snippets + scrape top results."""
+        found = []
+        try:
+            results = search_fn(query)
+        except Exception:
+            return found
+        # Emails in snippets
+        for item in results:
+            for text in (item.get('snippet', ''), item.get('title', '')):
+                for e in _extract_emails_from_text(text):
+                    if not _is_site_own_email(e, item.get('url', '')):
+                        found.append((e, f'{engine_name} snippet: {query}'))
+        # Scrape top results
+        for item in results[:3]:
             url = item.get('url', '')
-            if not url or url in seen_urls:
+            if not url or any(d in url.lower() for d in (*_SKIP_DOMAINS, *_SOCIAL_DOMAINS)):
                 continue
-            if any(d in url.lower() for d in (*_SKIP_DOMAINS, *_SOCIAL_DOMAINS)):
-                continue
-            seen_urls.add(url)
-            if time.time() > deadline:
-                break
-
-            snippet = item.get('snippet', '')
-            evidence.append((f'search:{url}', snippet[:300]))
-
             result = _tool_scrape_url(url)
             page_text = result.get('text', '').lower()
-            page_emails = [e for e in result.get('emails', []) if not _is_site_own_email(e, url)]
-
-            # Only consider emails from pages that mention the creator
             name_lower = name.lower() if name else ''
             handle_lower = handle.lower() if handle else ''
-            page_mentions_creator = (
-                (name_lower and name_lower in page_text) or
-                (handle_lower and handle_lower in page_text)
-            )
+            mentions = (name_lower and name_lower in page_text) or (handle_lower and handle_lower in page_text)
+            for e in result.get('emails', []):
+                if _is_valid_email(e) and not _is_site_own_email(e, url):
+                    tag = 'relevant' if mentions else 'unrelated'
+                    found.append((e, f'{engine_name} → {url} ({tag})'))
+        return found
 
-            for e in page_emails:
-                if e not in candidate_emails:
-                    candidate_emails.append(e)
-                    relevance = 'relevant' if page_mentions_creator else 'unrelated page'
-                    email_sources[e] = f'Scraped from {url} ({relevance})'
-                    evidence.append((f'scraped_email:{url}',
-                                     f'{e} (on {relevance} page: {url})'))
-                    steps.append(f'Candidate email from {url}: {e} ({relevance})')
+    def agent_ddg_search() -> list[tuple[str, str]]:
+        """Agent 8: DuckDuckGo search."""
+        q = f'"{name}" email contact' if name else f'"{handle}" email'
+        return _search_and_extract(_search_ddg, 'DuckDuckGo', q)
 
-    # ── Step 7: Domain email guessing ──
-    for domain in found_domains[:3]:
-        guesses = [f'{prefix}@{domain}' for prefix in _CONTACT_PREFIXES]
-        candidate_emails.extend(guesses)
-        evidence.append((f'domain:{domain}',
-                         f'Corporate domain. Possible: {", ".join(guesses[:5])}'))
+    def agent_bing_search() -> list[tuple[str, str]]:
+        """Agent 9: Bing search."""
+        q = f'"{short_name}" email iletisim' if short_name else f'"{handle}" email'
+        return _search_and_extract(_search_bing, 'Bing', q)
 
-    # ── Step 8: AI verification / synthesis ──
-    # Deduplicate candidate emails
-    unique_candidates = list(dict.fromkeys(e.lower().strip() for e in candidate_emails))
+    def agent_serper_search() -> list[tuple[str, str]]:
+        """Agent 10: Serper.dev Google search (if API key available)."""
+        if not os.environ.get('SERPER_API_KEY', ''):
+            return []
+        q = f'"{name}" email contact' if name else f'"{handle}" email'
+        return _search_and_extract(_search_serper, 'Serper/Google', q)
+
+    def agent_yahoo_search() -> list[tuple[str, str]]:
+        """Agent 11: Yahoo search."""
+        q = f'"{short_name or handle}" youtube email contact'
+        return _search_and_extract(_search_yahoo, 'Yahoo', q)
+
+    def agent_ecosia_search() -> list[tuple[str, str]]:
+        """Agent 12: Ecosia search."""
+        q = f'"{name}" email business contact' if name else f'"{handle}" email'
+        return _search_and_extract(_search_ecosia, 'Ecosia', q)
+
+    def agent_startpage_search() -> list[tuple[str, str]]:
+        """Agent 13: Startpage search (Google proxy)."""
+        q = f'{short_name or handle} youtube creator email business'
+        return _search_and_extract(_search_startpage, 'Startpage', q)
+
+    def agent_handle_search() -> list[tuple[str, str]]:
+        """Agent 14: Handle-focused search across engines."""
+        if not handle:
+            return []
+        found = []
+        for fn, eng in [(_search_ddg, 'DDG'), (_search_bing, 'Bing')]:
+            try:
+                results = fn(f'@{handle} email')
+                for item in results:
+                    for text in (item.get('snippet', ''), item.get('title', '')):
+                        for e in _extract_emails_from_text(text):
+                            if not _is_site_own_email(e, item.get('url', '')):
+                                found.append((e, f'{eng} handle search'))
+            except Exception:
+                pass
+        return found
+
+    def agent_domain_guess() -> list[tuple[str, str]]:
+        """Agent 15: Guess emails from personal domains found in links."""
+        found = []
+        from urllib.parse import urlparse
+        for link in company_links[:3]:
+            try:
+                domain = urlparse(link).netloc.lstrip('www.')
+                if domain:
+                    for prefix in ('contact', 'hello', 'info', 'business'):
+                        found.append((f'{prefix}@{domain}', f'Domain guess: {domain}'))
+            except Exception:
+                pass
+        return found
+
+    # ─────────────────────────────────────────
+    # RUN ALL AGENTS IN PARALLEL
+    # ────────��────────────────────────────────
+
+    agents = {
+        'External Links': agent_external_links,
+        'Linktree': agent_linktree,
+        'Instagram': agent_instagram,
+        'Twitter': agent_twitter,
+        'TikTok': agent_tiktok,
+        'Facebook': agent_facebook,
+        'Video Descriptions': agent_video_descriptions,
+        'DuckDuckGo': agent_ddg_search,
+        'Bing': agent_bing_search,
+        'Serper/Google': agent_serper_search,
+        'Yahoo': agent_yahoo_search,
+        'Ecosia': agent_ecosia_search,
+        'Startpage': agent_startpage_search,
+        'Handle Search': agent_handle_search,
+        'Domain Guess': agent_domain_guess,
+    }
+
+    steps.append(f'Launching {len(agents)} parallel email agents...')
+    all_found: list[tuple[str, str]] = []  # (email, source)
+    agent_results: dict[str, int] = {}  # agent_name -> email count
+
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        future_map = {
+            executor.submit(fn): agent_name
+            for agent_name, fn in agents.items()
+        }
+        for future in as_completed(future_map):
+            agent_name = future_map[future]
+            try:
+                results = future.result(timeout=max(0, deadline - time.time()))
+                agent_results[agent_name] = len(results)
+                all_found.extend(results)
+                if results:
+                    steps.append(f'  {agent_name}: found {len(results)} email(s)')
+            except Exception:
+                agent_results[agent_name] = 0
+
+    active = sum(1 for v in agent_results.values() if v > 0)
+    steps.append(f'{active}/{len(agents)} agents found emails, {len(all_found)} total results')
+
+    # ─────────────────────────────────────────
+    # COLLECT & DEDUPLICATE
+    # ──────���────────────���─────────────────────
+
+    candidate_emails: list[str] = []
+    email_sources: dict[str, str] = {}
+    for email, source in all_found:
+        e = email.lower().strip()
+        if e not in candidate_emails:
+            candidate_emails.append(e)
+            email_sources[e] = source
+        else:
+            # Append additional source info
+            email_sources[e] += f' + {source}'
+
+    unique_candidates = [e for e in candidate_emails if _is_valid_email(e)]
+
+    # ─────────────────────────────────────────
+    # HAIKU VERIFICATION
+    # ─────���─────────────────────────────────��─
 
     if unique_candidates:
-        # ALL web search emails go through Haiku verification (even single ones)
-        # This catches false positives like iletisim@aksutv.com.tr for "Ece Ronay"
-        steps.append(f'Found {len(unique_candidates)} candidate email(s), running AI verification...')
+        steps.append(f'{len(unique_candidates)} unique candidate(s), running AI verification...')
         verified = _llm_verify_emails(channel_data, unique_candidates, email_sources)
         if verified:
             steps.append(f'AI verified {len(verified)} email(s): {", ".join(v["email"] for v in verified)}')
@@ -1127,22 +1261,20 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                         'confidence': verified[0]['confidence'], 'steps': steps,
                         'reasoning': verified[0]['reasoning']}
             else:
-                # Multiple verified emails — return all
                 return {'found': True, 'email': verified[0]['email'],
                         'all_emails': [v['email'] for v in verified],
                         'email_details': verified,
                         'source': 'web_search', 'confidence': verified[0]['confidence'],
                         'steps': steps,
-                        'reasoning': f'Found {len(verified)} verified emails via web search.'}
+                        'reasoning': f'Found {len(verified)} verified emails via parallel agents.'}
 
-    # No candidates from web search — try AI synthesis as last resort
-    if evidence:
-        steps.append('Running AI analysis on collected evidence...')
-        result = _llm_synthesize_email(channel_data, evidence, candidate_emails)
-        if result:
-            result['steps'] = steps
-            steps.append(f'AI found: {result["email"]} ({result["confidence"]})')
-            return result
+    # No candidates — try AI synthesis on evidence
+    steps.append('No candidates from agents, trying AI synthesis...')
+    evidence = [(src, e) for e, src in email_sources.items()] if email_sources else []
+    result = _llm_synthesize_email(channel_data, evidence, [])
+    if result:
+        result['steps'] = steps
+        return result
 
     return None
 
