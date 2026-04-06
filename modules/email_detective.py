@@ -159,11 +159,78 @@ def _extract_links(html: str, base_url: str = '') -> list[str]:
         return []
 
 
-def _tool_web_search(query: str) -> dict:
-    """Execute web search via DDG + Bing, return results."""
-    results = []
+def _search_serper(query: str, num: int = 10) -> list[dict]:
+    """Google search via Serper.dev API (2500 free searches, no credit card)."""
+    api_key = os.environ.get('SERPER_API_KEY', '')
+    if not api_key:
+        return []
+    try:
+        r = requests.post(
+            'https://google.serper.dev/search',
+            headers={'X-API-KEY': api_key, 'Content-Type': 'application/json'},
+            json={'q': query, 'num': num},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        results = []
+        for item in data.get('organic', []):
+            results.append({
+                'url': item.get('link', ''),
+                'title': item.get('title', ''),
+                'snippet': item.get('snippet', ''),
+            })
+        # Also check knowledgeGraph and peopleAlsoAsk
+        kg = data.get('knowledgeGraph', {})
+        if kg.get('description'):
+            results.append({
+                'url': kg.get('website', ''),
+                'title': kg.get('title', ''),
+                'snippet': kg.get('description', ''),
+            })
+        for paa in data.get('peopleAlsoAsk', [])[:3]:
+            if paa.get('snippet'):
+                results.append({
+                    'url': paa.get('link', ''),
+                    'title': paa.get('question', ''),
+                    'snippet': paa.get('snippet', ''),
+                })
+        return results
+    except Exception:
+        return []
 
-    # DuckDuckGo
+
+def _search_brave(query: str, count: int = 10) -> list[dict]:
+    """Web search via Brave Search API ($5 free credits/month)."""
+    api_key = os.environ.get('BRAVE_API_KEY', '')
+    if not api_key:
+        return []
+    try:
+        r = requests.get(
+            'https://api.search.brave.com/res/v1/web/search',
+            headers={'X-Subscription-Token': api_key, 'Accept': 'application/json'},
+            params={'q': query, 'count': count},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        results = []
+        for item in data.get('web', {}).get('results', []):
+            results.append({
+                'url': item.get('url', ''),
+                'title': item.get('title', ''),
+                'snippet': item.get('description', ''),
+            })
+        return results
+    except Exception:
+        return []
+
+
+def _search_ddg(query: str) -> list[dict]:
+    """DuckDuckGo HTML search (free, no API key, but rate-limited)."""
+    results = []
     try:
         r = requests.post(
             'https://html.duckduckgo.com/html/',
@@ -188,8 +255,12 @@ def _tool_web_search(query: str) -> dict:
                 })
     except Exception:
         pass
+    return results
 
-    # Bing
+
+def _search_bing(query: str) -> list[dict]:
+    """Bing HTML search (free, no API key)."""
+    results = []
     try:
         r = requests.get(
             'https://www.bing.com/search',
@@ -204,24 +275,59 @@ def _tool_web_search(query: str) -> dict:
                 a = li.select_one('h2 a')
                 snippet = li.select_one('.b_caption p')
                 if a and a.get('href'):
-                    url = a['href']
-                    if not any(r['url'] == url for r in results):
-                        results.append({
-                            'url': url,
-                            'title': a.get_text(strip=True),
-                            'snippet': snippet.get_text(strip=True) if snippet else '',
-                        })
+                    results.append({
+                        'url': a['href'],
+                        'title': a.get_text(strip=True),
+                        'snippet': snippet.get_text(strip=True) if snippet else '',
+                    })
     except Exception:
         pass
+    return results
 
-    # Also extract emails directly from search snippets
+
+def _tool_web_search(query: str) -> dict:
+    """
+    Multi-engine web search. Priority order:
+    1. Serper.dev (Google results, best quality) — if SERPER_API_KEY set
+    2. Brave Search API — if BRAVE_API_KEY set
+    3. DuckDuckGo HTML scraping (free, no key)
+    4. Bing HTML scraping (free, no key)
+    Merges results from all available engines, deduplicates by URL.
+    """
+    results = []
+    seen_urls: set[str] = set()
+
+    def _merge(items: list[dict]):
+        for item in items:
+            url = item.get('url', '')
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                results.append(item)
+
+    # Tier 1: API-based search (best quality)
+    serper_results = _search_serper(query)
+    if serper_results:
+        _merge(serper_results)
+
+    brave_results = _search_brave(query)
+    if brave_results:
+        _merge(brave_results)
+
+    # Tier 2: HTML scraping (free fallback)
+    if len(results) < 5:
+        _merge(_search_ddg(query))
+
+    if len(results) < 5:
+        _merge(_search_bing(query))
+
+    # Extract emails directly from search snippets
     snippet_emails = []
     for r_item in results:
         snippet_emails += _extract_emails_from_text(r_item.get('snippet', ''))
         snippet_emails += _extract_emails_from_text(r_item.get('title', ''))
 
     return {
-        'results': results[:10],
+        'results': results[:15],
         'emails_in_snippets': list(set(snippet_emails))[:5],
         'count': len(results),
     }
