@@ -32,3 +32,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_14](./pro_version_14/VERSION_INFO.md) | 2026-04-05 | UI polish: icon-only buton, placeholder, label guncellemeleri |
 | [pro_version_15](./pro_version_15/VERSION_INFO.md) | 2026-04-05 | Email regenerate butonu, fade animasyonlari, dots kaldirildi |
 | [pro_version_16](./pro_version_16/VERSION_INFO.md) | 2026-04-06 | Email dissolve/resolve efekti, overlay spinner, kart iskeleti korunuyor |
+| [pro_version_17](./pro_version_17/VERSION_INFO.md) | 2026-04-06 | last_video_date fix: regex genisletme + coklu fallback |
