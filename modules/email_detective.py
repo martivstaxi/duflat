@@ -764,14 +764,23 @@ def _llm_synthesize_email(channel_data: dict, evidence: list[tuple[str, str]],
 
 {context}
 
-Find the BEST contact email. Steps:
-1. Scan all evidence for email addresses (gmail/yahoo/hotmail are valid)
-2. Look for obfuscated emails: "name at domain dot com"
-3. If a personal domain was found, guess: contact@domain, info@domain, hello@domain
-4. Cross-reference channel name/handle with found domains
+CRITICAL: You must find the email that belongs to THIS SPECIFIC creator, not emails from
+unrelated companies, other creators, or the websites themselves.
 
-REJECT: noreply@, support@platform.com, unrelated company emails.
-Gmail/Yahoo/Outlook ARE valid for creators.
+Steps:
+1. Check if any candidate email username matches the creator's name/handle (e.g. "eceronay@gmail.com" for "Ece Ronay")
+2. Check if any email was found on the creator's OWN website or social media
+3. Look for obfuscated emails in evidence: "name at domain dot com"
+4. If a personal domain was found in their links, guess: contact@domain, hello@domain
+5. Cross-reference channel name/handle with email usernames
+
+REJECT these even if found:
+- Emails from news/media/TV sites (e.g. iletisim@aksutv.com.tr)
+- Emails from other YouTube channels or creators
+- Emails from influencer database sites
+- Emails where the username has no relation to the creator
+
+ACCEPT: Gmail/Yahoo/Outlook ARE valid if the username relates to the creator.
 
 Respond ONLY with JSON:
 {{"found": true, "email": "x@domain.com", "confidence": "high|medium|low", "reasoning": "one sentence"}}
@@ -1000,11 +1009,11 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
             evidence.append((f'search:{url}', snippet[:300]))
 
             emails = _scrape_for_creator_email(url)
-            if emails:
-                steps.append(f'Email found via web search → {url}: {emails[0]}')
-                return {'found': True, 'email': emails[0], 'source': 'web_search',
-                        'confidence': 'medium', 'steps': steps,
-                        'reasoning': f'Found via web search on {url}'}
+            for e in emails:
+                if e not in candidate_emails:
+                    candidate_emails.append(e)
+                    evidence.append((f'scraped_email:{url}', f'{e} (found on page: {url})'))
+                    steps.append(f'Candidate email from {url}: {e}')
 
     # ── Step 7: Domain email guessing ──
     for domain in found_domains[:3]:
