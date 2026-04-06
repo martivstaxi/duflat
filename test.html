@@ -980,13 +980,13 @@
                 if (subjectEl) dissolves.push(dissolveText(subjectEl, 600));
                 if (bodyEl) dissolves.push(dissolveText(bodyEl, 800));
                 await Promise.all(dissolves);
-                // Show inline spinner inside the dissolved body area
-                if (bodyEl) {
-                    bodyEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:24px 0;color:var(--muted);font-size:.83rem">
-                        <span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
-                        <span>Rewriting email</span>
-                    </div>`;
-                }
+                // Overlay spinner on top of the card — card skeleton stays visible
+                existingPreview.style.position = 'relative';
+                const overlay = document.createElement('div');
+                overlay.id = 'regenOverlay';
+                overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(30,30,28,.7);backdrop-filter:blur(4px);border-radius:var(--radius);z-index:2;color:var(--muted);font-size:.85rem;animation:emailFadeIn .4s ease';
+                overlay.innerHTML = `<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span><span>Rewriting email</span>`;
+                existingPreview.appendChild(overlay);
             } else {
                 box.innerHTML = `<div id="emailLoading" style="margin-top:20px;padding:32px 20px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
                     <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(177,173,161,.12);border-top-color:#C15F3C;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0"></span>
@@ -1007,7 +1007,14 @@
 
                 if (data.subject && data.body) {
                     if (isRegenerate && existingPreview) {
-                        // Update text content in-place, then resolve
+                        // Remove overlay, update text, then resolve
+                        const overlay = existingPreview.querySelector('#regenOverlay');
+                        if (overlay) {
+                            overlay.style.animation = 'emailFadeOut .3s ease forwards';
+                            await new Promise(r => setTimeout(r, 350));
+                            overlay.remove();
+                        }
+                        existingPreview.style.position = '';
                         const subjectEl = existingPreview.querySelector('.email-subject');
                         const bodyEl = existingPreview.querySelector('.email-body');
                         if (subjectEl) {
