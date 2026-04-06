@@ -963,20 +963,17 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
             if i == 0:
                 evidence.append(('video_desc', vid_desc[:500]))
 
-    # ── Step 6: Web search (DDG + Bing) ──
+    # ── Step 6: Web search (multi-engine) ──
+    # Build diverse queries: English + creator's language, name + handle variants
     queries = []
     if name:
-        queries += [
-            f'"{name}" youtube email contact',
-            f'"{name}" business email inquiry',
-        ]
+        queries.append(f'"{name}" email contact')
+        queries.append(f'"{name}" iletisim email')  # Turkish (common for TR creators)
     if handle:
-        queries += [
-            f'"{handle}" email contact',
-            f'"@{handle}" youtube business email',
-        ]
-    if name and location:
-        queries.append(f'"{name}" {location} youtube contact email')
+        queries.append(f'"{handle}" email')
+    # Name without quotes — broader search
+    if name:
+        queries.append(f'{name} youtube creator email business inquiry')
     if found_domains:
         queries.append(f'site:{found_domains[0]} contact email')
 
@@ -994,8 +991,8 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                 candidate_emails.append(e)
                 evidence.append((f'snippet_email', f'{e} (found in search snippet for: {query})'))
 
-        # Scrape top results
-        for item in search_result.get('results', [])[:3]:
+        # Scrape top results — prefer pages that mention the creator
+        for item in search_result.get('results', [])[:4]:
             url = item.get('url', '')
             if not url or url in seen_urls:
                 continue
@@ -1008,12 +1005,25 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
             snippet = item.get('snippet', '')
             evidence.append((f'search:{url}', snippet[:300]))
 
-            emails = _scrape_for_creator_email(url)
-            for e in emails:
+            result = _tool_scrape_url(url)
+            page_text = result.get('text', '').lower()
+            page_emails = [e for e in result.get('emails', []) if not _is_site_own_email(e, url)]
+
+            # Only consider emails from pages that mention the creator
+            name_lower = name.lower() if name else ''
+            handle_lower = handle.lower() if handle else ''
+            page_mentions_creator = (
+                (name_lower and name_lower in page_text) or
+                (handle_lower and handle_lower in page_text)
+            )
+
+            for e in page_emails:
                 if e not in candidate_emails:
                     candidate_emails.append(e)
-                    evidence.append((f'scraped_email:{url}', f'{e} (found on page: {url})'))
-                    steps.append(f'Candidate email from {url}: {e}')
+                    relevance = 'relevant' if page_mentions_creator else 'unrelated page'
+                    evidence.append((f'scraped_email:{url}',
+                                     f'{e} (on {relevance} page: {url})'))
+                    steps.append(f'Candidate email from {url}: {e} ({relevance})')
 
     # ── Step 7: Domain email guessing ──
     for domain in found_domains[:3]:
