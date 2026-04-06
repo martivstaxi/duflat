@@ -51,12 +51,16 @@ _LINK_AGGREGATORS = ('linktr.ee', 'bio.link', 'beacons.ai', 'allmylinks.com',
 _FAKE_TLDS = frozenset({
     'on', 'at', 'in', 'or', 'to', 'be', 'we', 'my', 'me', 'by', 'do',
     'go', 'up', 'us', 'it', 'if', 'as', 'so', 'no', 'an', 'of', 'is',
-    'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'was',
-    'one', 'our', 'out', 'day', 'get', 'has', 'how', 'new', 'now', 'old',
-    'see', 'two', 'way', 'who', 'did', 'its', 'let', 'put', 'say', 'too',
+    'he', 'she', 'her', 'him', 'his', 'had', 'has', 'was', 'did', 'may',
+    'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can',
+    'one', 'our', 'out', 'day', 'get', 'how', 'new', 'now', 'old',
+    'see', 'two', 'way', 'who', 'its', 'let', 'put', 'say', 'too',
     'use', 'from', 'have', 'this', 'will', 'your', 'that', 'with', 'they',
     'been', 'more', 'when', 'come', 'here', 'just', 'know', 'like', 'look',
     'make', 'most', 'over', 'than', 'them', 'well', 'were',
+    'also', 'back', 'even', 'give', 'good', 'into', 'last', 'long',
+    'much', 'must', 'name', 'only', 'some', 'such', 'take', 'very',
+    'what', 'work', 'year', 'each', 'many', 'then', 'want',
 })
 
 _RE_OBFUSCATED = re.compile(
@@ -100,6 +104,10 @@ def _is_valid_email(email: str) -> bool:
         return False
     tld = tld_match.group(1)
     if tld in _FAKE_TLDS:
+        return False
+    # Domain body before TLD must be at least 2 chars (reject "t.he", "a.co" etc.)
+    domain_body = domain[:domain.rfind('.')].lstrip('www.')
+    if len(domain_body) < 2:
         return False
     return True
 
