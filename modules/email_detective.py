@@ -113,6 +113,9 @@ def _is_valid_email(email: str) -> bool:
     local, domain = parts
     if len(local) < 2:
         return False
+    # Reject double dots in domain (e.g. com..tr)
+    if '..' in domain:
+        return False
     tld_match = re.search(r'\.([a-z]{2,12})$', domain)
     if not tld_match:
         return False
@@ -1112,9 +1115,10 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
     # Deduplicate candidate emails
     unique_candidates = list(dict.fromkeys(e.lower().strip() for e in candidate_emails))
 
-    if len(unique_candidates) >= 2:
-        # Multiple different emails found — Haiku verifies which ones belong to creator
-        steps.append(f'Found {len(unique_candidates)} candidate emails, running AI verification...')
+    if unique_candidates:
+        # ALL web search emails go through Haiku verification (even single ones)
+        # This catches false positives like iletisim@aksutv.com.tr for "Ece Ronay"
+        steps.append(f'Found {len(unique_candidates)} candidate email(s), running AI verification...')
         verified = _llm_verify_emails(channel_data, unique_candidates, email_sources)
         if verified:
             steps.append(f'AI verified {len(verified)} email(s): {", ".join(v["email"] for v in verified)}')
@@ -1130,14 +1134,6 @@ def _free_web_pipeline(channel_data: dict, steps: list[str], deadline: float) ->
                         'source': 'web_search', 'confidence': verified[0]['confidence'],
                         'steps': steps,
                         'reasoning': f'Found {len(verified)} verified emails via web search.'}
-
-    elif len(unique_candidates) == 1:
-        # Single candidate — return directly
-        e = unique_candidates[0]
-        steps.append(f'Single candidate email: {e}')
-        return {'found': True, 'email': e, 'source': 'web_search',
-                'confidence': 'medium', 'steps': steps,
-                'reasoning': email_sources.get(e, 'Found via web search')}
 
     # No candidates from web search — try AI synthesis as last resort
     if evidence:
