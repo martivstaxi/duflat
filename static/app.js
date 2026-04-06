@@ -541,6 +541,7 @@ async function investigateEmail() {
             body: JSON.stringify({ channel_data: _currentChannelData })
         });
         const data = await res.json();
+        console.log('[Email Detective]', JSON.stringify(data, null, 2));
 
         if (data.found && data.email) {
             const emails = data.all_emails || [data.email];
@@ -552,10 +553,13 @@ async function investigateEmail() {
             const count = emails.length;
             if (btn) { btn.disabled = true; btn.textContent = count > 1 ? `\u2713 ${count} Emails Found` : '\u2713 Email Found'; }
         } else {
+            const stepsHtml = data.steps && data.steps.length
+                ? `<details style="margin-top:4px;font-size:.75rem;color:var(--muted)"><summary style="cursor:pointer;color:var(--accent)">Investigation log (${data.steps.length} steps)</summary><div style="margin-top:4px;white-space:pre-wrap;line-height:1.5;max-height:200px;overflow-y:auto">${esc(data.steps.join('\n'))}</div></details>`
+                : '';
             const hiddenMsg = _currentChannelData?.has_hidden_email
                 ? `<span style="color:var(--accent);font-size:.85rem" title="This channel has a business email but YouTube requires login to reveal it">🔒 Email exists but hidden by YouTube</span>`
                 : `<span style="color:var(--faint);font-style:italic;font-size:.85rem">No email found</span>`;
-            emailItem.querySelector('.meta-value').innerHTML = hiddenMsg;
+            emailItem.querySelector('.meta-value').innerHTML = hiddenMsg + stepsHtml;
             if (btn) { btn.disabled = false; btn.innerHTML = '🔍 Find Email'; }
         }
     } catch (err) {
