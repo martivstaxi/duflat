@@ -232,7 +232,8 @@
         let filterOpen = false;
         let archivePage = 0;
         const DATES_PER_PAGE = 4;
-        let filterMonth = null; // null = show month picker, 0-11 = show day picker for that month
+        let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
+        let showMonths = false; // whether month list is expanded
 
         async function loadMentions() {
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
@@ -352,32 +353,33 @@
                 <div class="filter-options">
                     <button class="filter-option ${!currentDateFilter && filterMonth===null?'active':''}" onclick="filterSelectYear()">2026<span class="opt-count">${allMentions.length}</span></button>`;
 
-            if (filterMonth === null) {
-                // Month picker — show 12 months, disable months with no content
+            // "Month" toggle button
+            html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths()" style="padding-left:20px">Month</button>`;
+
+            if (showMonths && filterMonth === null) {
+                // Month list — 12 months, disable months with no content
                 const monthCounts = {};
                 allMentions.forEach(m => {
                     if (!m.content_date) return;
                     const mo = parseInt(m.content_date.slice(5, 7), 10) - 1;
                     monthCounts[mo] = (monthCounts[mo] || 0) + 1;
                 });
-                html += `<button class="filter-option" style="padding-left:20px;font-size:.72rem;color:var(--muted);pointer-events:none">Month</button>`;
                 for (let mo = 0; mo < 12; mo++) {
                     const count = monthCounts[mo] || 0;
                     const cls = count === 0 ? 'filter-option disabled' : 'filter-option';
-                    html += `<button class="${cls}" onclick="filterSelectMonth(${mo})" style="padding-left:20px">${monthNames[mo]}</button>`;
+                    html += `<button class="${cls}" onclick="filterSelectMonth(${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
                 }
-            } else {
-                // Day list — show selected month header + all days of that month
+            } else if (filterMonth !== null) {
+                // Day list for selected month
                 const mo = filterMonth;
                 const daysInMonth = new Date(2026, mo + 1, 0).getDate();
-                html += `<button class="filter-option" onclick="filterBackToMonths()" style="padding-left:20px;font-size:.72rem;color:var(--muted)">← ${monthNames[mo]}</button>`;
+                html += `<button class="filter-option" onclick="filterBackToMonths()" style="padding-left:28px;font-size:.72rem;color:var(--muted)">← ${monthNames[mo]}</button>`;
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateStr = `2026-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     const hasContent = dateSet.has(dateStr);
                     const isActive = currentDateFilter === dateStr;
-                    const dayName = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
                     const cls = !hasContent ? 'filter-option disabled' : `filter-option${isActive ? ' active' : ''}`;
-                    html += `<button class="${cls}" onclick="selectDate('${dateStr}')" style="padding-left:28px">${d} ${monthShort[mo]} — ${dayName}</button>`;
+                    html += `<button class="${cls}" onclick="selectDate('${dateStr}')" style="padding-left:36px">${d} ${monthShort[mo]}</button>`;
                 }
             }
             html += `</div></div>`;
@@ -570,16 +572,25 @@
 
         function filterSelectYear() {
             filterMonth = null;
+            showMonths = false;
             selectDate(null);
+        }
+
+        function toggleMonths() {
+            showMonths = !showMonths;
+            filterMonth = null;
+            renderFilterDropdown();
         }
 
         function filterSelectMonth(mo) {
             filterMonth = mo;
+            showMonths = false;
             renderFilterDropdown();
         }
 
         function filterBackToMonths() {
             filterMonth = null;
+            showMonths = true;
             renderFilterDropdown();
         }
 
