@@ -160,7 +160,6 @@
             font-size: .68rem; font-weight: 600; color: var(--text);
             background: var(--card); border: 1.5px solid var(--border); border-radius: 6px;
             padding: 4px 10px; cursor: pointer; transition: all .15s; font-family: inherit;
-            order: -1;
         }
         .details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
         .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
@@ -418,13 +417,16 @@
 
             return `<div class="mention-card ${s}">
                 <div class="card-top">
-                    ${detailsBtn}
                     <span class="sentiment-dot"></span>
                     <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
-                ${tagsHtml ? `<div class="card-bottom">${tagsHtml}</div>` : ''}
+                <div class="card-bottom">
+                    ${tagsHtml}
+                    <span style="flex:1"></span>
+                    ${detailsBtn}
+                </div>
             </div>`;
         }
 
