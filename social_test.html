@@ -266,9 +266,7 @@
             const neu = filtered.filter(m => m.sentiment === 'neutral').length;
 
             document.getElementById('sentimentBtns').innerHTML =
-                `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                </button>` +
+                `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All</button>` +
                 `<button class="sent-btn pos ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')">
                     <span class="dot" style="background:var(--positive)"></span>Positive <span class="count">${pos}</span>
                 </button>` +
