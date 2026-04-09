@@ -124,7 +124,7 @@
         .date-divider .label { font-size: .75rem; font-weight: 600; color: var(--muted); white-space: nowrap; letter-spacing: .3px; }
 
         /* Cards */
-        .mentions { display: flex; flex-direction: column; gap: 14px; }
+        .mentions { display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px; }
         .mention-card {
             background: rgba(255,255,255,.45); border: none; border-radius: 12px;
             padding: 20px 22px; position: relative; border-left: 4px solid transparent; transition: all .2s;
@@ -412,8 +412,26 @@
         }
 
         function renderArchive() {
-            // Archive section hidden — dates now in filter dropdown
-            document.getElementById('archiveSection').style.display = 'none';
+            if (allDates.length === 0) {
+                document.getElementById('archiveSection').style.display = 'none';
+                return;
+            }
+            document.getElementById('archiveSection').style.display = '';
+            const container = document.getElementById('archiveDates');
+
+            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
+                <span class="day">All</span><span class="month">dates</span>
+            </button>`;
+
+            allDates.forEach(d => {
+                const dt = new Date(d + 'T00:00:00');
+                const day = dt.getDate();
+                const month = dt.toLocaleDateString('en-US', { month: 'short' });
+                html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
+                    <span class="day">${day}</span><span class="month">${month}</span>
+                </button>`;
+            });
+            container.innerHTML = html;
         }
 
         function selectDate(date) {
