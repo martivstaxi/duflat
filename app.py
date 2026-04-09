@@ -21,9 +21,25 @@ from modules.email_finder import find_email
 from modules.email_detective import find_email_v2
 from modules.summarizer_v2 import summarize_channel_v2
 from modules.email_generator import generate_email
+from modules.social_listening import (
+    init_supabase, check_urls, process_urls, save_mentions,
+    get_mentions, get_stats, get_available_dates,
+)
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
+
+# ─────────────────────────────────────────────
+# SUPABASE INIT
+# ─────────────────────────────────────────────
+_supa_url = os.environ.get('SUPABASE_URL', '')
+_supa_key = os.environ.get('SUPABASE_KEY', '')
+if _supa_url and _supa_key:
+    try:
+        init_supabase(_supa_url, _supa_key)
+        print(f'Supabase connected: {_supa_url[:40]}...')
+    except Exception as e:
+        print(f'Supabase init failed: {e}')
 
 # ─────────────────────────────────────────────
 # MAIN ROUTES
@@ -204,6 +220,75 @@ def find_email_v2_endpoint():
 # ─────────────────────────────────────────────
 # DEBUG ROUTES (development / diagnostics)
 # ─────────────────────────────────────────────
+
+# ─────────────────────────────────────────────
+# SOCIAL LISTENING ROUTES
+# ─────────────────────────────────────────────
+
+@app.route('/social')
+def social_page():
+    return send_from_directory('.', 'social.html')
+
+
+@app.route('/social/check-urls', methods=['POST'])
+def social_check_urls():
+    """Step 1: Receive URLs from AI, return only new unique ones."""
+    body = request.get_json(silent=True) or {}
+    urls = body.get('urls', [])
+    if not urls:
+        return jsonify({'error': 'urls list required'}), 400
+    new_urls = check_urls(urls)
+    return jsonify({
+        'received': len(urls),
+        'new_unique': len(new_urls),
+        'urls': new_urls,
+    })
+
+
+@app.route('/social/process', methods=['POST'])
+def social_process():
+    """Step 2: Download URLs, filter by 2026 date, return content for AI."""
+    body = request.get_json(silent=True) or {}
+    items = body.get('urls', [])
+    if not items:
+        return jsonify({'error': 'urls list required (each with url + url_hash)'}), 400
+    result = process_urls(items)
+    return jsonify(result)
+
+
+@app.route('/social/save', methods=['POST'])
+def social_save():
+    """Step 3: Save AI-analyzed mentions to database."""
+    body = request.get_json(silent=True) or {}
+    mentions = body.get('mentions', [])
+    if not mentions:
+        return jsonify({'error': 'mentions list required'}), 400
+    result = save_mentions(mentions)
+    return jsonify(result)
+
+
+@app.route('/social/mentions', methods=['GET'])
+def social_mentions():
+    """Step 4: Frontend reads mentions. ?days=3 or ?date=2026-01-01"""
+    specific_date = request.args.get('date', '').strip()
+    days = request.args.get('days', '').strip()
+
+    if specific_date:
+        data = get_mentions(specific_date=specific_date)
+    elif days:
+        data = get_mentions(days=int(days))
+    else:
+        data = get_mentions(days=3)
+
+    stats = get_stats()
+    dates = get_available_dates()
+
+    return jsonify({
+        'mentions': data,
+        'stats': stats,
+        'available_dates': dates,
+    })
+
 
 @app.route('/debug-email', methods=['GET'])
 def debug_email():

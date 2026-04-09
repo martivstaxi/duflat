@@ -1,0 +1,310 @@
+"""
+Social Listening Module — Bilibili mention tracking
+
+Flow:
+  1. AI finds ~100 links mentioning "bilibili"
+  2. POST /social/check-urls  → Python hashes, deduplicates, returns only new unique URLs
+  3. POST /social/process     → Python downloads pages, checks for 2026 dates, returns content
+  4. POST /social/save        → Python saves AI-analyzed mentions to Supabase
+  5. GET  /social/mentions    → Frontend reads mentions by date
+"""
+
+import hashlib
+import re
+import requests
+from datetime import datetime, date, timedelta
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+
+from modules.constants import BROWSER_HEADERS
+
+# ─────────────────────────────────────────────
+# SUPABASE CLIENT
+# ─────────────────────────────────────────────
+
+_supabase = None
+
+def init_supabase(url, key):
+    global _supabase
+    from supabase import create_client
+    _supabase = create_client(url, key)
+    return _supabase
+
+def _db():
+    if not _supabase:
+        raise RuntimeError('Supabase not initialized')
+    return _supabase
+
+
+# ─────────────────────────────────────────────
+# URL HASHING
+# ─────────────────────────────────────────────
+
+def hash_url(url):
+    """Deterministic 16-char hash of a normalized URL."""
+    normalized = url.strip().lower().rstrip('/')
+    # Remove common tracking params
+    normalized = re.sub(r'[?&](utm_\w+|ref|fbclid|gclid)=[^&]*', '', normalized)
+    return hashlib.sha256(normalized.encode()).hexdigest()[:16]
+
+
+def hash_content(text):
+    """Hash content text for dedup."""
+    cleaned = re.sub(r'\s+', ' ', text.strip().lower())
+    return hashlib.sha256(cleaned.encode()).hexdigest()[:16]
+
+
+# ─────────────────────────────────────────────
+# STEP 1: CHECK URLS (dedup against DB)
+# ─────────────────────────────────────────────
+
+def check_urls(urls):
+    """
+    Receive list of URLs → hash → check DB → return only new unique ones.
+    Zero AI cost, zero network cost (just DB queries).
+    """
+    # Local dedup first
+    seen = {}
+    for url in urls:
+        url = url.strip()
+        if not url:
+            continue
+        h = hash_url(url)
+        if h not in seen:
+            seen[h] = url
+
+    if not seen:
+        return []
+
+    # Check DB in batches
+    hashes = list(seen.keys())
+    existing = set()
+
+    for i in range(0, len(hashes), 50):
+        batch = hashes[i:i+50]
+        result = _db().table('social_sources').select('url_hash').in_('url_hash', batch).execute()
+        for row in result.data:
+            existing.add(row['url_hash'])
+
+    # Return only new
+    new_urls = []
+    for h, url in seen.items():
+        if h not in existing:
+            new_urls.append({'url': url, 'url_hash': h})
+
+    return new_urls
+
+
+# ─────────────────────────────────────────────
+# STEP 2: PROCESS URLS (download + date filter)
+# ─────────────────────────────────────────────
+
+# Date patterns that capture 2026
+_DATE_PATTERNS = [
+    # 2026-01-15, 2026/01/15
+    re.compile(r'(2026[-/]\d{1,2}[-/]\d{1,2})'),
+    # 15-01-2026, 01/15/2026
+    re.compile(r'(\d{1,2}[-/]\d{1,2}[-/]2026)'),
+    # January 15, 2026 / Jan 15 2026
+    re.compile(r'((?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+2026)', re.I),
+    # 15 January 2026
+    re.compile(r'(\d{1,2}\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+2026)', re.I),
+    # "2026" standalone in context (loose match)
+    re.compile(r'(?:date|posted|published|updated|reviewed?)[\s:]*[^0-9]*?(2026)', re.I),
+]
+
+
+def _extract_dates_2026(text):
+    """Find all 2026 date references in text."""
+    found = []
+    for pat in _DATE_PATTERNS:
+        found.extend(pat.findall(text))
+    return found
+
+
+def _parse_date_string(s):
+    """Try to parse a date string into YYYY-MM-DD format."""
+    s = s.strip().replace('/', '-').replace(',', '')
+    formats = [
+        '%Y-%m-%d', '%d-%m-%Y', '%m-%d-%Y',
+        '%B %d %Y', '%b %d %Y', '%d %B %Y', '%d %b %Y',
+    ]
+    for fmt in formats:
+        try:
+            return datetime.strptime(s, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    # Fallback: if just "2026" found
+    if '2026' in s:
+        return '2026-01-01'
+    return None
+
+
+def process_urls(url_items):
+    """
+    Download each URL, extract text, check for 2026 dates.
+    Returns only content that has 2026 dates — ready for AI analysis.
+    Zero AI cost.
+    """
+    results = []
+    processed = 0
+
+    for item in url_items:
+        url = item['url']
+        url_hash = item['url_hash']
+        processed += 1
+
+        try:
+            resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15, allow_redirects=True)
+            resp.raise_for_status()
+
+            soup = BeautifulSoup(resp.text, 'html.parser')
+
+            # Remove noise
+            for tag in soup(['script', 'style', 'nav', 'footer', 'iframe', 'noscript']):
+                tag.decompose()
+
+            text = soup.get_text(separator='\n', strip=True)
+
+            # Cap at 15K chars for processing
+            text_trimmed = text[:15000]
+
+            # Check for 2026 dates
+            dates = _extract_dates_2026(text_trimmed)
+
+            # Detect platform from URL
+            domain = urlparse(url).netloc.replace('www.', '')
+
+            # Save source record
+            _db().table('social_sources').upsert({
+                'url_hash': url_hash,
+                'url': url,
+                'domain': domain,
+                'has_2026_content': len(dates) > 0,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+
+            if dates:
+                # Parse the first date found
+                parsed_date = _parse_date_string(dates[0])
+
+                results.append({
+                    'url': url,
+                    'url_hash': url_hash,
+                    'platform': domain,
+                    'text': text_trimmed[:5000],  # Limit text sent to AI
+                    'dates_found': dates[:5],
+                    'content_date': parsed_date,
+                })
+
+        except Exception as e:
+            # Record failed attempt
+            try:
+                _db().table('social_sources').upsert({
+                    'url_hash': url_hash,
+                    'url': url,
+                    'domain': urlparse(url).netloc.replace('www.', ''),
+                    'has_2026_content': False,
+                    'checked_at': datetime.utcnow().isoformat(),
+                }, on_conflict='url_hash').execute()
+            except:
+                pass
+
+    return {
+        'processed': processed,
+        'with_2026_content': len(results),
+        'items': results,
+    }
+
+
+# ─────────────────────────────────────────────
+# STEP 3: SAVE MENTIONS (AI-analyzed results)
+# ─────────────────────────────────────────────
+
+def save_mentions(mentions):
+    """
+    Save AI-analyzed mentions to Supabase.
+    Each mention has: content_original, content_english, sentiment, etc.
+    Dedup by content hash.
+    """
+    saved = 0
+    skipped = 0
+
+    for m in mentions:
+        original = m.get('content_original', '').strip()
+        if not original:
+            skipped += 1
+            continue
+
+        c_hash = hash_content(original)
+
+        row = {
+            'content_hash': c_hash,
+            'url': m.get('url', ''),
+            'url_hash': m.get('url_hash', hash_url(m.get('url', ''))),
+            'platform': m.get('platform', ''),
+            'author': m.get('author', ''),
+            'country': m.get('country', ''),
+            'language': m.get('language', ''),
+            'sentiment': m.get('sentiment', 'neutral'),
+            'content_original': original,
+            'content_english': m.get('content_english', ''),
+            'keywords': m.get('keywords', []),
+            'content_date': m.get('content_date'),
+        }
+
+        try:
+            _db().table('social_mentions').upsert(
+                row, on_conflict='content_hash'
+            ).execute()
+            saved += 1
+        except Exception:
+            skipped += 1
+
+    return {'saved': saved, 'skipped': skipped}
+
+
+# ─────────────────────────────────────────────
+# STEP 4: GET MENTIONS (for frontend)
+# ─────────────────────────────────────────────
+
+def get_mentions(days=None, specific_date=None, limit=100):
+    """
+    Fetch mentions for social.html display.
+    - days=3  → last 3 days
+    - specific_date='2026-01-01' → that exact date
+    """
+    query = _db().table('social_mentions').select('*')
+
+    if specific_date:
+        query = query.eq('content_date', specific_date)
+    elif days:
+        cutoff = (date.today() - timedelta(days=days)).isoformat()
+        query = query.gte('content_date', cutoff)
+
+    result = query.order('content_date', desc=True).limit(limit).execute()
+    return result.data
+
+
+def get_stats():
+    """Get aggregate stats for the overview bar."""
+    all_rows = _db().table('social_mentions').select('sentiment', count='exact').execute()
+    total = all_rows.count or 0
+
+    pos = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'positive').execute()
+    neg = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'negative').execute()
+    neu = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'neutral').execute()
+
+    return {
+        'total': total,
+        'positive': pos.count or 0,
+        'negative': neg.count or 0,
+        'neutral': neu.count or 0,
+    }
+
+
+def get_available_dates():
+    """Get list of dates that have mentions (for date picker)."""
+    result = _db().table('social_mentions').select('content_date').execute()
+    dates = sorted(set(row['content_date'] for row in result.data if row.get('content_date')), reverse=True)
+    return dates
