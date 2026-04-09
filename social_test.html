@@ -88,7 +88,7 @@
             display: none; position: absolute; top: calc(100% + 8px); right: 0;
             background: var(--card); border: 1px solid var(--border); border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0,0,0,.1); padding: 16px; z-index: 100;
-            min-width: 220px; max-height: 420px; overflow-y: auto;
+            min-width: 260px; max-height: 420px; overflow-y: auto;
         }
         .filter-dropdown.open { display: block; animation: fadeIn .15s ease; }
         .filter-section { margin-bottom: 14px; }
@@ -110,6 +110,23 @@
         .filter-option .opt-count { margin-left: auto; font-size: .68rem; color: var(--muted); font-weight: 500; }
         .filter-option.disabled { opacity: .35; pointer-events: none; }
         .filter-wrap { position: relative; }
+
+        /* Calendar grid */
+        .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 8px; }
+        .cal-header .cal-title { font-size: .78rem; font-weight: 700; }
+        .cal-header button { background: none; border: none; cursor: pointer; padding: 2px 6px; font-size: .85rem; color: var(--muted); border-radius: 4px; }
+        .cal-header button:hover { background: #f0efeb; color: var(--text); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .cal-grid .cal-day-name { font-size: .6rem; font-weight: 700; color: var(--muted); padding: 2px 0 6px; }
+        .cal-grid .cal-day {
+            padding: 6px 2px; border-radius: 6px; border: none; background: none;
+            font-family: inherit; font-size: .74rem; font-weight: 500; color: var(--text);
+            cursor: pointer; transition: all .1s;
+        }
+        .cal-grid .cal-day:hover { background: #f0efeb; }
+        .cal-grid .cal-day.active { background: var(--accent); color: #fff; font-weight: 700; }
+        .cal-grid .cal-day.disabled { opacity: .25; pointer-events: none; }
+        .cal-grid .cal-day.has-content { font-weight: 700; }
 
 
         /* Loading */
@@ -370,19 +387,32 @@
                     html += `<button class="${cls}" onclick="filterSelectMonth(${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
                 }
             } else if (filterMonth !== null) {
-                // Day list for selected month
+                // Calendar for selected month
                 const mo = filterMonth;
                 const daysInMonth = new Date(2026, mo + 1, 0).getDate();
-                html += `<button class="filter-option" onclick="filterBackToMonths()" style="padding-left:28px;font-size:.72rem;color:var(--muted)">← ${monthNames[mo]}</button>`;
+                const firstDay = new Date(2026, mo, 1).getDay(); // 0=Sun
+                html += `</div>
+                <div class="cal-header">
+                    <button onclick="filterCalPrev()">‹</button>
+                    <span class="cal-title">${monthNames[mo]} 2026</span>
+                    <button onclick="filterCalNext()">›</button>
+                </div>
+                <div class="cal-grid">`;
+                ['S','M','T','W','T','F','S'].forEach(d => { html += `<div class="cal-day-name">${d}</div>`; });
+                for (let i = 0; i < firstDay; i++) html += `<div></div>`;
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateStr = `2026-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     const hasContent = dateSet.has(dateStr);
                     const isActive = currentDateFilter === dateStr;
-                    const cls = !hasContent ? 'filter-option disabled' : `filter-option${isActive ? ' active' : ''}`;
-                    html += `<button class="${cls}" onclick="selectDate('${dateStr}')" style="padding-left:36px">${d} ${monthShort[mo]}</button>`;
+                    let cls = 'cal-day';
+                    if (!hasContent) cls += ' disabled';
+                    else cls += ' has-content';
+                    if (isActive) cls += ' active';
+                    html += `<button class="${cls}" onclick="filterPickDate('${dateStr}')">${d}</button>`;
                 }
+                html += `</div>`;
             }
-            html += `</div></div>`;
+            html += `</div>`;
 
             const dd = document.getElementById('filterDropdown');
             dd.innerHTML = html;
@@ -592,6 +622,20 @@
             filterMonth = null;
             showMonths = true;
             renderFilterDropdown();
+        }
+
+        function filterCalPrev() {
+            if (filterMonth > 0) { filterMonth--; renderFilterDropdown(); }
+        }
+
+        function filterCalNext() {
+            if (filterMonth < 11) { filterMonth++; renderFilterDropdown(); }
+        }
+
+        function filterPickDate(dateStr) {
+            filterOpen = false;
+            document.getElementById('filterDropdown').classList.remove('open');
+            selectDate(dateStr);
         }
 
         function toggleDetails(id, btn, lang) {
