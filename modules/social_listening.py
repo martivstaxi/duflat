@@ -334,8 +334,8 @@ Bad examples (too formal/news-like):
 - "The company achieved its first full year of GAAP profitability."
 
 For EACH article, extract:
-- content_english: 1-2 sentence plain-English social insight (what people think/feel about this)
-- content_original: same as content_english (all sources are English)
+- content_english: 1-2 sentence plain-English social insight (what people think/feel about this). Smooth, easy to read, like butter.
+- content_original: copy the most relevant 1-3 sentences VERBATIM from the original article text. Do NOT rewrite — keep the exact original wording. This is shown behind a "Details" button.
 - sentiment: "positive", "negative", or "neutral"
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
