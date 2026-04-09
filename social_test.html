@@ -231,7 +231,6 @@
         let filterOpen = false;
         let archivePage = 0;
         const DATES_PER_PAGE = 4;
-        let contentMinHeight = 0;
 
         async function loadMentions() {
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
@@ -378,7 +377,6 @@
                 const hint = currentFilter !== 'all' || currentLang !== 'all'
                     ? ' Try clearing filters.' : '';
                 el.innerHTML = `<div class="empty">No mentions found.${hint}</div>`;
-                el.style.minHeight = contentMinHeight ? contentMinHeight + 'px' : '';
                 return;
             }
 
@@ -403,12 +401,6 @@
 
             html += '</div>';
             el.innerHTML = html;
-
-            // Lock min-height on first "All" render so date switching doesn't shift the page
-            if (!currentDateFilter && !contentMinHeight) {
-                contentMinHeight = el.offsetHeight;
-            }
-            el.style.minHeight = contentMinHeight ? contentMinHeight + 'px' : '';
         }
 
         function renderCard(m, uid) {
@@ -504,12 +496,22 @@
         }
 
         function selectDate(date) {
+            // Remember archive position in viewport before re-render
+            const archive = document.getElementById('archiveSection');
+            const archiveViewY = archive.getBoundingClientRect().top;
+
             currentDateFilter = date;
             currentFilter = 'all';
             currentLang = 'all';
             if (!date) archivePage = 0;
             renderAll();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Keep archive at the same viewport position — no page jump
+            const newArchiveY = archive.getBoundingClientRect().top;
+            const drift = newArchiveY - archiveViewY;
+            if (Math.abs(drift) > 2) {
+                window.scrollBy(0, drift);
+            }
         }
 
         function setFilter(sentiment) {
