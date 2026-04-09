@@ -28,17 +28,14 @@
         header { padding: 48px 0 20px; text-align: center; }
         header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; }
 
-        /* Toolbar: overview + filter button */
+        /* Toolbar */
         .toolbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-end;
             padding: 12px 0;
             margin-bottom: 20px;
-            border-bottom: 1px solid var(--border);
         }
-        .toolbar-left { font-size: .78rem; color: var(--muted); }
-        .toolbar-left strong { color: var(--text); font-weight: 700; font-size: .95rem; }
 
         .filter-toggle {
             display: flex; align-items: center; gap: 6px;
@@ -183,7 +180,6 @@
         </header>
 
         <div class="toolbar">
-            <div class="toolbar-left" id="overview">Loading...</div>
             <div class="filter-wrap">
                 <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
@@ -226,9 +222,6 @@
                 allMentions = data.mentions || [];
                 allDates = data.available_dates || [];
                 const stats = data.stats || {};
-
-                document.getElementById('overview').innerHTML =
-                    `<strong>${stats.total || 0}</strong> mentions tracked`;
 
                 renderAll();
             } catch (e) {
