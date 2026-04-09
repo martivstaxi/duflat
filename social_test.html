@@ -127,13 +127,10 @@
         .mentions { display: flex; flex-direction: column; gap: 14px; padding-bottom: 16px; }
         .mention-card {
             background: rgba(255,255,255,.45); border: none; border-radius: 12px;
-            padding: 20px 22px; position: relative; border-left: 4px solid transparent; transition: all .2s;
+            padding: 20px 22px; position: relative; transition: all .2s;
             box-shadow: 0 1px 3px rgba(0,0,0,.03);
         }
         .mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-        .mention-card.positive { border-left-color: var(--positive); }
-        .mention-card.negative { border-left-color: var(--negative); }
-        .mention-card.neutral  { border-left-color: var(--neutral); }
 
         .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
         .sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -142,7 +139,10 @@
         .neutral  .sentiment-dot { background: var(--neutral); }
 
         .card-meta { font-size: .72rem; color: var(--muted); }
-        .card-meta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .card-meta a { text-decoration: none; font-weight: 600; }
+        .positive .card-meta a { color: var(--positive); }
+        .negative .card-meta a { color: var(--negative); }
+        .neutral  .card-meta a { color: var(--neutral); }
         .card-meta a:hover { text-decoration: underline; }
         .card-meta .sep { margin: 0 5px; opacity: .4; }
 
