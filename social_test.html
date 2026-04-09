@@ -133,7 +133,7 @@
         .mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 
         .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-        .card-lang { font-size: .68rem; font-weight: 500; color: var(--muted); margin-left: auto; }
+        .card-tag-inline { font-size: .68rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
         .sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .positive .sentiment-dot { background: var(--positive); }
         .negative .sentiment-dot { background: var(--negative); }
@@ -157,9 +157,10 @@
         .card-bottom { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .tag { font-size: .67rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #eeede9; color: #666; }
         .details-btn {
-            font-size: .72rem; font-weight: 600; color: var(--text);
+            font-size: .68rem; font-weight: 600; color: var(--text);
             background: var(--card); border: 1.5px solid var(--border); border-radius: 6px;
-            padding: 5px 14px; cursor: pointer; transition: all .15s; font-family: inherit;
+            padding: 4px 10px; cursor: pointer; transition: all .15s; font-family: inherit;
+            order: -1;
         }
         .details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
         .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
@@ -389,7 +390,8 @@
 
         function renderCard(m, uid) {
             const s = m.sentiment || 'neutral';
-            const keywords = (m.keywords || []).slice(0, 1).map(k => `<span class="tag">${escapeHtml(k)}</span>`).join('');
+            const keyword = (m.keywords || [])[0] || '';
+            const keywordHtml = keyword ? `<span class="card-tag-inline">#${escapeHtml(keyword)}</span>` : '';
             const hasOriginal = m.content_original && m.content_original !== m.content_english;
             const detailsHtml = hasOriginal
                 ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
@@ -401,15 +403,12 @@
 
             return `<div class="mention-card ${s}">
                 <div class="card-top">
+                    ${detailsBtn}
                     <span class="sentiment-dot"></span>
                     <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
                 </div>
-                <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
+                <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}${keywordHtml}</div>
                 ${detailsHtml}
-                <div class="card-bottom">
-                    ${keywords}
-                    ${detailsBtn}
-                </div>
             </div>`;
         }
 
