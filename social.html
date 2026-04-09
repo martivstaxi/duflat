@@ -37,7 +37,7 @@
         .overview .neu { color: var(--neutral); font-weight: 600; }
 
         /* Filters */
-        .filters { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .filters { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
         .filter-btn {
             padding: 8px 20px; border-radius: 8px; border: 2px solid var(--border);
             background: var(--card); font-family: inherit; font-size: .82rem; font-weight: 600;
@@ -47,27 +47,32 @@
         .filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
         .filter-btn .count { font-size: .7rem; font-weight: 500; margin-left: 4px; opacity: .7; }
 
-        /* Date picker */
-        .date-bar { display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-        .date-bar label { font-size: .78rem; color: var(--muted); font-weight: 500; }
-        .date-bar select {
-            padding: 6px 12px; border-radius: 6px; border: 1.5px solid var(--border);
-            font-family: inherit; font-size: .78rem; background: var(--card); cursor: pointer;
-        }
-        .date-bar select:focus { outline: none; border-color: var(--accent); }
-
-        .updated { text-align: center; font-size: .72rem; color: #aaa; margin-bottom: 20px; }
-
         /* Loading */
         .loading { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
         .loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin: 0 auto 12px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Empty state */
         .empty { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
 
+        /* Date divider */
+        .date-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 28px 0 18px;
+        }
+        .date-divider:first-child { margin-top: 0; }
+        .date-divider .line { flex: 1; height: 1px; background: var(--border); }
+        .date-divider .label {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--muted);
+            white-space: nowrap;
+            letter-spacing: .3px;
+        }
+
         /* Cards */
-        .mentions { display: flex; flex-direction: column; gap: 14px; padding-bottom: 64px; }
+        .mentions { display: flex; flex-direction: column; gap: 14px; }
         .mention-card {
             background: var(--card); border: 1px solid var(--border); border-radius: 10px;
             padding: 20px 22px; position: relative; border-left: 4px solid transparent; transition: box-shadow .2s;
@@ -95,7 +100,6 @@
         .platform-link:hover { background: rgba(193,95,60,.12); border-color: rgba(193,95,60,.35); }
 
         .lang-badge { font-size: .68rem; font-weight: 500; color: var(--muted); padding: 2px 7px; background: #f3f3f1; border-radius: 4px; }
-        .card-top .date { margin-left: auto; font-size: .72rem; color: #aaa; }
         .card-author { font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
         .card-quote { font-size: .9rem; line-height: 1.7; color: #2a2a2a; margin-bottom: 12px; }
 
@@ -114,13 +118,59 @@
         .details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
         .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
 
+        /* Archive date picker at bottom */
+        .archive-section {
+            margin-top: 48px;
+            padding: 32px 0 64px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .archive-section h2 {
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .archive-dates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .archive-date-btn {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            font-family: inherit;
+            font-size: .78rem;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .archive-date-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        .archive-date-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .archive-date-btn .day { font-weight: 700; font-size: .85rem; display: block; }
+        .archive-date-btn .month { font-size: .65rem; color: inherit; opacity: .7; }
+
         @media (max-width: 600px) {
             header { padding: 32px 0 16px; }
             header h1 { font-size: 1.3rem; }
             .mention-card { padding: 16px; }
-            .card-top .date { margin-left: 0; width: 100%; margin-top: 4px; }
             .filters { gap: 6px; }
             .filter-btn { padding: 6px 14px; font-size: .78rem; }
+            .archive-date-btn { padding: 6px 12px; }
         }
     </style>
 </head>
@@ -134,17 +184,13 @@
 
         <div class="filters" id="filters"></div>
 
-        <div class="date-bar">
-            <label>Date:</label>
-            <select id="dateSelect" onchange="loadMentions()">
-                <option value="all">All 2026</option>
-            </select>
-        </div>
-
-        <div class="updated" id="updated"></div>
-
         <div id="content">
             <div class="loading"><div class="spinner"></div>Loading mentions...</div>
+        </div>
+
+        <div class="archive-section" id="archiveSection" style="display:none">
+            <h2>Browse by date</h2>
+            <div class="archive-dates" id="archiveDates"></div>
         </div>
     </div>
 
@@ -153,23 +199,20 @@
             ? '' : 'https://duflat-production.up.railway.app';
 
         let allMentions = [];
+        let allDates = [];
         let currentFilter = 'all';
+        let currentDateFilter = null; // null = show latest 10
 
         async function loadMentions() {
-            const dateVal = document.getElementById('dateSelect').value;
-            const url = dateVal === 'all'
-                ? `${API}/social/mentions?days=365`
-                : `${API}/social/mentions?date=${dateVal}`;
-
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
 
             try {
-                const resp = await fetch(url);
+                const resp = await fetch(`${API}/social/mentions?days=365`);
                 const data = await resp.json();
 
                 allMentions = data.mentions || [];
                 const stats = data.stats || {};
-                const dates = data.available_dates || [];
+                allDates = data.available_dates || [];
 
                 // Overview
                 document.getElementById('overview').innerHTML =
@@ -178,82 +221,148 @@
                     `<span class="sep">|</span><span class="neg">${stats.negative || 0}</span> negative` +
                     `<span class="sep">|</span><span class="neu">${stats.neutral || 0}</span> neutral`;
 
-                // Filters
-                const pos = allMentions.filter(m => m.sentiment === 'positive').length;
-                const neg = allMentions.filter(m => m.sentiment === 'negative').length;
-                const neu = allMentions.filter(m => m.sentiment === 'neutral').length;
-                document.getElementById('filters').innerHTML =
-                    `<button class="filter-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all',this)">All <span class="count">(${allMentions.length})</span></button>` +
-                    `<button class="filter-btn ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive',this)">Positive <span class="count">(${pos})</span></button>` +
-                    `<button class="filter-btn ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative',this)">Negative <span class="count">(${neg})</span></button>` +
-                    `<button class="filter-btn ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral',this)">Neutral <span class="count">(${neu})</span></button>`;
-
-                // Date selector
-                const select = document.getElementById('dateSelect');
-                const currentVal = select.value;
-                select.innerHTML = '<option value="all">All 2026</option>';
-                dates.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d;
-                    opt.textContent = formatDate(d);
-                    select.appendChild(opt);
-                });
-                select.value = currentVal;
-
-                // Updated time
-                document.getElementById('updated').textContent = `Last updated: ${new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})}`;
-
+                renderFilters();
                 renderMentions();
+                renderArchive();
             } catch (e) {
                 document.getElementById('content').innerHTML = `<div class="empty">Failed to load. <a href="#" onclick="loadMentions();return false">Retry</a></div>`;
             }
         }
 
-        function setFilter(sentiment, btn) {
-            currentFilter = sentiment;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMentions();
+        function renderFilters() {
+            const filtered = getFilteredMentions();
+            const all = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
+            const pos = all.filter(m => m.sentiment === 'positive').length;
+            const neg = all.filter(m => m.sentiment === 'negative').length;
+            const neu = all.filter(m => m.sentiment === 'neutral').length;
+
+            document.getElementById('filters').innerHTML =
+                `<button class="filter-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all',this)">All <span class="count">(${all.length})</span></button>` +
+                `<button class="filter-btn ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive',this)">Positive <span class="count">(${pos})</span></button>` +
+                `<button class="filter-btn ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative',this)">Negative <span class="count">(${neg})</span></button>` +
+                `<button class="filter-btn ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral',this)">Neutral <span class="count">(${neu})</span></button>`;
+        }
+
+        function getFilteredMentions() {
+            let list = allMentions;
+
+            // Date filter
+            if (currentDateFilter) {
+                list = list.filter(m => m.content_date === currentDateFilter);
+            }
+
+            // Sentiment filter
+            if (currentFilter !== 'all') {
+                list = list.filter(m => m.sentiment === currentFilter);
+            }
+
+            return list;
         }
 
         function renderMentions() {
-            const filtered = currentFilter === 'all' ? allMentions : allMentions.filter(m => m.sentiment === currentFilter);
+            const filtered = getFilteredMentions();
 
             if (filtered.length === 0) {
                 document.getElementById('content').innerHTML = '<div class="empty">No mentions found.</div>';
                 return;
             }
 
-            const html = '<div class="mentions">' + filtered.map((m, i) => {
-                const s = m.sentiment || 'neutral';
-                const keywords = (m.keywords || []).map(k => `<span class="tag">${k}</span>`).join('');
-                const hasOriginal = m.content_original && m.content_original !== m.content_english;
-                const detailsHtml = hasOriginal
-                    ? `<div class="card-details" id="details-${i}"><div class="original-label">Original (${m.language || 'Unknown'})</div>${escapeHtml(m.content_original)}</div>`
-                    : '';
-                const detailsBtn = hasOriginal
-                    ? `<button class="details-btn" onclick="toggleDetails('details-${i}',this)">Details</button>`
-                    : '';
+            // Limit to 10 items when showing all dates
+            const items = currentDateFilter ? filtered : filtered.slice(0, 10);
 
-                return `<div class="mention-card ${s}" data-sentiment="${s}">
-                    <div class="card-top">
-                        <span class="sentiment-dot"></span>
-                        <span class="sentiment-label">${s}</span>
-                        <a class="platform-link" href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform)}</a>
-                        <span class="lang-badge">${escapeHtml(m.language || 'Unknown')}</span>
-                        <span class="date">${formatDate(m.content_date)}</span>
-                    </div>
-                    <div class="card-author">${escapeHtml(m.author || 'Unknown')}</div>
-                    <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
-                    ${detailsHtml}
-                    <div class="card-bottom">
-                        ${keywords}
-                        ${detailsBtn}
-                    </div>
-                </div>`;
-            }).join('') + '</div>';
+            // Group by date
+            const grouped = {};
+            items.forEach(m => {
+                const d = m.content_date || 'Unknown';
+                if (!grouped[d]) grouped[d] = [];
+                grouped[d].push(m);
+            });
 
+            // Render with date dividers
+            let html = '<div class="mentions">';
+            const dates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+            dates.forEach(date => {
+                html += `<div class="date-divider"><span class="line"></span><span class="label">${formatDateLong(date)}</span><span class="line"></span></div>`;
+                grouped[date].forEach((m, i) => {
+                    html += renderCard(m, `${date}-${i}`);
+                });
+            });
+
+            html += '</div>';
             document.getElementById('content').innerHTML = html;
+        }
+
+        function renderCard(m, uid) {
+            const s = m.sentiment || 'neutral';
+            const keywords = (m.keywords || []).map(k => `<span class="tag">${escapeHtml(k)}</span>`).join('');
+            const hasOriginal = m.content_original && m.content_original !== m.content_english;
+            const detailsHtml = hasOriginal
+                ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
+                : '';
+            const detailsBtn = hasOriginal
+                ? `<button class="details-btn" onclick="toggleDetails('det-${uid}',this)">Details</button>`
+                : '';
+
+            return `<div class="mention-card ${s}">
+                <div class="card-top">
+                    <span class="sentiment-dot"></span>
+                    <span class="sentiment-label">${s}</span>
+                    <a class="platform-link" href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform)}</a>
+                    <span class="lang-badge">${escapeHtml(m.language || 'Unknown')}</span>
+                </div>
+                <div class="card-author">${escapeHtml(m.author || 'Unknown')}</div>
+                <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
+                ${detailsHtml}
+                <div class="card-bottom">
+                    ${keywords}
+                    ${detailsBtn}
+                </div>
+            </div>`;
+        }
+
+        function renderArchive() {
+            if (allDates.length === 0) {
+                document.getElementById('archiveSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('archiveSection').style.display = '';
+            const container = document.getElementById('archiveDates');
+
+            // "All" button + each date
+            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null, this)">
+                <span class="day">All</span>
+                <span class="month">dates</span>
+            </button>`;
+
+            allDates.forEach(d => {
+                const dt = new Date(d + 'T00:00:00');
+                const day = dt.getDate();
+                const month = dt.toLocaleDateString('en-US', { month: 'short' });
+                const isActive = currentDateFilter === d;
+                html += `<button class="archive-date-btn ${isActive?'active':''}" onclick="selectDate('${d}', this)">
+                    <span class="day">${day}</span>
+                    <span class="month">${month}</span>
+                </button>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function selectDate(date, btn) {
+            currentDateFilter = date;
+            currentFilter = 'all';
+            renderFilters();
+            renderMentions();
+            renderArchive();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setFilter(sentiment, btn) {
+            currentFilter = sentiment;
+            renderFilters();
+            renderMentions();
         }
 
         function toggleDetails(id, btn) {
@@ -264,10 +373,10 @@
             btn.textContent = isOpen ? 'Close' : 'Details';
         }
 
-        function formatDate(d) {
-            if (!d) return '';
+        function formatDateLong(d) {
+            if (!d || d === 'Unknown') return 'Unknown date';
             const dt = new Date(d + 'T00:00:00');
-            return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         }
 
         function escapeHtml(str) {
@@ -275,7 +384,6 @@
             return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
-        // Load on page load
         loadMentions();
     </script>
 </body>
