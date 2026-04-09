@@ -173,7 +173,7 @@ def process_urls(url_items):
         processed += 1
 
         try:
-            resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15, allow_redirects=True)
+            resp = requests.get(url, headers=BROWSER_HEADERS, timeout=8, allow_redirects=True)
             resp.raise_for_status()
 
             # Use resp.content (bytes) so BS4 detects encoding from HTML meta tags
