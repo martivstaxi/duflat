@@ -28,25 +28,78 @@
         header { padding: 48px 0 20px; text-align: center; }
         header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; }
 
-        /* Overview */
-        .overview { text-align: center; padding: 14px 0; margin: 4px 0 16px; font-size: .78rem; color: var(--muted); }
-        .overview strong { color: var(--text); font-weight: 700; font-size: .95rem; }
-
-        /* Filters */
-        .filter-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
-        .filter-row:last-child { margin-bottom: 24px; }
-        .filter-btn {
-            padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
-            background: var(--card); font-family: inherit; font-size: .75rem; font-weight: 600;
-            color: var(--muted); cursor: pointer; transition: all .15s; user-select: none;
+        /* Toolbar: overview + filter button */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
         }
-        .filter-btn:hover { border-color: #aaa; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-        .filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
-        .filter-btn .count { font-size: .65rem; font-weight: 500; margin-left: 3px; opacity: .7; }
-        .filter-btn .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-        .filter-btn .dot.pos { background: var(--positive); }
-        .filter-btn .dot.neg { background: var(--negative); }
-        .filter-btn .dot.neu { background: var(--neutral); }
+        .toolbar-left { font-size: .78rem; color: var(--muted); }
+        .toolbar-left strong { color: var(--text); font-weight: 700; font-size: .95rem; }
+
+        .filter-toggle {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+            background: var(--card); font-family: inherit; font-size: .75rem; font-weight: 600;
+            color: var(--muted); cursor: pointer; transition: all .15s; position: relative;
+        }
+        .filter-toggle:hover { border-color: #aaa; color: var(--text); }
+        .filter-toggle.has-filter { border-color: var(--accent); color: var(--accent); }
+        .filter-toggle svg { width: 14px; height: 14px; }
+        .filter-badge {
+            position: absolute; top: -5px; right: -5px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); color: #fff;
+            font-size: .6rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Active filter chips */
+        .active-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+        .active-chips:empty { display: none; }
+        .chip {
+            display: flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: .7rem; font-weight: 600;
+            background: #f0efeb; color: var(--text); border: 1px solid var(--border);
+        }
+        .chip .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .chip-remove {
+            width: 14px; height: 14px; border: none; background: none;
+            cursor: pointer; color: var(--muted); font-size: .8rem; line-height: 1;
+            padding: 0; margin-left: 2px;
+        }
+        .chip-remove:hover { color: var(--negative); }
+
+        /* Filter dropdown */
+        .filter-dropdown {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.1); padding: 16px; z-index: 100;
+            min-width: 220px;
+        }
+        .filter-dropdown.open { display: block; animation: fadeIn .15s ease; }
+        .filter-section { margin-bottom: 14px; }
+        .filter-section:last-child { margin-bottom: 0; }
+        .filter-section-title {
+            font-size: .65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .8px; color: var(--muted); margin-bottom: 8px;
+        }
+        .filter-options { display: flex; flex-direction: column; gap: 4px; }
+        .filter-option {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px; border-radius: 6px; border: none;
+            background: none; font-family: inherit; font-size: .78rem; font-weight: 500;
+            color: var(--text); cursor: pointer; transition: background .1s; text-align: left; width: 100%;
+        }
+        .filter-option:hover { background: #f5f5f3; }
+        .filter-option.active { background: #f0efeb; font-weight: 700; }
+        .filter-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .filter-option .opt-count { margin-left: auto; font-size: .68rem; color: var(--muted); font-weight: 500; }
+        .filter-wrap { position: relative; }
 
         /* Loading */
         .loading { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
@@ -56,21 +109,10 @@
         .empty { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
 
         /* Date divider */
-        .date-divider {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin: 28px 0 18px;
-        }
+        .date-divider { display: flex; align-items: center; gap: 16px; margin: 28px 0 18px; }
         .date-divider:first-child { margin-top: 0; }
         .date-divider .line { flex: 1; height: 1px; background: var(--border); }
-        .date-divider .label {
-            font-size: .75rem;
-            font-weight: 600;
-            color: var(--muted);
-            white-space: nowrap;
-            letter-spacing: .3px;
-        }
+        .date-divider .label { font-size: .75rem; font-weight: 600; color: var(--muted); white-space: nowrap; letter-spacing: .3px; }
 
         /* Cards */
         .mentions { display: flex; flex-direction: column; gap: 14px; }
@@ -97,7 +139,7 @@
         .card-quote { font-size: .88rem; line-height: 1.7; color: #2a2a2a; margin-bottom: 12px; }
 
         .card-details { display: none; margin-bottom: 12px; padding: 14px 16px; background: #fafaf8; border: 1px solid var(--border); border-radius: 8px; font-size: .85rem; line-height: 1.7; color: #333; }
-        .card-details.open { display: block; animation: fadeIn .2s ease; }
+        .card-details.open { display: block; animation: fadeIn .15s ease; }
         .card-details .original-label { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -112,48 +154,16 @@
         .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
 
         /* Archive date picker at bottom */
-        .archive-section {
-            margin-top: 48px;
-            padding: 32px 0 64px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-        .archive-section h2 {
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-        }
-        .archive-dates {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
+        .archive-section { margin-top: 48px; padding: 32px 0 64px; border-top: 1px solid var(--border); text-align: center; }
+        .archive-section h2 { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+        .archive-dates { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .archive-date-btn {
-            padding: 8px 18px;
-            border-radius: 8px;
-            border: 1.5px solid var(--border);
-            background: var(--card);
-            font-family: inherit;
-            font-size: .78rem;
-            font-weight: 500;
-            color: var(--text);
-            cursor: pointer;
-            transition: all .15s;
+            padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--border);
+            background: var(--card); font-family: inherit; font-size: .78rem; font-weight: 500;
+            color: var(--text); cursor: pointer; transition: all .15s;
         }
-        .archive-date-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 2px 8px rgba(0,0,0,.05);
-        }
-        .archive-date-btn.active {
-            background: var(--accent);
-            color: #fff;
-            border-color: var(--accent);
-        }
+        .archive-date-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .archive-date-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .archive-date-btn .day { font-weight: 700; font-size: .85rem; display: block; }
         .archive-date-btn .month { font-size: .65rem; color: inherit; opacity: .7; }
 
@@ -161,8 +171,6 @@
             header { padding: 32px 0 16px; }
             header h1 { font-size: 1.3rem; }
             .mention-card { padding: 16px; }
-            .filter-row { gap: 4px; }
-            .filter-btn { padding: 5px 10px; font-size: .72rem; }
             .archive-date-btn { padding: 6px 12px; }
         }
     </style>
@@ -174,9 +182,18 @@
             <div style="margin-top:10px;display:inline-block;background:rgba(193,95,60,.12);border:1px solid rgba(193,95,60,.25);border-radius:6px;padding:4px 12px;font-size:.72rem;color:var(--accent);font-weight:600;letter-spacing:.5px">TEST BUILD</div>
         </header>
 
-        <div class="overview" id="overview">Loading...</div>
+        <div class="toolbar">
+            <div class="toolbar-left" id="overview">Loading...</div>
+            <div class="filter-wrap">
+                <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+                    Filter
+                </button>
+                <div class="filter-dropdown" id="filterDropdown"></div>
+            </div>
+        </div>
 
-        <div id="filters"></div>
+        <div class="active-chips" id="activeChips"></div>
 
         <div id="content">
             <div class="loading"><div class="spinner"></div>Loading mentions...</div>
@@ -196,7 +213,8 @@
         let allDates = [];
         let currentFilter = 'all';
         let currentLang = 'all';
-        let currentDateFilter = null; // null = show latest 10
+        let currentDateFilter = null;
+        let filterOpen = false;
 
         async function loadMentions() {
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
@@ -206,36 +224,72 @@
                 const data = await resp.json();
 
                 allMentions = data.mentions || [];
-                const stats = data.stats || {};
                 allDates = data.available_dates || [];
+                const stats = data.stats || {};
 
-                // Overview
                 document.getElementById('overview').innerHTML =
                     `<strong>${stats.total || 0}</strong> mentions tracked`;
 
-                renderFilters();
-                renderMentions();
-                renderArchive();
+                renderAll();
             } catch (e) {
                 document.getElementById('content').innerHTML = `<div class="empty">Failed to load. <a href="#" onclick="loadMentions();return false">Retry</a></div>`;
             }
         }
 
-        function renderFilters() {
+        function renderAll() {
+            renderFilterDropdown();
+            renderActiveChips();
+            renderMentions();
+            renderArchive();
+            updateFilterToggle();
+        }
+
+        function toggleFilterPanel() {
+            filterOpen = !filterOpen;
+            document.getElementById('filterDropdown').classList.toggle('open', filterOpen);
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrap = document.querySelector('.filter-wrap');
+            if (filterOpen && !wrap.contains(e.target)) {
+                filterOpen = false;
+                document.getElementById('filterDropdown').classList.remove('open');
+            }
+        });
+
+        function updateFilterToggle() {
+            const btn = document.getElementById('filterToggle');
+            const count = (currentFilter !== 'all' ? 1 : 0) + (currentLang !== 'all' ? 1 : 0);
+            btn.classList.toggle('has-filter', count > 0);
+            // Badge
+            const existing = btn.querySelector('.filter-badge');
+            if (existing) existing.remove();
+            if (count > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'filter-badge';
+                badge.textContent = count;
+                btn.appendChild(badge);
+            }
+        }
+
+        function renderFilterDropdown() {
             const base = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
             const pos = base.filter(m => m.sentiment === 'positive').length;
             const neg = base.filter(m => m.sentiment === 'negative').length;
             const neu = base.filter(m => m.sentiment === 'neutral').length;
 
-            // Sentiment row
-            let html = `<div class="filter-row">` +
-                `<button class="filter-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All <span class="count">${base.length}</span></button>` +
-                `<button class="filter-btn ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')"><span class="dot pos"></span>Positive <span class="count">${pos}</span></button>` +
-                `<button class="filter-btn ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative')"><span class="dot neg"></span>Negative <span class="count">${neg}</span></button>` +
-                `<button class="filter-btn ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')"><span class="dot neu"></span>Neutral <span class="count">${neu}</span></button>` +
-                `</div>`;
+            let html = `<div class="filter-section">
+                <div class="filter-section-title">Sentiment</div>
+                <div class="filter-options">
+                    <button class="filter-option ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All<span class="opt-count">${base.length}</span></button>
+                    <button class="filter-option ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')"><span class="dot" style="background:var(--positive)"></span>Positive<span class="opt-count">${pos}</span></button>
+                    <button class="filter-option ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative')"><span class="dot" style="background:var(--negative)"></span>Negative<span class="opt-count">${neg}</span></button>
+                    <button class="filter-option ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')"><span class="dot" style="background:var(--neutral)"></span>Neutral<span class="opt-count">${neu}</span></button>
+                </div>
+            </div>`;
 
-            // Language row — collect unique languages
+            // Languages
             const langs = {};
             base.forEach(m => {
                 const lang = m.language || 'Unknown';
@@ -243,31 +297,35 @@
             });
             const langKeys = Object.keys(langs).sort();
 
-            if (langKeys.length > 1) {
-                html += `<div class="filter-row">` +
-                    `<button class="filter-btn ${currentLang==='all'?'active':''}" onclick="setLang('all')">All languages</button>`;
-                langKeys.forEach(lang => {
-                    html += `<button class="filter-btn ${currentLang===lang?'active':''}" onclick="setLang('${escapeHtml(lang)}')">${escapeHtml(lang)} <span class="count">${langs[lang]}</span></button>`;
-                });
-                html += `</div>`;
-            }
+            html += `<div class="filter-section">
+                <div class="filter-section-title">Language</div>
+                <div class="filter-options">
+                    <button class="filter-option ${currentLang==='all'?'active':''}" onclick="setLang('all')">All<span class="opt-count">${base.length}</span></button>`;
+            langKeys.forEach(lang => {
+                html += `<button class="filter-option ${currentLang===lang?'active':''}" onclick="setLang('${escapeHtml(lang)}')">${escapeHtml(lang)}<span class="opt-count">${langs[lang]}</span></button>`;
+            });
+            html += `</div></div>`;
 
-            document.getElementById('filters').innerHTML = html;
+            document.getElementById('filterDropdown').innerHTML = html;
+        }
+
+        function renderActiveChips() {
+            let html = '';
+            if (currentFilter !== 'all') {
+                const colors = { positive: 'var(--positive)', negative: 'var(--negative)', neutral: 'var(--neutral)' };
+                html += `<span class="chip"><span class="dot" style="background:${colors[currentFilter]}"></span>${currentFilter}<button class="chip-remove" onclick="setFilter('all')">&times;</button></span>`;
+            }
+            if (currentLang !== 'all') {
+                html += `<span class="chip">${escapeHtml(currentLang)}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
+            }
+            document.getElementById('activeChips').innerHTML = html;
         }
 
         function getFilteredMentions() {
             let list = allMentions;
-
-            if (currentDateFilter) {
-                list = list.filter(m => m.content_date === currentDateFilter);
-            }
-            if (currentFilter !== 'all') {
-                list = list.filter(m => m.sentiment === currentFilter);
-            }
-            if (currentLang !== 'all') {
-                list = list.filter(m => (m.language || 'Unknown') === currentLang);
-            }
-
+            if (currentDateFilter) list = list.filter(m => m.content_date === currentDateFilter);
+            if (currentFilter !== 'all') list = list.filter(m => m.sentiment === currentFilter);
+            if (currentLang !== 'all') list = list.filter(m => (m.language || 'Unknown') === currentLang);
             return list;
         }
 
@@ -279,10 +337,8 @@
                 return;
             }
 
-            // Limit to 10 items when showing all dates
             const items = currentDateFilter ? filtered : filtered.slice(0, 10);
 
-            // Group by date
             const grouped = {};
             items.forEach(m => {
                 const d = m.content_date || 'Unknown';
@@ -290,7 +346,6 @@
                 grouped[d].push(m);
             });
 
-            // Render with date dividers
             let html = '<div class="mentions">';
             const dates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
@@ -316,13 +371,10 @@
                 ? `<button class="details-btn" onclick="toggleDetails('det-${uid}',this)">Details</button>`
                 : '';
 
-            const author = m.author || 'Unknown';
-            const platform = m.platform || '';
-
             return `<div class="mention-card ${s}">
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
-                    <span class="card-meta">${escapeHtml(author)}<span class="sep">&middot;</span><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(platform)}</a><span class="sep">&middot;</span>${escapeHtml(m.language || '')}</span>
+                    <span class="card-meta">${escapeHtml(m.author || 'Unknown')}<span class="sep">&middot;</span><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a><span class="sep">&middot;</span>${escapeHtml(m.language || '')}</span>
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
@@ -338,50 +390,40 @@
                 document.getElementById('archiveSection').style.display = 'none';
                 return;
             }
-
             document.getElementById('archiveSection').style.display = '';
             const container = document.getElementById('archiveDates');
 
-            // "All" button + each date
-            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null, this)">
-                <span class="day">All</span>
-                <span class="month">dates</span>
+            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
+                <span class="day">All</span><span class="month">dates</span>
             </button>`;
 
             allDates.forEach(d => {
                 const dt = new Date(d + 'T00:00:00');
                 const day = dt.getDate();
                 const month = dt.toLocaleDateString('en-US', { month: 'short' });
-                const isActive = currentDateFilter === d;
-                html += `<button class="archive-date-btn ${isActive?'active':''}" onclick="selectDate('${d}', this)">
-                    <span class="day">${day}</span>
-                    <span class="month">${month}</span>
+                html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
+                    <span class="day">${day}</span><span class="month">${month}</span>
                 </button>`;
             });
-
             container.innerHTML = html;
         }
 
-        function selectDate(date, btn) {
+        function selectDate(date) {
             currentDateFilter = date;
             currentFilter = 'all';
             currentLang = 'all';
-            renderFilters();
-            renderMentions();
-            renderArchive();
+            renderAll();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function setFilter(sentiment) {
             currentFilter = sentiment;
-            renderFilters();
-            renderMentions();
+            renderAll();
         }
 
         function setLang(lang) {
             currentLang = lang;
-            renderFilters();
-            renderMentions();
+            renderAll();
         }
 
         function toggleDetails(id, btn) {
