@@ -158,16 +158,20 @@ def _parse_date_string(s):
     return None
 
 
-def process_urls(url_items):
+def process_urls(url_items, time_budget=55):
     """
     Download each URL, extract text, check for 2026 dates.
     Returns only content that has 2026 dates — ready for AI analysis.
-    Zero AI cost.
+    Zero AI cost. Stops after time_budget seconds.
     """
+    import time
     results = []
     processed = 0
+    start = time.time()
 
     for item in url_items:
+        if time.time() - start > time_budget:
+            break
         url = item['url']
         url_hash = item['url_hash']
         processed += 1
