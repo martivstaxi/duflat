@@ -535,16 +535,23 @@ def _ddg_search(query, max_results=15):
             'https://html.duckduckgo.com/html/',
             data={'q': query, 'b': '', 'kl': ''},
             headers={**BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded'},
-            timeout=15,
+            timeout=5,
         )
         if r.status_code != 200:
             return []
         soup = BeautifulSoup(r.text, 'html.parser')
         urls = []
-        for el in soup.select('.result__url'):
-            url_text = el.get_text(strip=True)
+        # Try multiple selectors — DDG layout may vary
+        elements = soup.select('.result__url') or soup.select('a.result__a')
+        for el in elements:
+            url_text = el.get('href') or el.get_text(strip=True)
             if not url_text:
                 continue
+            # DDG wraps URLs in redirect — extract actual URL
+            if 'uddg=' in url_text:
+                from urllib.parse import unquote, parse_qs, urlparse as _up
+                qs = parse_qs(_up(url_text).query)
+                url_text = unquote(qs.get('uddg', [url_text])[0])
             if not url_text.startswith('http'):
                 url_text = 'https://' + url_text
             # Skip non-content domains
@@ -560,8 +567,8 @@ def _ddg_search(query, max_results=15):
 
 def auto_discover(languages=None):
     """
-    Auto-discover Bilibili mentions across 8 languages using DDG.
-    For each language: run 10 queries × ~15 results = ~100+ URLs → feed into scan_urls.
+    Auto-discover Bilibili mentions in specified language(s) using DDG.
+    Pass one language at a time to stay within gunicorn timeout.
     Returns per-language summary.
     """
     if languages is None:
@@ -591,6 +598,7 @@ def auto_discover(languages=None):
 
         scan_result['language'] = lang
         scan_result['queries'] = len(queries)
+        scan_result['urls_found'] = len(all_urls)
         results[lang] = scan_result
 
     return results
