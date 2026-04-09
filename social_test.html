@@ -259,20 +259,13 @@
                 const resp = await fetch(`${API}/social/mentions?days=365`);
                 const data = await resp.json();
 
-                // Sort mentions: past/today first (newest→oldest), future at end
+                // Filter out future-dated mentions (bad date extraction)
                 const today = new Date().toISOString().slice(0, 10);
-                const mentions = data.mentions || [];
-                mentions.sort((a, b) => {
-                    const da = a.content_date || '', db = b.content_date || '';
-                    const aFuture = da > today, bFuture = db > today;
-                    if (aFuture !== bFuture) return aFuture ? 1 : -1;
-                    return db.localeCompare(da);
-                });
+                const mentions = (data.mentions || []).filter(m => !m.content_date || m.content_date <= today);
+                mentions.sort((a, b) => (b.content_date || '').localeCompare(a.content_date || ''));
                 allMentions = mentions;
-                const raw = data.available_dates || [];
-                const past = raw.filter(d => d <= today).sort((a, b) => b.localeCompare(a));
-                const future = raw.filter(d => d > today).sort((a, b) => a.localeCompare(b));
-                allDates = [...past, ...future];
+                const raw = (data.available_dates || []).filter(d => d <= today);
+                allDates = raw.sort((a, b) => b.localeCompare(a));
 
                 renderAll();
             } catch (e) {

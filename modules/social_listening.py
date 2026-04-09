@@ -254,9 +254,16 @@ def save_mentions(mentions):
     saved = 0
     skipped = 0
 
+    today = date.today().isoformat()
+
     for m in mentions:
         original = m.get('content_original', '').strip()
         if not original:
+            skipped += 1
+            continue
+
+        # Skip future-dated mentions (bad date extraction)
+        if m.get('content_date') and m['content_date'] > today:
             skipped += 1
             continue
 
