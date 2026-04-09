@@ -231,6 +231,7 @@
         let filterOpen = false;
         let archivePage = 0;
         const DATES_PER_PAGE = 4;
+        let contentMinHeight = 0;
 
         async function loadMentions() {
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
@@ -370,12 +371,14 @@
         }
 
         function renderMentions() {
+            const el = document.getElementById('content');
             const filtered = getFilteredMentions();
 
             if (filtered.length === 0) {
                 const hint = currentFilter !== 'all' || currentLang !== 'all'
                     ? ' Try clearing filters.' : '';
-                document.getElementById('content').innerHTML = `<div class="empty">No mentions found.${hint}</div>`;
+                el.innerHTML = `<div class="empty">No mentions found.${hint}</div>`;
+                el.style.minHeight = contentMinHeight ? contentMinHeight + 'px' : '';
                 return;
             }
 
@@ -399,7 +402,13 @@
             });
 
             html += '</div>';
-            document.getElementById('content').innerHTML = html;
+            el.innerHTML = html;
+
+            // Lock min-height on first "All" render so date switching doesn't shift the page
+            if (!currentDateFilter && !contentMinHeight) {
+                contentMinHeight = el.offsetHeight;
+            }
+            el.style.minHeight = contentMinHeight ? contentMinHeight + 'px' : '';
         }
 
         function renderCard(m, uid) {
