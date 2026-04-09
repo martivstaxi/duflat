@@ -417,6 +417,185 @@ def scan_urls(urls):
     }
 
 
+# ─────────────────────────────────────────────
+# AUTO-DISCOVER — DDG search across 8 languages
+# ─────────────────────────────────────────────
+
+# Search queries per language — multiple queries per lang for variety
+_DISCOVER_QUERIES = {
+    'English': [
+        'Bilibili 2026 news',
+        'Bilibili BILI stock earnings 2026',
+        'Bilibili AI content creators anime 2026',
+        'Bilibili gaming esports BLG 2026',
+        'Bilibili advertising revenue growth 2026',
+        'Bilibili first annual profit 2026',
+        'Bilibili Spring Festival Gala 2026',
+        'Bilibili AniSora AI anime model',
+        'Bilibili Gen Z marketing China 2026',
+        'Bilibili danmaku platform community 2026',
+    ],
+    'Japanese': [
+        'ビリビリ Bilibili 2026 ニュース',
+        'ビリビリ 哔哩哔哩 株 決算 2025 2026',
+        'ビリビリ AI アニメ コンテンツ クリエイター 2026',
+        'ビリビリ eスポーツ BLG LoL 2026',
+        'ビリビリ動画 広告収入 成長 2026',
+        'ビリビリ 初の通期黒字 2025年決算',
+        'ビリビリ 春節 新年ガラ 2026',
+        'ビリビリ AniSora AI動画生成',
+        'ビリビリ 中国 動画プラットフォーム Z世代',
+        'ビリビリ 弾幕 コミュニティ 2026',
+    ],
+    'Arabic': [
+        'بيليبيلي Bilibili 2026 أخبار',
+        'بيليبيلي أسهم أرباح 2025 2026',
+        'بيليبيلي منصة فيديو صينية أنمي 2026',
+        'بيليبيلي ذكاء اصطناعي محتوى أنمي',
+        'بيليبيلي إعلانات إيرادات نمو 2026',
+        'بيليبيلي أول ربح سنوي 2025',
+        'بيليبيلي مهرجان الربيع 2026',
+        'بيليبيلي AniSora ذكاء اصطناعي أنمي',
+        'بيليبيلي تسويق الصين الجيل زد',
+        'Bilibili platform review Arabic 2026',
+    ],
+    'Traditional Chinese': [
+        '嗶哩嗶哩 B站 2026 新聞',
+        '嗶哩嗶哩 股票 財報 2025 2026',
+        '嗶哩嗶哩 AI創作 動漫 內容創作者 2026',
+        '嗶哩嗶哩 電競 BLG LoL 2026',
+        '嗶哩嗶哩 廣告收入 增長 2026',
+        '嗶哩嗶哩 首次年度盈利 2025',
+        '嗶哩嗶哩 春節聯歡晚會 2026',
+        'B站 AniSora AI動畫生成',
+        'B站 年輕人 用戶增長 2026',
+        'B站 彈幕 社區 創作者收入 2026',
+    ],
+    'Turkish': [
+        'Bilibili Çin video platformu 2026',
+        'Bilibili YouTube rakibi Çin anime',
+        'Bilibili hisse senedi kâr 2026',
+        'Bilibili yapay zeka anime içerik 2026',
+        'Bilibili reklam geliri büyüme 2026',
+        'Bilibili ilk yıllık kâr 2025',
+        'Bilibili espor BLG LoL 2026',
+        'Bilibili AniSora yapay zeka anime',
+        'Bilibili Çin Z kuşağı pazarlama',
+        'Bilibili platform inceleme Türkçe',
+    ],
+    'Russian': [
+        'Bilibili 2026 новости платформа',
+        'Bilibili акции прибыль 2025 2026',
+        'Bilibili AI аниме контент 2026',
+        'Bilibili киберспорт BLG LoL 2026',
+        'Bilibili реклама доходы рост 2026',
+        'Bilibili первая годовая прибыль 2025',
+        'Bilibili китайский YouTube обзор',
+        'Bilibili AniSora ИИ аниме модель',
+        'Bilibili маркетинг Китай поколение Z',
+        'Bilibili платформа аниме видео обзор',
+    ],
+    'Spanish': [
+        'Bilibili 2026 noticias plataforma',
+        'Bilibili acciones ganancias 2025 2026',
+        'Bilibili AI anime contenido creadores 2026',
+        'Bilibili esports BLG LoL 2026',
+        'Bilibili publicidad ingresos crecimiento 2026',
+        'Bilibili primer beneficio anual 2025',
+        'Bilibili plataforma china streaming anime',
+        'Bilibili AniSora inteligencia artificial anime',
+        'Bilibili marketing China Generación Z',
+        'Bilibili plataforma video revisión 2026',
+    ],
+    'Portuguese': [
+        'Bilibili 2026 notícias plataforma',
+        'Bilibili ações lucro 2025 2026',
+        'Bilibili AI anime conteúdo criadores 2026',
+        'Bilibili esports BLG LoL 2026',
+        'Bilibili publicidade receita crescimento 2026',
+        'Bilibili primeiro lucro anual 2025',
+        'Bilibili plataforma chinesa streaming anime',
+        'Bilibili AniSora inteligência artificial anime',
+        'Bilibili marketing China Geração Z',
+        'Bilibili o que é plataforma chinesa vídeos',
+    ],
+}
+
+# Domains to skip (not content pages)
+_SKIP_DOMAINS = {
+    'youtube.com', 'reddit.com', 'play.google.com', 'apps.apple.com',
+    'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
+}
+
+
+def _ddg_search(query, max_results=15):
+    """DuckDuckGo HTML search — returns list of URLs."""
+    try:
+        r = requests.post(
+            'https://html.duckduckgo.com/html/',
+            data={'q': query, 'b': '', 'kl': ''},
+            headers={**BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded'},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return []
+        soup = BeautifulSoup(r.text, 'html.parser')
+        urls = []
+        for el in soup.select('.result__url'):
+            url_text = el.get_text(strip=True)
+            if not url_text:
+                continue
+            if not url_text.startswith('http'):
+                url_text = 'https://' + url_text
+            # Skip non-content domains
+            domain = urlparse(url_text).netloc.lower().replace('www.', '')
+            if any(skip in domain for skip in _SKIP_DOMAINS):
+                continue
+            if url_text not in urls:
+                urls.append(url_text)
+        return urls[:max_results]
+    except Exception:
+        return []
+
+
+def auto_discover(languages=None):
+    """
+    Auto-discover Bilibili mentions across 8 languages using DDG.
+    For each language: run 10 queries × ~15 results = ~100+ URLs → feed into scan_urls.
+    Returns per-language summary.
+    """
+    if languages is None:
+        languages = list(_DISCOVER_QUERIES.keys())
+
+    results = {}
+    for lang in languages:
+        queries = _DISCOVER_QUERIES.get(lang, [])
+        if not queries:
+            continue
+
+        # Collect URLs from all queries for this language
+        all_urls = []
+        seen = set()
+        for q in queries:
+            urls = _ddg_search(q, max_results=15)
+            for u in urls:
+                if u not in seen:
+                    seen.add(u)
+                    all_urls.append(u)
+
+        # Run through scan pipeline
+        if all_urls:
+            scan_result = scan_urls(all_urls)
+        else:
+            scan_result = {'received': 0, 'new': 0, 'with_2026': 0, 'saved': 0, 'skipped': 0}
+
+        scan_result['language'] = lang
+        scan_result['queries'] = len(queries)
+        results[lang] = scan_result
+
+    return results
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0
