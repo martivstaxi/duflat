@@ -417,6 +417,34 @@ def scan_urls(urls):
     }
 
 
+def delete_mentions(ids):
+    """Delete mentions by ID list."""
+    deleted = 0
+    for mid in ids:
+        try:
+            _db().table('social_mentions').delete().eq('id', mid).execute()
+            deleted += 1
+        except Exception:
+            pass
+    return deleted
+
+
+def update_mention(mid, content_english, content_original=None):
+    """Update a mention's content text and recalculate content_hash."""
+    if not content_original:
+        content_original = content_english
+    new_hash = hash_content(content_original)
+    try:
+        _db().table('social_mentions').update({
+            'content_english': content_english,
+            'content_original': content_original,
+            'content_hash': new_hash,
+        }).eq('id', mid).execute()
+        return True
+    except Exception:
+        return False
+
+
 def get_stats():
     """Get aggregate stats for the overview bar."""
     all_rows = _db().table('social_mentions').select('sentiment', count='exact').execute()

@@ -24,6 +24,7 @@ from modules.email_generator import generate_email
 from modules.social_listening import (
     init_supabase, check_urls, process_urls, save_mentions,
     get_mentions, get_stats, get_available_dates, scan_urls,
+    delete_mentions, update_mention,
 )
 
 app = Flask(__name__, static_folder='.')
@@ -243,6 +244,23 @@ def social_scan():
     if not urls:
         return jsonify({'error': 'urls list required'}), 400
     result = scan_urls(urls)
+    return jsonify(result)
+
+
+@app.route('/social/cleanup', methods=['POST'])
+def social_cleanup():
+    """Admin: delete mentions by ID and/or update content text."""
+    body = request.get_json(silent=True) or {}
+    result = {}
+    ids_to_delete = body.get('delete', [])
+    if ids_to_delete:
+        result['deleted'] = delete_mentions(ids_to_delete)
+    updates = body.get('updates', [])
+    updated = 0
+    for u in updates:
+        if update_mention(u['id'], u['content_english'], u.get('content_original')):
+            updated += 1
+    result['updated'] = updated
     return jsonify(result)
 
 
