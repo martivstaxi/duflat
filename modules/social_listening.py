@@ -102,18 +102,33 @@ def check_urls(urls):
 # STEP 2: PROCESS URLS (download + date filter)
 # ─────────────────────────────────────────────
 
-# Date patterns that capture 2026
+# Date patterns that capture 2026 — multilingual
 _DATE_PATTERNS = [
-    # 2026-01-15, 2026/01/15
-    re.compile(r'(2026[-/]\d{1,2}[-/]\d{1,2})'),
-    # 15-01-2026, 01/15/2026
-    re.compile(r'(\d{1,2}[-/]\d{1,2}[-/]2026)'),
-    # January 15, 2026 / Jan 15 2026
+    # 2026-01-15, 2026/01/15, 2026.01.15
+    re.compile(r'(2026[-/.]\d{1,2}[-/.]\d{1,2})'),
+    # 15-01-2026, 01/15/2026, 15.01.2026
+    re.compile(r'(\d{1,2}[-/.]\d{1,2}[-/.]2026)'),
+    # English months: January 15, 2026 / Jan 15 2026
     re.compile(r'((?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+2026)', re.I),
     # 15 January 2026
     re.compile(r'(\d{1,2}\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+2026)', re.I),
-    # "2026" standalone in context (loose match)
+    # Chinese/Japanese: 2026年
+    re.compile(r'(2026年\d{1,2}月)'),
+    re.compile(r'(2026年)'),
+    # Arabic months with 2026
+    re.compile(r'((?:يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)\s+2026)'),
+    # Spanish months
+    re.compile(r'((?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:de\s+)?2026)', re.I),
+    # Portuguese months
+    re.compile(r'((?:janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+(?:de\s+)?2026)', re.I),
+    # Russian months
+    re.compile(r'((?:январ[яь]|феврал[яь]|март[а]?|апрел[яь]|ма[яй]|июн[яь]|июл[яь]|август[а]?|сентябр[яь]|октябр[яь]|ноябр[яь]|декабр[яь])\s+2026)', re.I),
+    # Turkish months
+    re.compile(r'((?:Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+2026)', re.I),
+    # Loose: "date/posted/published/updated" near 2026
     re.compile(r'(?:date|posted|published|updated|reviewed?)[\s:]*[^0-9]*?(2026)', re.I),
+    # URL contains 2026 (many news sites embed date in URL)
+    re.compile(r'/2026/\d{1,2}/'),
 ]
 
 
@@ -174,8 +189,8 @@ def process_urls(url_items):
             # Cap at 15K chars for processing
             text_trimmed = text[:15000]
 
-            # Check for 2026 dates
-            dates = _extract_dates_2026(text_trimmed)
+            # Check for 2026 dates — in page text AND URL itself
+            dates = _extract_dates_2026(text_trimmed + '\n' + url)
 
             # Detect platform from URL
             domain = urlparse(url).netloc.replace('www.', '')
@@ -345,7 +360,8 @@ For EACH article, extract:
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
 Skip articles that are NOT actually about Bilibili (false positives).
-Skip purely financial stock-price/analyst-rating pages with no social insight.
+Skip pages that are ONLY stock price tickers with no text content.
+DO include financial news, earnings reports, analyst opinions — rewrite them as social insights about what this means for the platform and its users.
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
@@ -528,12 +544,12 @@ _SKIP_DOMAINS = {
 }
 
 
-def _ddg_search(query, max_results=15):
+def _ddg_search(query, max_results=20, region='wt-wt'):
     """DuckDuckGo search via duckduckgo-search library — returns list of URLs."""
     try:
         from duckduckgo_search import DDGS
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=max_results))
+            results = list(ddgs.text(query, region=region, max_results=max_results))
         urls = []
         for r in results:
             url = r.get('href', '')
@@ -547,6 +563,19 @@ def _ddg_search(query, max_results=15):
         return urls[:max_results]
     except Exception:
         return []
+
+
+# DDG region codes per language for localized results
+_LANG_REGIONS = {
+    'English': 'us-en',
+    'Japanese': 'jp-jp',
+    'Arabic': 'xa-ar',
+    'Traditional Chinese': 'hk-tzh',
+    'Turkish': 'tr-tr',
+    'Russian': 'ru-ru',
+    'Spanish': 'es-es',
+    'Portuguese': 'br-pt',
+}
 
 
 def auto_discover(languages=None):
@@ -564,11 +593,13 @@ def auto_discover(languages=None):
         if not queries:
             continue
 
+        region = _LANG_REGIONS.get(lang, 'wt-wt')
+
         # Collect URLs from all queries for this language
         all_urls = []
         seen = set()
         for q in queries:
-            urls = _ddg_search(q, max_results=15)
+            urls = _ddg_search(q, max_results=20, region=region)
             for u in urls:
                 if u not in seen:
                     seen.add(u)
