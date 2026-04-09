@@ -46,8 +46,9 @@
         .sent-btn.active.neg { background: var(--negative); color: #fff; border-color: var(--negative); }
         .sent-btn.active.neu { background: var(--neutral); color: #fff; border-color: var(--neutral); }
         .sent-btn.active.pos .dot, .sent-btn.active.neg .dot, .sent-btn.active.neu .dot { background: #fff; }
-        .sent-btn.active.all-btn { background: var(--text); color: #fff; border-color: var(--text); }
-        .sent-btn.all-btn svg { width: 14px; height: 14px; }
+        .sent-btn.active.all-btn { background: var(--card); border-color: var(--accent); color: var(--accent); }
+        .sent-btn.all-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
+        .sent-btn.active.all-btn svg { stroke: var(--accent); }
 
         /* Toolbar: filter button right-aligned */
         .toolbar {
@@ -266,8 +267,7 @@
 
             document.getElementById('sentimentBtns').innerHTML =
                 `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                    <span class="count">${filtered.length}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 </button>` +
                 `<button class="sent-btn pos ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')">
                     <span class="dot" style="background:var(--positive)"></span>Positive <span class="count">${pos}</span>
