@@ -239,7 +239,12 @@
                 const data = await resp.json();
 
                 allMentions = data.mentions || [];
-                allDates = data.available_dates || [];
+                // Sort dates: past/today first (newest→oldest), then future dates at the end
+                const today = new Date().toISOString().slice(0, 10);
+                const raw = data.available_dates || [];
+                const past = raw.filter(d => d <= today).sort((a, b) => b.localeCompare(a));
+                const future = raw.filter(d => d > today).sort((a, b) => a.localeCompare(b));
+                allDates = [...past, ...future];
 
                 renderAll();
             } catch (e) {
