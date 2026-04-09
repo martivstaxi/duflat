@@ -230,6 +230,11 @@ def social_page():
     return send_from_directory('.', 'social.html')
 
 
+@app.route('/social_test')
+def social_test_page():
+    return send_from_directory('.', 'social_test.html')
+
+
 @app.route('/social/check-urls', methods=['POST'])
 def social_check_urls():
     """Step 1: Receive URLs from AI, return only new unique ones."""
