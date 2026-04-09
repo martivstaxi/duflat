@@ -158,7 +158,9 @@ def process_urls(url_items):
             resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15, allow_redirects=True)
             resp.raise_for_status()
 
-            soup = BeautifulSoup(resp.text, 'html.parser')
+            # Use resp.content (bytes) so BS4 detects encoding from HTML meta tags
+            # resp.text can corrupt CJK characters when headers don't declare charset
+            soup = BeautifulSoup(resp.content, 'html.parser')
 
             # Remove noise
             for tag in soup(['script', 'style', 'nav', 'footer', 'iframe', 'noscript']):
