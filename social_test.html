@@ -25,18 +25,40 @@
         body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
         .container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
 
-        header { padding: 48px 0 20px; text-align: center; }
+        header { padding: 48px 0 16px; text-align: center; }
         header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; }
 
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 12px 0;
-            margin-bottom: 20px;
+        /* Sentiment pills — centered under title */
+        .sentiment-pills {
+            display: flex; gap: 8px; justify-content: center;
+            padding: 14px 0 8px;
         }
+        .pill {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border);
+            background: var(--card); cursor: pointer; transition: all .15s;
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .pill:hover { border-color: #bbb; transform: scale(1.08); }
+        .pill.active { border-width: 2.5px; transform: scale(1.1); box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+        .pill .pill-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .pill.all-pill .pill-icon { display: flex; gap: 2px; }
+        .pill.all-pill .pill-icon span { width: 5px; height: 5px; border-radius: 50%; }
+        .pill.active.all-pill { border-color: var(--text); }
+        .pill.active.pos-pill { border-color: var(--positive); }
+        .pill.active.neg-pill { border-color: var(--negative); }
+        .pill.active.neu-pill { border-color: var(--neutral); }
+        .pill-label {
+            position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%);
+            font-size: .58rem; font-weight: 600; color: var(--muted); white-space: nowrap;
+            opacity: 0; transition: opacity .15s;
+        }
+        .pill:hover .pill-label, .pill.active .pill-label { opacity: 1; }
 
+        /* Toolbar: filter button right-aligned */
+        .toolbar {
+            display: flex; align-items: center; justify-content: flex-end;
+            padding: 16px 0 12px;
+        }
         .filter-toggle {
             display: flex; align-items: center; gap: 6px;
             padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border);
@@ -55,7 +77,7 @@
         }
 
         /* Active filter chips */
-        .active-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+        .active-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; justify-content: center; }
         .active-chips:empty { display: none; }
         .chip {
             display: flex; align-items: center; gap: 4px;
@@ -63,7 +85,6 @@
             font-size: .7rem; font-weight: 600;
             background: #f0efeb; color: var(--text); border: 1px solid var(--border);
         }
-        .chip .dot { width: 6px; height: 6px; border-radius: 50%; }
         .chip-remove {
             width: 14px; height: 14px; border: none; background: none;
             cursor: pointer; color: var(--muted); font-size: .8rem; line-height: 1;
@@ -166,9 +187,10 @@
         .archive-date-btn .month { font-size: .65rem; color: inherit; opacity: .7; }
 
         @media (max-width: 600px) {
-            header { padding: 32px 0 16px; }
+            header { padding: 32px 0 12px; }
             header h1 { font-size: 1.3rem; }
             .mention-card { padding: 16px; }
+            .pill { width: 36px; height: 36px; }
             .archive-date-btn { padding: 6px 12px; }
         }
     </style>
@@ -179,6 +201,8 @@
             <h1>Bilibili Social Listening</h1>
             <div style="margin-top:10px;display:inline-block;background:rgba(193,95,60,.12);border:1px solid rgba(193,95,60,.25);border-radius:6px;padding:4px 12px;font-size:.72rem;color:var(--accent);font-weight:600;letter-spacing:.5px">TEST BUILD</div>
         </header>
+
+        <div class="sentiment-pills" id="sentimentPills"></div>
 
         <div class="toolbar">
             <div class="filter-wrap">
@@ -222,7 +246,6 @@
 
                 allMentions = data.mentions || [];
                 allDates = data.available_dates || [];
-                const stats = data.stats || {};
 
                 renderAll();
             } catch (e) {
@@ -231,6 +254,7 @@
         }
 
         function renderAll() {
+            renderSentimentPills();
             renderFilterDropdown();
             renderActiveChips();
             renderMentions();
@@ -238,12 +262,38 @@
             updateFilterToggle();
         }
 
+        function renderSentimentPills() {
+            const base = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
+            // Apply language filter to counts
+            const filtered = currentLang !== 'all' ? base.filter(m => (m.language || 'Unknown') === currentLang) : base;
+            const pos = filtered.filter(m => m.sentiment === 'positive').length;
+            const neg = filtered.filter(m => m.sentiment === 'negative').length;
+            const neu = filtered.filter(m => m.sentiment === 'neutral').length;
+
+            document.getElementById('sentimentPills').innerHTML =
+                `<button class="pill all-pill ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">
+                    <span class="pill-icon"><span style="background:var(--positive)"></span><span style="background:var(--negative)"></span><span style="background:var(--neutral)"></span></span>
+                    <span class="pill-label">${filtered.length}</span>
+                </button>` +
+                `<button class="pill pos-pill ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')">
+                    <span class="pill-dot" style="background:var(--positive)"></span>
+                    <span class="pill-label">${pos}</span>
+                </button>` +
+                `<button class="pill neg-pill ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative')">
+                    <span class="pill-dot" style="background:var(--negative)"></span>
+                    <span class="pill-label">${neg}</span>
+                </button>` +
+                `<button class="pill neu-pill ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')">
+                    <span class="pill-dot" style="background:var(--neutral)"></span>
+                    <span class="pill-label">${neu}</span>
+                </button>`;
+        }
+
         function toggleFilterPanel() {
             filterOpen = !filterOpen;
             document.getElementById('filterDropdown').classList.toggle('open', filterOpen);
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const wrap = document.querySelector('.filter-wrap');
             if (filterOpen && !wrap.contains(e.target)) {
@@ -254,9 +304,8 @@
 
         function updateFilterToggle() {
             const btn = document.getElementById('filterToggle');
-            const count = (currentFilter !== 'all' ? 1 : 0) + (currentLang !== 'all' ? 1 : 0);
+            const count = (currentLang !== 'all' ? 1 : 0) + (currentDateFilter ? 1 : 0);
             btn.classList.toggle('has-filter', count > 0);
-            // Badge
             const existing = btn.querySelector('.filter-badge');
             if (existing) existing.remove();
             if (count > 0) {
@@ -269,19 +318,6 @@
 
         function renderFilterDropdown() {
             const base = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
-            const pos = base.filter(m => m.sentiment === 'positive').length;
-            const neg = base.filter(m => m.sentiment === 'negative').length;
-            const neu = base.filter(m => m.sentiment === 'neutral').length;
-
-            let html = `<div class="filter-section">
-                <div class="filter-section-title">Sentiment</div>
-                <div class="filter-options">
-                    <button class="filter-option ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All<span class="opt-count">${base.length}</span></button>
-                    <button class="filter-option ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')"><span class="dot" style="background:var(--positive)"></span>Positive<span class="opt-count">${pos}</span></button>
-                    <button class="filter-option ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative')"><span class="dot" style="background:var(--negative)"></span>Negative<span class="opt-count">${neg}</span></button>
-                    <button class="filter-option ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')"><span class="dot" style="background:var(--neutral)"></span>Neutral<span class="opt-count">${neu}</span></button>
-                </div>
-            </div>`;
 
             // Languages
             const langs = {};
@@ -291,7 +327,7 @@
             });
             const langKeys = Object.keys(langs).sort();
 
-            html += `<div class="filter-section">
+            let html = `<div class="filter-section">
                 <div class="filter-section-title">Language</div>
                 <div class="filter-options">
                     <button class="filter-option ${currentLang==='all'?'active':''}" onclick="setLang('all')">All<span class="opt-count">${base.length}</span></button>`;
@@ -300,17 +336,33 @@
             });
             html += `</div></div>`;
 
+            // Dates
+            if (allDates.length > 0) {
+                html += `<div class="filter-section">
+                    <div class="filter-section-title">Date</div>
+                    <div class="filter-options">
+                        <button class="filter-option ${!currentDateFilter?'active':''}" onclick="selectDate(null)">All dates<span class="opt-count">${allMentions.length}</span></button>`;
+                allDates.forEach(d => {
+                    const dt = new Date(d + 'T00:00:00');
+                    const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const count = allMentions.filter(m => m.content_date === d).length;
+                    html += `<button class="filter-option ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">${label}<span class="opt-count">${count}</span></button>`;
+                });
+                html += `</div></div>`;
+            }
+
             document.getElementById('filterDropdown').innerHTML = html;
         }
 
         function renderActiveChips() {
             let html = '';
-            if (currentFilter !== 'all') {
-                const colors = { positive: 'var(--positive)', negative: 'var(--negative)', neutral: 'var(--neutral)' };
-                html += `<span class="chip"><span class="dot" style="background:${colors[currentFilter]}"></span>${currentFilter}<button class="chip-remove" onclick="setFilter('all')">&times;</button></span>`;
-            }
             if (currentLang !== 'all') {
                 html += `<span class="chip">${escapeHtml(currentLang)}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
+            }
+            if (currentDateFilter) {
+                const dt = new Date(currentDateFilter + 'T00:00:00');
+                const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                html += `<span class="chip">${label}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
             }
             document.getElementById('activeChips').innerHTML = html;
         }
@@ -380,26 +432,8 @@
         }
 
         function renderArchive() {
-            if (allDates.length === 0) {
-                document.getElementById('archiveSection').style.display = 'none';
-                return;
-            }
-            document.getElementById('archiveSection').style.display = '';
-            const container = document.getElementById('archiveDates');
-
-            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-                <span class="day">All</span><span class="month">dates</span>
-            </button>`;
-
-            allDates.forEach(d => {
-                const dt = new Date(d + 'T00:00:00');
-                const day = dt.getDate();
-                const month = dt.toLocaleDateString('en-US', { month: 'short' });
-                html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
-                    <span class="day">${day}</span><span class="month">${month}</span>
-                </button>`;
-            });
-            container.innerHTML = html;
+            // Archive section hidden — dates now in filter dropdown
+            document.getElementById('archiveSection').style.display = 'none';
         }
 
         function selectDate(date) {
