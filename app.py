@@ -23,7 +23,7 @@ from modules.summarizer_v2 import summarize_channel_v2
 from modules.email_generator import generate_email
 from modules.social_listening import (
     init_supabase, check_urls, process_urls, save_mentions,
-    get_mentions, get_stats, get_available_dates,
+    get_mentions, get_stats, get_available_dates, scan_urls,
 )
 
 app = Flask(__name__, static_folder='.')
@@ -233,6 +233,17 @@ def social_page():
 @app.route('/social_test')
 def social_test_page():
     return send_from_directory('.', 'social_test.html')
+
+
+@app.route('/social/scan', methods=['POST'])
+def social_scan():
+    """All-in-one: dedup + download + Haiku analysis + save. Just send URLs."""
+    body = request.get_json(silent=True) or {}
+    urls = body.get('urls', [])
+    if not urls:
+        return jsonify({'error': 'urls list required'}), 400
+    result = scan_urls(urls)
+    return jsonify(result)
 
 
 @app.route('/social/check-urls', methods=['POST'])

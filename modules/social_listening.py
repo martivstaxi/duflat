@@ -1,15 +1,18 @@
 """
 Social Listening Module — Bilibili mention tracking
 
-Flow:
+Flow (optimized — single endpoint):
   1. AI finds ~100 links mentioning "bilibili"
-  2. POST /social/check-urls  → Python hashes, deduplicates, returns only new unique URLs
-  3. POST /social/process     → Python downloads pages, checks for 2026 dates, returns content
-  4. POST /social/save        → Python saves AI-analyzed mentions to Supabase
-  5. GET  /social/mentions    → Frontend reads mentions by date
+  2. POST /social/scan        → Python dedup + download + Haiku analysis + save (ALL IN ONE)
+  3. GET  /social/mentions    → Frontend reads mentions by date
+
+Legacy endpoints still available:
+  - POST /social/check-urls, /social/process, /social/save
 """
 
 import hashlib
+import json
+import os
 import re
 import requests
 from datetime import datetime, date, timedelta
@@ -286,6 +289,118 @@ def get_mentions(days=None, specific_date=None, limit=100):
 
     result = query.order('content_date', desc=True).limit(limit).execute()
     return result.data
+
+
+# ─────────────────────────────────────────────
+# HAIKU ANALYSIS (replaces manual AI analysis)
+# ─────────────────────────────────────────────
+
+def _analyze_with_haiku(items):
+    """
+    Use Claude Haiku to analyze 2026-dated content in ONE batch call.
+    Returns list of mention dicts ready for save_mentions().
+    """
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key or not items:
+        return []
+
+    try:
+        import anthropic
+    except ImportError:
+        return []
+
+    # Build compact summaries for Haiku
+    entries = []
+    for item in items:
+        entries.append({
+            'url': item['url'],
+            'url_hash': item['url_hash'],
+            'platform': item['platform'],
+            'date': item.get('content_date', ''),
+            'text': item['text'][:2000],  # cap per item
+        })
+
+    prompt = f"""Analyze these web articles about Bilibili. For EACH article, extract:
+- content_english: 1-2 sentence English summary of the Bilibili-related content
+- content_original: same as content_english (all sources are English)
+- sentiment: "positive", "negative", or "neutral"
+- keywords: array of 2-4 single-word topic tags
+- author: author name if found, otherwise the platform name
+- country: country of origin if detectable, otherwise "International"
+- language: "English"
+
+Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
+
+Skip articles that are NOT actually about Bilibili (false positives).
+
+Articles:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=4096,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = resp.content[0].text.strip()
+        # Extract JSON from response
+        if '```' in text:
+            text = text.split('```')[1]
+            if text.startswith('json'):
+                text = text[4:]
+        return json.loads(text)
+    except Exception:
+        return []
+
+
+# ─────────────────────────────────────────────
+# SCAN — ALL-IN-ONE ENDPOINT
+# ─────────────────────────────────────────────
+
+def scan_urls(urls):
+    """
+    Full pipeline in one call:
+      1. Dedup URLs against DB
+      2. Download & check for 2026 dates
+      3. Analyze with Haiku
+      4. Save to Supabase
+    Returns summary dict.
+    """
+    # Step 1: dedup
+    new_urls = check_urls(urls)
+    if not new_urls:
+        return {'received': len(urls), 'new': 0, 'with_2026': 0, 'saved': 0, 'skipped': 0}
+
+    # Step 2: download + date filter
+    processed = process_urls(new_urls)
+    items_2026 = processed.get('items', [])
+
+    if not items_2026:
+        return {
+            'received': len(urls),
+            'new': len(new_urls),
+            'with_2026': 0,
+            'saved': 0,
+            'skipped': 0,
+        }
+
+    # Step 3: Haiku analysis
+    mentions = _analyze_with_haiku(items_2026)
+
+    # Step 4: save
+    if mentions:
+        result = save_mentions(mentions)
+    else:
+        result = {'saved': 0, 'skipped': 0}
+
+    return {
+        'received': len(urls),
+        'new': len(new_urls),
+        'with_2026': len(items_2026),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+    }
 
 
 def get_stats():
