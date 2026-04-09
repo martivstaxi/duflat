@@ -6,4 +6,5 @@ beautifulsoup4
 anthropic
 apify-client
 gunicorn==22.0.0
+duckduckgo-search
 supabase

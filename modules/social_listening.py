@@ -529,37 +529,21 @@ _SKIP_DOMAINS = {
 
 
 def _ddg_search(query, max_results=15):
-    """DuckDuckGo HTML search — returns list of URLs."""
+    """DuckDuckGo search via duckduckgo-search library — returns list of URLs."""
     try:
-        r = requests.post(
-            'https://html.duckduckgo.com/html/',
-            data={'q': query, 'b': '', 'kl': ''},
-            headers={**BROWSER_HEADERS, 'Content-Type': 'application/x-www-form-urlencoded'},
-            timeout=5,
-        )
-        if r.status_code != 200:
-            return []
-        soup = BeautifulSoup(r.text, 'html.parser')
+        from duckduckgo_search import DDGS
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, max_results=max_results))
         urls = []
-        # Try multiple selectors — DDG layout may vary
-        elements = soup.select('.result__url') or soup.select('a.result__a')
-        for el in elements:
-            url_text = el.get('href') or el.get_text(strip=True)
-            if not url_text:
+        for r in results:
+            url = r.get('href', '')
+            if not url:
                 continue
-            # DDG wraps URLs in redirect — extract actual URL
-            if 'uddg=' in url_text:
-                from urllib.parse import unquote, parse_qs, urlparse as _up
-                qs = parse_qs(_up(url_text).query)
-                url_text = unquote(qs.get('uddg', [url_text])[0])
-            if not url_text.startswith('http'):
-                url_text = 'https://' + url_text
-            # Skip non-content domains
-            domain = urlparse(url_text).netloc.lower().replace('www.', '')
+            domain = urlparse(url).netloc.lower().replace('www.', '')
             if any(skip in domain for skip in _SKIP_DOMAINS):
                 continue
-            if url_text not in urls:
-                urls.append(url_text)
+            if url not in urls:
+                urls.append(url)
         return urls[:max_results]
     except Exception:
         return []
