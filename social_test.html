@@ -296,11 +296,16 @@
         }
 
         document.addEventListener('click', function(e) {
+            if (!filterOpen) return;
             const wrap = document.querySelector('.filter-wrap');
-            if (filterOpen && !wrap.contains(e.target)) {
-                filterOpen = false;
-                document.getElementById('filterDropdown').classList.remove('open');
-            }
+            // After innerHTML re-render, the clicked element is detached from DOM
+            // so wrap.contains() returns false. Check if click was inside dropdown bounds.
+            const dd = document.getElementById('filterDropdown');
+            if (wrap && (wrap.contains(e.target) || dd.contains(e.target))) return;
+            const rect = dd.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+            filterOpen = false;
+            dd.classList.remove('open');
         });
 
         function updateFilterToggle() {
@@ -375,7 +380,9 @@
             }
             html += `</div></div>`;
 
-            document.getElementById('filterDropdown').innerHTML = html;
+            const dd = document.getElementById('filterDropdown');
+            dd.innerHTML = html;
+            if (filterOpen) dd.classList.add('open');
         }
 
         function renderActiveChips() {
