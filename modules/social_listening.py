@@ -324,16 +324,35 @@ def _analyze_with_haiku(items):
     except ImportError:
         return []
 
+    # Domain TLD → language hint mapping
+    _TLD_LANG_HINTS = {
+        '.ru': 'Russian', '.jp': 'Japanese', '.cn': 'Traditional Chinese',
+        '.tw': 'Traditional Chinese', '.hk': 'Traditional Chinese',
+        '.tr': 'Turkish', '.es': 'Spanish', '.mx': 'Spanish',
+        '.ar': 'Spanish', '.br': 'Portuguese', '.pt': 'Portuguese',
+        '.sa': 'Arabic', '.ae': 'Arabic', '.eg': 'Arabic',
+    }
+
     # Build compact summaries for Haiku
     entries = []
     for item in items:
-        entries.append({
+        # Detect language hint from domain TLD
+        domain = item['platform']
+        lang_hint = ''
+        for tld, lang in _TLD_LANG_HINTS.items():
+            if domain.endswith(tld):
+                lang_hint = lang
+                break
+        entry = {
             'url': item['url'],
             'url_hash': item['url_hash'],
             'platform': item['platform'],
             'date': item.get('content_date', ''),
             'text': item['text'][:2000],  # cap per item
-        })
+        }
+        if lang_hint:
+            entry['lang_hint'] = lang_hint
+        entries.append(entry)
 
     prompt = f"""You are a social listening analyst. Your job is to capture what PEOPLE and COMMUNITIES are saying about Bilibili — public opinion, user reactions, community sentiment, social commentary.
 
@@ -355,7 +374,7 @@ For EACH article, extract:
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
 - country: country of origin if detectable, otherwise "International"
-- language: detect the ORIGINAL language of the source article. Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If the article is in Chinese (Simplified or Traditional), use "Traditional Chinese". If unsure, use "English".
+- language: detect the ORIGINAL language of the source article text (NOT the language of the content_english summary). Look at the content_original text — what language is it written in? Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If the article is in Chinese (Simplified or Traditional), use "Traditional Chinese". If a lang_hint field is provided, use it as a strong signal. A .ru domain with Russian text = "Russian", NOT "English". Only use "English" if the original text is actually in English.
 
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
@@ -474,6 +493,9 @@ _DISCOVER_QUERIES = {
         'بيليبيلي AniSora ذكاء اصطناعي أنمي',
         'بيليبيلي تسويق الصين الجيل زد',
         'Bilibili platform review Arabic 2026',
+        'Bilibili أنمي صيني 2026',
+        'Bilibili BILI بورصة 2026',
+        'موقع بيليبيلي الصيني مراجعة',
     ],
     'Traditional Chinese': [
         '嗶哩嗶哩 B站 2026 新聞',
@@ -498,6 +520,9 @@ _DISCOVER_QUERIES = {
         'Bilibili AniSora yapay zeka anime',
         'Bilibili Çin Z kuşağı pazarlama',
         'Bilibili platform inceleme Türkçe',
+        'Bilibili nedir Çin video sitesi',
+        'Bilibili BILI hisse analiz 2026',
+        'Bilibili anime izleme platformu',
     ],
     'Russian': [
         'Bilibili 2026 новости платформа',
@@ -510,6 +535,9 @@ _DISCOVER_QUERIES = {
         'Bilibili AniSora ИИ аниме модель',
         'Bilibili маркетинг Китай поколение Z',
         'Bilibili платформа аниме видео обзор',
+        'Bilibili BILI акции биржа анализ 2026',
+        'Bilibili что это китайская платформа видео',
+        'Bilibili аниме стриминг Китай обзор',
     ],
     'Spanish': [
         'Bilibili 2026 noticias plataforma',
@@ -522,6 +550,9 @@ _DISCOVER_QUERIES = {
         'Bilibili AniSora inteligencia artificial anime',
         'Bilibili marketing China Generación Z',
         'Bilibili plataforma video revisión 2026',
+        'Bilibili BILI acciones bolsa análisis 2026',
+        'Bilibili qué es plataforma china videos anime',
+        'Bilibili anime chino ver online',
     ],
     'Portuguese': [
         'Bilibili 2026 notícias plataforma',
@@ -534,6 +565,9 @@ _DISCOVER_QUERIES = {
         'Bilibili AniSora inteligência artificial anime',
         'Bilibili marketing China Geração Z',
         'Bilibili o que é plataforma chinesa vídeos',
+        'Bilibili BILI ação bolsa 2026',
+        'Bilibili anime chinês assistir online',
+        'Bilibili plataforma vídeo China análise',
     ],
 }
 
@@ -544,12 +578,14 @@ _SKIP_DOMAINS = {
 }
 
 
-def _ddg_search(query, max_results=20, region='wt-wt'):
-    """DuckDuckGo search via duckduckgo-search library — returns list of URLs."""
+def _ddg_search(query, max_results=20, region='wt-wt', timelimit='y'):
+    """DuckDuckGo search via duckduckgo-search library — returns list of URLs.
+    timelimit: 'd'=day, 'w'=week, 'm'=month, 'y'=year, None=all time
+    """
     try:
         from duckduckgo_search import DDGS
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, region=region, max_results=max_results))
+            results = list(ddgs.text(query, region=region, timelimit=timelimit, max_results=max_results))
         urls = []
         for r in results:
             url = r.get('href', '')
@@ -565,16 +601,16 @@ def _ddg_search(query, max_results=20, region='wt-wt'):
         return []
 
 
-# DDG region codes per language for localized results
+# DDG region codes per language — multiple regions for better coverage
 _LANG_REGIONS = {
-    'English': 'us-en',
-    'Japanese': 'jp-jp',
-    'Arabic': 'xa-ar',
-    'Traditional Chinese': 'hk-tzh',
-    'Turkish': 'tr-tr',
-    'Russian': 'ru-ru',
-    'Spanish': 'es-es',
-    'Portuguese': 'br-pt',
+    'English': ['us-en', 'uk-en', 'wt-wt'],
+    'Japanese': ['jp-jp', 'wt-wt'],
+    'Arabic': ['xa-ar', 'wt-wt'],
+    'Traditional Chinese': ['hk-tzh', 'tw-tzh', 'wt-wt'],
+    'Turkish': ['tr-tr', 'wt-wt'],
+    'Russian': ['ru-ru', 'wt-wt'],
+    'Spanish': ['es-es', 'ar-es', 'mx-es', 'wt-wt'],
+    'Portuguese': ['br-pt', 'pt-pt', 'wt-wt'],
 }
 
 
@@ -582,6 +618,7 @@ def auto_discover(languages=None):
     """
     Auto-discover Bilibili mentions in specified language(s) using DDG.
     Pass one language at a time to stay within gunicorn timeout.
+    Uses multiple regions per language for better coverage.
     Returns per-language summary.
     """
     if languages is None:
@@ -593,17 +630,21 @@ def auto_discover(languages=None):
         if not queries:
             continue
 
-        region = _LANG_REGIONS.get(lang, 'wt-wt')
+        regions = _LANG_REGIONS.get(lang, ['wt-wt'])
 
-        # Collect URLs from all queries for this language
+        # Collect URLs from all queries × all regions for this language
         all_urls = []
         seen = set()
         for q in queries:
-            urls = _ddg_search(q, max_results=20, region=region)
-            for u in urls:
-                if u not in seen:
-                    seen.add(u)
-                    all_urls.append(u)
+            for region in regions:
+                urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
+                for u in urls:
+                    if u not in seen:
+                        seen.add(u)
+                        all_urls.append(u)
+                # If first region already found enough URLs for this query, skip extras
+                if len(urls) >= 10:
+                    break
 
         # Run through scan pipeline
         if all_urls:
