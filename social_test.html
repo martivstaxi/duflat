@@ -133,6 +133,7 @@
         .mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 
         .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .card-lang { margin-left: auto; font-size: .68rem; font-weight: 500; color: var(--muted); }
         .sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .positive .sentiment-dot { background: var(--positive); }
         .negative .sentiment-dot { background: var(--negative); }
@@ -400,7 +401,8 @@
             return `<div class="mention-card ${s}">
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
-                    <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a><span class="sep">&middot;</span>${escapeHtml(m.language || '')}</span>
+                    <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
+                    <span class="card-lang">${escapeHtml(m.language || '')}</span>
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
