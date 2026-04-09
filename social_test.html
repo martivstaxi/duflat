@@ -133,7 +133,7 @@
         .mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 
         .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-        .card-lang { margin-left: auto; font-size: .68rem; font-weight: 500; color: var(--muted); }
+        .card-lang { font-size: .68rem; font-weight: 500; color: var(--muted); margin-left: auto; }
         .sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .positive .sentiment-dot { background: var(--positive); }
         .negative .sentiment-dot { background: var(--negative); }
@@ -157,7 +157,7 @@
         .card-bottom { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .tag { font-size: .67rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #eeede9; color: #666; }
         .details-btn {
-            margin-left: auto; font-size: .72rem; font-weight: 600; color: var(--text);
+            font-size: .72rem; font-weight: 600; color: var(--text);
             background: var(--card); border: 1.5px solid var(--border); border-radius: 6px;
             padding: 5px 14px; cursor: pointer; transition: all .15s; font-family: inherit;
         }
@@ -402,12 +402,12 @@
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
                     <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
-                    <span class="card-lang">${escapeHtml(m.language || '')}</span>
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
                 <div class="card-bottom">
                     ${keywords}
+                    <span class="card-lang">${escapeHtml(m.language || '')}</span>
                     ${detailsBtn}
                 </div>
             </div>`;
