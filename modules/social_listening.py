@@ -619,8 +619,11 @@ def auto_discover(languages=None):
     Auto-discover Bilibili mentions in specified language(s) using DDG.
     Pass one language at a time to stay within gunicorn timeout.
     Uses multiple regions per language for better coverage.
+    Time budget: 50s for DDG search, rest for scan pipeline.
     Returns per-language summary.
     """
+    import time
+
     if languages is None:
         languages = list(_DISCOVER_QUERIES.keys())
 
@@ -633,10 +636,16 @@ def auto_discover(languages=None):
         regions = _LANG_REGIONS.get(lang, ['wt-wt'])
 
         # Collect URLs from all queries × all regions for this language
+        # Time budget: 50s for DDG searches (leaves ~60s for download+analyze+save)
         all_urls = []
         seen = set()
+        search_start = time.time()
         for q in queries:
+            if time.time() - search_start > 50:
+                break
             for region in regions:
+                if time.time() - search_start > 50:
+                    break
                 urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
                 for u in urls:
                     if u not in seen:
