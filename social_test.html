@@ -454,12 +454,10 @@
             // Prev button
             html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Newer">${prevSvg}</button>`;
 
-            // "All" button only on first page
-            if (archivePage === 0) {
-                html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-                    <span class="day">All</span><span class="month">dates</span>
-                </button>`;
-            }
+            // "All" button — always visible
+            html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
+                <span class="day">All</span><span class="month">dates</span>
+            </button>`;
 
             // Date buttons
             pageDates.forEach(d => {
