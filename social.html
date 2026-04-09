@@ -17,11 +17,8 @@
             --text: #1a1a1a;
             --muted: #888;
             --positive: #16a34a;
-            --positive-light: #dcfce7;
             --negative: #dc2626;
-            --negative-light: #fee2e2;
             --neutral: #ca8a04;
-            --neutral-light: #fef9c3;
             --accent: #c15f3c;
         }
 
@@ -34,13 +31,11 @@
 
         .container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
 
-        /* ── Header ── */
+        /* Header */
         header { padding: 48px 0 20px; text-align: center; }
-        header .brand { font-size: .7rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
         header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; margin-bottom: 4px; }
-        header p { color: var(--muted); font-size: .85rem; }
 
-        /* ── Overview strip: plain text, not buttons ── */
+        /* Overview */
         .overview {
             text-align: center;
             padding: 18px 0;
@@ -49,21 +44,14 @@
             color: var(--muted);
             border-bottom: 1px solid var(--border);
         }
-
         .overview strong { color: var(--text); font-weight: 700; }
         .overview .sep { margin: 0 10px; color: #ccc; }
         .overview .pos { color: var(--positive); font-weight: 600; }
         .overview .neg { color: var(--negative); font-weight: 600; }
         .overview .neu { color: var(--neutral); font-weight: 600; }
 
-        /* ── Filter buttons: clearly clickable ── */
-        .filters {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin-bottom: 24px;
-        }
-
+        /* Filters */
+        .filters { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
         .filter-btn {
             padding: 8px 20px;
             border-radius: 8px;
@@ -77,37 +65,14 @@
             transition: all .15s;
             user-select: none;
         }
+        .filter-btn:hover { border-color: #aaa; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        .filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+        .filter-btn .count { font-size: .7rem; font-weight: 500; margin-left: 4px; opacity: .7; }
 
-        .filter-btn:hover {
-            border-color: #aaa;
-            color: var(--text);
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,.06);
-        }
+        /* Last updated */
+        .updated { text-align: center; font-size: .72rem; color: #aaa; margin-bottom: 20px; }
 
-        .filter-btn.active {
-            background: var(--text);
-            color: #fff;
-            border-color: var(--text);
-            box-shadow: 0 2px 8px rgba(0,0,0,.12);
-        }
-
-        .filter-btn .count {
-            font-size: .7rem;
-            font-weight: 500;
-            margin-left: 4px;
-            opacity: .7;
-        }
-
-        /* ── Last updated ── */
-        .updated {
-            text-align: center;
-            font-size: .72rem;
-            color: #aaa;
-            margin-bottom: 20px;
-        }
-
-        /* ── Mention cards ── */
+        /* Cards */
         .mentions { display: flex; flex-direction: column; gap: 14px; padding-bottom: 64px; }
 
         .mention-card {
@@ -119,129 +84,117 @@
             border-left: 4px solid transparent;
             transition: box-shadow .2s;
         }
-
         .mention-card:hover { box-shadow: 0 3px 16px rgba(0,0,0,.05); }
-
         .mention-card.positive { border-left-color: var(--positive); }
         .mention-card.negative { border-left-color: var(--negative); }
         .mention-card.neutral  { border-left-color: var(--neutral); }
 
-        /* Top row: sentiment + platform + date */
+        /* Card top row */
         .card-top {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
-        .sentiment-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
+        .sentiment-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
         .positive .sentiment-dot { background: var(--positive); }
         .negative .sentiment-dot { background: var(--negative); }
         .neutral  .sentiment-dot { background: var(--neutral); }
 
-        .sentiment-label {
-            font-size: .75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .3px;
-        }
-
+        .sentiment-label { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
         .positive .sentiment-label { color: var(--positive); }
         .negative .sentiment-label { color: var(--negative); }
         .neutral  .sentiment-label { color: var(--neutral); }
 
-        .card-top .platform {
+        /* Platform link: clickable, opens source */
+        .platform-link {
             font-size: .72rem;
-            color: var(--muted);
+            font-weight: 600;
+            color: var(--accent);
             padding: 2px 8px;
+            background: rgba(193,95,60,.06);
+            border: 1px solid rgba(193,95,60,.15);
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all .15s;
+            cursor: pointer;
+        }
+        .platform-link:hover {
+            background: rgba(193,95,60,.12);
+            border-color: rgba(193,95,60,.35);
+        }
+
+        /* Language badge: not clickable */
+        .lang-badge {
+            font-size: .68rem;
+            font-weight: 500;
+            color: var(--muted);
+            padding: 2px 7px;
             background: #f3f3f1;
             border-radius: 4px;
         }
 
-        .card-top .date {
-            margin-left: auto;
-            font-size: .72rem;
-            color: #aaa;
-        }
+        .card-top .date { margin-left: auto; font-size: .72rem; color: #aaa; }
 
-        /* Author line */
-        .card-author {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-bottom: 10px;
-        }
+        /* Author */
+        .card-author { font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
 
-        /* Quote content */
-        .card-quote {
-            font-size: .9rem;
-            line-height: 1.7;
-            color: #2a2a2a;
-            margin-bottom: 10px;
-        }
+        /* Quote */
+        .card-quote { font-size: .9rem; line-height: 1.7; color: #2a2a2a; margin-bottom: 12px; }
 
-        /* Summary */
-        .card-summary {
-            font-size: .8rem;
-            color: var(--muted);
+        /* Details panel (hidden by default) */
+        .card-details {
+            display: none;
             margin-bottom: 12px;
-            padding: 8px 12px;
+            padding: 14px 16px;
             background: #fafaf8;
-            border-radius: 6px;
-            border-left: 3px solid var(--border);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: .85rem;
+            line-height: 1.7;
+            color: #333;
         }
-
-        .card-summary strong {
-            color: #666;
+        .card-details.open { display: block; animation: fadeIn .2s ease; }
+        .card-details .original-label {
+            font-size: .68rem;
             font-weight: 600;
-            margin-right: 4px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            margin-bottom: 6px;
         }
 
-        /* Keywords + source */
-        .card-bottom {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
-        .tag {
-            font-size: .67rem;
-            font-weight: 500;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: #eeede9;
-            color: #666;
-        }
+        /* Bottom row */
+        .card-bottom { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .tag { font-size: .67rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #eeede9; color: #666; }
 
-        .source-link {
+        /* Details toggle button */
+        .details-btn {
             margin-left: auto;
             font-size: .72rem;
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 4px 10px;
-            border: 1px solid rgba(193,95,60,.2);
+            font-weight: 600;
+            color: var(--text);
+            background: var(--card);
+            border: 1.5px solid var(--border);
             border-radius: 6px;
+            padding: 5px 14px;
+            cursor: pointer;
             transition: all .15s;
+            font-family: inherit;
         }
+        .details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+        .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
 
-        .source-link:hover {
-            background: rgba(193,95,60,.06);
-            border-color: rgba(193,95,60,.4);
-        }
-
-        /* ── Responsive ── */
+        /* Responsive */
         @media (max-width: 600px) {
             header { padding: 32px 0 16px; }
             header h1 { font-size: 1.3rem; }
             .mention-card { padding: 16px; }
-            .card-top .date { margin-left: 0; }
+            .card-top .date { margin-left: 0; width: 100%; margin-top: 4px; }
             .overview .sep { margin: 0 6px; }
             .filters { flex-wrap: wrap; }
         }
@@ -253,7 +206,6 @@
             <h1>Bilibili Social Listening</h1>
         </header>
 
-        <!-- Stats: plain text, clearly NOT clickable -->
         <div class="overview">
             <strong>3</strong> mentions
             <span class="sep">|</span>
@@ -264,7 +216,6 @@
             <span class="neu">1</span> neutral
         </div>
 
-        <!-- Filter: clearly buttons -->
         <div class="filters">
             <button class="filter-btn active" onclick="filter('all', this)">All <span class="count">(3)</span></button>
             <button class="filter-btn" onclick="filter('positive', this)">Positive <span class="count">(1)</span></button>
@@ -281,20 +232,23 @@
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
                     <span class="sentiment-label">Positive</span>
-                    <span class="platform">YouTube</span>
+                    <a class="platform-link" href="https://www.youtube.com/watch?v=f99FosiYzf8" target="_blank" rel="noopener">YouTube</a>
+                    <span class="lang-badge">Cantonese</span>
                     <span class="date">Jan 2026</span>
                 </div>
                 <div class="card-author">Anonymous user - Hong Kong</div>
                 <div class="card-quote">
                     Bilibili has way more creators getting 2-3x the reach compared to YouTube. If your video is good, the payoff is real. The community is friendlier too. Plus you can find niche info on Bilibili that YouTube just doesn't have.
                 </div>
-
+                <div class="card-details" id="details-1">
+                    <div class="original-label">Original (Cantonese)</div>
+                    b站用創作者角度嚟講，通常畀youtube得到嘅流量要多兩至三倍，只要條片做得好咁回報一定都會好，community 相對比youtube友好（個人認為）bilibili喺觀看者角度嚟講就可以搵到好多比較小眾嘅資訊，youtube搵唔到嘅b站通常都有，要查一啲好少人收錄嘅資訊嘅話一定係用b站
+                </div>
                 <div class="card-bottom">
                     <span class="tag">Community</span>
                     <span class="tag">Viewership</span>
                     <span class="tag">Niche Content</span>
-                    <span class="tag">Creator Experience</span>
-                    <a class="source-link" href="https://www.youtube.com/watch?v=f99FosiYzf8" target="_blank" rel="noopener">Source</a>
+                    <button class="details-btn" onclick="toggleDetails('details-1', this)">Details</button>
                 </div>
             </div>
 
@@ -303,20 +257,23 @@
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
                     <span class="sentiment-label">Negative</span>
-                    <span class="platform">Trustpilot</span>
+                    <a class="platform-link" href="https://www.trustpilot.com/review/www.bilibili.tv" target="_blank" rel="noopener">Trustpilot</a>
+                    <span class="lang-badge">English</span>
                     <span class="date">Apr 9, 2026</span>
                 </div>
                 <div class="card-author">jedidia mamy</div>
                 <div class="card-quote">
                     The old Bilibili was good but the new version is not good, some bugs, lags and sometimes you don't have access.
                 </div>
-
+                <div class="card-details" id="details-2">
+                    <div class="original-label">Original (English)</div>
+                    The old bilibili was good but the new version is not good, some bugs, Lags and sometimes you dont have access
+                </div>
                 <div class="card-bottom">
                     <span class="tag">Bugs</span>
                     <span class="tag">Lag</span>
                     <span class="tag">Access Issues</span>
-                    <span class="tag">Version Downgrade</span>
-                    <a class="source-link" href="https://www.trustpilot.com/review/www.bilibili.tv" target="_blank" rel="noopener">Source</a>
+                    <button class="details-btn" onclick="toggleDetails('details-2', this)">Details</button>
                 </div>
             </div>
 
@@ -325,20 +282,23 @@
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
                     <span class="sentiment-label">Neutral</span>
-                    <span class="platform">vraki.net</span>
+                    <a class="platform-link" href="https://vraki.net/otzyvy/mobilnye-prilozheniya/bilibili-gao-qing-xin-fan-yuan-chuang-shi-pin-she-qu.html" target="_blank" rel="noopener">vraki.net</a>
+                    <span class="lang-badge">Russian</span>
                     <span class="date">2026</span>
                 </div>
                 <div class="card-author">Anonymous user - Russia</div>
                 <div class="card-quote">
                     The app is intuitive and easy to use even without knowing Chinese. The only downside is that changing your nickname costs money.
                 </div>
-
+                <div class="card-details" id="details-3">
+                    <div class="original-label">Original (Russian)</div>
+                    Приложение понравилось, удобное, интуитивно понятное несмотря на то, что я не знаю китайского языка. Единственный минус — смена никнейма платная.
+                </div>
                 <div class="card-bottom">
                     <span class="tag">Intuitive Design</span>
                     <span class="tag">Usability</span>
                     <span class="tag">Language Barrier</span>
-                    <span class="tag">Russian Market</span>
-                    <a class="source-link" href="https://vraki.net/otzyvy/mobilnye-prilozheniya/bilibili-gao-qing-xin-fan-yuan-chuang-shi-pin-she-qu.html" target="_blank" rel="noopener">Source</a>
+                    <button class="details-btn" onclick="toggleDetails('details-3', this)">Details</button>
                 </div>
             </div>
 
@@ -352,6 +312,13 @@
             document.querySelectorAll('.mention-card').forEach(card => {
                 card.style.display = (sentiment === 'all' || card.dataset.sentiment === sentiment) ? '' : 'none';
             });
+        }
+
+        function toggleDetails(id, btn) {
+            const panel = document.getElementById(id);
+            const isOpen = panel.classList.toggle('open');
+            btn.classList.toggle('open', isOpen);
+            btn.textContent = isOpen ? 'Close' : 'Details';
         }
     </script>
 </body>
