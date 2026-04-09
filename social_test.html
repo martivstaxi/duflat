@@ -367,7 +367,7 @@
             return `<div class="mention-card ${s}">
                 <div class="card-top">
                     <span class="sentiment-dot"></span>
-                    <span class="card-meta">${escapeHtml(m.author || 'Unknown')}<span class="sep">&middot;</span><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a><span class="sep">&middot;</span>${escapeHtml(m.language || '')}</span>
+                    <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a><span class="sep">&middot;</span>${escapeHtml(m.language || '')}</span>
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
