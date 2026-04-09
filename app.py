@@ -261,6 +261,19 @@ def social_process():
     return jsonify(result)
 
 
+@app.route('/social/cleanup-encoding', methods=['POST'])
+def social_cleanup_encoding():
+    """TEMP: Delete mentions with corrupted encoding (consecutive ???)."""
+    from modules.social_listening import _db
+    rows = _db().table('social_mentions').select('id, content_original').execute()
+    corrupted_ids = [r['id'] for r in rows.data if '???' in (r.get('content_original') or '')]
+    deleted = 0
+    for cid in corrupted_ids:
+        _db().table('social_mentions').delete().eq('id', cid).execute()
+        deleted += 1
+    return jsonify({'deleted': deleted, 'total_checked': len(rows.data)})
+
+
 @app.route('/social/save', methods=['POST'])
 def social_save():
     """Step 3: Save AI-analyzed mentions to database."""
