@@ -11,22 +11,18 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #faf9f7;
+            --bg: #f5f5f3;
             --card: #ffffff;
-            --border: #e8e5e1;
+            --border: #e5e5e3;
             --text: #1a1a1a;
-            --text-secondary: #6b6b6b;
+            --muted: #888;
             --positive: #16a34a;
-            --positive-bg: #f0fdf4;
-            --positive-border: #bbf7d0;
+            --positive-light: #dcfce7;
             --negative: #dc2626;
-            --negative-bg: #fef2f2;
-            --negative-border: #fecaca;
+            --negative-light: #fee2e2;
             --neutral: #ca8a04;
-            --neutral-bg: #fefce8;
-            --neutral-border: #fef08a;
+            --neutral-light: #fef9c3;
             --accent: #c15f3c;
-            --radius: 12px;
         }
 
         body {
@@ -34,78 +30,34 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            min-height: 100vh;
         }
 
-        .container {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+        .container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
 
-        /* Header */
-        header {
-            padding: 48px 0 32px;
+        /* ── Header ── */
+        header { padding: 48px 0 20px; text-align: center; }
+        header .brand { font-size: .7rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+        header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; margin-bottom: 4px; }
+        header p { color: var(--muted); font-size: .85rem; }
+
+        /* ── Overview strip: plain text, not buttons ── */
+        .overview {
             text-align: center;
+            padding: 18px 0;
+            margin: 8px 0 20px;
+            font-size: .82rem;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
         }
 
-        header .brand {
-            font-size: .75rem;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
+        .overview strong { color: var(--text); font-weight: 700; }
+        .overview .sep { margin: 0 10px; color: #ccc; }
+        .overview .pos { color: var(--positive); font-weight: 600; }
+        .overview .neg { color: var(--negative); font-weight: 600; }
+        .overview .neu { color: var(--neutral); font-weight: 600; }
 
-        header h1 {
-            font-family: 'Merriweather', serif;
-            font-size: 1.75rem;
-            font-weight: 900;
-            margin-bottom: 6px;
-        }
-
-        header .subtitle {
-            color: var(--text-secondary);
-            font-size: .92rem;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* Stats bar */
-        .stats-bar {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 24px 0 32px;
-        }
-
-        .stat-chip {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: .8rem;
-            font-weight: 600;
-            background: var(--card);
-            border: 1px solid var(--border);
-        }
-
-        .stat-chip .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .stat-chip.total { border-color: var(--border); }
-        .stat-chip.positive .dot { background: var(--positive); }
-        .stat-chip.negative .dot { background: var(--negative); }
-        .stat-chip.neutral .dot { background: var(--neutral); }
-
-        /* Filter tabs */
-        .filter-bar {
+        /* ── Filter buttons: clearly clickable ── */
+        .filters {
             display: flex;
             gap: 8px;
             justify-content: center;
@@ -113,181 +65,185 @@
         }
 
         .filter-btn {
-            padding: 6px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
             background: var(--card);
             font-family: inherit;
-            font-size: .8rem;
-            font-weight: 500;
-            color: var(--text-secondary);
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--muted);
             cursor: pointer;
-            transition: all .2s;
+            transition: all .15s;
+            user-select: none;
         }
 
-        .filter-btn:hover { border-color: #ccc; }
-        .filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+        .filter-btn:hover {
+            border-color: #aaa;
+            color: var(--text);
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
 
-        /* Last updated */
-        .last-updated {
+        .filter-btn.active {
+            background: var(--text);
+            color: #fff;
+            border-color: var(--text);
+            box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        }
+
+        .filter-btn .count {
+            font-size: .7rem;
+            font-weight: 500;
+            margin-left: 4px;
+            opacity: .7;
+        }
+
+        /* ── Last updated ── */
+        .updated {
             text-align: center;
-            font-size: .75rem;
-            color: var(--text-secondary);
+            font-size: .72rem;
+            color: #aaa;
             margin-bottom: 20px;
         }
 
-        .last-updated span {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 3px 10px;
-        }
-
-        /* Mention cards */
-        .mentions {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding-bottom: 64px;
-        }
+        /* ── Mention cards ── */
+        .mentions { display: flex; flex-direction: column; gap: 14px; padding-bottom: 64px; }
 
         .mention-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            transition: box-shadow .2s;
+            border-radius: 10px;
+            padding: 20px 22px;
             position: relative;
+            border-left: 4px solid transparent;
+            transition: box-shadow .2s;
         }
 
-        .mention-card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,.06);
-        }
+        .mention-card:hover { box-shadow: 0 3px 16px rgba(0,0,0,.05); }
 
-        /* Sentiment stripe on left */
-        .mention-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 12px;
-            bottom: 12px;
-            width: 3px;
-            border-radius: 3px;
-        }
+        .mention-card.positive { border-left-color: var(--positive); }
+        .mention-card.negative { border-left-color: var(--negative); }
+        .mention-card.neutral  { border-left-color: var(--neutral); }
 
-        .mention-card.positive::before { background: var(--positive); }
-        .mention-card.negative::before { background: var(--negative); }
-        .mention-card.neutral::before { background: var(--neutral); }
-
-        /* Card header row */
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .sentiment-badge {
-            font-size: .7rem;
-            font-weight: 600;
-            letter-spacing: .3px;
-            padding: 3px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
-        }
-
-        .positive .sentiment-badge { background: var(--positive-bg); color: var(--positive); border: 1px solid var(--positive-border); }
-        .negative .sentiment-badge { background: var(--negative-bg); color: var(--negative); border: 1px solid var(--negative-border); }
-        .neutral .sentiment-badge { background: var(--neutral-bg); color: var(--neutral); border: 1px solid var(--neutral-border); }
-
-        .platform-badge {
-            font-size: .7rem;
-            font-weight: 500;
-            padding: 3px 10px;
-            border-radius: 12px;
-            background: #f3f4f6;
-            color: #4b5563;
-        }
-
-        .card-meta {
-            font-size: .75rem;
-            color: var(--text-secondary);
-            margin-left: auto;
-            white-space: nowrap;
-        }
-
-        /* Card content */
-        .card-content {
-            font-size: .92rem;
-            line-height: 1.65;
-            margin-bottom: 12px;
-            color: #2a2a2a;
-        }
-
-        .card-content em {
-            font-style: normal;
-            background: #fef3c7;
-            padding: 1px 4px;
-            border-radius: 3px;
-        }
-
-        /* Card summary */
-        .card-summary {
-            font-size: .82rem;
-            color: var(--text-secondary);
-            margin-bottom: 14px;
-            padding-left: 12px;
-            border-left: 2px solid var(--border);
-        }
-
-        /* Card footer */
-        .card-footer {
+        /* Top row: sentiment + platform + date */
+        .card-top {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .sentiment-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .positive .sentiment-dot { background: var(--positive); }
+        .negative .sentiment-dot { background: var(--negative); }
+        .neutral  .sentiment-dot { background: var(--neutral); }
+
+        .sentiment-label {
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .positive .sentiment-label { color: var(--positive); }
+        .negative .sentiment-label { color: var(--negative); }
+        .neutral  .sentiment-label { color: var(--neutral); }
+
+        .card-top .platform {
+            font-size: .72rem;
+            color: var(--muted);
+            padding: 2px 8px;
+            background: #f3f3f1;
+            border-radius: 4px;
+        }
+
+        .card-top .date {
+            margin-left: auto;
+            font-size: .72rem;
+            color: #aaa;
+        }
+
+        /* Author line */
+        .card-author {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        /* Quote content */
+        .card-quote {
+            font-size: .9rem;
+            line-height: 1.7;
+            color: #2a2a2a;
+            margin-bottom: 10px;
+        }
+
+        /* Summary */
+        .card-summary {
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #fafaf8;
+            border-radius: 6px;
+            border-left: 3px solid var(--border);
+        }
+
+        .card-summary strong {
+            color: #666;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        /* Keywords + source */
+        .card-bottom {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
-        .keyword-tag {
-            font-size: .68rem;
+        .tag {
+            font-size: .67rem;
             font-weight: 500;
             padding: 2px 8px;
-            border-radius: 10px;
-            background: #f0f0ee;
-            color: #555;
+            border-radius: 4px;
+            background: #eeede9;
+            color: #666;
         }
 
-        .card-footer .source-link {
+        .source-link {
             margin-left: auto;
             font-size: .72rem;
             color: var(--accent);
             text-decoration: none;
             font-weight: 500;
+            padding: 4px 10px;
+            border: 1px solid rgba(193,95,60,.2);
+            border-radius: 6px;
+            transition: all .15s;
         }
 
-        .card-footer .source-link:hover { text-decoration: underline; }
-
-        /* Author & country */
-        .card-author {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .78rem;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
+        .source-link:hover {
+            background: rgba(193,95,60,.06);
+            border-color: rgba(193,95,60,.4);
         }
 
-        .card-author .country-flag {
-            font-size: .85rem;
-        }
-
-        /* Responsive */
+        /* ── Responsive ── */
         @media (max-width: 600px) {
-            header { padding: 32px 0 20px; }
-            header h1 { font-size: 1.35rem; }
-            .mention-card { padding: 16px 18px; }
-            .card-meta { margin-left: 0; width: 100%; margin-top: 4px; }
+            header { padding: 32px 0 16px; }
+            header h1 { font-size: 1.3rem; }
+            .mention-card { padding: 16px; }
+            .card-top .date { margin-left: 0; }
+            .overview .sep { margin: 0 6px; }
+            .filters { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -296,101 +252,101 @@
         <header>
             <div class="brand">Duflat</div>
             <h1>Bilibili Social Listening</h1>
-            <p class="subtitle">Global mentions, reviews, and sentiment about Bilibili - updated daily.</p>
+            <p>Global mentions, reviews, and sentiment - updated daily</p>
         </header>
 
-        <div class="stats-bar">
-            <div class="stat-chip total"><strong>3</strong> mentions</div>
-            <div class="stat-chip positive"><span class="dot"></span>1 positive</div>
-            <div class="stat-chip negative"><span class="dot"></span>1 negative</div>
-            <div class="stat-chip neutral"><span class="dot"></span>1 neutral</div>
+        <!-- Stats: plain text, clearly NOT clickable -->
+        <div class="overview">
+            <strong>3</strong> mentions
+            <span class="sep">|</span>
+            <span class="pos">1</span> positive
+            <span class="sep">|</span>
+            <span class="neg">1</span> negative
+            <span class="sep">|</span>
+            <span class="neu">1</span> neutral
         </div>
 
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterMentions('all')">All</button>
-            <button class="filter-btn" onclick="filterMentions('positive')">Positive</button>
-            <button class="filter-btn" onclick="filterMentions('negative')">Negative</button>
-            <button class="filter-btn" onclick="filterMentions('neutral')">Neutral</button>
+        <!-- Filter: clearly buttons -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="filter('all', this)">All <span class="count">(3)</span></button>
+            <button class="filter-btn" onclick="filter('positive', this)">Positive <span class="count">(1)</span></button>
+            <button class="filter-btn" onclick="filter('negative', this)">Negative <span class="count">(1)</span></button>
+            <button class="filter-btn" onclick="filter('neutral', this)">Neutral <span class="count">(1)</span></button>
         </div>
 
-        <div class="last-updated">
-            <span>Last updated: April 9, 2026</span>
-        </div>
+        <div class="updated">Last updated: April 9, 2026</div>
 
         <div class="mentions" id="mentions">
 
-            <!-- Positive -->
+            <!-- POSITIVE -->
             <div class="mention-card positive" data-sentiment="positive">
-                <div class="card-header">
-                    <span class="sentiment-badge">Positive</span>
-                    <span class="platform-badge">YouTube</span>
-                    <span class="card-meta">Jan 2026</span>
+                <div class="card-top">
+                    <span class="sentiment-dot"></span>
+                    <span class="sentiment-label">Positive</span>
+                    <span class="platform">YouTube</span>
+                    <span class="date">Jan 2026</span>
                 </div>
-                <div class="card-author">
-                    <span class="country-flag">🇭🇰</span> Anonymous user · Hong Kong
-                </div>
-                <div class="card-content">
+                <div class="card-author">Anonymous user - Hong Kong</div>
+                <div class="card-quote">
                     Bilibili has way more creators getting 2-3x the reach compared to YouTube. If your video is good, the payoff is real. The community is friendlier too. Plus you can find niche info on Bilibili that YouTube just doesn't have.
                 </div>
                 <div class="card-summary">
-                    Creator reports significantly higher viewership on Bilibili vs YouTube, praises community culture and availability of niche content not found elsewhere.
+                    <strong>TL;DR</strong> Creator reports significantly higher viewership on Bilibili vs YouTube, praises community culture and niche content availability.
                 </div>
-                <div class="card-footer">
-                    <span class="keyword-tag">Community</span>
-                    <span class="keyword-tag">Viewership</span>
-                    <span class="keyword-tag">Niche Content</span>
-                    <span class="keyword-tag">Creator Experience</span>
-                    <a class="source-link" href="https://www.youtube.com/watch?v=f99FosiYzf8" target="_blank" rel="noopener">View source &#8599;</a>
+                <div class="card-bottom">
+                    <span class="tag">Community</span>
+                    <span class="tag">Viewership</span>
+                    <span class="tag">Niche Content</span>
+                    <span class="tag">Creator Experience</span>
+                    <a class="source-link" href="https://www.youtube.com/watch?v=f99FosiYzf8" target="_blank" rel="noopener">Source</a>
                 </div>
             </div>
 
-            <!-- Negative -->
+            <!-- NEGATIVE -->
             <div class="mention-card negative" data-sentiment="negative">
-                <div class="card-header">
-                    <span class="sentiment-badge">Negative</span>
-                    <span class="platform-badge">Trustpilot</span>
-                    <span class="card-meta">Apr 9, 2026</span>
+                <div class="card-top">
+                    <span class="sentiment-dot"></span>
+                    <span class="sentiment-label">Negative</span>
+                    <span class="platform">Trustpilot</span>
+                    <span class="date">Apr 9, 2026</span>
                 </div>
-                <div class="card-author">
-                    <span class="country-flag">🌐</span> jedidia mamy
-                </div>
-                <div class="card-content">
+                <div class="card-author">jedidia mamy</div>
+                <div class="card-quote">
                     The old Bilibili was good but the new version is not good, some bugs, lags and sometimes you don't have access.
                 </div>
                 <div class="card-summary">
-                    User compares old vs new version negatively. Reports bugs, performance lag, and intermittent access problems after recent updates.
+                    <strong>TL;DR</strong> Compares old vs new version negatively. Reports bugs, performance lag, and intermittent access problems after recent updates.
                 </div>
-                <div class="card-footer">
-                    <span class="keyword-tag">Bugs</span>
-                    <span class="keyword-tag">Lag</span>
-                    <span class="keyword-tag">Access Issues</span>
-                    <span class="keyword-tag">Version Downgrade</span>
-                    <a class="source-link" href="https://www.trustpilot.com/review/www.bilibili.tv" target="_blank" rel="noopener">View source &#8599;</a>
+                <div class="card-bottom">
+                    <span class="tag">Bugs</span>
+                    <span class="tag">Lag</span>
+                    <span class="tag">Access Issues</span>
+                    <span class="tag">Version Downgrade</span>
+                    <a class="source-link" href="https://www.trustpilot.com/review/www.bilibili.tv" target="_blank" rel="noopener">Source</a>
                 </div>
             </div>
 
-            <!-- Neutral -->
+            <!-- NEUTRAL -->
             <div class="mention-card neutral" data-sentiment="neutral">
-                <div class="card-header">
-                    <span class="sentiment-badge">Neutral</span>
-                    <span class="platform-badge">App Review (vraki.net)</span>
-                    <span class="card-meta">2026</span>
+                <div class="card-top">
+                    <span class="sentiment-dot"></span>
+                    <span class="sentiment-label">Neutral</span>
+                    <span class="platform">vraki.net</span>
+                    <span class="date">2026</span>
                 </div>
-                <div class="card-author">
-                    <span class="country-flag">🇷🇺</span> Anonymous user · Russia
-                </div>
-                <div class="card-content">
+                <div class="card-author">Anonymous user - Russia</div>
+                <div class="card-quote">
                     The app is intuitive and easy to use even without knowing Chinese. The only downside is that changing your nickname costs money.
                 </div>
                 <div class="card-summary">
-                    Russian-speaking user praises intuitive UX that works across language barriers, but notes paid nickname change as a minor friction point.
+                    <strong>TL;DR</strong> Praises intuitive UX that works across language barriers, but notes paid nickname change as a minor friction point.
                 </div>
-                <div class="card-footer">
-                    <span class="keyword-tag">Intuitive Design</span>
-                    <span class="keyword-tag">Usability</span>
-                    <span class="keyword-tag">Language Barrier</span>
-                    <span class="keyword-tag">Russian Market</span>
-                    <a class="source-link" href="https://vraki.net/otzyvy/mobilnye-prilozheniya/bilibili-gao-qing-xin-fan-yuan-chuang-shi-pin-she-qu.html" target="_blank" rel="noopener">View source &#8599;</a>
+                <div class="card-bottom">
+                    <span class="tag">Intuitive Design</span>
+                    <span class="tag">Usability</span>
+                    <span class="tag">Language Barrier</span>
+                    <span class="tag">Russian Market</span>
+                    <a class="source-link" href="https://vraki.net/otzyvy/mobilnye-prilozheniya/bilibili-gao-qing-xin-fan-yuan-chuang-shi-pin-she-qu.html" target="_blank" rel="noopener">Source</a>
                 </div>
             </div>
 
@@ -398,19 +354,11 @@
     </div>
 
     <script>
-        function filterMentions(sentiment) {
-            const cards = document.querySelectorAll('.mention-card');
-            const btns = document.querySelectorAll('.filter-btn');
-
-            btns.forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-
-            cards.forEach(card => {
-                if (sentiment === 'all' || card.dataset.sentiment === sentiment) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
+        function filter(sentiment, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.mention-card').forEach(card => {
+                card.style.display = (sentiment === 'all' || card.dataset.sentiment === sentiment) ? '' : 'none';
             });
         }
     </script>
