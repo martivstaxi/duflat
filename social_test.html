@@ -391,8 +391,7 @@
                 const currentMonth = new Date().getMonth(); // 0-11
                 for (let mo = 0; mo < 12; mo++) {
                     const isFuture = mo > currentMonth;
-                    const count = monthCounts[mo] || 0;
-                    const cls = (count === 0 && isFuture) ? 'filter-option disabled' : count === 0 ? 'filter-option disabled' : 'filter-option';
+                    const cls = isFuture ? 'filter-option disabled' : 'filter-option';
                     html += `<button class="${cls}" onclick="filterSelectMonth(${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
                 }
             } else if (filterMonth !== null) {
