@@ -483,15 +483,23 @@
         function archiveNext() {
             const totalPages = Math.ceil(allDates.length / DATES_PER_PAGE);
             if (archivePage < totalPages - 1) {
+                const archive = document.getElementById('archiveSection');
+                const y = archive.getBoundingClientRect().top;
                 archivePage++;
                 renderArchive();
+                const drift = archive.getBoundingClientRect().top - y;
+                if (Math.abs(drift) > 2) window.scrollBy(0, drift);
             }
         }
 
         function archivePrev() {
             if (archivePage > 0) {
+                const archive = document.getElementById('archiveSection');
+                const y = archive.getBoundingClientRect().top;
                 archivePage--;
                 renderArchive();
+                const drift = archive.getBoundingClientRect().top - y;
+                if (Math.abs(drift) > 2) window.scrollBy(0, drift);
             }
         }
 
