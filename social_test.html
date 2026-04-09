@@ -253,7 +253,7 @@
             const neu = filtered.filter(m => m.sentiment === 'neutral').length;
 
             document.getElementById('sentimentBtns').innerHTML =
-                `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All</button>` +
+                `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All <span class="count">${filtered.length}</span></button>` +
                 `<button class="sent-btn pos ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')">
                     <span class="dot" style="background:var(--positive)"></span>Positive <span class="count">${pos}</span>
                 </button>` +
@@ -361,7 +361,9 @@
             const filtered = getFilteredMentions();
 
             if (filtered.length === 0) {
-                document.getElementById('content').innerHTML = '<div class="empty">No mentions found.</div>';
+                const hint = currentFilter !== 'all' || currentLang !== 'all'
+                    ? ' Try clearing filters.' : '';
+                document.getElementById('content').innerHTML = `<div class="empty">No mentions found.${hint}</div>`;
                 return;
             }
 
@@ -401,6 +403,8 @@
                 ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
                 : '';
 
+            const tagsHtml = (m.keywords || []).map(k => `<span class="tag">#${escapeHtml(k)}</span>`).join('');
+
             return `<div class="mention-card ${s}">
                 <div class="card-top">
                     ${detailsBtn}
@@ -410,6 +414,7 @@
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
+                ${tagsHtml ? `<div class="card-bottom">${tagsHtml}</div>` : ''}
             </div>`;
         }
 
