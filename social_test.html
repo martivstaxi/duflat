@@ -394,8 +394,9 @@
             const detailsHtml = hasOriginal
                 ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
                 : '';
+            const lang = m.language || 'Original';
             const detailsBtn = hasOriginal
-                ? `<button class="details-btn" onclick="toggleDetails('det-${uid}',this)">Details</button>`
+                ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
                 : '';
 
             return `<div class="mention-card ${s}">
@@ -407,7 +408,6 @@
                 ${detailsHtml}
                 <div class="card-bottom">
                     ${keywords}
-                    <span class="card-lang">${escapeHtml(m.language || '')}</span>
                     ${detailsBtn}
                 </div>
             </div>`;
@@ -454,12 +454,12 @@
             renderAll();
         }
 
-        function toggleDetails(id, btn) {
+        function toggleDetails(id, btn, lang) {
             const panel = document.getElementById(id);
             if (!panel) return;
             const isOpen = panel.classList.toggle('open');
             btn.classList.toggle('open', isOpen);
-            btn.textContent = isOpen ? 'Close' : 'Details';
+            btn.textContent = isOpen ? 'Close' : lang;
         }
 
         function formatDateLong(d) {
