@@ -600,17 +600,21 @@ def delete_mentions(ids):
     return deleted
 
 
-def update_mention(mid, content_english, content_original=None):
-    """Update a mention's content text and recalculate content_hash."""
-    if not content_original:
-        content_original = content_english
-    new_hash = hash_content(content_original)
+def update_mention(mid, content_english=None, content_original=None, language=None):
+    """Update a mention's fields. Only updates provided fields."""
+    updates = {}
+    if content_english is not None:
+        updates['content_english'] = content_english
+    if content_original is not None:
+        updates['content_original'] = content_original
+    if content_english or content_original:
+        updates['content_hash'] = hash_content(content_original or content_english)
+    if language is not None:
+        updates['language'] = language
+    if not updates:
+        return False
     try:
-        _db().table('social_mentions').update({
-            'content_english': content_english,
-            'content_original': content_original,
-            'content_hash': new_hash,
-        }).eq('id', mid).execute()
+        _db().table('social_mentions').update(updates).eq('id', mid).execute()
         return True
     except Exception:
         return False

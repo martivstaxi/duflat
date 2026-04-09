@@ -267,7 +267,7 @@ def social_cleanup():
     updates = body.get('updates', [])
     updated = 0
     for u in updates:
-        if update_mention(u['id'], u['content_english'], u.get('content_original')):
+        if update_mention(u['id'], u.get('content_english'), u.get('content_original'), u.get('language')):
             updated += 1
     result['updated'] = updated
     return jsonify(result)
