@@ -50,14 +50,9 @@
         .sent-btn.all-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
         .sent-btn.active.all-btn svg { stroke: var(--accent); }
 
-        /* Toolbar: filter button right-aligned */
-        .toolbar {
-            display: flex; align-items: center; justify-content: flex-end;
-            padding: 16px 0 12px;
-        }
         .filter-toggle {
-            display: flex; align-items: center; gap: 6px;
-            padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            padding: 6px 10px; border-radius: 20px; border: 1.5px solid var(--border);
             background: var(--card); font-family: inherit; font-size: .75rem; font-weight: 600;
             color: var(--muted); cursor: pointer; transition: all .15s; position: relative;
         }
@@ -200,16 +195,6 @@
 
         <div class="sentiment-btns" id="sentimentBtns"></div>
 
-        <div class="toolbar">
-            <div class="filter-wrap">
-                <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
-                    Filter
-                </button>
-                <div class="filter-dropdown" id="filterDropdown"></div>
-            </div>
-        </div>
-
         <div class="active-chips" id="activeChips"></div>
 
         <div id="content">
@@ -275,7 +260,13 @@
                 </button>` +
                 `<button class="sent-btn neu ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')">
                     <span class="dot" style="background:var(--neutral)"></span>Neutral <span class="count">${neu}</span>
-                </button>`;
+                </button>` +
+                `<div class="filter-wrap">
+                    <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+                    </button>
+                    <div class="filter-dropdown" id="filterDropdown"></div>
+                </div>`;
         }
 
         function toggleFilterPanel() {
