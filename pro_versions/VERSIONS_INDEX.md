@@ -34,3 +34,4 @@ Her sürüm kendi alt klasöründe `VERSION_INFO.md` içerir — ne içerdiği, 
 | [pro_version_16](./pro_version_16/VERSION_INFO.md) | 2026-04-06 | Email dissolve/resolve efekti, overlay spinner, kart iskeleti korunuyor |
 | [pro_version_17](./pro_version_17/VERSION_INFO.md) | 2026-04-06 | last_video_date fix: regex genisletme + coklu fallback |
 | [pro_version_18](./pro_version_18/VERSION_INFO.md) | 2026-04-06 | Frontend refactor: test.html → HTML + static/style.css + static/app.js |
+| [social_v2](./social_v2/VERSION_INFO.md) | 2026-04-10 | Social v2: DDG multi-region, takvim filtre, sayfalı tarih, günlük cron |
