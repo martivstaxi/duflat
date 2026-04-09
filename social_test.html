@@ -165,26 +165,36 @@
         .details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
         .details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
 
-        /* Archive date picker at bottom */
+        /* Archive date picker — Google-style pagination */
         .archive-section { margin-top: 48px; padding: 32px 0 64px; border-top: 1px solid var(--border); text-align: center; }
         .archive-section h2 { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-        .archive-dates { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .archive-dates { display: flex; gap: 8px; justify-content: center; align-items: center; }
         .archive-date-btn {
             padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--border);
             background: var(--card); font-family: inherit; font-size: .78rem; font-weight: 500;
-            color: var(--text); cursor: pointer; transition: all .15s;
+            color: var(--text); cursor: pointer; transition: all .15s; min-width: 62px;
         }
         .archive-date-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
         .archive-date-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .archive-date-btn .day { font-weight: 700; font-size: .85rem; display: block; }
         .archive-date-btn .month { font-size: .65rem; color: inherit; opacity: .7; }
+        .archive-nav {
+            width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border);
+            background: var(--card); cursor: pointer; transition: all .15s;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .archive-nav:hover { border-color: var(--accent); background: #faf8f6; }
+        .archive-nav svg { width: 16px; height: 16px; stroke: var(--muted); transition: stroke .15s; }
+        .archive-nav:hover svg { stroke: var(--accent); }
+        .archive-nav.disabled { opacity: .3; pointer-events: none; }
 
         @media (max-width: 600px) {
             header { padding: 32px 0 12px; }
             header h1 { font-size: 1.3rem; }
             .mention-card { padding: 16px; }
             .pill { width: 36px; height: 36px; }
-            .archive-date-btn { padding: 6px 12px; }
+            .archive-date-btn { padding: 6px 12px; min-width: 52px; }
+            .archive-nav { width: 36px; height: 36px; }
         }
     </style>
 </head>
@@ -219,6 +229,8 @@
         let currentLang = 'all';
         let currentDateFilter = null;
         let filterOpen = false;
+        let archivePage = 0;
+        const DATES_PER_PAGE = 4;
 
         async function loadMentions() {
             document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
@@ -426,11 +438,33 @@
             document.getElementById('archiveSection').style.display = '';
             const container = document.getElementById('archiveDates');
 
-            let html = `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-                <span class="day">All</span><span class="month">dates</span>
-            </button>`;
+            // allDates is already sorted newest→oldest
+            // Page 0 = "All" + first 3 dates + next arrow
+            // Page 1+ = prev arrow + 4 dates (or fewer) + next arrow (if more)
+            const totalPages = Math.ceil(allDates.length / DATES_PER_PAGE);
+            const start = archivePage * DATES_PER_PAGE;
+            const end = Math.min(start + DATES_PER_PAGE, allDates.length);
+            const pageDates = allDates.slice(start, end);
+            const hasPrev = archivePage > 0;
+            const hasNext = end < allDates.length;
 
-            allDates.forEach(d => {
+            const prevSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+            const nextSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
+
+            let html = '';
+
+            // Prev button
+            html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Newer">${prevSvg}</button>`;
+
+            // "All" button only on first page
+            if (archivePage === 0) {
+                html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
+                    <span class="day">All</span><span class="month">dates</span>
+                </button>`;
+            }
+
+            // Date buttons
+            pageDates.forEach(d => {
                 const dt = new Date(d + 'T00:00:00');
                 const day = dt.getDate();
                 const month = dt.toLocaleDateString('en-US', { month: 'short' });
@@ -438,13 +472,33 @@
                     <span class="day">${day}</span><span class="month">${month}</span>
                 </button>`;
             });
+
+            // Next button
+            html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Older">${nextSvg}</button>`;
+
             container.innerHTML = html;
+        }
+
+        function archiveNext() {
+            const totalPages = Math.ceil(allDates.length / DATES_PER_PAGE);
+            if (archivePage < totalPages - 1) {
+                archivePage++;
+                renderArchive();
+            }
+        }
+
+        function archivePrev() {
+            if (archivePage > 0) {
+                archivePage--;
+                renderArchive();
+            }
         }
 
         function selectDate(date) {
             currentDateFilter = date;
             currentFilter = 'all';
             currentLang = 'all';
+            if (!date) archivePage = 0;
             renderAll();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
