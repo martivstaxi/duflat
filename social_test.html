@@ -405,8 +405,6 @@
 
         function renderCard(m, uid) {
             const s = m.sentiment || 'neutral';
-            const keyword = (m.keywords || [])[0] || '';
-            const keywordHtml = keyword ? `<span class="card-tag">#${escapeHtml(keyword)}</span>` : '';
             const hasOriginal = m.content_original && m.content_original !== m.content_english;
             const detailsHtml = hasOriginal
                 ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
@@ -423,7 +421,6 @@
                     ${detailsBtn}
                     <span class="sentiment-dot"></span>
                     <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
-                    ${keywordHtml}
                 </div>
                 <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
                 ${detailsHtml}
