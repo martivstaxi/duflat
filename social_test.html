@@ -31,7 +31,7 @@
         /* Sentiment buttons — centered under title */
         .sentiment-btns {
             display: flex; gap: 8px; justify-content: center;
-            padding: 14px 0 4px;
+            padding: 14px 0 20px;
         }
         .sent-btn {
             padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border);
@@ -388,7 +388,7 @@
 
         function renderCard(m, uid) {
             const s = m.sentiment || 'neutral';
-            const keywords = (m.keywords || []).slice(0, 3).map(k => `<span class="tag">${escapeHtml(k)}</span>`).join('');
+            const keywords = (m.keywords || []).slice(0, 1).map(k => `<span class="tag">${escapeHtml(k)}</span>`).join('');
             const hasOriginal = m.content_original && m.content_original !== m.content_english;
             const detailsHtml = hasOriginal
                 ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
