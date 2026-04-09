@@ -320,8 +320,21 @@ def _analyze_with_haiku(items):
             'text': item['text'][:2000],  # cap per item
         })
 
-    prompt = f"""Analyze these web articles about Bilibili. For EACH article, extract:
-- content_english: 1-2 sentence English summary of the Bilibili-related content
+    prompt = f"""You are a social listening analyst. Your job is to capture what PEOPLE and COMMUNITIES are saying about Bilibili — public opinion, user reactions, community sentiment, social commentary.
+
+For EACH article, write a plain-English summary that sounds like a social media insight, NOT a news headline. Use simple, everyday language. Avoid jargon, financial terms, or corporate-speak.
+
+Good examples:
+- "Users are excited about Bilibili's new anime lineup for winter 2026, especially Frieren Season 2."
+- "Fans are celebrating BLG's first international esports title after beating G2 in Brazil."
+- "Some investors worry the new algorithm change might push users away."
+
+Bad examples (too formal/news-like):
+- "Bilibili Inc. reported Q4 revenue of RMB 8.32 billion, an increase of 8% YoY."
+- "The company achieved its first full year of GAAP profitability."
+
+For EACH article, extract:
+- content_english: 1-2 sentence plain-English social insight (what people think/feel about this)
 - content_original: same as content_english (all sources are English)
 - sentiment: "positive", "negative", or "neutral"
 - keywords: array of 2-4 single-word topic tags
@@ -332,6 +345,7 @@ def _analyze_with_haiku(items):
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
 Skip articles that are NOT actually about Bilibili (false positives).
+Skip purely financial stock-price/analyst-rating pages with no social insight.
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
