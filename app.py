@@ -23,7 +23,7 @@ from modules.summarizer_v2 import summarize_channel_v2
 from modules.email_generator import generate_email
 from modules.social_listening import (
     init_supabase, check_urls, process_urls, save_mentions,
-    get_mentions, get_stats, get_available_dates, scan_urls,
+    get_mentions, compute_stats_and_dates, scan_urls,
     delete_mentions, update_mention, auto_discover,
 )
 
@@ -323,8 +323,7 @@ def social_mentions():
     else:
         data = get_mentions(days=3)
 
-    stats = get_stats()
-    dates = get_available_dates()
+    stats, dates = compute_stats_and_dates(data)
 
     return jsonify({
         'mentions': data,

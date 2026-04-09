@@ -340,7 +340,7 @@ For EACH article, extract:
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
 - country: country of origin if detectable, otherwise "International"
-- language: "English"
+- language: detect the ORIGINAL language of the source article. Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If the article is in Chinese (Simplified or Traditional), use "Traditional Chinese". If unsure, use "English".
 
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
@@ -616,25 +616,11 @@ def update_mention(mid, content_english, content_original=None):
         return False
 
 
-def get_stats():
-    """Get aggregate stats for the overview bar."""
-    all_rows = _db().table('social_mentions').select('sentiment', count='exact').execute()
-    total = all_rows.count or 0
-
-    pos = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'positive').execute()
-    neg = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'negative').execute()
-    neu = _db().table('social_mentions').select('id', count='exact').eq('sentiment', 'neutral').execute()
-
-    return {
-        'total': total,
-        'positive': pos.count or 0,
-        'negative': neg.count or 0,
-        'neutral': neu.count or 0,
-    }
-
-
-def get_available_dates():
-    """Get list of dates that have mentions (for date picker)."""
-    result = _db().table('social_mentions').select('content_date').execute()
-    dates = sorted(set(row['content_date'] for row in result.data if row.get('content_date')), reverse=True)
-    return dates
+def compute_stats_and_dates(mentions):
+    """Compute stats and available dates from already-fetched mentions (zero extra DB calls)."""
+    pos = sum(1 for m in mentions if m.get('sentiment') == 'positive')
+    neg = sum(1 for m in mentions if m.get('sentiment') == 'negative')
+    neu = sum(1 for m in mentions if m.get('sentiment') == 'neutral')
+    dates = sorted(set(m['content_date'] for m in mentions if m.get('content_date')), reverse=True)
+    stats = {'total': len(mentions), 'positive': pos, 'negative': neg, 'neutral': neu}
+    return stats, dates
