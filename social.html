@@ -597,12 +597,16 @@
 
         function setLang(lang) {
             currentLang = lang;
+            filterOpen = false;
+            document.getElementById('filterDropdown').classList.remove('open');
             renderAll();
         }
 
         function filterSelectYear() {
             filterMonth = null;
             showMonths = false;
+            filterOpen = false;
+            document.getElementById('filterDropdown').classList.remove('open');
             selectDate(null);
         }
 
