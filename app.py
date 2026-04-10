@@ -46,6 +46,11 @@ if _supa_url and _supa_key:
 # MAIN ROUTES
 # ─────────────────────────────────────────────
 
+@app.route('/ping')
+def ping():
+    return 'ok', 200
+
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')

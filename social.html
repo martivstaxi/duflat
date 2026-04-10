@@ -240,6 +240,9 @@
         const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? '' : 'https://duflat-production.up.railway.app';
 
+        // Warm up Railway immediately — fire-and-forget, no await
+        if (API) fetch(API + '/ping').catch(() => {});
+
         let allMentions = [];
         let allDates = [];
         let currentFilter = 'all';
