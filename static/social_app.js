@@ -149,7 +149,7 @@ function renderFilterDropdown() {
             <button class="filter-option ${!currentDateFilter && filterMonth===null?'active':''}" onclick="filterSelectYear()">2026<span class="opt-count">${allMentions.length}</span></button>`;
 
     // "Month" toggle button
-    html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths()" style="padding-left:20px">Month</button>`;
+    html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Month</button>`;
 
     if (showMonths && filterMonth === null) {
         // Month list — 12 months, disable months with no content
@@ -163,7 +163,7 @@ function renderFilterDropdown() {
         for (let mo = 0; mo < 12; mo++) {
             const isFuture = mo > currentMonth;
             const cls = isFuture ? 'filter-option disabled' : 'filter-option';
-            html += `<button class="${cls}" onclick="filterSelectMonth(${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
+            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
         }
     } else if (filterMonth !== null) {
         // Calendar for selected month
@@ -172,9 +172,9 @@ function renderFilterDropdown() {
         const firstDay = new Date(2026, mo, 1).getDay(); // 0=Sun
         html += `</div>
         <div class="cal-header">
-            <button onclick="filterCalPrev()">&#8249;</button>
+            <button onclick="filterCalPrev(event)">&#8249;</button>
             <span class="cal-title">${monthNames[mo]} 2026</span>
-            <button onclick="filterCalNext()">&#8250;</button>
+            <button onclick="filterCalNext(event)">&#8250;</button>
         </div>
         <div class="cal-grid">`;
         ['S','M','T','W','T','F','S'].forEach(d => { html += `<div class="cal-day-name">${d}</div>`; });
@@ -384,13 +384,15 @@ function filterSelectYear() {
     selectDate(null);
 }
 
-function toggleMonths() {
+function toggleMonths(e) {
+    if (e) e.stopPropagation();
     showMonths = !showMonths;
     filterMonth = null;
     renderFilterDropdown();
 }
 
-function filterSelectMonth(mo) {
+function filterSelectMonth(e, mo) {
+    if (e) e.stopPropagation();
     filterMonth = mo;
     showMonths = false;
     renderFilterDropdown();
@@ -402,11 +404,13 @@ function filterBackToMonths() {
     renderFilterDropdown();
 }
 
-function filterCalPrev() {
+function filterCalPrev(e) {
+    if (e) e.stopPropagation();
     if (filterMonth > 0) { filterMonth--; renderFilterDropdown(); }
 }
 
-function filterCalNext() {
+function filterCalNext(e) {
+    if (e) e.stopPropagation();
     const currentMonth = new Date().getMonth();
     if (filterMonth < currentMonth) { filterMonth++; renderFilterDropdown(); }
 }
