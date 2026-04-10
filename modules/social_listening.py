@@ -680,7 +680,7 @@ def auto_discover(languages=None):
             for region in regions:
                 if time.time() - search_start > 50:
                     break
-                urls = _ddg_search(q, max_results=20, region=region, timelimit=None)
+                urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
                 for u in urls:
                     if u not in seen:
                         seen.add(u)
