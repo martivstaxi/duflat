@@ -207,8 +207,11 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     .sent-btn { padding: 5px 12px; font-size: .7rem; }
     .sent-btn .count { font-size: .6rem; }
 
-    /* Filter dropdown — full width on mobile */
-    .filter-dropdown { min-width: unset; width: calc(100vw - 28px); right: -10px; padding: 14px; }
+    /* Filter dropdown — fixed full-width sheet on mobile */
+    .filter-dropdown {
+        position: fixed; top: auto; right: 14px; left: 14px;
+        width: auto; min-width: unset; padding: 14px;
+    }
 
     /* Cards */
     .mention-card { padding: 14px 16px; }
