@@ -84,12 +84,13 @@ function renderSentimentBtns() {
         `<button class="sent-btn neu ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')">
             <span class="dot" style="background:var(--neutral)"></span>Neutral <span class="count">${neu}</span>
         </button>` +
-        `<button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
+        `<button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
         </button>`;
 }
 
-function toggleFilterPanel() {
+function toggleFilterPanel(e) {
+    if (e) e.stopPropagation();
     filterOpen = !filterOpen;
     const anchor = document.getElementById('filterDropdownAnchor');
     anchor.classList.toggle('open', filterOpen);
