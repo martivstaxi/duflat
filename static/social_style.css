@@ -82,7 +82,6 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     min-width: 260px;
 }
 #filterDropdownAnchor.open .filter-dropdown { display: block; }
-#filterDropdownAnchor.opening .filter-dropdown { animation: fadeIn .15s ease; }
 .filter-section { margin-bottom: 14px; }
 .filter-section:last-child { margin-bottom: 0; }
 .filter-section-title {

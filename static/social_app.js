@@ -94,12 +94,6 @@ function toggleFilterPanel(e) {
     filterOpen = !filterOpen;
     const anchor = document.getElementById('filterDropdownAnchor');
     anchor.classList.toggle('open', filterOpen);
-    if (filterOpen) {
-        anchor.classList.add('opening');
-        setTimeout(() => anchor.classList.remove('opening'), 150);
-    } else {
-        anchor.classList.remove('opening');
-    }
 }
 
 document.addEventListener('click', function(e) {
