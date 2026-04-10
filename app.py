@@ -332,6 +332,14 @@ def social_mentions():
     })
 
 
+@app.route('/social/debug-sources', methods=['GET'])
+def social_debug_sources():
+    """Debug: show recent social_sources with has_2026_content=True."""
+    from modules.social_listening import _db
+    result = _db().table('social_sources').select('url,domain,has_2026_content,checked_at').eq('has_2026_content', True).order('checked_at', desc=True).limit(20).execute()
+    return jsonify(result.data)
+
+
 @app.route('/debug-email', methods=['GET'])
 def debug_email():
     """Debug: what each method finds for channel email."""
