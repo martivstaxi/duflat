@@ -207,9 +207,11 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     .sent-btn { padding: 5px 12px; font-size: .7rem; }
     .sent-btn .count { font-size: .6rem; }
 
-    /* Filter dropdown — fixed full-width sheet on mobile */
+    /* Filter dropdown — anchor to sentiment bar, full width */
+    .sentiment-btns { position: relative; }
+    .filter-wrap { position: static; }
     .filter-dropdown {
-        position: fixed; top: auto; right: 14px; left: 14px;
+        position: absolute; top: 100%; left: 0; right: 0;
         width: auto; min-width: unset; padding: 14px;
     }
 
