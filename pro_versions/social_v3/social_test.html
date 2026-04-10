@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duflat — Social Listening TEST</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/social_style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Social Listening</h1>
+            <div style="margin-top:10px;display:inline-block;background:rgba(193,95,60,.12);border:1px solid rgba(193,95,60,.25);border-radius:6px;padding:4px 12px;font-size:.72rem;color:var(--accent);font-weight:600;letter-spacing:.5px">TEST BUILD</div>
+        </header>
+
+        <div class="sentiment-btns" id="sentimentBtns"></div>
+        <div id="filterDropdownAnchor"></div>
+
+        <div class="active-chips" id="activeChips"></div>
+
+        <div id="content">
+            <div class="loading"><div class="spinner"></div>Loading mentions...</div>
+        </div>
+
+        <div class="archive-section" id="archiveSection" style="display:none">
+            <h2>Browse by date</h2>
+            <div class="archive-dates" id="archiveDates"></div>
+        </div>
+    </div>
+
+    <script src="/static/social_app.js"></script>
+</body>
+</html>
