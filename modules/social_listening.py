@@ -467,119 +467,100 @@ def scan_urls(urls):
 # AUTO-DISCOVER — DDG search across 8 languages
 # ─────────────────────────────────────────────
 
-# Search queries per language — multiple queries per lang for variety
+# Search queries per language — short, no year (pipeline filters for 2026 content)
 _DISCOVER_QUERIES = {
     'English': [
-        'Bilibili 2026 news',
-        'Bilibili BILI stock earnings 2026',
-        'Bilibili AI content creators anime 2026',
-        'Bilibili gaming esports BLG 2026',
-        'Bilibili advertising revenue growth 2026',
-        'Bilibili first annual profit 2026',
-        'Bilibili Spring Festival Gala 2026',
-        'Bilibili AniSora AI anime model',
-        'Bilibili Gen Z marketing China 2026',
-        'Bilibili danmaku platform community 2026',
+        'Bilibili news',
+        'Bilibili BILI stock earnings',
+        'Bilibili anime platform users',
+        'Bilibili gaming esports BLG',
+        'Bilibili China video platform',
+        'Bilibili AniSora AI anime',
+        'Bilibili revenue profit',
+        'Bilibili Spring Festival',
     ],
     'Japanese': [
-        'ビリビリ Bilibili 2026 ニュース',
-        'ビリビリ 哔哩哔哩 株 決算 2025 2026',
-        'ビリビリ AI アニメ コンテンツ クリエイター 2026',
-        'ビリビリ eスポーツ BLG LoL 2026',
-        'ビリビリ動画 広告収入 成長 2026',
-        'ビリビリ 初の通期黒字 2025年決算',
-        'ビリビリ 春節 新年ガラ 2026',
-        'ビリビリ AniSora AI動画生成',
-        'ビリビリ 中国 動画プラットフォーム Z世代',
-        'ビリビリ 弾幕 コミュニティ 2026',
+        'ビリビリ ニュース',
+        'ビリビリ 動画プラットフォーム',
+        'ビリビリ アニメ',
+        'ビリビリ 決算 株',
+        'ビリビリ eスポーツ BLG',
+        'ビリビリ AniSora AI',
+        'ビリビリ 中国 Z世代',
+        '哔哩哔哩 日本',
     ],
     'Arabic': [
-        'بيليبيلي Bilibili 2026 أخبار',
-        'بيليبيلي أسهم أرباح 2025 2026',
-        'بيليبيلي منصة فيديو صينية أنمي 2026',
-        'بيليبيلي ذكاء اصطناعي محتوى أنمي',
-        'بيليبيلي إعلانات إيرادات نمو 2026',
-        'بيليبيلي أول ربح سنوي 2025',
-        'بيليبيلي مهرجان الربيع 2026',
-        'بيليبيلي AniSora ذكاء اصطناعي أنمي',
-        'بيليبيلي تسويق الصين الجيل زد',
-        'Bilibili platform review Arabic 2026',
-        'Bilibili أنمي صيني 2026',
-        'Bilibili BILI بورصة 2026',
-        'موقع بيليبيلي الصيني مراجعة',
+        'بيليبيلي أخبار',
+        'بيليبيلي منصة فيديو صينية',
+        'بيليبيلي أنمي صيني',
+        'Bilibili Arabic',
+        'بيليبيلي أسهم',
+        'بيليبيلي ذكاء اصطناعي',
+        'موقع بيليبيلي الصيني',
+        'Bilibili China platform review',
     ],
     'Traditional Chinese': [
-        '嗶哩嗶哩 B站 2026 新聞',
-        '嗶哩嗶哩 股票 財報 2025 2026',
-        '嗶哩嗶哩 AI創作 動漫 內容創作者 2026',
-        '嗶哩嗶哩 電競 BLG LoL 2026',
-        '嗶哩嗶哩 廣告收入 增長 2026',
-        '嗶哩嗶哩 首次年度盈利 2025',
-        '嗶哩嗶哩 春節聯歡晚會 2026',
-        'B站 AniSora AI動畫生成',
-        'B站 年輕人 用戶增長 2026',
-        'B站 彈幕 社區 創作者收入 2026',
+        '嗶哩嗶哩 新聞',
+        '嗶哩嗶哩 股票',
+        'B站 動漫 用戶',
+        '嗶哩嗶哩 電競 BLG',
+        'B站 廣告收入',
+        'B站 AniSora AI',
+        '嗶哩嗶哩 春節',
+        'B站 創作者',
     ],
     'Turkish': [
-        'Bilibili Çin video platformu 2026',
-        'Bilibili YouTube rakibi Çin anime',
-        'Bilibili hisse senedi kâr 2026',
-        'Bilibili yapay zeka anime içerik 2026',
-        'Bilibili reklam geliri büyüme 2026',
-        'Bilibili ilk yıllık kâr 2025',
-        'Bilibili espor BLG LoL 2026',
-        'Bilibili AniSora yapay zeka anime',
-        'Bilibili Çin Z kuşağı pazarlama',
-        'Bilibili platform inceleme Türkçe',
-        'Bilibili nedir Çin video sitesi',
-        'Bilibili BILI hisse analiz 2026',
-        'Bilibili anime izleme platformu',
+        'Bilibili nedir',
+        'Bilibili Çin video platformu',
+        'Bilibili anime',
+        'Bilibili hisse',
+        'Bilibili espor',
+        'Bilibili AniSora yapay zeka',
+        'Bilibili platform inceleme',
+        'Bilibili YouTube Çin',
     ],
     'Russian': [
-        'Bilibili 2026 новости платформа',
-        'Bilibili акции прибыль 2025 2026',
-        'Bilibili AI аниме контент 2026',
-        'Bilibili киберспорт BLG LoL 2026',
-        'Bilibili реклама доходы рост 2026',
-        'Bilibili первая годовая прибыль 2025',
-        'Bilibili китайский YouTube обзор',
-        'Bilibili AniSora ИИ аниме модель',
-        'Bilibili маркетинг Китай поколение Z',
-        'Bilibili платформа аниме видео обзор',
-        'Bilibili BILI акции биржа анализ 2026',
-        'Bilibili что это китайская платформа видео',
-        'Bilibili аниме стриминг Китай обзор',
+        'Bilibili новости',
+        'Bilibili платформа видео Китай',
+        'Bilibili аниме',
+        'Bilibili акции',
+        'Bilibili киберспорт',
+        'Bilibili AniSora ИИ',
+        'Bilibili обзор платформа',
+        'Bilibili китайский YouTube',
     ],
     'Spanish': [
-        'Bilibili 2026 noticias plataforma',
-        'Bilibili acciones ganancias 2025 2026',
-        'Bilibili AI anime contenido creadores 2026',
-        'Bilibili esports BLG LoL 2026',
-        'Bilibili publicidad ingresos crecimiento 2026',
-        'Bilibili primer beneficio anual 2025',
-        'Bilibili plataforma china streaming anime',
-        'Bilibili AniSora inteligencia artificial anime',
-        'Bilibili marketing China Generación Z',
-        'Bilibili plataforma video revisión 2026',
-        'Bilibili BILI acciones bolsa análisis 2026',
-        'Bilibili qué es plataforma china videos anime',
-        'Bilibili anime chino ver online',
+        'Bilibili noticias',
+        'Bilibili plataforma china',
+        'Bilibili anime',
+        'Bilibili acciones',
+        'Bilibili esports',
+        'Bilibili AniSora inteligencia artificial',
+        'Bilibili qué es plataforma',
+        'Bilibili China streaming',
     ],
     'Portuguese': [
-        'Bilibili 2026 notícias plataforma',
-        'Bilibili ações lucro 2025 2026',
-        'Bilibili AI anime conteúdo criadores 2026',
-        'Bilibili esports BLG LoL 2026',
-        'Bilibili publicidade receita crescimento 2026',
-        'Bilibili primeiro lucro anual 2025',
-        'Bilibili plataforma chinesa streaming anime',
-        'Bilibili AniSora inteligência artificial anime',
-        'Bilibili marketing China Geração Z',
-        'Bilibili o que é plataforma chinesa vídeos',
-        'Bilibili BILI ação bolsa 2026',
-        'Bilibili anime chinês assistir online',
-        'Bilibili plataforma vídeo China análise',
+        'Bilibili notícias',
+        'Bilibili plataforma chinesa',
+        'Bilibili anime',
+        'Bilibili ações',
+        'Bilibili esports',
+        'Bilibili AniSora inteligência artificial',
+        'Bilibili o que é',
+        'Bilibili China streaming',
     ],
+}
+
+# Google News RSS params per language — reliable multilingual news source
+_GNEWS_PARAMS = {
+    'English':            {'hl': 'en',    'gl': 'US', 'ceid': 'US:en'},
+    'Japanese':           {'hl': 'ja',    'gl': 'JP', 'ceid': 'JP:ja'},
+    'Arabic':             {'hl': 'ar',    'gl': 'SA', 'ceid': 'SA:ar'},
+    'Traditional Chinese':{'hl': 'zh-TW', 'gl': 'TW', 'ceid': 'TW:zh-Hant'},
+    'Turkish':            {'hl': 'tr',    'gl': 'TR', 'ceid': 'TR:tr'},
+    'Russian':            {'hl': 'ru',    'gl': 'RU', 'ceid': 'RU:ru'},
+    'Spanish':            {'hl': 'es',    'gl': 'ES', 'ceid': 'ES:es'},
+    'Portuguese':         {'hl': 'pt-BR', 'gl': 'BR', 'ceid': 'BR:pt-419'},
 }
 
 # Domains to skip (not content pages)
@@ -589,7 +570,35 @@ _SKIP_DOMAINS = {
 }
 
 
-def _ddg_search(query, max_results=20, region='wt-wt', timelimit='y'):
+def _google_news_rss(query, hl, gl, ceid, max_results=20):
+    """Fetch article URLs from Google News RSS. Returns list of URLs."""
+    import xml.etree.ElementTree as ET
+    import urllib.parse
+    rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(query)}&hl={hl}&gl={gl}&ceid={ceid}"
+    try:
+        resp = requests.get(rss_url, headers=BROWSER_HEADERS, timeout=10)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+        urls = []
+        for item in root.iter('item'):
+            # Try <link> tag first, then <guid>
+            link_el = item.find('link')
+            guid_el = item.find('guid')
+            url = None
+            if link_el is not None and link_el.text and link_el.text.startswith('http'):
+                url = link_el.text.strip()
+            elif guid_el is not None and guid_el.text and guid_el.text.startswith('http'):
+                url = guid_el.text.strip()
+            if url:
+                domain = urlparse(url).netloc.lower().replace('www.', '')
+                if not any(skip in domain for skip in _SKIP_DOMAINS):
+                    urls.append(url)
+        return urls[:max_results]
+    except Exception:
+        return []
+
+
+def _ddg_search(query, max_results=20, region='wt-wt', timelimit=None):
     """DuckDuckGo search via duckduckgo-search library — returns list of URLs.
     timelimit: 'd'=day, 'w'=week, 'm'=month, 'y'=year, None=all time
     """
@@ -651,13 +660,27 @@ def auto_discover(languages=None):
         all_urls = []
         seen = set()
         search_start = time.time()
+
+        # 1. Google News RSS — fast, multilingual, no timelimit needed
+        gnews = _GNEWS_PARAMS.get(lang)
+        if gnews:
+            for q in ['bilibili', 'bilibili platform', 'bilibili anime']:
+                if time.time() - search_start > 20:
+                    break
+                urls = _google_news_rss(q, gnews['hl'], gnews['gl'], gnews['ceid'], max_results=20)
+                for u in urls:
+                    if u not in seen:
+                        seen.add(u)
+                        all_urls.append(u)
+
+        # 2. DDG — broader search, no timelimit (pipeline filters for 2026 content)
         for q in queries:
             if time.time() - search_start > 50:
                 break
             for region in regions:
                 if time.time() - search_start > 50:
                     break
-                urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
+                urls = _ddg_search(q, max_results=20, region=region, timelimit=None)
                 for u in urls:
                     if u not in seen:
                         seen.add(u)
