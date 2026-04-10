@@ -251,24 +251,45 @@
         let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
         let showMonths = false; // whether month list is expanded
 
-        async function loadMentions() {
-            document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
+        const CACHE_KEY = 'social_mentions_cache';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+        function _applyData(data) {
+            const today = new Date().toISOString().slice(0, 10);
+            const mentions = (data.mentions || []).filter(m => !m.content_date || m.content_date <= today);
+            mentions.sort((a, b) => (b.content_date || '').localeCompare(a.content_date || ''));
+            allMentions = mentions;
+            const raw = (data.available_dates || []).filter(d => d <= today);
+            allDates = raw.sort((a, b) => b.localeCompare(a));
+            renderAll();
+        }
+
+        async function loadMentions() {
+            // Show cached data instantly if available
+            try {
+                const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+                if (cached && cached.data && (Date.now() - cached.ts) < CACHE_TTL) {
+                    _applyData(cached.data);
+                } else if (cached && cached.data) {
+                    // Stale cache — show it while fetching fresh
+                    _applyData(cached.data);
+                } else {
+                    document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
+                }
+            } catch (e) {
+                document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
+            }
+
+            // Fetch fresh data in background
             try {
                 const resp = await fetch(`${API}/social/mentions?days=365`);
                 const data = await resp.json();
-
-                // Filter out future-dated mentions (bad date extraction)
-                const today = new Date().toISOString().slice(0, 10);
-                const mentions = (data.mentions || []).filter(m => !m.content_date || m.content_date <= today);
-                mentions.sort((a, b) => (b.content_date || '').localeCompare(a.content_date || ''));
-                allMentions = mentions;
-                const raw = (data.available_dates || []).filter(d => d <= today);
-                allDates = raw.sort((a, b) => b.localeCompare(a));
-
-                renderAll();
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+                _applyData(data);
             } catch (e) {
-                document.getElementById('content').innerHTML = `<div class="empty">Failed to load. <a href="#" onclick="loadMentions();return false">Retry</a></div>`;
+                if (!allMentions.length) {
+                    document.getElementById('content').innerHTML = `<div class="empty">Failed to load. <a href="#" onclick="loadMentions();return false">Retry</a></div>`;
+                }
             }
         }
 
