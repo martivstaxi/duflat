@@ -207,12 +207,13 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     .sent-btn { padding: 5px 12px; font-size: .7rem; }
     .sent-btn .count { font-size: .6rem; }
 
-    /* Filter dropdown — anchor to sentiment bar, full width */
-    .sentiment-btns { position: relative; }
+    /* Filter dropdown — move outside filter-wrap, full width under buttons */
+    .container { position: relative; }
     .filter-wrap { position: static; }
     .filter-dropdown {
-        position: absolute; top: 100%; left: 0; right: 0;
+        position: absolute; top: auto; left: 0; right: 0;
         width: auto; min-width: unset; padding: 14px;
+        max-height: 60vh; overflow-y: auto;
     }
 
     /* Cards */
