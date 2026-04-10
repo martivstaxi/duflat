@@ -84,30 +84,24 @@ function renderSentimentBtns() {
         `<button class="sent-btn neu ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')">
             <span class="dot" style="background:var(--neutral)"></span>Neutral <span class="count">${neu}</span>
         </button>` +
-        `<div class="filter-wrap">
-            <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
-            </button>
-            <div class="filter-dropdown" id="filterDropdown"></div>
-        </div>`;
+        `<button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+        </button>`;
 }
 
 function toggleFilterPanel() {
     filterOpen = !filterOpen;
-    document.getElementById('filterDropdown').classList.toggle('open', filterOpen);
+    const anchor = document.getElementById('filterDropdownAnchor');
+    anchor.classList.toggle('open', filterOpen);
 }
 
 document.addEventListener('click', function(e) {
     if (!filterOpen) return;
-    const wrap = document.querySelector('.filter-wrap');
-    // After innerHTML re-render, the clicked element is detached from DOM
-    // so wrap.contains() returns false. Check if click was inside dropdown bounds.
-    const dd = document.getElementById('filterDropdown');
-    if (wrap && (wrap.contains(e.target) || dd.contains(e.target))) return;
-    const rect = dd.getBoundingClientRect();
-    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) return;
+    const anchor = document.getElementById('filterDropdownAnchor');
+    const toggle = document.getElementById('filterToggle');
+    if (anchor.contains(e.target) || (toggle && toggle.contains(e.target))) return;
     filterOpen = false;
-    dd.classList.remove('open');
+    anchor.classList.remove('open');
 });
 
 function updateFilterToggle() {
@@ -198,9 +192,9 @@ function renderFilterDropdown() {
     }
     html += `</div>`;
 
-    const dd = document.getElementById('filterDropdown');
-    dd.innerHTML = html;
-    if (filterOpen) dd.classList.add('open');
+    const anchor = document.getElementById('filterDropdownAnchor');
+    anchor.innerHTML = `<div class="filter-dropdown">${html}</div>`;
+    if (filterOpen) anchor.classList.add('open');
 }
 
 function renderActiveChips() {
@@ -377,7 +371,7 @@ function setFilter(sentiment) {
 function setLang(lang) {
     currentLang = lang;
     filterOpen = false;
-    document.getElementById('filterDropdown').classList.remove('open');
+    document.getElementById('filterDropdownAnchor').classList.remove('open');
     renderAll();
 }
 
@@ -385,7 +379,7 @@ function filterSelectYear() {
     filterMonth = null;
     showMonths = false;
     filterOpen = false;
-    document.getElementById('filterDropdown').classList.remove('open');
+    document.getElementById('filterDropdownAnchor').classList.remove('open');
     selectDate(null);
 }
 
@@ -418,7 +412,7 @@ function filterCalNext() {
 
 function filterPickDate(dateStr) {
     filterOpen = false;
-    document.getElementById('filterDropdown').classList.remove('open');
+    document.getElementById('filterDropdownAnchor').classList.remove('open');
     selectDate(dateStr);
 }
 

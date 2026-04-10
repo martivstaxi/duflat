@@ -73,14 +73,15 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
 }
 .chip-remove:hover { color: var(--negative); }
 
-/* Filter dropdown */
-.filter-dropdown {
-    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+/* Filter dropdown — lives in #filterDropdownAnchor, outside flex row */
+#filterDropdownAnchor { position: relative; }
+#filterDropdownAnchor .filter-dropdown {
+    display: none; position: absolute; top: 0; right: 0;
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0,0,0,.1); padding: 16px; z-index: 100;
     min-width: 260px;
 }
-.filter-dropdown.open { display: block; animation: fadeIn .15s ease; }
+#filterDropdownAnchor.open .filter-dropdown { display: block; animation: fadeIn .15s ease; }
 .filter-section { margin-bottom: 14px; }
 .filter-section:last-child { margin-bottom: 0; }
 .filter-section-title {
@@ -99,7 +100,6 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
 .filter-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .filter-option .opt-count { margin-left: auto; font-size: .68rem; color: var(--muted); font-weight: 500; }
 .filter-option.disabled { opacity: .35; pointer-events: none; }
-.filter-wrap { position: relative; }
 
 /* Calendar grid */
 .cal-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 8px; }
@@ -207,13 +207,10 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     .sent-btn { padding: 5px 12px; font-size: .7rem; }
     .sent-btn .count { font-size: .6rem; }
 
-    /* Filter dropdown — move outside filter-wrap, full width under buttons */
-    .container { position: relative; }
-    .filter-wrap { position: static; }
-    .filter-dropdown {
-        position: absolute; top: auto; left: 0; right: 0;
-        width: auto; min-width: unset; padding: 14px;
-        max-height: 60vh; overflow-y: auto;
+    /* Filter dropdown — full width on mobile */
+    #filterDropdownAnchor .filter-dropdown {
+        right: auto; left: 0; min-width: unset; width: 100%;
+        padding: 14px; max-height: 60vh; overflow-y: auto;
     }
 
     /* Cards */
