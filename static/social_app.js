@@ -194,7 +194,12 @@ function renderFilterDropdown() {
     html += `</div>`;
 
     const anchor = document.getElementById('filterDropdownAnchor');
-    anchor.innerHTML = `<div class="filter-dropdown">${html}</div>`;
+    let dropdown = anchor.querySelector('.filter-dropdown');
+    if (!dropdown) {
+        anchor.innerHTML = '<div class="filter-dropdown"></div>';
+        dropdown = anchor.querySelector('.filter-dropdown');
+    }
+    dropdown.innerHTML = html;
     if (filterOpen) anchor.classList.add('open');
 }
 
