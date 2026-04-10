@@ -197,10 +197,42 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
 .archive-nav.disabled { opacity: .3; pointer-events: none; }
 
 @media (max-width: 600px) {
-    header { padding: 32px 0 12px; }
-    header h1 { font-size: 1.3rem; }
-    .mention-card { padding: 16px; }
-    .pill { width: 36px; height: 36px; }
-    .archive-date-btn { padding: 6px 12px; min-width: 52px; }
-    .archive-nav { width: 36px; height: 36px; }
+    .container { padding: 0 14px; }
+
+    header { padding: 28px 0 10px; }
+    header h1 { font-size: 1.25rem; }
+
+    /* Sentiment buttons — wrap on small screens */
+    .sentiment-btns { flex-wrap: wrap; gap: 6px; padding: 10px 0 20px; }
+    .sent-btn { padding: 5px 12px; font-size: .7rem; }
+    .sent-btn .count { font-size: .6rem; }
+
+    /* Filter dropdown — full width on mobile */
+    .filter-dropdown { min-width: unset; width: calc(100vw - 28px); right: -10px; padding: 14px; }
+
+    /* Cards */
+    .mention-card { padding: 14px 16px; }
+    .card-quote { font-size: .82rem; line-height: 1.6; }
+    .card-meta { font-size: .68rem; }
+    .card-details { padding: 10px 12px; font-size: .8rem; }
+    .tag { font-size: .62rem; padding: 2px 6px; }
+    .details-btn { font-size: .64rem; padding: 3px 8px; }
+
+    /* Date divider */
+    .date-divider { gap: 10px; margin: 20px 0 14px; }
+    .date-divider .label { font-size: .7rem; }
+
+    /* Archive — scroll horizontally */
+    .archive-section { margin-top: 32px; padding: 24px 0 48px; }
+    .archive-section h2 { font-size: .75rem; margin-bottom: 12px; }
+    .archive-dates { gap: 6px; }
+    .archive-date-btn { padding: 6px 10px; min-width: 48px; font-size: .72rem; }
+    .archive-date-btn .day { font-size: .78rem; }
+    .archive-date-btn .month { font-size: .6rem; }
+    .archive-nav { width: 34px; height: 34px; }
+    .archive-nav svg { width: 14px; height: 14px; }
+
+    /* Chips */
+    .active-chips { gap: 4px; margin-bottom: 14px; }
+    .chip { font-size: .65rem; padding: 3px 8px; }
 }
