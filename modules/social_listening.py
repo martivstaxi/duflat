@@ -698,6 +698,57 @@ _LANG_REGIONS = {
 }
 
 
+# Known domains with Bilibili content — crawl their listing pages for fresh articles
+_DIRECT_CRAWL_SOURCES = [
+    # English
+    'https://www.ainvest.com/news/?q=bilibili',
+    'https://www.invenglobal.com/lol/teams/bilibili-gaming',
+    'https://www.vlr.gg/team/12010/bilibili-gaming',
+    'https://longbridge.com/en/news?keyword=bilibili',
+    # Traditional Chinese (Hong Kong/Taiwan)
+    'http://www.aastocks.com/tc/usq/quote/stock-news.aspx?symbol=BILI',
+    'https://hk.finance.yahoo.com/quote/9626.HK/news/',
+    'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_news_detail.php?code=09626',
+    # Japanese
+    'https://fistbump-news.jp/?s=bilibili',
+    'https://media.rakuten-sec.net/search/?q=%E3%83%93%E3%83%AA%E3%83%93%E3%83%AA',
+    # Simplified Chinese
+    'https://www.huxiu.com/search.html?q=B站',
+    'https://www.aibase.com/zh/search?q=bilibili',
+]
+
+
+def crawl_direct_sources(max_urls=50):
+    """
+    Crawl known good domains' listing/search pages to extract fresh article links.
+    Returns list of URLs found on these pages.
+    """
+    all_urls = []
+    seen = set()
+    for listing_url in _DIRECT_CRAWL_SOURCES:
+        try:
+            resp = requests.get(listing_url, headers=BROWSER_HEADERS, timeout=8)
+            if resp.status_code != 200:
+                continue
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            base_domain = urlparse(listing_url).netloc
+            for a in soup.find_all('a', href=True):
+                href = a['href'].strip()
+                if href.startswith('/'):
+                    href = f"https://{base_domain}{href}"
+                elif not href.startswith('http'):
+                    continue
+                link_domain = urlparse(href).netloc.replace('www.', '')
+                if any(skip in link_domain for skip in _SKIP_DOMAINS):
+                    continue
+                if href not in seen and len(href) > 30:
+                    seen.add(href)
+                    all_urls.append(href)
+        except Exception:
+            continue
+    return all_urls[:max_urls]
+
+
 def auto_discover(languages=None):
     """
     Auto-discover Bilibili mentions in specified language(s) using DDG.
@@ -785,6 +836,16 @@ def auto_discover(languages=None):
         scan_result['queries'] = len(queries)
         scan_result['urls_found'] = len(all_urls)
         results[lang] = scan_result
+
+    # Bonus: direct domain crawl (outside language loop, runs once per discover call)
+    try:
+        direct_urls = crawl_direct_sources(max_urls=60)
+        if direct_urls:
+            direct_result = scan_urls(direct_urls)
+            direct_result['language'] = 'direct_crawl'
+            results['direct_crawl'] = direct_result
+    except Exception:
+        pass
 
     return results
 
