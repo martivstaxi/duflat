@@ -389,9 +389,10 @@ For EACH article, extract:
 
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
-Skip articles that are NOT actually about Bilibili (false positives).
-Skip pages that are ONLY stock price tickers with no text content.
-DO include financial news, earnings reports, analyst opinions — rewrite them as social insights about what this means for the platform and its users.
+Skip articles that do NOT mention Bilibili at all (complete false positives with no connection to Bilibili).
+Skip pages that are ONLY raw stock price tickers with no text (just numbers/charts, no sentences).
+DO include: financial news, earnings, analyst opinions, esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, anything where Bilibili is mentioned even if not the main focus.
+When in doubt, INCLUDE the article — it's better to save a borderline mention than to miss it.
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
@@ -400,7 +401,7 @@ Articles:
         client = anthropic.Anthropic(api_key=api_key)
         resp = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=4096,
+            max_tokens=8192,
             messages=[{'role': 'user', 'content': prompt}],
         )
         text = resp.content[0].text.strip()
@@ -409,7 +410,18 @@ Articles:
             text = text.split('```')[1]
             if text.startswith('json'):
                 text = text[4:]
-        return json.loads(text)
+        # Try full parse first, fallback to partial recovery
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            # Try to recover truncated JSON array
+            last_brace = text.rfind('},')
+            if last_brace > 0:
+                try:
+                    return json.loads(text[:last_brace + 1] + ']')
+                except Exception:
+                    pass
+            return []
     except Exception:
         return []
 
