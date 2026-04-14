@@ -462,6 +462,11 @@ def save_mentions(mentions):
             skipped += 1
             continue
 
+        # Simplified Chinese is not used on this platform — always reject
+        if m.get('language') == 'Simplified Chinese':
+            skipped += 1
+            continue
+
         # Run validation + auto-repair
         is_valid, m, issues = _validate_and_repair(m)
         if not is_valid:
@@ -541,7 +546,7 @@ def _analyze_with_haiku(items):
 
     # Domain TLD → language hint mapping
     _TLD_LANG_HINTS = {
-        '.ru': 'Russian', '.jp': 'Japanese', '.cn': 'Simplified Chinese',
+        '.ru': 'Russian', '.jp': 'Japanese',
         '.tw': 'Traditional Chinese', '.hk': 'Traditional Chinese',
         '.tr': 'Turkish', '.es': 'Spanish', '.mx': 'Spanish',
         '.ar': 'Spanish', '.br': 'Portuguese', '.pt': 'Portuguese',
@@ -769,18 +774,6 @@ _DISCOVER_QUERIES = {
         'Bilibili o que é',
         'Bilibili China streaming',
     ],
-    'Simplified Chinese': [
-        '哔哩哔哩 新闻',
-        'B站 股票 财报',
-        'B站 动漫 用户',
-        '哔哩哔哩 电竞 BLG',
-        'B站 广告收入',
-        'B站 AniSora AI',
-        '哔哩哔哩 春节晚会',
-        'B站 创作者 UP主',
-        'B站 2026',
-        '哔哩哔哩 可转债',
-    ],
 }
 
 # Google News RSS params per language — reliable multilingual news source
@@ -793,7 +786,6 @@ _GNEWS_PARAMS = {
     'Russian':            {'hl': 'ru',    'gl': 'RU', 'ceid': 'RU:ru'},
     'Spanish':            {'hl': 'es',    'gl': 'ES', 'ceid': 'ES:es'},
     'Portuguese':         {'hl': 'pt-BR', 'gl': 'BR', 'ceid': 'BR:pt-419'},
-    'Simplified Chinese': {'hl': 'zh-CN', 'gl': 'CN', 'ceid': 'CN:zh-Hans'},
 }
 
 # Domains to skip (not content pages)
@@ -861,7 +853,6 @@ _BING_MARKETS = {
     'Japanese':           'ja-JP',
     'Arabic':             'ar-SA',
     'Traditional Chinese':'zh-TW',
-    'Simplified Chinese': 'zh-CN',
     'Turkish':            'tr-TR',
     'Russian':            'ru-RU',
     'Spanish':            'es-ES',
@@ -902,7 +893,6 @@ _LANG_REGIONS = {
     'Russian': ['ru-ru', 'wt-wt'],
     'Spanish': ['es-es', 'ar-es', 'mx-es', 'wt-wt'],
     'Portuguese': ['br-pt', 'pt-pt', 'wt-wt'],
-    'Simplified Chinese': ['cn-zh', 'wt-wt'],
 }
 
 
@@ -920,9 +910,6 @@ _DIRECT_CRAWL_SOURCES = [
     # Japanese
     'https://fistbump-news.jp/?s=bilibili',
     'https://media.rakuten-sec.net/search/?q=%E3%83%93%E3%83%AA%E3%83%93%E3%83%AA',
-    # Simplified Chinese
-    'https://www.huxiu.com/search.html?q=B站',
-    'https://www.aibase.com/zh/search?q=bilibili',
 ]
 
 
@@ -984,11 +971,9 @@ def auto_discover(languages=None):
         seen = set()
         search_start = time.time()
 
-        # Bilibili-specific Google News queries (broader for Simplified Chinese)
+        # Bilibili-specific Google News queries per language
         gnews_queries = ['bilibili', 'bilibili platform', 'bilibili anime']
-        if lang == 'Simplified Chinese':
-            gnews_queries = ['哔哩哔哩', 'B站', 'bilibili 哔哩哔哩', '哔哩哔哩 2026', 'B站 股票']
-        elif lang == 'Traditional Chinese':
+        if lang == 'Traditional Chinese':
             gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili', '嗶哩嗶哩 2026']
         elif lang == 'Japanese':
             gnews_queries = ['ビリビリ', 'bilibili', 'ビリビリ 2026', 'BLG esports']
