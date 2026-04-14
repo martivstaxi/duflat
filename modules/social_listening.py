@@ -245,6 +245,36 @@ def process_urls(url_items, time_budget=55):
 # STEP 3: SAVE MENTIONS (AI-analyzed results)
 # ─────────────────────────────────────────────
 
+def _detect_chinese_script(text):
+    """
+    Distinguish Simplified Chinese (Mandarin/mainland) from Traditional Chinese (HK/TW).
+
+    Uses Unicode codepoint ranges:
+    - Simplified-only chars exist only in Simplified Unicode blocks
+    - Traditional-only chars exist only in Traditional Unicode blocks
+    - Overlapping chars (used in both) are ignored
+
+    Logic: count unambiguous Simplified chars vs unambiguous Traditional chars.
+    If simp > trad  → Simplified Chinese (Mandarin, block)
+    If trad > simp  → Traditional Chinese (HK/TW, allow)
+    If tied (0==0)  → default Traditional Chinese (safe: HK/TW content is expected)
+
+    Common Simplified-only chars (不存在于繁体): 国来对说时间会这们问东车头发
+    Common Traditional-only chars (不存在于简体): 國來對說時間會這們問東車頭發
+    """
+    # Expanded character pairs — 40+ distinctive pairs
+    SIMP_CHARS = set('国来对说时间会这们问东车头发钱马书开关无处边长带达华风给结论总给认专经历层难实际际报书节约统带运约处场达种须结万议须积极见')
+    TRAD_CHARS = set('國來對說時間會這們問東車頭發錢馬書開關無處邊長帶達華風給結論總給認專經歷層難實際際報書節約統帶運約處場達種須結萬議須積極見')
+
+    simp = sum(1 for c in text if c in SIMP_CHARS)
+    trad = sum(1 for c in text if c in TRAD_CHARS)
+
+    if simp > trad:
+        return 'Simplified Chinese'  # Mandarin — will be blocked from saving
+    else:
+        return 'Traditional Chinese'  # HK/TW — allowed (trad > simp OR both 0 → safe default)
+
+
 def _detect_lang_from_text(text):
     """
     Heuristic language detection by counting character types.
@@ -267,10 +297,7 @@ def _detect_lang_from_text(text):
     if kana / total > 0.05:
         return 'Japanese'
     if cjk / total > 0.15:
-        # Distinguish Simplified vs Traditional by key character pairs
-        simp = sum(1 for c in text if c in '国来对说时间会这们问东车头马书开关无')
-        trad = sum(1 for c in text if c in '國來對說時間會這們問東車頭馬書開關無')
-        return 'Simplified Chinese' if simp >= trad else 'Traditional Chinese'
+        return _detect_chinese_script(text)
     if cyril / total > 0.15:
         return 'Russian'
     if latin / total > 0.25:
