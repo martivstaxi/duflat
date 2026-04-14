@@ -245,16 +245,117 @@ def process_urls(url_items, time_budget=55):
 # STEP 3: SAVE MENTIONS (AI-analyzed results)
 # ─────────────────────────────────────────────
 
+def _detect_lang_from_text(text):
+    """
+    Heuristic language detection by counting character types.
+    Returns detected language string or None if ambiguous.
+    """
+    if not text or len(text) < 10:
+        return None
+    total = len([c for c in text if not c.isspace()])
+    if total == 0:
+        return None
+
+    arabic  = sum(1 for c in text if '\u0600' <= c <= '\u06FF')
+    kana    = sum(1 for c in text if '\u3040' <= c <= '\u30FF')  # hiragana + katakana
+    cjk     = sum(1 for c in text if '\u4E00' <= c <= '\u9FFF')
+    cyril   = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+    latin   = sum(1 for c in text if c.isascii() and c.isalpha())
+
+    if arabic / total > 0.15:
+        return 'Arabic'
+    if kana / total > 0.05:
+        return 'Japanese'
+    if cjk / total > 0.15:
+        # Distinguish Simplified vs Traditional by key character pairs
+        simp = sum(1 for c in text if c in '国来对说时间会这们问东车头马书开关无')
+        trad = sum(1 for c in text if c in '國來對說時間會這們問東車頭馬書開關無')
+        return 'Simplified Chinese' if simp >= trad else 'Traditional Chinese'
+    if cyril / total > 0.15:
+        return 'Russian'
+    if latin / total > 0.25:
+        return 'Latin'   # English/Spanish/Portuguese/Turkish — trust Haiku for exact lang
+    return None
+
+
+# Terms that confirm a mention is about Bilibili
+_BILIBILI_TERMS = [
+    'bilibili', 'b站', 'ビリビリ', 'blg', '哔哩哔哩', '嗶哩嗶哩',
+    '9626', 'anisora', 'bili bili', 'bilibil', '哔哩', '嗶哩',
+    'bilibili gaming', 'first stand', 'anisora',
+]
+
+
+def _validate_and_repair(mention):
+    """
+    Validate a Haiku-analyzed mention before saving to DB.
+    Returns (is_valid, mention, issues[]).
+    Repairs what it can (language label); rejects what it cannot.
+
+    Checks:
+      1. Language match  — detect from text, auto-repair if wrong
+      2. content_original ≠ content_english
+      3. Bilibili relevance — reject if Bilibili not mentioned at all
+      4. Date sanity — reject future dates, warn on very old dates
+      5. Minimum content length
+    """
+    issues = []
+    original = mention.get('content_original', '').strip()
+    english  = mention.get('content_english', '').strip()
+    lang     = mention.get('language', '')
+    content_date = mention.get('content_date') or ''
+    today    = date.today().isoformat()
+
+    # ── 1. LANGUAGE CHECK ──────────────────────────────────────────
+    detected = _detect_lang_from_text(original)
+    if detected == 'Latin' and lang in (
+        'Traditional Chinese', 'Simplified Chinese', 'Japanese', 'Arabic', 'Russian'
+    ):
+        # Text is clearly Latin/English but Haiku labeled it as non-Latin → fix
+        issues.append(f'lang_repair:{lang}→English')
+        mention['language'] = 'English'
+    elif detected and detected != 'Latin' and detected != lang:
+        # Confident non-Latin detection disagrees with Haiku
+        issues.append(f'lang_repair:{lang}→{detected}')
+        mention['language'] = detected
+
+    # ── 2. ORIGINAL ≠ ENGLISH CHECK ───────────────────────────────
+    if original and english and original == english:
+        issues.append('reject:original_same_as_english')
+        return False, mention, issues
+
+    # ── 3. BILIBILI RELEVANCE CHECK ───────────────────────────────
+    combined = (original + ' ' + english).lower()
+    if not any(term in combined for term in _BILIBILI_TERMS):
+        issues.append('reject:bilibili_not_mentioned')
+        return False, mention, issues
+
+    # ── 4. DATE SANITY ─────────────────────────────────────────────
+    if content_date:
+        if content_date > today:
+            issues.append(f'reject:future_date:{content_date}')
+            return False, mention, issues
+        if content_date < '2024-01-01':
+            issues.append(f'warn:very_old_date:{content_date}')  # allow but flag
+
+    # ── 5. MINIMUM LENGTH ──────────────────────────────────────────
+    if len(original) < 15:
+        issues.append(f'reject:content_too_short:{len(original)}chars')
+        return False, mention, issues
+
+    return True, mention, issues
+
+
 def save_mentions(mentions):
     """
     Save AI-analyzed mentions to Supabase.
-    Each mention has: content_original, content_english, sentiment, etc.
-    Dedup by content hash.
+    Each mention passes _validate_and_repair() before saving:
+      - Language label auto-corrected if wrong
+      - Irrelevant, duplicate-content, future-dated, too-short mentions rejected
     """
     saved = 0
     skipped = 0
-
-    today = date.today().isoformat()
+    repaired = 0
 
     for m in mentions:
         original = m.get('content_original', '').strip()
@@ -262,11 +363,15 @@ def save_mentions(mentions):
             skipped += 1
             continue
 
-        # Skip future-dated mentions (bad date extraction)
-        if m.get('content_date') and m['content_date'] > today:
+        # Run validation + auto-repair
+        is_valid, m, issues = _validate_and_repair(m)
+        if not is_valid:
             skipped += 1
             continue
+        if any(i.startswith('lang_repair') for i in issues):
+            repaired += 1
 
+        original = m.get('content_original', '').strip()
         c_hash = hash_content(original)
 
         row = {
@@ -292,7 +397,7 @@ def save_mentions(mentions):
         except Exception:
             skipped += 1
 
-    return {'saved': saved, 'skipped': skipped}
+    return {'saved': saved, 'skipped': skipped, 'repaired': repaired}
 
 
 # ─────────────────────────────────────────────
