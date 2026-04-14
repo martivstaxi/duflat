@@ -346,6 +346,105 @@ def _validate_and_repair(mention):
     return True, mention, issues
 
 
+def _ai_validate_and_repair(mentions):
+    """
+    Second AI pass: Haiku reviews Haiku's own output.
+    For each mention, checks:
+      1. Is Bilibili actually mentioned? (reject if not)
+      2. Is the language label correct? (fix if wrong, still save)
+      3. Is content_original genuinely different from content_english? (reject if same)
+
+    Returns list of mentions — repaired ones included, rejected ones removed.
+    This runs AFTER _validate_and_repair() heuristics, as a final quality gate.
+    """
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key or not mentions:
+        return mentions
+
+    try:
+        import anthropic
+    except ImportError:
+        return mentions
+
+    entries = []
+    for i, m in enumerate(mentions):
+        entries.append({
+            'idx': i,
+            'url': m.get('url', ''),
+            'platform': m.get('platform', ''),
+            'language_label': m.get('language', ''),
+            'content_original': m.get('content_original', '')[:800],
+            'content_english': m.get('content_english', '')[:400],
+        })
+
+    prompt = f"""You are a quality control agent reviewing social listening data about Bilibili.
+
+For EACH entry below, answer three questions and return fixes:
+
+1. BILIBILI_RELEVANT: Does content_original actually mention Bilibili, Bilibili Gaming (BLG), B站, ビリビリ, 哔哩哔哩, 嗶哩嗶哩, AniSora, or any directly related topic? Answer true/false.
+
+2. LANGUAGE_CORRECT: Is the language_label correct for the actual text in content_original?
+   - If wrong, provide the correct language ("English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese")
+   - If correct, return null
+
+3. CONTENT_DISTINCT: Is content_original meaningfully different from content_english (different language OR different wording)?
+
+Rules:
+- If BILIBILI_RELEVANT=false → mark action:"reject"
+- If LANGUAGE_CORRECT has a correction → mark action:"repair_language", corrected_language:"..."
+- If CONTENT_DISTINCT=false → mark action:"reject"
+- Otherwise → mark action:"keep"
+- If both repair and keep → action:"repair_language" (repair + keep, do NOT reject)
+
+Return ONLY a JSON array, one object per entry:
+[{{"idx":0,"bilibili_relevant":true,"language_correct":null,"content_distinct":true,"action":"keep"}}, ...]
+
+Entries:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=2048,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = resp.content[0].text.strip()
+        if '```' in text:
+            text = text.split('```')[1]
+            if text.startswith('json'):
+                text = text[4:]
+        verdicts = json.loads(text)
+    except Exception:
+        return mentions  # if AI validator fails, pass through (don't block saves)
+
+    # Apply verdicts
+    result = []
+    for v in verdicts:
+        idx = v.get('idx')
+        if idx is None or idx >= len(mentions):
+            continue
+        action = v.get('action', 'keep')
+        m = mentions[idx]
+
+        if action == 'reject':
+            continue  # drop silently
+
+        if action == 'repair_language':
+            corrected = v.get('corrected_language')
+            if corrected:
+                m['language'] = corrected
+            result.append(m)
+        else:
+            result.append(m)  # keep as-is
+
+    # Safety: if validator returned fewer items than expected (parse issue), pass all through
+    if len(result) == 0 and len(mentions) > 0:
+        return mentions
+
+    return result
+
+
 def save_mentions(mentions):
     """
     Save AI-analyzed mentions to Supabase.
@@ -565,11 +664,15 @@ def scan_urls(urls):
     # Step 3: Haiku analysis
     mentions = _analyze_with_haiku(items_2026)
 
-    # Step 4: save
+    # Step 3b: AI validation + repair (second Haiku pass)
+    if mentions:
+        mentions = _ai_validate_and_repair(mentions)
+
+    # Step 4: save (heuristic validation also runs inside save_mentions)
     if mentions:
         result = save_mentions(mentions)
     else:
-        result = {'saved': 0, 'skipped': 0}
+        result = {'saved': 0, 'skipped': 0, 'repaired': 0}
 
     return {
         'received': len(urls),
