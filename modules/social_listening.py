@@ -385,7 +385,7 @@ For EACH article, extract:
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
 - country: country of origin if detectable, otherwise "International"
-- language: detect the ORIGINAL language of the source article text (NOT the language of the content_english summary). Look at the content_original text — what language is it written in? Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese". Distinguish Chinese scripts: Simplified Chinese (简体字, mainland China, .cn domains) vs Traditional Chinese (繁體字, Taiwan/HK, .tw/.hk domains). If a lang_hint field is provided, use it as a strong signal. A .ru domain with Russian text = "Russian", a .cn domain with simplified Chinese = "Simplified Chinese". Only use "English" if the original text is actually in English.
+- language: detect the language by reading the ACTUAL WORDS in content_original. Do NOT guess from the platform name or domain. Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese". Rules: if content_original contains Latin alphabet words in English → "English". Chinese scripts: 简体字 (simplified strokes) → "Simplified Chinese", 繁體字 (complex strokes, traditional) → "Traditional Chinese". If a lang_hint field is provided, use it as a strong tie-breaker only when the text is ambiguous. Example: aastocks.com/en/ page with English text → "English" (not Traditional Chinese just because it's a HK site).
 
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
