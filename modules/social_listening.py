@@ -433,7 +433,7 @@ def scan_urls(urls):
         return {'received': len(urls), 'new': 0, 'with_2026': 0, 'saved': 0, 'skipped': 0}
 
     # Step 2: download + date filter
-    processed = process_urls(new_urls)
+    processed = process_urls(new_urls, time_budget=40)
     items_2026 = processed.get('items', [])
 
     if not items_2026:
@@ -736,11 +736,10 @@ def auto_discover(languages=None):
                         seen.add(u)
                         all_urls.append(u)
 
-        # 2. Bing News RSS — separate index from Google, good multilingual coverage
+        # 2. Bing News RSS — separate index from Google (max 5s, 1-2 queries)
         bing_mkt = _BING_MARKETS.get(lang, 'en-US')
-        bing_queries = gnews_queries[:3]  # top 3 queries only, avoid timeout
-        for q in bing_queries:
-            if time.time() - search_start > 30:
+        for q in gnews_queries[:2]:
+            if time.time() - search_start > 20:
                 break
             urls = _bing_news_rss(q, mkt=bing_mkt, max_results=20)
             for u in urls:
@@ -748,12 +747,12 @@ def auto_discover(languages=None):
                     seen.add(u)
                     all_urls.append(u)
 
-        # 3. DDG — broader search, no timelimit (pipeline filters for 2026 content)
+        # 3. DDG — broader search, main workhorse (budget: 20s–65s = 45s)
         for q in queries:
-            if time.time() - search_start > 55:
+            if time.time() - search_start > 65:
                 break
             for region in regions:
-                if time.time() - search_start > 55:
+                if time.time() - search_start > 65:
                     break
                 urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
                 for u in urls:
