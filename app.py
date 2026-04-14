@@ -24,7 +24,7 @@ from modules.email_generator import generate_email
 from modules.social_listening import (
     init_supabase, check_urls, process_urls, save_mentions,
     get_mentions, compute_stats_and_dates, scan_urls,
-    delete_mentions, update_mention, auto_discover,
+    delete_mentions, update_mention, auto_discover, _analyze_with_haiku,
 )
 
 app = Flask(__name__, static_folder='.')
@@ -276,6 +276,26 @@ def social_cleanup():
             updated += 1
     result['updated'] = updated
     return jsonify(result)
+
+
+@app.route('/social/debug-haiku', methods=['POST'])
+def social_debug_haiku():
+    """Debug: process URLs through pipeline and return raw Haiku output (no save)."""
+    body = request.get_json(silent=True) or {}
+    urls = body.get('urls', [])
+    if not urls:
+        return jsonify({'error': 'urls list required'}), 400
+    from modules.social_listening import hash_url, process_urls as pu
+    items = [{'url': u, 'url_hash': hash_url(u)} for u in urls]
+    processed = pu(items, time_budget=30)
+    items_2026 = processed.get('items', [])
+    haiku_raw = _analyze_with_haiku(items_2026)
+    return jsonify({
+        'urls_sent': len(urls),
+        'with_2026': len(items_2026),
+        'items_2026': [{'url': i['url'], 'date': i.get('content_date'), 'text_preview': i['text'][:200]} for i in items_2026],
+        'haiku_result': haiku_raw,
+    })
 
 
 @app.route('/social/check-urls', methods=['POST'])
