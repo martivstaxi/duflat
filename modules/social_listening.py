@@ -337,7 +337,7 @@ def _analyze_with_haiku(items):
 
     # Domain TLD → language hint mapping
     _TLD_LANG_HINTS = {
-        '.ru': 'Russian', '.jp': 'Japanese', '.cn': 'Traditional Chinese',
+        '.ru': 'Russian', '.jp': 'Japanese', '.cn': 'Simplified Chinese',
         '.tw': 'Traditional Chinese', '.hk': 'Traditional Chinese',
         '.tr': 'Turkish', '.es': 'Spanish', '.mx': 'Spanish',
         '.ar': 'Spanish', '.br': 'Portuguese', '.pt': 'Portuguese',
@@ -385,7 +385,7 @@ For EACH article, extract:
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
 - country: country of origin if detectable, otherwise "International"
-- language: detect the ORIGINAL language of the source article text (NOT the language of the content_english summary). Look at the content_original text — what language is it written in? Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If the article is in Chinese (Simplified or Traditional), use "Traditional Chinese". If a lang_hint field is provided, use it as a strong signal. A .ru domain with Russian text = "Russian", NOT "English". Only use "English" if the original text is actually in English.
+- language: detect the ORIGINAL language of the source article text (NOT the language of the content_english summary). Look at the content_original text — what language is it written in? Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese". Distinguish Chinese scripts: Simplified Chinese (简体字, mainland China, .cn domains) vs Traditional Chinese (繁體字, Taiwan/HK, .tw/.hk domains). If a lang_hint field is provided, use it as a strong signal. A .ru domain with Russian text = "Russian", a .cn domain with simplified Chinese = "Simplified Chinese". Only use "English" if the original text is actually in English.
 
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
 
@@ -549,6 +549,18 @@ _DISCOVER_QUERIES = {
         'Bilibili o que é',
         'Bilibili China streaming',
     ],
+    'Simplified Chinese': [
+        '哔哩哔哩 新闻',
+        'B站 股票 财报',
+        'B站 动漫 用户',
+        '哔哩哔哩 电竞 BLG',
+        'B站 广告收入',
+        'B站 AniSora AI',
+        '哔哩哔哩 春节晚会',
+        'B站 创作者 UP主',
+        'B站 2026',
+        '哔哩哔哩 可转债',
+    ],
 }
 
 # Google News RSS params per language — reliable multilingual news source
@@ -561,6 +573,7 @@ _GNEWS_PARAMS = {
     'Russian':            {'hl': 'ru',    'gl': 'RU', 'ceid': 'RU:ru'},
     'Spanish':            {'hl': 'es',    'gl': 'ES', 'ceid': 'ES:es'},
     'Portuguese':         {'hl': 'pt-BR', 'gl': 'BR', 'ceid': 'BR:pt-419'},
+    'Simplified Chinese': {'hl': 'zh-CN', 'gl': 'CN', 'ceid': 'CN:zh-Hans'},
 }
 
 # Domains to skip (not content pages)
@@ -598,6 +611,44 @@ def _google_news_rss(query, hl, gl, ceid, max_results=20):
         return []
 
 
+def _bing_news_rss(query, mkt='en-US', max_results=20):
+    """Fetch article URLs from Bing News RSS. Returns list of URLs."""
+    import xml.etree.ElementTree as ET
+    import urllib.parse
+    rss_url = f"https://www.bing.com/news/search?q={urllib.parse.quote(query)}&format=RSS&mkt={mkt}"
+    try:
+        resp = requests.get(rss_url, headers=BROWSER_HEADERS, timeout=10)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+        urls = []
+        for item in root.iter('item'):
+            link_el = item.find('link')
+            url = None
+            if link_el is not None and link_el.text and link_el.text.startswith('http'):
+                url = link_el.text.strip()
+            if url:
+                domain = urlparse(url).netloc.lower().replace('www.', '')
+                if not any(skip in domain for skip in _SKIP_DOMAINS):
+                    urls.append(url)
+        return urls[:max_results]
+    except Exception:
+        return []
+
+
+# Bing News market codes per language
+_BING_MARKETS = {
+    'English':            'en-US',
+    'Japanese':           'ja-JP',
+    'Arabic':             'ar-SA',
+    'Traditional Chinese':'zh-TW',
+    'Simplified Chinese': 'zh-CN',
+    'Turkish':            'tr-TR',
+    'Russian':            'ru-RU',
+    'Spanish':            'es-ES',
+    'Portuguese':         'pt-BR',
+}
+
+
 def _ddg_search(query, max_results=20, region='wt-wt', timelimit=None):
     """DuckDuckGo search via duckduckgo-search library — returns list of URLs.
     timelimit: 'd'=day, 'w'=week, 'm'=month, 'y'=year, None=all time
@@ -631,6 +682,7 @@ _LANG_REGIONS = {
     'Russian': ['ru-ru', 'wt-wt'],
     'Spanish': ['es-es', 'ar-es', 'mx-es', 'wt-wt'],
     'Portuguese': ['br-pt', 'pt-pt', 'wt-wt'],
+    'Simplified Chinese': ['cn-zh', 'wt-wt'],
 }
 
 
@@ -661,11 +713,22 @@ def auto_discover(languages=None):
         seen = set()
         search_start = time.time()
 
-        # 1. Google News RSS — fast, multilingual, no timelimit needed
+        # Bilibili-specific Google News queries (broader for Simplified Chinese)
+        gnews_queries = ['bilibili', 'bilibili platform', 'bilibili anime']
+        if lang == 'Simplified Chinese':
+            gnews_queries = ['哔哩哔哩', 'B站', 'bilibili 哔哩哔哩', '哔哩哔哩 2026', 'B站 股票']
+        elif lang == 'Traditional Chinese':
+            gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili', '嗶哩嗶哩 2026']
+        elif lang == 'Japanese':
+            gnews_queries = ['ビリビリ', 'bilibili', 'ビリビリ 2026', 'BLG esports']
+        elif lang == 'Arabic':
+            gnews_queries = ['بيليبيلي', 'bilibili', 'bilibili 2026']
+
+        # 1. Google News RSS — fast, multilingual
         gnews = _GNEWS_PARAMS.get(lang)
         if gnews:
-            for q in ['bilibili', 'bilibili platform', 'bilibili anime']:
-                if time.time() - search_start > 20:
+            for q in gnews_queries:
+                if time.time() - search_start > 15:
                     break
                 urls = _google_news_rss(q, gnews['hl'], gnews['gl'], gnews['ceid'], max_results=20)
                 for u in urls:
@@ -673,12 +736,24 @@ def auto_discover(languages=None):
                         seen.add(u)
                         all_urls.append(u)
 
-        # 2. DDG — broader search, no timelimit (pipeline filters for 2026 content)
+        # 2. Bing News RSS — separate index from Google, good multilingual coverage
+        bing_mkt = _BING_MARKETS.get(lang, 'en-US')
+        bing_queries = gnews_queries[:3]  # top 3 queries only, avoid timeout
+        for q in bing_queries:
+            if time.time() - search_start > 30:
+                break
+            urls = _bing_news_rss(q, mkt=bing_mkt, max_results=20)
+            for u in urls:
+                if u not in seen:
+                    seen.add(u)
+                    all_urls.append(u)
+
+        # 3. DDG — broader search, no timelimit (pipeline filters for 2026 content)
         for q in queries:
-            if time.time() - search_start > 50:
+            if time.time() - search_start > 55:
                 break
             for region in regions:
-                if time.time() - search_start > 50:
+                if time.time() - search_start > 55:
                     break
                 urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
                 for u in urls:
