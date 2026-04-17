@@ -956,6 +956,7 @@ _GNEWS_PARAMS = {
 _SKIP_DOMAINS = {
     'reddit.com', 'play.google.com', 'apps.apple.com',
     'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
+    'vlr.gg',
 }
 
 
@@ -1065,7 +1066,6 @@ _LANG_REGIONS = {
 _DIRECT_CRAWL_SOURCES = [
     # English — general tech/gaming
     'https://www.invenglobal.com/lol/teams/bilibili-gaming',
-    'https://www.vlr.gg/team/12010/bilibili-gaming',
     'https://techcrunch.com/tag/bilibili/',
     'https://www.theverge.com/search?q=bilibili',
     'https://www.scmp.com/topics/bilibili',
