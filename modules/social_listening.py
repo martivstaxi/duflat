@@ -365,7 +365,15 @@ def _validate_and_repair(mention):
         if content_date < '2024-01-01':
             issues.append(f'warn:very_old_date:{content_date}')  # allow but flag
 
-    # ── 5. MINIMUM LENGTH ──────────────────────────────────────────
+    # ── 5. SENSITIVITY / SOURCE_TYPE SANITY ──────────────────────
+    valid_sensitivity = ('low', 'medium', 'high', 'critical')
+    valid_source_type = ('government', 'news_major', 'news_minor', 'blog', 'forum', 'social', 'financial')
+    if mention.get('sensitivity', 'low') not in valid_sensitivity:
+        mention['sensitivity'] = 'low'
+    if mention.get('source_type', 'news_minor') not in valid_source_type:
+        mention['source_type'] = 'news_minor'
+
+    # ── 6. MINIMUM LENGTH ──────────────────────────────────────────
     if len(original) < 15:
         issues.append(f'reject:content_too_short:{len(original)}chars')
         return False, mention, issues
@@ -514,6 +522,8 @@ def save_mentions(mentions):
             'country': m.get('country', ''),
             'language': m.get('language', ''),
             'sentiment': m.get('sentiment', 'neutral'),
+            'sensitivity': m.get('sensitivity', 'low'),
+            'source_type': m.get('source_type', 'news_minor'),
             'content_original': original,
             'content_english': m.get('content_english', ''),
             'keywords': m.get('keywords', []),
@@ -618,12 +628,25 @@ For EACH article, extract:
 - content_english: 1-2 sentence plain-English social insight (what people think/feel about this). Smooth, easy to read, like butter.
 - content_original: copy the most relevant 1-3 sentences VERBATIM from the original article text. Do NOT rewrite — keep the exact original wording. This is shown behind a "Details" button.
 - sentiment: "positive", "negative", or "neutral"
+- sensitivity: how sensitive/impactful is this mention? Use:
+  - "critical" — government action, regulatory ban/investigation, official sanctions, legal action against Bilibili
+  - "high" — major media negative coverage, data breach, large-scale user backlash, security incident
+  - "medium" — analyst downgrade, minor controversy, competitor comparison, policy change
+  - "low" — casual opinion, routine news, general discussion
+- source_type: classify the source:
+  - "government" — government body, regulator, official agency (SEC, CSRC, ministry, court)
+  - "news_major" — major international media (Reuters, Bloomberg, BBC, CNBC, NHK, etc.)
+  - "news_minor" — smaller/regional news outlets, trade press
+  - "financial" — stock analysis, investor research, earnings coverage
+  - "blog" — personal blog, opinion piece, review site
+  - "forum" — Reddit, discussion board, community forum
+  - "social" — social media post, tweet, YouTube comment
 - keywords: array of 2-4 single-word topic tags
 - author: author name if found, otherwise the platform name
 - country: country of origin if detectable, otherwise "International"
 - language: detect the language by reading the ACTUAL WORDS in content_original. Do NOT guess from the platform name or domain. Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese". Rules: if content_original contains Latin alphabet words in English → "English". Chinese scripts: 简体字 (simplified strokes) → "Simplified Chinese", 繁體字 (complex strokes, traditional) → "Traditional Chinese". If a lang_hint field is provided, use it as a strong tie-breaker only when the text is ambiguous. Example: aastocks.com/en/ page with English text → "English" (not Traditional Chinese just because it's a HK site).
 
-Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, keywords, author, country, language.
+Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, sensitivity, source_type, keywords, author, country, language.
 
 Skip articles that do NOT mention Bilibili at all (complete false positives with no connection to Bilibili).
 Skip pages that are ONLY raw stock price tickers with no text (just numbers/charts, no sentences).

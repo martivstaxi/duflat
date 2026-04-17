@@ -13,6 +13,8 @@ let filterOpen = false;
 let archivePage = 0;
 const DATES_PER_PAGE = 4;
 let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
+let currentSensitivity = 'all';
+let currentSourceType = 'all';
 let showMonths = false; // whether month list is expanded
 
 const CACHE_KEY = 'social_mentions_cache';
@@ -107,7 +109,7 @@ document.addEventListener('click', function(e) {
 
 function updateFilterToggle() {
     const btn = document.getElementById('filterToggle');
-    const count = (currentLang !== 'all' ? 1 : 0) + (currentDateFilter ? 1 : 0);
+    const count = (currentLang !== 'all' ? 1 : 0) + (currentDateFilter ? 1 : 0) + (currentSensitivity !== 'all' ? 1 : 0) + (currentSourceType !== 'all' ? 1 : 0);
     btn.classList.toggle('has-filter', count > 0);
     const existing = btn.querySelector('.filter-badge');
     if (existing) existing.remove();
@@ -136,6 +138,44 @@ function renderFilterDropdown() {
             <button class="filter-option ${currentLang==='all'?'active':''}" onclick="setLang('all')">All<span class="opt-count">${base.length}</span></button>`;
     langKeys.forEach(lang => {
         html += `<button class="filter-option ${currentLang===lang?'active':''}" onclick="setLang('${escapeHtml(lang)}')">${escapeHtml(lang)}<span class="opt-count">${langs[lang]}</span></button>`;
+    });
+    html += `</div></div>`;
+
+    // Sensitivity
+    const sensitivities = {};
+    base.forEach(m => {
+        const sv = m.sensitivity || 'low';
+        sensitivities[sv] = (sensitivities[sv] || 0) + 1;
+    });
+    const sensOrder = ['critical','high','medium','low'];
+    const sensLabels = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+    html += `<div class="filter-section">
+        <div class="filter-section-title">Sensitivity</div>
+        <div class="filter-options">
+            <button class="filter-option ${currentSensitivity==='all'?'active':''}" onclick="setSensitivity('all')">All<span class="opt-count">${base.length}</span></button>`;
+    sensOrder.forEach(sv => {
+        if (sensitivities[sv]) {
+            html += `<button class="filter-option ${currentSensitivity===sv?'active':''}" onclick="setSensitivity('${sv}')">${sensLabels[sv]}<span class="opt-count">${sensitivities[sv]}</span></button>`;
+        }
+    });
+    html += `</div></div>`;
+
+    // Source Type
+    const sources = {};
+    base.forEach(m => {
+        const st = m.source_type || 'news_minor';
+        sources[st] = (sources[st] || 0) + 1;
+    });
+    const srcOrder = ['government','news_major','financial','news_minor','blog','forum','social'];
+    const srcLabels = {government:'Government',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
+    html += `<div class="filter-section">
+        <div class="filter-section-title">Source</div>
+        <div class="filter-options">
+            <button class="filter-option ${currentSourceType==='all'?'active':''}" onclick="setSourceType('all')">All<span class="opt-count">${base.length}</span></button>`;
+    srcOrder.forEach(st => {
+        if (sources[st]) {
+            html += `<button class="filter-option ${currentSourceType===st?'active':''}" onclick="setSourceType('${st}')">${srcLabels[st]}<span class="opt-count">${sources[st]}</span></button>`;
+        }
     });
     html += `</div></div>`;
 
@@ -213,6 +253,14 @@ function renderActiveChips() {
         const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         html += `<span class="chip">${label}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
+    if (currentSensitivity !== 'all') {
+        const sensLabels = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+        html += `<span class="chip">${sensLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
+    }
+    if (currentSourceType !== 'all') {
+        const srcLabels = {government:'Government',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
+        html += `<span class="chip">${srcLabels[currentSourceType] || currentSourceType}<button class="chip-remove" onclick="setSourceType('all')">&times;</button></span>`;
+    }
     document.getElementById('activeChips').innerHTML = html;
 }
 
@@ -221,6 +269,8 @@ function getFilteredMentions() {
     if (currentDateFilter) list = list.filter(m => m.content_date === currentDateFilter);
     if (currentFilter !== 'all') list = list.filter(m => m.sentiment === currentFilter);
     if (currentLang !== 'all') list = list.filter(m => (m.language || 'Unknown') === currentLang);
+    if (currentSensitivity !== 'all') list = list.filter(m => (m.sensitivity || 'low') === currentSensitivity);
+    if (currentSourceType !== 'all') list = list.filter(m => (m.source_type || 'news_minor') === currentSourceType);
     return list;
 }
 
@@ -260,6 +310,8 @@ function renderMentions() {
 
 function renderCard(m, uid) {
     const s = m.sentiment || 'neutral';
+    const sensitivity = m.sensitivity || 'low';
+    const sourceType = m.source_type || 'news_minor';
     const hasOriginal = m.content_original && m.content_original !== m.content_english;
     const detailsHtml = hasOriginal
         ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
@@ -269,11 +321,21 @@ function renderCard(m, uid) {
         ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
         : '';
 
+    const sensitivityBadge = sensitivity !== 'low'
+        ? `<span class="sensitivity-badge sensitivity-${sensitivity}">${sensitivity}</span>`
+        : '';
+
+    const sourceLabels = {government:'Gov',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
+    const sourceLabel = sourceLabels[sourceType] || sourceType;
+    const sourceTag = `<span class="source-tag source-${sourceType}">${sourceLabel}</span>`;
+
     const tagsHtml = (m.keywords || []).map(k => `<span class="tag">#${escapeHtml(k)}</span>`).join('');
 
-    return `<div class="mention-card ${s}">
+    return `<div class="mention-card ${s}${sensitivity === 'critical' ? ' sensitivity-critical-card' : sensitivity === 'high' ? ' sensitivity-high-card' : ''}">
         <div class="card-top">
             <span class="sentiment-dot"></span>
+            ${sensitivityBadge}
+            ${sourceTag}
             <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
             <span style="flex:1"></span>
             ${detailsBtn}
@@ -376,6 +438,20 @@ function setFilter(sentiment) {
 
 function setLang(lang) {
     currentLang = lang;
+    filterOpen = false;
+    document.getElementById('filterDropdownAnchor').classList.remove('open');
+    renderAll();
+}
+
+function setSensitivity(val) {
+    currentSensitivity = val;
+    filterOpen = false;
+    document.getElementById('filterDropdownAnchor').classList.remove('open');
+    renderAll();
+}
+
+function setSourceType(val) {
+    currentSourceType = val;
     filterOpen = false;
     document.getElementById('filterDropdownAnchor').classList.remove('open');
     renderAll();
