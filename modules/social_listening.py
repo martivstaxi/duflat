@@ -1416,16 +1416,25 @@ def discover_reddit():
                 seen.add(item['url'])
                 all_items.append(item)
 
+    print(f'[reddit] total fetched items={len(all_items)}', flush=True)
     if not all_items:
         return {'platform': 'reddit', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
 
     # Dedup against DB
-    urls = [it['url'] for it in all_items]
-    new_urls_set = set(check_urls(urls))
-    items_new = [it for it in all_items if it['url'] in new_urls_set]
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = set(check_urls(urls))
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[reddit] check_urls error: {e}', flush=True)
+        return {'platform': 'reddit', 'fetched': len(all_items), 'error': f'dedup: {e}'}
 
+    print(f'[reddit] new after dedup={len(items_new)}', flush=True)
     if not items_new:
         return {'platform': 'reddit', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Cap to stay within gunicorn 120s — Haiku on 25 items ≈ 30-40s
+    items_new = items_new[:25]
 
     # Log source records
     for it in items_new:
@@ -1440,14 +1449,28 @@ def discover_reddit():
         except Exception:
             pass
 
-    # Haiku analyze + validate + save (reuse existing pipeline)
-    mentions = _analyze_with_haiku(items_new)
+    # Haiku analyze + validate + save
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[reddit] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[reddit] haiku error: {e}', flush=True)
+        return {'platform': 'reddit', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
     if mentions:
-        mentions = _ai_validate_and_repair(mentions)
-    if mentions:
-        result = save_mentions(mentions)
-    else:
-        result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[reddit] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[reddit] save error: {e}', flush=True)
+        return {'platform': 'reddit', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
 
     return {
         'platform': 'reddit',
