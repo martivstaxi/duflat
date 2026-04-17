@@ -278,6 +278,13 @@ def social_discover():
     return jsonify(result)
 
 
+@app.route('/social/discover-reddit', methods=['POST'])
+def social_discover_reddit():
+    """Fetch Bilibili-related Reddit posts via JSON API."""
+    from modules.social_listening import discover_reddit
+    return jsonify(discover_reddit())
+
+
 @app.route('/social/cleanup', methods=['POST'])
 def social_cleanup():
     """Admin: delete mentions by ID and/or update content text."""

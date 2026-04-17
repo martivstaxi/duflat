@@ -1027,7 +1027,7 @@ _GNEWS_PARAMS = {
 
 # Domains to skip (not content pages)
 _SKIP_DOMAINS = {
-    'reddit.com', 'play.google.com', 'apps.apple.com',
+    'play.google.com', 'apps.apple.com',
     'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
     'vlr.gg', 'aastocks.com',
     # Mainland China domains — out of project scope
@@ -1311,6 +1311,139 @@ def auto_discover(languages=None):
         pass
 
     return results
+
+
+# ─────────────────────────────────────────────
+# REDDIT — direct JSON API (bypasses DDG + JS rendering)
+# ─────────────────────────────────────────────
+
+_REDDIT_SUBREDDITS = [
+    'Bilibili', 'gachagaming', 'LivestreamFail', 'China',
+    'HongKong', 'animepiracy', 'AskAsianMasculine', 'Sino',
+    'aznidentity', 'anime', 'Genshin_Impact', 'HonkaiStarRail',
+    'Vtubers', 'LeagueOfLegends', 'ValorantCompetitive',
+]
+
+_REDDIT_UA = 'Mozilla/5.0 (Duflat Social Listening) python-requests'
+
+
+def _fetch_reddit_json(kind, q):
+    """kind='search' → reddit.com/search.json?q=q; kind='sub' → r/q/new.json."""
+    from urllib.parse import quote_plus
+    if kind == 'search':
+        url = f'https://www.reddit.com/search.json?q={quote_plus(q)}&sort=new&t=year&limit=50'
+    else:
+        url = f'https://www.reddit.com/r/{q}/new.json?limit=50'
+    try:
+        resp = requests.get(url, headers={'User-Agent': _REDDIT_UA}, timeout=8)
+        if resp.status_code != 200:
+            return []
+        return resp.json().get('data', {}).get('children', [])
+    except Exception:
+        return []
+
+
+def _reddit_post_to_item(d):
+    """Convert Reddit post data dict to pipeline item."""
+    permalink = d.get('permalink', '')
+    if not permalink:
+        return None
+    post_url = f'https://www.reddit.com{permalink}'
+    created = d.get('created_utc', 0)
+    try:
+        dt = datetime.utcfromtimestamp(created)
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    text_parts = [d.get('title', ''), d.get('selftext', '') or '']
+    sub = d.get('subreddit', '')
+    if sub:
+        text_parts.insert(0, f'[r/{sub}]')
+    text = '\n\n'.join(p for p in text_parts if p).strip()
+    if not text:
+        return None
+    return {
+        'url': post_url,
+        'url_hash': hash_url(post_url),
+        'platform': 'reddit.com',
+        'text': text[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_reddit():
+    """Fetch Bilibili-related Reddit posts via JSON API, analyze, save."""
+    all_items = []
+    seen = set()
+
+    # Subreddit feeds (noisy — only keep bilibili mentions)
+    for sub in _REDDIT_SUBREDDITS:
+        children = _fetch_reddit_json('sub', sub)
+        for c in children:
+            d = c.get('data', {})
+            blob = (d.get('title', '') + ' ' + (d.get('selftext', '') or '')).lower()
+            if sub.lower() == 'bilibili':
+                # dedicated subreddit — keep all
+                pass
+            elif 'bilibili' not in blob and 'b站' not in blob and '哔哩' not in blob and '嗶哩' not in blob:
+                continue
+            item = _reddit_post_to_item(d)
+            if item and item['url'] not in seen:
+                seen.add(item['url'])
+                all_items.append(item)
+
+    # Global search queries
+    for q in ['bilibili', 'B站 bilibili', 'bilibili gaming', 'bilibili app', 'bilibili banned']:
+        children = _fetch_reddit_json('search', q)
+        for c in children:
+            d = c.get('data', {})
+            item = _reddit_post_to_item(d)
+            if item and item['url'] not in seen:
+                seen.add(item['url'])
+                all_items.append(item)
+
+    if not all_items:
+        return {'platform': 'reddit', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Dedup against DB
+    urls = [it['url'] for it in all_items]
+    new_urls_set = set(check_urls(urls))
+    items_new = [it for it in all_items if it['url'] in new_urls_set]
+
+    if not items_new:
+        return {'platform': 'reddit', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Log source records
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'reddit.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    # Haiku analyze + validate + save (reuse existing pipeline)
+    mentions = _analyze_with_haiku(items_new)
+    if mentions:
+        mentions = _ai_validate_and_repair(mentions)
+    if mentions:
+        result = save_mentions(mentions)
+    else:
+        result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+
+    return {
+        'platform': 'reddit',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+    }
 
 
 def delete_mentions(ids):
