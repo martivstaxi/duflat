@@ -837,11 +837,22 @@ def scan_urls(urls):
 # Search queries per language — short, no year (pipeline filters for 2026 content)
 _DISCOVER_QUERIES = {
     'English': [
+        # Core — always included
         'Bilibili',
         'Bilibili Gaming',
+        # Rotated pool — random 4 picked each run
         'Bilibili app',
         '"bilibili.com"',
         'B站 Bilibili',
+        'Bilibili China platform',
+        'Bilibili streaming',
+        'Bilibili review',
+        'Bilibili opinion',
+        'Bilibili users',
+        'Bilibili update',
+        'Bilibili banned',
+        'Bilibili vs YouTube',
+        'Bilibili community',
     ],
     'Japanese': [
         'ビリビリ',
@@ -851,6 +862,10 @@ _DISCOVER_QUERIES = {
         'ビリビリ アプリ',
         '哔哩哔哩',
         'bilibili.com',
+        'ビリビリ レビュー',
+        'ビリビリ ユーザー',
+        'ビリビリ 中国',
+        'ビリビリ 配信',
     ],
     'Arabic': [
         'بيليبيلي',
@@ -860,6 +875,9 @@ _DISCOVER_QUERIES = {
         'بيليبيلي تطبيق',
         'بيليبيلي صيني',
         'bilibili.com',
+        'بيليبيلي منصة',
+        'بيليبيلي مراجعة',
+        'Bilibili app',
     ],
     'Traditional Chinese': [
         '嗶哩嗶哩',
@@ -868,6 +886,10 @@ _DISCOVER_QUERIES = {
         '嗶哩嗶哩 B站',
         '嗶哩嗶哩 平台',
         'bilibili.com',
+        'B站 用戶',
+        'B站 更新',
+        'B站 評價',
+        'B站 直播',
     ],
     'Turkish': [
         'Bilibili',
@@ -876,6 +898,9 @@ _DISCOVER_QUERIES = {
         'bilibili.com',
         'Bilibili platform',
         'Bilibili uygulama',
+        'Bilibili inceleme',
+        'Bilibili yorum',
+        'Bilibili kullanıcı',
     ],
     'Russian': [
         'Bilibili',
@@ -884,6 +909,9 @@ _DISCOVER_QUERIES = {
         'B站 Bilibili',
         'bilibili.com',
         'Билибили платформа',
+        'Билибили приложение',
+        'Билибили обзор',
+        'Билибили пользователи',
     ],
     'Spanish': [
         'Bilibili',
@@ -892,6 +920,9 @@ _DISCOVER_QUERIES = {
         'Bilibili plataforma',
         'Bilibili app',
         'B站 Bilibili',
+        'Bilibili opinión',
+        'Bilibili usuarios',
+        'Bilibili reseña',
     ],
     'Portuguese': [
         'Bilibili',
@@ -900,8 +931,14 @@ _DISCOVER_QUERIES = {
         'Bilibili plataforma',
         'Bilibili app',
         'B站 Bilibili',
+        'Bilibili opinião',
+        'Bilibili usuários',
+        'Bilibili avaliação',
     ],
 }
+
+# How many queries to use per run (pick random subset from pool)
+_QUERIES_PER_RUN = 6
 
 # Google News RSS params per language — reliable multilingual news source
 _GNEWS_PARAMS = {
@@ -1084,17 +1121,25 @@ def auto_discover(languages=None):
     Returns per-language summary.
     """
     import time
+    import random
 
     if languages is None:
         languages = list(_DISCOVER_QUERIES.keys())
 
     results = {}
     for lang in languages:
-        queries = _DISCOVER_QUERIES.get(lang, [])
-        if not queries:
+        all_queries = _DISCOVER_QUERIES.get(lang, [])
+        if not all_queries:
             continue
 
-        regions = _LANG_REGIONS.get(lang, ['wt-wt'])
+        # Random subset each run — different queries each day
+        if len(all_queries) > _QUERIES_PER_RUN:
+            queries = random.sample(all_queries, _QUERIES_PER_RUN)
+        else:
+            queries = all_queries
+
+        regions = list(_LANG_REGIONS.get(lang, ['wt-wt']))
+        random.shuffle(regions)
 
         # Collect URLs from all queries × all regions for this language
         # Time budget: 50s for DDG searches (leaves ~60s for download+analyze+save)
