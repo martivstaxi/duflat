@@ -286,6 +286,10 @@ def social_cleanup():
     ids_to_delete = body.get('delete', [])
     if ids_to_delete:
         result['deleted'] = delete_mentions(ids_to_delete)
+    domain_to_delete = body.get('delete_domain', '').strip()
+    if domain_to_delete:
+        from modules.social_listening import delete_mentions_by_domain
+        result['deleted_by_domain'] = delete_mentions_by_domain(domain_to_delete)
     updates = body.get('updates', [])
     updated = 0
     for u in updates:

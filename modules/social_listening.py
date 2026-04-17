@@ -1008,7 +1008,7 @@ _GNEWS_PARAMS = {
 _SKIP_DOMAINS = {
     'reddit.com', 'play.google.com', 'apps.apple.com',
     'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
-    'vlr.gg',
+    'vlr.gg', 'aastocks.com',
 }
 
 
@@ -1122,7 +1122,6 @@ _DIRECT_CRAWL_SOURCES = [
     'https://www.theverge.com/search?q=bilibili',
     'https://www.scmp.com/topics/bilibili',
     # Traditional Chinese
-    'http://www.aastocks.com/tc/usq/quote/stock-news.aspx?symbol=BILI',
     'https://www.ithome.com.tw/search?q=bilibili',
     # Japanese
     'https://fistbump-news.jp/?s=bilibili',
@@ -1292,6 +1291,15 @@ def delete_mentions(ids):
         except Exception:
             pass
     return deleted
+
+
+def delete_mentions_by_domain(domain):
+    """Delete all mentions whose URL contains the given domain substring."""
+    try:
+        res = _db().table('social_mentions').delete().like('url', f'%{domain}%').execute()
+        return len(res.data or [])
+    except Exception:
+        return 0
 
 
 def update_mention(mid, content_english=None, content_original=None, language=None):
