@@ -795,8 +795,8 @@ def scan_urls(urls):
     if not new_urls:
         return {'received': len(urls), 'new': 0, 'with_2026': 0, 'saved': 0, 'skipped': 0}
 
-    # Step 2: download + date filter
-    processed = process_urls(new_urls, time_budget=40)
+    # Step 2: download + date filter (cap at 80 URLs to stay within timeout)
+    processed = process_urls(new_urls[:80], time_budget=40)
     items_2026 = processed.get('items', [])
 
     if not items_2026:
@@ -922,11 +922,12 @@ _SKIP_DOMAINS = {
 }
 
 
-def _google_news_rss(query, hl, gl, ceid, max_results=20):
-    """Fetch article URLs from Google News RSS. Returns list of URLs."""
+def _google_news_rss(query, hl, gl, ceid, max_results=20, when='1m'):
+    """Fetch article URLs from Google News RSS. when: '1h','1d','7d','1m','1y'."""
     import xml.etree.ElementTree as ET
     import urllib.parse
-    rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(query)}&hl={hl}&gl={gl}&ceid={ceid}"
+    q = f"{query} when:{when}" if when else query
+    rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(q)}&hl={hl}&gl={gl}&ceid={ceid}"
     try:
         resp = requests.get(rss_url, headers=BROWSER_HEADERS, timeout=10)
         resp.raise_for_status()
@@ -1134,13 +1135,16 @@ def auto_discover(languages=None):
                     all_urls.append(u)
 
         # 3. DDG — broader search, main workhorse (budget: 20s–55s = 35s)
-        for q in queries:
+        # First half of queries: last month (fresh). Second half: last year (wider net).
+        half = len(queries) // 2
+        for i, q in enumerate(queries):
             if time.time() - search_start > 55:
                 break
+            tl = 'm' if i < half else 'y'
             for region in regions:
                 if time.time() - search_start > 55:
                     break
-                urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
+                urls = _ddg_search(q, max_results=20, region=region, timelimit=tl)
                 for u in urls:
                     if u not in seen:
                         seen.add(u)
@@ -1149,13 +1153,10 @@ def auto_discover(languages=None):
                 if len(urls) >= 10:
                     break
 
-        # 4. YouTube search via DDG — find videos about Bilibili (budget: 10s)
-        yt_queries = ['site:youtube.com bilibili', 'site:youtube.com bilibili gaming']
-        for q in yt_queries:
-            if time.time() - search_start > 65:
-                break
-            urls = _ddg_search(q, max_results=15, region='wt-wt', timelimit='y')
-            for u in urls:
+        # 4. YouTube search via DDG — find videos about Bilibili (budget: 5s)
+        if time.time() - search_start < 60:
+            yt_urls = _ddg_search('site:youtube.com bilibili', max_results=10, region='wt-wt', timelimit='m')
+            for u in yt_urls:
                 if u not in seen and 'youtube.com/watch' in u:
                     seen.add(u)
                     all_urls.append(u)
