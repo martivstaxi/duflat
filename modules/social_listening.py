@@ -1420,10 +1420,10 @@ def discover_reddit():
     if not all_items:
         return {'platform': 'reddit', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
 
-    # Dedup against DB
+    # Dedup against DB (check_urls returns list of {url, url_hash} dicts)
     try:
         urls = [it['url'] for it in all_items]
-        new_urls_set = set(check_urls(urls))
+        new_urls_set = {d['url'] for d in check_urls(urls)}
         items_new = [it for it in all_items if it['url'] in new_urls_set]
     except Exception as e:
         print(f'[reddit] check_urls error: {e}', flush=True)
