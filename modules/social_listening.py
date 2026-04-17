@@ -586,6 +586,7 @@ def save_mentions(mentions):
     # Alert for critical/high sensitivity mentions
     if alert_queue:
         _send_telegram_alerts(alert_queue)
+        _send_email_alerts(alert_queue)
 
     return {'saved': saved, 'skipped': skipped, 'repaired': repaired}
 
@@ -631,6 +632,54 @@ def _send_telegram_alerts(mentions):
             )
         except Exception:
             pass  # alert failure should never block the pipeline
+
+
+def _send_email_alerts(mentions):
+    """Send email notification for critical/high sensitivity mentions via Resend."""
+    api_key = os.environ.get('RESEND_API_KEY', '')
+    to_email = os.environ.get('ALERT_EMAIL_TO', '')
+    if not api_key or not to_email:
+        return
+
+    for m in mentions:
+        sensitivity = m.get('sensitivity', 'low')
+        source_type = m.get('source_type', '')
+        platform = m.get('platform', '')
+        url = m.get('url', '')
+        sentiment = m.get('sentiment', 'neutral')
+        content = m.get('content_english', '')
+        date = m.get('content_date', 'unknown')
+
+        subject = f"[{sensitivity.upper()}] Bilibili mention — {source_type}"
+
+        body = (
+            f"<h2 style='color:{('#dc2626' if sensitivity == 'critical' else '#f59e0b')}'>"
+            f"{sensitivity.upper()} Mention Detected</h2>"
+            f"<p style='font-size:16px;line-height:1.6'>{content}</p>"
+            f"<table style='font-size:14px;border-collapse:collapse'>"
+            f"<tr><td style='padding:4px 12px 4px 0;color:#666'>Source</td><td>{source_type} — {platform}</td></tr>"
+            f"<tr><td style='padding:4px 12px 4px 0;color:#666'>Sentiment</td><td>{sentiment}</td></tr>"
+            f"<tr><td style='padding:4px 12px 4px 0;color:#666'>Date</td><td>{date}</td></tr>"
+            f"</table>"
+        )
+        if url:
+            body += f"<p><a href='{url}'>View source</a></p>"
+        body += "<hr><p style='font-size:12px;color:#999'>Duflat Social Listening</p>"
+
+        try:
+            requests.post(
+                'https://api.resend.com/emails',
+                headers={'Authorization': f'Bearer {api_key}'},
+                json={
+                    'from': 'Duflat Alerts <onboarding@resend.dev>',
+                    'to': [to_email],
+                    'subject': subject,
+                    'html': body,
+                },
+                timeout=10,
+            )
+        except Exception:
+            pass
 
 
 # ─────────────────────────────────────────────
