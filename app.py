@@ -51,21 +51,6 @@ def ping():
     return 'ok', 200
 
 
-@app.route('/social/test-alert')
-def test_alert():
-    from modules.social_listening import _send_telegram_alerts
-    _send_telegram_alerts([{
-        'sensitivity': 'critical',
-        'source_type': 'government',
-        'platform': 'Test',
-        'content_english': 'This is a test alert from Duflat Social Listening.',
-        'sentiment': 'negative',
-        'content_date': '2026-04-17',
-        'url': 'https://duflat.com/social',
-    }])
-    return jsonify({'status': 'sent'})
-
-
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
