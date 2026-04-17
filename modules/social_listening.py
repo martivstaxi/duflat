@@ -140,6 +140,45 @@ def _extract_dates_2026(text):
     return found
 
 
+def _extract_dates_from_metadata(soup):
+    """Extract 2026 dates from JSON-LD, meta tags, and time elements."""
+    dates = []
+
+    # 1. JSON-LD structured data
+    for script in soup.find_all('script', type='application/ld+json'):
+        try:
+            data = json.loads(script.string or '')
+            if isinstance(data, list):
+                data = data[0] if data else {}
+            for key in ('datePublished', 'dateModified', 'dateCreated', 'uploadDate'):
+                val = data.get(key, '')
+                if val and '2026' in str(val):
+                    dates.append(str(val)[:10])
+        except Exception:
+            continue
+
+    # 2. Meta tags (og:article, schema, etc.)
+    meta_names = [
+        'article:published_time', 'article:modified_time',
+        'og:updated_time', 'date', 'pubdate', 'publish_date',
+        'dc.date', 'DC.date.issued', 'sailthru.date',
+    ]
+    for name in meta_names:
+        tag = soup.find('meta', attrs={'property': name}) or soup.find('meta', attrs={'name': name})
+        if tag:
+            val = tag.get('content', '')
+            if val and '2026' in val:
+                dates.append(val[:10])
+
+    # 3. <time> elements with datetime attribute
+    for t in soup.find_all('time', datetime=True):
+        val = t['datetime']
+        if '2026' in val:
+            dates.append(val[:10])
+
+    return dates
+
+
 def _parse_date_string(s):
     """Try to parse a date string into YYYY-MM-DD format."""
     s = s.strip().replace('/', '-').replace(',', '')
@@ -184,6 +223,9 @@ def process_urls(url_items, time_budget=55):
             # resp.text can corrupt CJK characters when headers don't declare charset
             soup = BeautifulSoup(resp.content, 'html.parser')
 
+            # Check metadata BEFORE removing script tags (JSON-LD lives in <script>)
+            meta_dates = _extract_dates_from_metadata(soup)
+
             # Remove noise
             for tag in soup(['script', 'style', 'nav', 'footer', 'iframe', 'noscript']):
                 tag.decompose()
@@ -193,8 +235,8 @@ def process_urls(url_items, time_budget=55):
             # Cap at 15K chars for processing
             text_trimmed = text[:15000]
 
-            # Check for 2026 dates — in page text AND URL itself
-            dates = _extract_dates_2026(text_trimmed + '\n' + url)
+            # Check for 2026 dates — metadata + page text + URL
+            dates = meta_dates + _extract_dates_2026(text_trimmed + '\n' + url)
 
             # Detect platform from URL
             domain = urlparse(url).netloc.replace('www.', '')
@@ -795,84 +837,84 @@ def scan_urls(urls):
 # Search queries per language — short, no year (pipeline filters for 2026 content)
 _DISCOVER_QUERIES = {
     'English': [
-        'Bilibili news',
-        'Bilibili BILI stock earnings',
-        'Bilibili anime platform users',
-        'Bilibili gaming esports BLG',
-        'Bilibili China video platform',
-        'Bilibili AniSora AI anime',
-        'Bilibili revenue profit',
-        'Bilibili Spring Festival',
+        'Bilibili',
+        'Bilibili Inc',
+        'BILI stock',
+        'Bilibili Gaming',
+        'BLG esports',
+        'Bilibili app',
+        '"bilibili.com"',
+        'B站 Bilibili',
     ],
     'Japanese': [
-        'ビリビリ ニュース',
-        'ビリビリ 動画プラットフォーム',
-        'ビリビリ アニメ',
-        'ビリビリ 決算 株',
-        'ビリビリ eスポーツ BLG',
-        'ビリビリ AniSora AI',
-        'ビリビリ 中国 Z世代',
-        '哔哩哔哩 日本',
+        'ビリビリ',
+        'Bilibili',
+        'ビリビリ動画',
+        'BLG ビリビリ',
+        'B站',
+        'ビリビリ アプリ',
+        '哔哩哔哩',
+        'bilibili.com',
     ],
     'Arabic': [
-        'بيليبيلي أخبار',
-        'بيليبيلي منصة فيديو صينية',
-        'بيليبيلي أنمي صيني',
-        'Bilibili Arabic',
-        'بيليبيلي أسهم',
-        'بيليبيلي ذكاء اصطناعي',
-        'موقع بيليبيلي الصيني',
-        'Bilibili China platform review',
+        'بيليبيلي',
+        'Bilibili',
+        'بيليبيلي Bilibili',
+        'B站',
+        'بيليبيلي تطبيق',
+        'Bilibili BILI',
+        'بيليبيلي صيني',
+        'bilibili.com',
     ],
     'Traditional Chinese': [
-        '嗶哩嗶哩 新聞',
-        '嗶哩嗶哩 股票',
-        'B站 動漫 用戶',
-        '嗶哩嗶哩 電競 BLG',
-        'B站 廣告收入',
-        'B站 AniSora AI',
-        '嗶哩嗶哩 春節',
-        'B站 創作者',
+        '嗶哩嗶哩',
+        'B站',
+        'Bilibili',
+        '嗶哩嗶哩 B站',
+        'BLG 嗶哩嗶哩',
+        'BILI 嗶哩嗶哩',
+        '嗶哩嗶哩 平台',
+        'bilibili.com',
     ],
     'Turkish': [
+        'Bilibili',
         'Bilibili nedir',
-        'Bilibili Çin video platformu',
-        'Bilibili anime',
-        'Bilibili hisse',
-        'Bilibili espor',
-        'Bilibili AniSora yapay zeka',
-        'Bilibili platform inceleme',
-        'Bilibili YouTube Çin',
+        'Bilibili Çin',
+        'BLG Bilibili',
+        'BILI Bilibili',
+        'bilibili.com',
+        'Bilibili platform',
+        'Bilibili uygulama',
     ],
     'Russian': [
-        'Bilibili новости',
-        'Bilibili платформа видео Китай',
-        'Bilibili аниме',
-        'Bilibili акции',
-        'Bilibili киберспорт',
-        'Bilibili AniSora ИИ',
-        'Bilibili обзор платформа',
-        'Bilibili китайский YouTube',
+        'Bilibili',
+        'Билибили',
+        'Bilibili Китай',
+        'BLG Bilibili',
+        'B站 Bilibili',
+        'bilibili.com',
+        'Билибили платформа',
+        'BILI Bilibili',
     ],
     'Spanish': [
-        'Bilibili noticias',
-        'Bilibili plataforma china',
-        'Bilibili anime',
-        'Bilibili acciones',
-        'Bilibili esports',
-        'Bilibili AniSora inteligencia artificial',
-        'Bilibili qué es plataforma',
-        'Bilibili China streaming',
+        'Bilibili',
+        'Bilibili China',
+        'BLG Bilibili',
+        'BILI Bilibili',
+        'bilibili.com',
+        'Bilibili plataforma',
+        'Bilibili app',
+        'B站 Bilibili',
     ],
     'Portuguese': [
-        'Bilibili notícias',
-        'Bilibili plataforma chinesa',
-        'Bilibili anime',
-        'Bilibili ações',
-        'Bilibili esports',
-        'Bilibili AniSora inteligência artificial',
-        'Bilibili o que é',
-        'Bilibili China streaming',
+        'Bilibili',
+        'Bilibili China',
+        'BLG Bilibili',
+        'BILI Bilibili',
+        'bilibili.com',
+        'Bilibili plataforma',
+        'Bilibili app',
+        'B站 Bilibili',
     ],
 }
 
@@ -890,7 +932,7 @@ _GNEWS_PARAMS = {
 
 # Domains to skip (not content pages)
 _SKIP_DOMAINS = {
-    'youtube.com', 'reddit.com', 'play.google.com', 'apps.apple.com',
+    'reddit.com', 'play.google.com', 'apps.apple.com',
     'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
 }
 
@@ -998,18 +1040,21 @@ _LANG_REGIONS = {
 
 # Known domains with Bilibili content — crawl their listing pages for fresh articles
 _DIRECT_CRAWL_SOURCES = [
-    # English
-    'https://www.ainvest.com/news/?q=bilibili',
+    # English — general tech/gaming
     'https://www.invenglobal.com/lol/teams/bilibili-gaming',
     'https://www.vlr.gg/team/12010/bilibili-gaming',
-    'https://longbridge.com/en/news?keyword=bilibili',
-    # Traditional Chinese (Hong Kong/Taiwan)
+    'https://techcrunch.com/tag/bilibili/',
+    'https://www.theverge.com/search?q=bilibili',
+    'https://www.scmp.com/topics/bilibili',
+    # Traditional Chinese
     'http://www.aastocks.com/tc/usq/quote/stock-news.aspx?symbol=BILI',
-    'https://hk.finance.yahoo.com/quote/9626.HK/news/',
-    'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_news_detail.php?code=09626',
+    'https://www.ithome.com.tw/search?q=bilibili',
     # Japanese
     'https://fistbump-news.jp/?s=bilibili',
-    'https://media.rakuten-sec.net/search/?q=%E3%83%93%E3%83%AA%E3%83%93%E3%83%AA',
+    # Spanish/Portuguese
+    'https://www.xataka.com/?s=bilibili',
+    # Turkish
+    'https://www.webtekno.com/arama?q=bilibili',
 ]
 
 
@@ -1072,13 +1117,13 @@ def auto_discover(languages=None):
         search_start = time.time()
 
         # Bilibili-specific Google News queries per language
-        gnews_queries = ['bilibili', 'bilibili platform', 'bilibili anime']
+        gnews_queries = ['bilibili', 'BILI', 'Bilibili Gaming']
         if lang == 'Traditional Chinese':
-            gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili', '嗶哩嗶哩 2026']
+            gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili', 'BILI']
         elif lang == 'Japanese':
-            gnews_queries = ['ビリビリ', 'bilibili', 'ビリビリ 2026', 'BLG esports']
+            gnews_queries = ['ビリビリ', 'bilibili', 'BLG', 'B站']
         elif lang == 'Arabic':
-            gnews_queries = ['بيليبيلي', 'bilibili', 'bilibili 2026']
+            gnews_queries = ['بيليبيلي', 'bilibili', 'BILI']
 
         # 1. Google News RSS — fast, multilingual
         gnews = _GNEWS_PARAMS.get(lang)
@@ -1103,12 +1148,12 @@ def auto_discover(languages=None):
                     seen.add(u)
                     all_urls.append(u)
 
-        # 3. DDG — broader search, main workhorse (budget: 20s–65s = 45s)
+        # 3. DDG — broader search, main workhorse (budget: 20s–55s = 35s)
         for q in queries:
-            if time.time() - search_start > 65:
+            if time.time() - search_start > 55:
                 break
             for region in regions:
-                if time.time() - search_start > 65:
+                if time.time() - search_start > 55:
                     break
                 urls = _ddg_search(q, max_results=20, region=region, timelimit='y')
                 for u in urls:
@@ -1118,6 +1163,17 @@ def auto_discover(languages=None):
                 # If first region already found enough URLs for this query, skip extras
                 if len(urls) >= 10:
                     break
+
+        # 4. YouTube search via DDG — find videos about Bilibili (budget: 10s)
+        yt_queries = ['site:youtube.com bilibili', 'site:youtube.com BLG bilibili']
+        for q in yt_queries:
+            if time.time() - search_start > 65:
+                break
+            urls = _ddg_search(q, max_results=15, region='wt-wt', timelimit='y')
+            for u in urls:
+                if u not in seen and 'youtube.com/watch' in u:
+                    seen.add(u)
+                    all_urls.append(u)
 
         # Run through scan pipeline
         if all_urls:
