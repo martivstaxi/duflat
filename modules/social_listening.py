@@ -1318,10 +1318,8 @@ def auto_discover(languages=None):
 # ─────────────────────────────────────────────
 
 _REDDIT_SUBREDDITS = [
-    'Bilibili', 'gachagaming', 'LivestreamFail', 'China',
-    'HongKong', 'animepiracy', 'AskAsianMasculine', 'Sino',
-    'aznidentity', 'anime', 'Genshin_Impact', 'HonkaiStarRail',
-    'Vtubers', 'LeagueOfLegends', 'ValorantCompetitive',
+    'Bilibili', 'gachagaming', 'China', 'HongKong',
+    'animepiracy', 'Sino', 'Vtubers',
 ]
 
 _REDDIT_UA = 'Mozilla/5.0 (Duflat Social Listening) python-requests'
@@ -1335,16 +1333,20 @@ def _fetch_reddit_json(kind, q):
     else:
         url = f'https://www.reddit.com/r/{q}/new.json?limit=50'
     try:
-        resp = requests.get(url, headers={'User-Agent': _REDDIT_UA}, timeout=8)
-        if resp.status_code != 200:
-            print(f'[reddit] {kind}={q} status={resp.status_code} body={resp.text[:200]}', flush=True)
-            return []
-        children = resp.json().get('data', {}).get('children', [])
-        print(f'[reddit] {kind}={q} ok children={len(children)}', flush=True)
-        return children
+        resp = requests.get(url, headers={'User-Agent': _REDDIT_UA}, timeout=6)
     except Exception as e:
-        print(f'[reddit] {kind}={q} exception={e}', flush=True)
+        print(f'[reddit] {kind}={q} request_exception={e}', flush=True)
         return []
+    if resp.status_code != 200:
+        print(f'[reddit] {kind}={q} status={resp.status_code} body={resp.text[:200]}', flush=True)
+        return []
+    try:
+        children = resp.json().get('data', {}).get('children', [])
+    except Exception as e:
+        print(f'[reddit] {kind}={q} json_err={e} body={resp.text[:200]}', flush=True)
+        return []
+    print(f'[reddit] {kind}={q} ok children={len(children)}', flush=True)
+    return children
 
 
 def _reddit_post_to_item(d):
@@ -1379,18 +1381,22 @@ def _reddit_post_to_item(d):
 
 def discover_reddit():
     """Fetch Bilibili-related Reddit posts via JSON API, analyze, save."""
+    import time
     all_items = []
     seen = set()
+    fetch_budget = 40  # seconds
+    fetch_start = time.time()
 
     # Subreddit feeds (noisy — only keep bilibili mentions)
     for sub in _REDDIT_SUBREDDITS:
+        if time.time() - fetch_start > fetch_budget:
+            break
         children = _fetch_reddit_json('sub', sub)
         for c in children:
             d = c.get('data', {})
             blob = (d.get('title', '') + ' ' + (d.get('selftext', '') or '')).lower()
             if sub.lower() == 'bilibili':
-                # dedicated subreddit — keep all
-                pass
+                pass  # dedicated sub — keep all
             elif 'bilibili' not in blob and 'b站' not in blob and '哔哩' not in blob and '嗶哩' not in blob:
                 continue
             item = _reddit_post_to_item(d)
@@ -1399,7 +1405,9 @@ def discover_reddit():
                 all_items.append(item)
 
     # Global search queries
-    for q in ['bilibili', 'B站 bilibili', 'bilibili gaming', 'bilibili app', 'bilibili banned']:
+    for q in ['bilibili', 'bilibili gaming', 'bilibili app']:
+        if time.time() - fetch_start > fetch_budget:
+            break
         children = _fetch_reddit_json('search', q)
         for c in children:
             d = c.get('data', {})
