@@ -540,8 +540,23 @@ def save_mentions(mentions):
             skipped += 1
             continue
 
-        # Simplified Chinese is not used on this platform — always reject
+        # Simplified Chinese / Mandarin is out of project scope — always reject
         if m.get('language') == 'Simplified Chinese':
+            skipped += 1
+            continue
+
+        # Mainland China content is out of project scope — always reject
+        country = (m.get('country') or '').strip().lower()
+        if country in ('china', 'mainland china', 'prc', "people's republic of china", '中国', '中國'):
+            skipped += 1
+            continue
+        url_lower = (m.get('url') or '').lower()
+        if any(d in url_lower for d in (
+            '.cn/', '.gov.cn', 'sina.com', 'weibo.com', 'sohu.com', 'qq.com',
+            'thepaper.cn', 'xinhua', 'people.com.cn', 'globaltimes',
+            'chinadaily', 'cctv.', 'baidu.com', 'zhihu.com', '163.com',
+            '36kr.com', 'ifeng.com', 'douyin.com', 'toutiao.com',
+        )):
             skipped += 1
             continue
 
@@ -755,7 +770,13 @@ def _analyze_with_haiku(items):
             entry['lang_hint'] = lang_hint
         entries.append(entry)
 
-    prompt = f"""You are a social listening analyst. Your job is to capture what PEOPLE and COMMUNITIES are saying about Bilibili — public opinion, user reactions, community sentiment, social commentary.
+    prompt = f"""You are a social listening analyst. Your job is to capture what PEOPLE and COMMUNITIES OUTSIDE MAINLAND CHINA are saying about Bilibili — public opinion, user reactions, community sentiment, social commentary.
+
+SCOPE (STRICT):
+- ONLY international / non-Mainland-China perspectives: users in US, EU, Japan, Korea, Taiwan, Hong Kong, Southeast Asia, Latin America, Middle East, Turkey, Russia, etc.
+- SKIP anything originating from Mainland China (PRC state media, Mainland news sites, Mainland regulators, Mainland user forums like Weibo/Zhihu/Tieba, Simplified Chinese content).
+- If the article is clearly Mainland-Chinese-sourced or in Simplified Chinese (Mandarin), set content_original to empty string and country to "China" — it will be filtered out.
+- Financial/stock coverage is LOW priority. Focus on user opinion, cultural reaction, government (non-PRC) policy, international community discussion.
 
 For EACH article, write a plain-English summary that sounds like a social media insight, NOT a news headline. Use simple, everyday language. Avoid jargon, financial terms, or corporate-speak.
 
@@ -1009,6 +1030,17 @@ _SKIP_DOMAINS = {
     'reddit.com', 'play.google.com', 'apps.apple.com',
     'wikipedia.org', 'bilibili.com', 'bilibili.tv', 'github.com',
     'vlr.gg', 'aastocks.com',
+    # Mainland China domains — out of project scope
+    'sina.com.cn', 'sina.cn', 'weibo.com', 'weibo.cn',
+    '163.com', 'sohu.com', 'qq.com', 'thepaper.cn',
+    'xinhuanet.com', 'people.com.cn', 'globaltimes.cn',
+    'chinadaily.com.cn', 'cctv.com', 'cctv.cn',
+    'cac.gov.cn', 'nrta.gov.cn', 'miit.gov.cn', 'nppa.gov.cn',
+    'gov.cn', 'chinanews.com', 'chinanews.com.cn',
+    'baidu.com', 'zhihu.com', 'douyin.com', 'toutiao.com',
+    '36kr.com', 'ifeng.com', 'jiemian.com', 'huanqiu.com',
+    'eastmoney.com', 'chinaz.com', 'yicai.com', 'caixin.com',
+    'infzm.com', 'cnstock.com', 'stcn.com',
 }
 
 
