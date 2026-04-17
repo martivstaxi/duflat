@@ -838,10 +838,7 @@ def scan_urls(urls):
 _DISCOVER_QUERIES = {
     'English': [
         'Bilibili',
-        'Bilibili Inc',
-        'BILI stock',
         'Bilibili Gaming',
-        'BLG esports',
         'Bilibili app',
         '"bilibili.com"',
         'B站 Bilibili',
@@ -850,7 +847,6 @@ _DISCOVER_QUERIES = {
         'ビリビリ',
         'Bilibili',
         'ビリビリ動画',
-        'BLG ビリビリ',
         'B站',
         'ビリビリ アプリ',
         '哔哩哔哩',
@@ -862,7 +858,6 @@ _DISCOVER_QUERIES = {
         'بيليبيلي Bilibili',
         'B站',
         'بيليبيلي تطبيق',
-        'Bilibili BILI',
         'بيليبيلي صيني',
         'bilibili.com',
     ],
@@ -871,8 +866,6 @@ _DISCOVER_QUERIES = {
         'B站',
         'Bilibili',
         '嗶哩嗶哩 B站',
-        'BLG 嗶哩嗶哩',
-        'BILI 嗶哩嗶哩',
         '嗶哩嗶哩 平台',
         'bilibili.com',
     ],
@@ -880,8 +873,6 @@ _DISCOVER_QUERIES = {
         'Bilibili',
         'Bilibili nedir',
         'Bilibili Çin',
-        'BLG Bilibili',
-        'BILI Bilibili',
         'bilibili.com',
         'Bilibili platform',
         'Bilibili uygulama',
@@ -890,17 +881,13 @@ _DISCOVER_QUERIES = {
         'Bilibili',
         'Билибили',
         'Bilibili Китай',
-        'BLG Bilibili',
         'B站 Bilibili',
         'bilibili.com',
         'Билибили платформа',
-        'BILI Bilibili',
     ],
     'Spanish': [
         'Bilibili',
         'Bilibili China',
-        'BLG Bilibili',
-        'BILI Bilibili',
         'bilibili.com',
         'Bilibili plataforma',
         'Bilibili app',
@@ -909,8 +896,6 @@ _DISCOVER_QUERIES = {
     'Portuguese': [
         'Bilibili',
         'Bilibili China',
-        'BLG Bilibili',
-        'BILI Bilibili',
         'bilibili.com',
         'Bilibili plataforma',
         'Bilibili app',
@@ -1117,13 +1102,13 @@ def auto_discover(languages=None):
         search_start = time.time()
 
         # Bilibili-specific Google News queries per language
-        gnews_queries = ['bilibili', 'BILI', 'Bilibili Gaming']
+        gnews_queries = ['bilibili', 'Bilibili Gaming']
         if lang == 'Traditional Chinese':
-            gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili', 'BILI']
+            gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili']
         elif lang == 'Japanese':
-            gnews_queries = ['ビリビリ', 'bilibili', 'BLG', 'B站']
+            gnews_queries = ['ビリビリ', 'bilibili', 'B站']
         elif lang == 'Arabic':
-            gnews_queries = ['بيليبيلي', 'bilibili', 'BILI']
+            gnews_queries = ['بيليبيلي', 'bilibili']
 
         # 1. Google News RSS — fast, multilingual
         gnews = _GNEWS_PARAMS.get(lang)
@@ -1165,7 +1150,7 @@ def auto_discover(languages=None):
                     break
 
         # 4. YouTube search via DDG — find videos about Bilibili (budget: 10s)
-        yt_queries = ['site:youtube.com bilibili', 'site:youtube.com BLG bilibili']
+        yt_queries = ['site:youtube.com bilibili', 'site:youtube.com bilibili gaming']
         for q in yt_queries:
             if time.time() - search_start > 65:
                 break
