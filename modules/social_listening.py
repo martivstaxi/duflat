@@ -667,19 +667,21 @@ def _send_email_alerts(mentions):
         body += "<hr><p style='font-size:12px;color:#999'>Duflat Social Listening</p>"
 
         try:
-            requests.post(
+            r = requests.post(
                 'https://api.resend.com/emails',
                 headers={'Authorization': f'Bearer {api_key}'},
                 json={
-                    'from': 'Duflat Alerts <onboarding@resend.dev>',
+                    'from': 'Duflat Alerts <alerts@duflat.com>',
                     'to': [to_email],
                     'subject': subject,
                     'html': body,
                 },
                 timeout=10,
             )
-        except Exception:
-            pass
+            if r.status_code >= 400:
+                print(f'[resend] {r.status_code} {r.text[:300]}', flush=True)
+        except Exception as e:
+            print(f'[resend] exception {e}', flush=True)
 
 
 # ─────────────────────────────────────────────
