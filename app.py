@@ -285,6 +285,28 @@ def social_discover_reddit():
     return jsonify(discover_reddit())
 
 
+@app.route('/social/debug-reddit', methods=['GET'])
+def social_debug_reddit():
+    """Debug: fetch one reddit URL from the Railway worker, return raw info."""
+    import requests as _rq
+    url = 'https://www.reddit.com/r/Bilibili/new.json?limit=3'
+    ua = 'Mozilla/5.0 (Duflat Social Listening) python-requests'
+    try:
+        r = _rq.get(url, headers={'User-Agent': ua}, timeout=8)
+        body_preview = r.text[:400]
+        try:
+            n_children = len(r.json().get('data', {}).get('children', []))
+        except Exception as e:
+            n_children = f'json_err: {e}'
+        return jsonify({
+            'status': r.status_code,
+            'n_children': n_children,
+            'body_preview': body_preview,
+        })
+    except Exception as e:
+        return jsonify({'exception': str(e)})
+
+
 @app.route('/social/cleanup', methods=['POST'])
 def social_cleanup():
     """Admin: delete mentions by ID and/or update content text."""
