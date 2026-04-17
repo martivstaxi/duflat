@@ -490,6 +490,7 @@ def save_mentions(mentions):
     saved = 0
     skipped = 0
     repaired = 0
+    alert_queue = []
 
     for m in mentions:
         original = m.get('content_original', '').strip()
@@ -535,10 +536,59 @@ def save_mentions(mentions):
                 row, on_conflict='content_hash'
             ).execute()
             saved += 1
+            if row['sensitivity'] in ('critical', 'high'):
+                alert_queue.append(m)
         except Exception:
             skipped += 1
 
+    # Alert for critical/high sensitivity mentions
+    if alert_queue:
+        _send_telegram_alerts(alert_queue)
+
     return {'saved': saved, 'skipped': skipped, 'repaired': repaired}
+
+
+# ─────────────────────────────────────────────
+# TELEGRAM ALERTS
+# ─────────────────────────────────────────────
+
+def _send_telegram_alerts(mentions):
+    """Send Telegram notification for critical/high sensitivity mentions."""
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+
+    for m in mentions:
+        sensitivity = m.get('sensitivity', 'low')
+        icon = '\U0001F6A8' if sensitivity == 'critical' else '\u26A0\uFE0F'
+        source_type = m.get('source_type', '')
+        platform = m.get('platform', '')
+        url = m.get('url', '')
+
+        text = (
+            f"{icon} *{sensitivity.upper()}* mention detected\n\n"
+            f"{m.get('content_english', '')}\n\n"
+            f"Source: {source_type} — {platform}\n"
+            f"Sentiment: {m.get('sentiment', 'neutral')}\n"
+            f"Date: {m.get('content_date', 'unknown')}"
+        )
+        if url:
+            text += f"\n[Link]({url})"
+
+        try:
+            requests.post(
+                f'https://api.telegram.org/bot{token}/sendMessage',
+                json={
+                    'chat_id': chat_id,
+                    'text': text,
+                    'parse_mode': 'Markdown',
+                    'disable_web_page_preview': True,
+                },
+                timeout=10,
+            )
+        except Exception:
+            pass  # alert failure should never block the pipeline
 
 
 # ─────────────────────────────────────────────
