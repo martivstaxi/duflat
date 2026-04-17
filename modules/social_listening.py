@@ -1337,9 +1337,13 @@ def _fetch_reddit_json(kind, q):
     try:
         resp = requests.get(url, headers={'User-Agent': _REDDIT_UA}, timeout=8)
         if resp.status_code != 200:
+            print(f'[reddit] {kind}={q} status={resp.status_code} body={resp.text[:200]}', flush=True)
             return []
-        return resp.json().get('data', {}).get('children', [])
-    except Exception:
+        children = resp.json().get('data', {}).get('children', [])
+        print(f'[reddit] {kind}={q} ok children={len(children)}', flush=True)
+        return children
+    except Exception as e:
+        print(f'[reddit] {kind}={q} exception={e}', flush=True)
         return []
 
 
