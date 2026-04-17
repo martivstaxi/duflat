@@ -637,8 +637,9 @@ def _send_telegram_alerts(mentions):
 def _send_email_alerts(mentions):
     """Send email notification for critical/high sensitivity mentions via Resend."""
     api_key = os.environ.get('RESEND_API_KEY', '')
-    to_email = os.environ.get('ALERT_EMAIL_TO', '')
-    if not api_key or not to_email:
+    to_raw = os.environ.get('ALERT_EMAIL_TO', '')
+    to_list = [e.strip() for e in to_raw.split(',') if e.strip()]
+    if not api_key or not to_list:
         return
 
     for m in mentions:
@@ -672,7 +673,7 @@ def _send_email_alerts(mentions):
                 headers={'Authorization': f'Bearer {api_key}'},
                 json={
                     'from': 'Duflat Alerts <alerts@duflat.com>',
-                    'to': [to_email],
+                    'to': to_list,
                     'subject': subject,
                     'html': body,
                 },
