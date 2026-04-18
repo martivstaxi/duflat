@@ -84,6 +84,27 @@
     const idx = Number(ev.target.dataset.index);
     state.activeInputIdx = idx;
     updateSuggestions(idx, ev.target.value.toLowerCase());
+    // Klavye acildiktan sonra input'u gorunur alana scroll et
+    setTimeout(() => {
+      const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
+      if (wrap) {
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const sugg = wrap.querySelector('.word-suggestions');
+        if (sugg && sugg.classList.contains('open')) positionSuggestions(wrap, sugg);
+      }
+    }, 320);
+  }
+
+  function positionSuggestions(wrap, sugg) {
+    const rect = wrap.getBoundingClientRect();
+    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+    if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+      sugg.classList.add('above');
+    } else {
+      sugg.classList.remove('above');
+    }
   }
 
   function handleWordBlur(ev) {
@@ -190,6 +211,7 @@
     }
     renderSuggestions(idx);
     sugg.classList.add('open');
+    positionSuggestions(wrap, sugg);
   }
 
   function renderSuggestions(idx) {
@@ -552,6 +574,17 @@
         closePasteModal();
       }
     });
+
+    // Klavye ac/kapat -> suggestions pozisyonunu yeniden hesapla
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        const idx = state.activeInputIdx;
+        if (idx < 0) return;
+        const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
+        const sugg = wrap && wrap.querySelector('.word-suggestions');
+        if (sugg && sugg.classList.contains('open')) positionSuggestions(wrap, sugg);
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
