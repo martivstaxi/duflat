@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0E11" />
+  <meta name="description" content="TON W5 24. Kelime Bulucu - Offline, guvenli, tarayicida calisir" />
+  <title>W5 Finder — TON Wallet Recovery</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">W5</div>
+        <div class="brand-text">
+          <div class="brand-name">Wallet Finder</div>
+          <div class="brand-sub">TON 24th Word Recovery</div>
+        </div>
+      </div>
+      <div class="status-dot" id="statusDot" title="Offline ready"></div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <section class="warning-banner" role="alert">
+      <div class="warning-icon">!</div>
+      <div class="warning-text">
+        <strong>Guvenlik uyarisi</strong>
+        <span>Bu araci kullanmadan once internetinizi kesin. Tum hesaplama cihazinizda yapilir, hicbir veri gonderilmez.</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">23 Kelimeyi Girin</h2>
+        <div class="card-actions">
+          <button class="link-btn" id="pasteAllBtn" type="button">Hepsini Yapistir</button>
+          <button class="link-btn link-btn-muted" id="clearAllBtn" type="button">Temizle</button>
+        </div>
+      </div>
+
+      <div class="word-grid" id="wordGrid">
+        <!-- 23 input dinamik olarak app.js ile olusturulacak -->
+      </div>
+
+      <div class="word-progress">
+        <span id="wordCount">0</span> / 23 kelime
+      </div>
+    </section>
+
+    <button class="primary-btn" id="findBtn" type="button" disabled>
+      <span class="btn-label">24. Kelimeyi Bul</span>
+      <span class="btn-hint" id="btnHint">Once 23 kelime girin</span>
+    </button>
+
+    <section class="card progress-card hidden" id="progressCard">
+      <div class="progress-header">
+        <span class="progress-title">Tarama devam ediyor...</span>
+        <span class="progress-percent" id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="progress-detail" id="progressDetail">2048 kelime kontrol ediliyor</div>
+    </section>
+
+    <section class="results-section hidden" id="resultsSection">
+      <div class="results-header">
+        <h2 class="results-title">Gecerli Adaylar</h2>
+        <span class="results-count" id="resultsCount">0 aday</span>
+      </div>
+      <div class="results-list" id="resultsList">
+        <!-- sonuc kartlari dinamik eklenir -->
+      </div>
+      <div class="results-note">
+        Dogru cuzdani bulmak icin adresleri
+        <a href="https://tonviewer.com" target="_blank" rel="noopener">tonviewer.com</a>
+        veya
+        <a href="https://tonscan.org" target="_blank" rel="noopener">tonscan.org</a>
+        uzerinden kontrol edin. Sadece BIR kelime dogru 24. kelimedir.
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-text">
+      Offline PWA &middot; Hicbir veri sunucuya gonderilmez &middot;
+      <span id="version">v0.1</span>
+    </div>
+  </footer>
+
+  <!-- Yapistirma modal'i -->
+  <div class="modal hidden" id="pasteModal" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-panel">
+      <h3 class="modal-title">23 Kelimeyi Yapistir</h3>
+      <p class="modal-sub">Kelimeleri bosluk, virgul, noktali virgul veya satir araliyla ayirabilirsiniz.</p>
+      <textarea class="modal-textarea" id="pasteTextarea" rows="6" placeholder="ornek: abandon ability able about above ..."></textarea>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="pasteCancelBtn" type="button">Iptal</button>
+        <button class="primary-btn-sm" id="pasteConfirmBtn" type="button">Yapistir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast bildirimleri -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="bip39.js" defer></script>
+  <script src="vendor-nacl.js" defer></script>
+  <script src="vendor-tonweb.js" defer></script>
+  <script src="ton-crypto.js" defer></script>
+  <script src="ton-wallet.js" defer></script>
+  <script src="ton-address.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
