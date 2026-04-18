@@ -84,27 +84,11 @@
     const idx = Number(ev.target.dataset.index);
     state.activeInputIdx = idx;
     updateSuggestions(idx, ev.target.value.toLowerCase());
-    // Klavye acildiktan sonra input'u gorunur alana scroll et
+    // Klavye acildiktan sonra input'u ekranin ustune scroll et ki altinda oneri icin yer acilsin
     setTimeout(() => {
       const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-      if (wrap) {
-        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const sugg = wrap.querySelector('.word-suggestions');
-        if (sugg && sugg.classList.contains('open')) positionSuggestions(wrap, sugg);
-      }
+      if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 320);
-  }
-
-  function positionSuggestions(wrap, sugg) {
-    const rect = wrap.getBoundingClientRect();
-    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    const spaceBelow = vh - rect.bottom;
-    const spaceAbove = rect.top;
-    if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-      sugg.classList.add('above');
-    } else {
-      sugg.classList.remove('above');
-    }
   }
 
   function handleWordBlur(ev) {
@@ -184,13 +168,13 @@
     const sugg = wrap.querySelector('.word-suggestions');
     if (!sugg) return;
 
-    if (!prefix || prefix.length < 1 || !window.BIP39_WORDLIST) {
+    if (!prefix || prefix.length < 3 || !window.BIP39_WORDLIST) {
       sugg.classList.remove('open');
       state.suggestionList = [];
       return;
     }
 
-    if (window.BIP39_INDEX && prefix in window.BIP39_INDEX && prefix.length > 2) {
+    if (window.BIP39_INDEX && prefix in window.BIP39_INDEX) {
       sugg.classList.remove('open');
       state.suggestionList = [];
       return;
@@ -211,7 +195,6 @@
     }
     renderSuggestions(idx);
     sugg.classList.add('open');
-    positionSuggestions(wrap, sugg);
   }
 
   function renderSuggestions(idx) {
@@ -575,16 +558,6 @@
       }
     });
 
-    // Klavye ac/kapat -> suggestions pozisyonunu yeniden hesapla
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        const idx = state.activeInputIdx;
-        if (idx < 0) return;
-        const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-        const sugg = wrap && wrap.querySelector('.word-suggestions');
-        if (sugg && sugg.classList.contains('open')) positionSuggestions(wrap, sugg);
-      });
-    }
   }
 
   if (document.readyState === 'loading') {
