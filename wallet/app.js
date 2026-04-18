@@ -11,6 +11,8 @@
   const state = {
     words: new Array(WORD_COUNT).fill(''),
     searching: false,
+    results: [],
+    selectedIdx: -1,
   };
 
   function sanitizeWord(val) {
@@ -395,24 +397,19 @@
   }
 
   // ----------------------------------------------------------
-  // Results rendering
+  // Results rendering  (iki asamali: kelime sec -> detay)
   // ----------------------------------------------------------
   function renderResults(results, scanMs, totalMs) {
+    state.results = results;
+    state.selectedIdx = -1;
+
     const section = $('#resultsSection');
-    const list = $('#resultsList');
-    const count = $('#resultsCount');
-
-    list.innerHTML = '';
-    count.textContent = results.length + ' aday';
-
-    results.forEach((r, i) => {
-      list.appendChild(createResultCard(r, i));
-    });
-
     section.classList.remove('hidden');
 
+    showCandidatePicker();
+
     if (scanMs && totalMs) {
-      toast(results.length + ' aday bulundu (' + (totalMs / 1000).toFixed(1) + 's)', 'success');
+      toast(results.length + ' olasilik bulundu (' + (totalMs / 1000).toFixed(1) + 's)', 'success');
     }
 
     setTimeout(() => {
@@ -420,28 +417,150 @@
     }, 50);
   }
 
-  function createResultCard(r, i) {
-    const card = document.createElement('div');
-    card.className = 'result-card';
+  function showCandidatePicker() {
+    const section = $('#resultsSection');
+    section.innerHTML = '';
 
     const header = document.createElement('div');
-    header.className = 'result-header';
+    header.className = 'results-header';
 
-    const word = document.createElement('span');
-    word.className = 'result-word';
-    word.textContent = '#' + (i + 1) + ' - ' + r.word.toUpperCase();
-    header.appendChild(word);
+    const title = document.createElement('h2');
+    title.className = 'results-title';
+    title.textContent = '24. Kelimeyi Sec';
+    header.appendChild(title);
 
-    const badge = document.createElement('span');
-    badge.className = 'result-badge';
-    badge.textContent = 'W5';
-    header.appendChild(badge);
+    const count = document.createElement('span');
+    count.className = 'results-count';
+    count.textContent = state.results.length + ' olasilik';
+    header.appendChild(count);
 
-    card.appendChild(header);
+    section.appendChild(header);
 
-    card.appendChild(buildField('Cuzdan Adresi', r.address.non_bounceable));
+    const sub = document.createElement('p');
+    sub.className = 'picker-sub';
+    sub.textContent = 'Bir kelime sec, cuzdan adresini gor.';
+    section.appendChild(sub);
 
-    return card;
+    const grid = document.createElement('div');
+    grid.className = 'candidate-grid';
+    state.results.forEach((r, i) => {
+      const chip = document.createElement('button');
+      chip.className = 'candidate-chip';
+      chip.type = 'button';
+      chip.style.animationDelay = (i * 45) + 'ms';
+
+      const num = document.createElement('span');
+      num.className = 'candidate-num';
+      num.textContent = String(i + 1);
+      chip.appendChild(num);
+
+      const word = document.createElement('span');
+      word.className = 'candidate-word';
+      word.textContent = r.word;
+      chip.appendChild(word);
+
+      chip.addEventListener('click', () => selectCandidate(i));
+      grid.appendChild(chip);
+    });
+    section.appendChild(grid);
+
+    const note = document.createElement('div');
+    note.className = 'results-note';
+    note.innerHTML = 'Adresi '
+      + '<a href="https://tonviewer.com" target="_blank" rel="noopener">tonviewer.com</a>'
+      + ' veya '
+      + '<a href="https://tonscan.org" target="_blank" rel="noopener">tonscan.org</a>'
+      + ' uzerinden dogrula. Sadece BIR kelime dogru 24. kelimedir.';
+    section.appendChild(note);
+  }
+
+  function selectCandidate(i) {
+    state.selectedIdx = i;
+    showSelectedDetail();
+  }
+
+  function showSelectedDetail() {
+    const section = $('#resultsSection');
+    const r = state.results[state.selectedIdx];
+    section.innerHTML = '';
+
+    const back = document.createElement('button');
+    back.className = 'back-link';
+    back.type = 'button';
+    back.innerHTML = '<span class="back-arrow">&larr;</span> Farkli kelime sec';
+    back.addEventListener('click', showCandidatePicker);
+    section.appendChild(back);
+
+    const hero = document.createElement('div');
+    hero.className = 'hero-card';
+
+    const check = document.createElement('div');
+    check.className = 'hero-check';
+    check.innerHTML = '&#10003;';
+    hero.appendChild(check);
+
+    const heroLabel = document.createElement('div');
+    heroLabel.className = 'hero-label';
+    heroLabel.textContent = 'Sectigin 24. kelime';
+    hero.appendChild(heroLabel);
+
+    const heroWord = document.createElement('div');
+    heroWord.className = 'hero-word';
+    heroWord.textContent = r.word;
+    hero.appendChild(heroWord);
+
+    section.appendChild(hero);
+
+    const addrCard = document.createElement('div');
+    addrCard.className = 'card detail-card';
+    addrCard.appendChild(buildField('Cuzdan Adresi (UQ)', r.address.non_bounceable));
+    section.appendChild(addrCard);
+
+    const mnemonic = state.words.slice();
+    mnemonic.push(r.word);
+    const mnemonicText = mnemonic.join(', ');
+
+    const mnemoBtn = document.createElement('button');
+    mnemoBtn.className = 'mnemonic-btn';
+    mnemoBtn.type = 'button';
+
+    const mnemoIcon = document.createElement('span');
+    mnemoIcon.className = 'mnemo-icon';
+    mnemoIcon.textContent = '24';
+    mnemoBtn.appendChild(mnemoIcon);
+
+    const mnemoText = document.createElement('span');
+    mnemoText.className = 'mnemo-label';
+    mnemoText.textContent = '24 Kelimeyi Kopyala';
+    mnemoBtn.appendChild(mnemoText);
+
+    const mnemoHint = document.createElement('span');
+    mnemoHint.className = 'mnemo-hint';
+    mnemoHint.textContent = 'virgul ile ayirilmis tum kelimeler';
+    mnemoBtn.appendChild(mnemoHint);
+
+    mnemoBtn.addEventListener('click', () => {
+      copyText(mnemonicText).then((ok) => {
+        if (!ok) { toast('Kopyalanamadi', 'error'); return; }
+        mnemoText.textContent = 'Kopyalandi';
+        mnemoBtn.classList.add('copied');
+        toast('24 kelime panoya kopyalandi', 'success');
+        setTimeout(() => {
+          mnemoText.textContent = '24 Kelimeyi Kopyala';
+          mnemoBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+    section.appendChild(mnemoBtn);
+
+    const note = document.createElement('div');
+    note.className = 'results-note';
+    note.innerHTML = 'Eger bu adres seni dogru cuzdana goturmuyorsa, geri don ve baska bir kelime dene.';
+    section.appendChild(note);
+
+    setTimeout(() => {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 
   function buildField(label, value) {
@@ -464,44 +583,46 @@
     btn.className = 'copy-btn';
     btn.type = 'button';
     btn.textContent = 'Kopyala';
-    btn.addEventListener('click', () => copyToClipboard(value, btn));
+    btn.addEventListener('click', () => {
+      copyText(value).then((ok) => {
+        if (!ok) { toast('Kopyalanamadi', 'error'); return; }
+        btn.textContent = 'Kopyalandi';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Kopyala';
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+    });
     val.appendChild(btn);
 
     field.appendChild(val);
     return field;
   }
 
-  function copyToClipboard(text, btn) {
-    const done = () => {
-      btn.textContent = 'Kopyalandi';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'Kopyala';
-        btn.classList.remove('copied');
-      }, 1500);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, btn));
-    } else {
-      fallbackCopy(text, btn);
-    }
-
-    function fallbackCopy(t, b) {
-      const ta = document.createElement('textarea');
-      ta.value = t;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand('copy');
-        done();
-      } catch (e) {
-        toast('Kopyalanamadi', 'error');
+  function copyText(text) {
+    return new Promise((resolve) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => resolve(true)).catch(() => fallback());
+      } else {
+        fallback();
       }
-      document.body.removeChild(ta);
-    }
+      function fallback() {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          resolve(!!ok);
+        } catch (e) {
+          resolve(false);
+        }
+      }
+    });
   }
 
   // ----------------------------------------------------------

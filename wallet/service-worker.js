@@ -1,7 +1,7 @@
 /* W5 Wallet Finder - Service Worker
    Strategy: cache-first. Loads everything into cache on install, serves offline. */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE_NAME = 'w5-finder-' + VERSION;
 
 const ASSETS = [
