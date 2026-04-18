@@ -56,6 +56,7 @@
       input.spellcheck = false;
       input.dataset.index = String(i);
       input.setAttribute('inputmode', 'text');
+      input.setAttribute('autocorrect', 'off');
       input.addEventListener('input', handleWordInput);
       input.addEventListener('keydown', handleWordKeydown);
       input.addEventListener('paste', handleWordPaste);
@@ -77,15 +78,25 @@
     const idx = Number(ev.target.dataset.index);
     const raw = ev.target.value;
     const val = sanitizeWord(raw);
-    // Yalnizca ingilizce a-z harfleri kabul — digerlerini sil
+    // sanitize sirasinda stripped = kullanici/klavye space/noktalama eklediyse
+    // (iOS predictive text "elbow " gibi trailing space gonderiyor) → advance sinyali
+    const stripped = raw.length > val.length;
     if (val !== raw) ev.target.value = val;
     state.words[idx] = val;
     updateWordValidation(idx, val);
     updateWordCount();
     updateFindButton();
 
-    // 3 harften azsa veya zaten tam BIP-39 kelimesi girildiyse oneri gosterme
     const isExact = val && window.BIP39_INDEX && val in window.BIP39_INDEX;
+
+    // Eger tam BIP-39 kelime girildi VE kullanici space/noktalama ekleyip "bitti"
+    // sinyali verdiyse → sonraki kutuya gec
+    if (isExact && stripped) {
+      hideSuggestions(idx);
+      focusNext(idx);
+      return;
+    }
+
     if (val.length < 3 || isExact || !window.BIP39_WORDLIST) {
       hideSuggestions(idx);
       return;
@@ -100,7 +111,6 @@
     }
 
     if (matches.length === 1) {
-      // Tek eslesme -> otomatik tamamla + sonraki kutuya gec
       const full = matches[0];
       ev.target.value = full;
       state.words[idx] = full;
@@ -108,13 +118,17 @@
       updateWordCount();
       updateFindButton();
       hideSuggestions(idx);
-      const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
-      if (next) next.focus();
+      focusNext(idx);
     } else if (matches.length > 1) {
       renderSuggestions(idx, matches);
     } else {
       hideSuggestions(idx);
     }
+  }
+
+  function focusNext(idx) {
+    const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
+    if (next) next.focus();
   }
 
   function handleWordFocus(ev) {
@@ -658,12 +672,25 @@
   }
 
   // ----------------------------------------------------------
-  // Service worker registration (offline support)
+  // Service worker registration (offline support + aggressive update)
   // ----------------------------------------------------------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+      navigator.serviceWorker.register('./service-worker.js', {
+        updateViaCache: 'none'
+      }).then((reg) => {
+        // Her sayfa yuklemesinde SW guncel mi kontrol et
+        reg.update().catch(() => {});
+      }).catch((err) => {
         console.warn('[sw] registration failed:', err);
+      });
+
+      // Yeni SW aktif oldugunda sayfayi yenile (bir kere)
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded) return;
+        reloaded = true;
+        window.location.reload();
       });
     });
   }
