@@ -1,7 +1,7 @@
 /* W5 Wallet Finder (Camera build) - Service Worker
    Strategy: cache-first. Loads everything into cache on install, serves offline. */
 
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE_NAME = 'w5-camera-' + VERSION;
 
 // Install'da kucuk critical assets preload edilir.

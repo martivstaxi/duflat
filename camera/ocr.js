@@ -16,6 +16,31 @@
     return TESSERACT_BASE + name;
   }
 
+  function tesseractLogger(onStatus) {
+    return (m) => {
+      try { console.log('[tesseract]', m); } catch (_) {}
+      if (!onStatus) return;
+      if (m && m.status === 'recognizing text') {
+        onStatus({ phase: 'recognize', progress: m.progress });
+      } else if (m) {
+        onStatus({ phase: m.status || 'init', progress: m.progress || 0 });
+      }
+    };
+  }
+
+  async function createWorkerWithOpts(opts) {
+    try {
+      return await window.Tesseract.createWorker('eng', 1, opts);
+    } catch (err) {
+      console.error('[OCR] createWorker failed:', err);
+      // Hatanin ne oldugunu app katmaninda gostermek icin mesaji zenginlestir
+      const suffix = err && err.message ? err.message : (typeof err === 'string' ? err : 'createWorker rejected');
+      const e = new Error('Tesseract init: ' + suffix);
+      e.cause = err;
+      throw e;
+    }
+  }
+
   async function initWorker(onStatus) {
     if (_worker) return _worker;
     if (_loadingPromise) return _loadingPromise;
@@ -25,20 +50,25 @@
     }
 
     _loadingPromise = (async () => {
-      const worker = await window.Tesseract.createWorker('eng', 1, {
+      const baseOpts = {
         workerPath: absUrl('worker.min.js'),
         corePath: TESSERACT_BASE,
         langPath: TESSERACT_BASE,
-        gzip: true,
-        logger: (m) => {
-          if (!onStatus) return;
-          if (m.status === 'recognizing text') {
-            onStatus({ phase: 'recognize', progress: m.progress });
-          } else {
-            onStatus({ phase: m.status || 'init', progress: m.progress || 0 });
-          }
+        logger: tesseractLogger(onStatus),
+        errorHandler: (err) => {
+          console.error('[tesseract errorHandler]', err);
         },
-      });
+      };
+
+      let worker;
+      try {
+        // 1. deneme: gzip:true (dosya .gz uzantili)
+        worker = await createWorkerWithOpts(Object.assign({ gzip: true }, baseOpts));
+      } catch (e1) {
+        console.warn('[OCR] gzip:true failed, retrying with gzip:false', e1);
+        // 2. deneme: gzip:false (Cloudflare double-decode yaptiysa)
+        worker = await createWorkerWithOpts(Object.assign({ gzip: false }, baseOpts));
+      }
 
       await worker.setParameters({
         tessedit_char_whitelist:
@@ -52,6 +82,9 @@
 
     try {
       return await _loadingPromise;
+    } catch (err) {
+      _worker = null;
+      throw err;
     } finally {
       _loadingPromise = null;
     }
@@ -59,8 +92,16 @@
 
   async function runOCR(imageSource, onStatus) {
     const worker = await initWorker(onStatus);
-    const ret = await worker.recognize(imageSource);
-    return ret && ret.data ? (ret.data.text || '') : '';
+    try {
+      const ret = await worker.recognize(imageSource);
+      return ret && ret.data ? (ret.data.text || '') : '';
+    } catch (err) {
+      console.error('[OCR] recognize failed:', err);
+      const suffix = err && err.message ? err.message : (typeof err === 'string' ? err : 'recognize rejected');
+      const e = new Error('Tesseract recognize: ' + suffix);
+      e.cause = err;
+      throw e;
+    }
   }
 
   async function terminateWorker() {

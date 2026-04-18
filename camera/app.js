@@ -748,8 +748,18 @@
       closeCameraModal();
       openOcrConfirmModal();
     } catch (err) {
-      console.error(err);
-      toast('OCR hata: ' + (err && err.message ? err.message : 'bilinmeyen'), 'error');
+      console.error('[OCR] error:', err);
+      let msg;
+      if (typeof err === 'string') msg = err;
+      else if (err && err.message) msg = err.message;
+      else if (err && err.error) msg = typeof err.error === 'string' ? err.error : JSON.stringify(err.error);
+      else {
+        try { msg = JSON.stringify(err); } catch (_) { msg = String(err); }
+      }
+      if (!msg || msg === '{}' || msg === 'undefined') msg = 'bilinmeyen (F12 console)';
+      // uzun mesajlari 180 karaktere kirp
+      if (msg.length > 180) msg = msg.slice(0, 180) + '...';
+      toast('OCR: ' + msg, 'error');
       processing.classList.add('hidden');
       shotBtn.disabled = false;
     }
