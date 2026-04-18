@@ -152,6 +152,8 @@ body {
   gap: 8px;
 }
 
+.card-header-end { justify-content: flex-end; }
+
 .card-title {
   font-size: 20px;
   font-weight: 600;

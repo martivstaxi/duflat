@@ -463,15 +463,6 @@
       grid.appendChild(chip);
     });
     section.appendChild(grid);
-
-    const note = document.createElement('div');
-    note.className = 'results-note';
-    note.innerHTML = 'Adresi '
-      + '<a href="https://tonviewer.com" target="_blank" rel="noopener">tonviewer.com</a>'
-      + ' veya '
-      + '<a href="https://tonscan.org" target="_blank" rel="noopener">tonscan.org</a>'
-      + ' uzerinden dogrula. Sadece BIR kelime dogru 24. kelimedir.';
-    section.appendChild(note);
   }
 
   function selectCandidate(i) {
