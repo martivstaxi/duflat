@@ -15,6 +15,13 @@
     selectedIdx: -1,
   };
 
+  const COPY_ICON_SVG =
+    '<svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<rect x="9" y="9" width="13" height="13" rx="2"></rect>' +
+    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+    '</svg>';
+
   function sanitizeWord(val) {
     return (val || '').toLowerCase().replace(/[^a-z]/g, '');
   }
@@ -404,10 +411,6 @@
 
     showCandidatePicker();
 
-    if (scanMs && totalMs) {
-      toast(results.length + ' olasilik bulundu (' + (totalMs / 1000).toFixed(1) + 's)', 'success');
-    }
-
     setTimeout(() => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
@@ -510,10 +513,32 @@
     const wordsCard = document.createElement('div');
     wordsCard.className = 'card words-card';
 
+    const wordsHeader = document.createElement('div');
+    wordsHeader.className = 'words-card-header';
+
     const wordsLabel = document.createElement('div');
     wordsLabel.className = 'words-label';
     wordsLabel.textContent = 'Tum 24 Kelime';
-    wordsCard.appendChild(wordsLabel);
+    wordsHeader.appendChild(wordsLabel);
+
+    const mnemoCopy = document.createElement('button');
+    mnemoCopy.className = 'copy-btn copy-btn-inline';
+    mnemoCopy.type = 'button';
+    mnemoCopy.innerHTML = COPY_ICON_SVG + '<span class="copy-label">Kopyala</span>';
+    mnemoCopy.addEventListener('click', () => {
+      copyText(mnemonicText).then((ok) => {
+        if (!ok) { toast('Kopyalanamadi', 'error'); return; }
+        mnemoCopy.classList.add('copied');
+        mnemoCopy.querySelector('.copy-label').textContent = 'Kopyalandi';
+        setTimeout(() => {
+          mnemoCopy.classList.remove('copied');
+          mnemoCopy.querySelector('.copy-label').textContent = 'Kopyala';
+        }, 1500);
+      });
+    });
+    wordsHeader.appendChild(mnemoCopy);
+
+    wordsCard.appendChild(wordsHeader);
 
     const wordsGrid = document.createElement('div');
     wordsGrid.className = 'words-grid';
@@ -533,44 +558,6 @@
     });
     wordsCard.appendChild(wordsGrid);
     section.appendChild(wordsCard);
-
-    const mnemoBtn = document.createElement('button');
-    mnemoBtn.className = 'mnemonic-btn';
-    mnemoBtn.type = 'button';
-
-    const mnemoIcon = document.createElement('span');
-    mnemoIcon.className = 'mnemo-icon';
-    mnemoIcon.textContent = '24';
-    mnemoBtn.appendChild(mnemoIcon);
-
-    const mnemoText = document.createElement('span');
-    mnemoText.className = 'mnemo-label';
-    mnemoText.textContent = '24 Kelimeyi Kopyala';
-    mnemoBtn.appendChild(mnemoText);
-
-    const mnemoHint = document.createElement('span');
-    mnemoHint.className = 'mnemo-hint';
-    mnemoHint.textContent = 'virgul ile ayirilmis tum kelimeler';
-    mnemoBtn.appendChild(mnemoHint);
-
-    mnemoBtn.addEventListener('click', () => {
-      copyText(mnemonicText).then((ok) => {
-        if (!ok) { toast('Kopyalanamadi', 'error'); return; }
-        mnemoText.textContent = 'Kopyalandi';
-        mnemoBtn.classList.add('copied');
-        toast('24 kelime panoya kopyalandi', 'success');
-        setTimeout(() => {
-          mnemoText.textContent = '24 Kelimeyi Kopyala';
-          mnemoBtn.classList.remove('copied');
-        }, 2000);
-      });
-    });
-    section.appendChild(mnemoBtn);
-
-    const note = document.createElement('div');
-    note.className = 'results-note';
-    note.innerHTML = 'Eger bu adres seni dogru cuzdana goturmuyorsa, geri don ve baska bir kelime dene.';
-    section.appendChild(note);
 
     setTimeout(() => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -596,15 +583,15 @@
     const btn = document.createElement('button');
     btn.className = 'copy-btn';
     btn.type = 'button';
-    btn.textContent = 'Kopyala';
+    btn.innerHTML = COPY_ICON_SVG + '<span class="copy-label">Kopyala</span>';
     btn.addEventListener('click', () => {
       copyText(value).then((ok) => {
         if (!ok) { toast('Kopyalanamadi', 'error'); return; }
-        btn.textContent = 'Kopyalandi';
         btn.classList.add('copied');
+        btn.querySelector('.copy-label').textContent = 'Kopyalandi';
         setTimeout(() => {
-          btn.textContent = 'Kopyala';
           btn.classList.remove('copied');
+          btn.querySelector('.copy-label').textContent = 'Kopyala';
         }, 1500);
       });
     });
