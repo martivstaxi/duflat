@@ -58,9 +58,15 @@
       input.addEventListener('keydown', handleWordKeydown);
       input.addEventListener('paste', handleWordPaste);
       input.addEventListener('focus', handleWordFocus);
+      input.addEventListener('blur', handleWordBlur);
+
+      const sugg = document.createElement('div');
+      sugg.className = 'word-suggestions';
+      sugg.dataset.index = String(i);
 
       wrap.appendChild(num);
       wrap.appendChild(input);
+      wrap.appendChild(sugg);
       grid.appendChild(wrap);
     }
   }
@@ -76,25 +82,36 @@
     updateWordCount();
     updateFindButton();
 
-    // 3+ harf yazildi: prefix ile tam tek kelime eslesiyorsa otomatik tamamla + sonraki kutuya gec
-    if (val.length >= 3 && window.BIP39_WORDLIST && !(window.BIP39_INDEX && val in window.BIP39_INDEX)) {
-      const matches = [];
-      for (const w of window.BIP39_WORDLIST) {
-        if (w.startsWith(val)) {
-          matches.push(w);
-          if (matches.length > 1) break;
-        }
+    // 3 harften azsa veya zaten tam BIP-39 kelimesi girildiyse oneri gosterme
+    const isExact = val && window.BIP39_INDEX && val in window.BIP39_INDEX;
+    if (val.length < 3 || isExact || !window.BIP39_WORDLIST) {
+      hideSuggestions(idx);
+      return;
+    }
+
+    const matches = [];
+    for (const w of window.BIP39_WORDLIST) {
+      if (w.startsWith(val)) {
+        matches.push(w);
+        if (matches.length >= 8) break;
       }
-      if (matches.length === 1) {
-        const full = matches[0];
-        ev.target.value = full;
-        state.words[idx] = full;
-        updateWordValidation(idx, full);
-        updateWordCount();
-        updateFindButton();
-        const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
-        if (next) next.focus();
-      }
+    }
+
+    if (matches.length === 1) {
+      // Tek eslesme -> otomatik tamamla + sonraki kutuya gec
+      const full = matches[0];
+      ev.target.value = full;
+      state.words[idx] = full;
+      updateWordValidation(idx, full);
+      updateWordCount();
+      updateFindButton();
+      hideSuggestions(idx);
+      const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
+      if (next) next.focus();
+    } else if (matches.length > 1) {
+      renderSuggestions(idx, matches);
+    } else {
+      hideSuggestions(idx);
     }
   }
 
@@ -104,6 +121,50 @@
       const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
       if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 320);
+  }
+
+  function handleWordBlur(ev) {
+    const idx = Number(ev.target.dataset.index);
+    // mousedown handler tetiklensin diye hafif gecikme
+    setTimeout(() => hideSuggestions(idx), 150);
+  }
+
+  function hideSuggestions(idx) {
+    const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
+    if (!wrap) return;
+    const sugg = wrap.querySelector('.word-suggestions');
+    if (sugg) {
+      sugg.classList.remove('open');
+      sugg.innerHTML = '';
+    }
+  }
+
+  function renderSuggestions(idx, matches) {
+    const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
+    if (!wrap) return;
+    const sugg = wrap.querySelector('.word-suggestions');
+    if (!sugg) return;
+    sugg.innerHTML = '';
+    matches.forEach((w) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'word-chip';
+      chip.textContent = w;
+      chip.addEventListener('mousedown', (ev) => {
+        ev.preventDefault();
+        const input = wrap.querySelector('.word-input');
+        input.value = w;
+        state.words[idx] = w;
+        updateWordValidation(idx, w);
+        updateWordCount();
+        updateFindButton();
+        hideSuggestions(idx);
+        const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
+        if (next) next.focus();
+      });
+      sugg.appendChild(chip);
+    });
+    sugg.classList.add('open');
   }
 
   function handleWordKeydown(ev) {

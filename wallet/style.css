@@ -280,6 +280,47 @@ body {
   color: var(--text-muted);
 }
 
+/* Suggestion chips (yalnizca 3+ harf, birden fazla eslesme varsa) */
+.word-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+  z-index: 20;
+  padding: 10px;
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.word-suggestions.open {
+  display: flex;
+}
+
+.word-chip {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.word-chip:hover,
+.word-chip:active {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
 .word-progress {
   margin-top: 14px;
   font-size: 14px;
