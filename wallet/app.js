@@ -434,14 +434,12 @@
 
     const badge = document.createElement('span');
     badge.className = 'result-badge';
-    badge.textContent = 'W5 / V5R1';
+    badge.textContent = 'W5';
     header.appendChild(badge);
 
     card.appendChild(header);
 
-    card.appendChild(buildField('Adres (UQ, non-bounceable)', r.address.non_bounceable));
-    card.appendChild(buildField('Bounceable (EQ)', r.address.bounceable));
-    card.appendChild(buildField('Public key', r.publicKey));
+    card.appendChild(buildField('Cuzdan Adresi', r.address.non_bounceable));
 
     return card;
   }
