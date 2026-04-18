@@ -235,30 +235,13 @@
 
   function updateFindButton() {
     const btn = $('#findBtn');
-    const hint = $('#btnHint');
     const filled = state.words.filter((w) => w.length > 0).length;
 
-    if (filled < WORD_COUNT) {
-      btn.disabled = true;
-      hint.textContent = (WORD_COUNT - filled) + ' kelime daha girin';
-      return;
-    }
-
-    if (!window.BIP39_INDEX) {
-      btn.disabled = true;
-      hint.textContent = 'Kelime listesi yukleniyor...';
-      return;
-    }
+    if (filled < WORD_COUNT) { btn.disabled = true; return; }
+    if (!window.BIP39_INDEX) { btn.disabled = true; return; }
 
     const invalid = state.words.filter((w) => !(w in window.BIP39_INDEX));
-    if (invalid.length > 0) {
-      btn.disabled = true;
-      hint.textContent = invalid.length + ' gecersiz kelime (BIP-39 disi)';
-      return;
-    }
-
-    btn.disabled = false;
-    hint.textContent = 'Tum kelimeler gecerli, aramaya hazir';
+    btn.disabled = invalid.length > 0;
   }
 
   // ----------------------------------------------------------
@@ -327,7 +310,6 @@
 
     btn.disabled = true;
     btnLabel.textContent = 'Tarama devam ediyor...';
-    $('#btnHint').textContent = 'Lutfen bekleyin';
 
     resultsSection.classList.add('hidden');
     $('#resultsList').innerHTML = '';
@@ -510,6 +492,33 @@
     const mnemonic = state.words.slice();
     mnemonic.push(r.word);
     const mnemonicText = mnemonic.join(', ');
+
+    const wordsCard = document.createElement('div');
+    wordsCard.className = 'card words-card';
+
+    const wordsLabel = document.createElement('div');
+    wordsLabel.className = 'words-label';
+    wordsLabel.textContent = 'Tum 24 Kelime';
+    wordsCard.appendChild(wordsLabel);
+
+    const wordsGrid = document.createElement('div');
+    wordsGrid.className = 'words-grid';
+    mnemonic.forEach((w, idx) => {
+      const item = document.createElement('div');
+      item.className = 'word-item';
+      if (idx === 23) item.classList.add('is-selected');
+      const wNum = document.createElement('span');
+      wNum.className = 'word-item-num';
+      wNum.textContent = String(idx + 1) + '.';
+      const wVal = document.createElement('span');
+      wVal.className = 'word-item-word';
+      wVal.textContent = w;
+      item.appendChild(wNum);
+      item.appendChild(wVal);
+      wordsGrid.appendChild(item);
+    });
+    wordsCard.appendChild(wordsGrid);
+    section.appendChild(wordsCard);
 
     const mnemoBtn = document.createElement('button');
     mnemoBtn.className = 'mnemonic-btn';
