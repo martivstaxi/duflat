@@ -280,45 +280,6 @@ body {
   color: var(--text-muted);
 }
 
-/* BIP-39 autocomplete icin */
-.word-suggestions {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-hover);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lift);
-  z-index: 5;
-  max-height: 240px;
-  overflow-y: auto;
-  display: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.word-suggestions.open {
-  display: block;
-}
-
-.word-suggestion-item {
-  padding: 14px 16px;
-  font-size: 16px;
-  cursor: pointer;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border);
-}
-
-.word-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.word-suggestion-item:hover,
-.word-suggestion-item.active {
-  background: var(--bg-card);
-  color: var(--accent);
-}
-
 .word-progress {
   margin-top: 14px;
   font-size: 14px;

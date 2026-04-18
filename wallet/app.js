@@ -10,11 +10,12 @@
 
   const state = {
     words: new Array(WORD_COUNT).fill(''),
-    suggestionIdx: 0,
-    suggestionList: [],
-    activeInputIdx: -1,
     searching: false,
   };
+
+  function sanitizeWord(val) {
+    return (val || '').toLowerCase().replace(/[^a-z]/g, '');
+  }
 
   // ----------------------------------------------------------
   // DOM helpers
@@ -57,90 +58,61 @@
       input.addEventListener('keydown', handleWordKeydown);
       input.addEventListener('paste', handleWordPaste);
       input.addEventListener('focus', handleWordFocus);
-      input.addEventListener('blur', handleWordBlur);
-
-      const sugg = document.createElement('div');
-      sugg.className = 'word-suggestions';
-      sugg.dataset.index = String(i);
 
       wrap.appendChild(num);
       wrap.appendChild(input);
-      wrap.appendChild(sugg);
       grid.appendChild(wrap);
     }
   }
 
   function handleWordInput(ev) {
     const idx = Number(ev.target.dataset.index);
-    const val = ev.target.value.toLowerCase().trim();
+    const raw = ev.target.value;
+    const val = sanitizeWord(raw);
+    // Yalnizca ingilizce a-z harfleri kabul — digerlerini sil
+    if (val !== raw) ev.target.value = val;
     state.words[idx] = val;
     updateWordValidation(idx, val);
     updateWordCount();
     updateFindButton();
-    updateSuggestions(idx, val);
+
+    // 3+ harf yazildi: prefix ile tam tek kelime eslesiyorsa otomatik tamamla + sonraki kutuya gec
+    if (val.length >= 3 && window.BIP39_WORDLIST && !(window.BIP39_INDEX && val in window.BIP39_INDEX)) {
+      const matches = [];
+      for (const w of window.BIP39_WORDLIST) {
+        if (w.startsWith(val)) {
+          matches.push(w);
+          if (matches.length > 1) break;
+        }
+      }
+      if (matches.length === 1) {
+        const full = matches[0];
+        ev.target.value = full;
+        state.words[idx] = full;
+        updateWordValidation(idx, full);
+        updateWordCount();
+        updateFindButton();
+        const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
+        if (next) next.focus();
+      }
+    }
   }
 
   function handleWordFocus(ev) {
     const idx = Number(ev.target.dataset.index);
-    state.activeInputIdx = idx;
-    updateSuggestions(idx, ev.target.value.toLowerCase());
-    // Klavye acildiktan sonra input'u ekranin ustune scroll et ki altinda oneri icin yer acilsin
     setTimeout(() => {
       const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
       if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 320);
   }
 
-  function handleWordBlur(ev) {
-    const idx = Number(ev.target.dataset.index);
-    setTimeout(() => {
-      const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-      if (wrap) {
-        const sugg = wrap.querySelector('.word-suggestions');
-        if (sugg) sugg.classList.remove('open');
-      }
-    }, 150);
-  }
-
   function handleWordKeydown(ev) {
     const idx = Number(ev.target.dataset.index);
-    const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-    const sugg = wrap ? wrap.querySelector('.word-suggestions') : null;
-    const suggOpen = sugg && sugg.classList.contains('open');
 
-    if (suggOpen && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+    if (ev.key === ' ' || ev.key === 'Enter') {
       ev.preventDefault();
-      const delta = ev.key === 'ArrowDown' ? 1 : -1;
-      state.suggestionIdx = Math.max(0,
-        Math.min(state.suggestionList.length - 1, state.suggestionIdx + delta));
-      renderSuggestions(idx);
-      return;
-    }
-
-    if (ev.key === ' ' || ev.key === 'Enter' || ev.key === 'Tab') {
-      if (suggOpen && state.suggestionList.length > 0) {
-        ev.preventDefault();
-        const picked = state.suggestionList[state.suggestionIdx];
-        ev.target.value = picked;
-        state.words[idx] = picked;
-        updateWordValidation(idx, picked);
-        updateWordCount();
-        updateFindButton();
-        sugg.classList.remove('open');
-      } else if (ev.key === ' ' || ev.key === 'Enter') {
-        ev.preventDefault();
-      }
-      if (ev.key !== 'Tab' || !ev.shiftKey) {
-        const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
-        if (next) {
-          if (ev.key === ' ' || ev.key === 'Enter') next.focus();
-        }
-      }
-      return;
-    }
-
-    if (ev.key === 'Escape' && suggOpen) {
-      sugg.classList.remove('open');
+      const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
+      if (next) next.focus();
       return;
     }
 
@@ -160,67 +132,6 @@
     } else {
       wrap.classList.add('invalid');
     }
-  }
-
-  function updateSuggestions(idx, prefix) {
-    const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-    if (!wrap) return;
-    const sugg = wrap.querySelector('.word-suggestions');
-    if (!sugg) return;
-
-    if (!prefix || prefix.length < 3 || !window.BIP39_WORDLIST) {
-      sugg.classList.remove('open');
-      state.suggestionList = [];
-      return;
-    }
-
-    if (window.BIP39_INDEX && prefix in window.BIP39_INDEX) {
-      sugg.classList.remove('open');
-      state.suggestionList = [];
-      return;
-    }
-
-    const matches = [];
-    for (const w of window.BIP39_WORDLIST) {
-      if (w.startsWith(prefix)) {
-        matches.push(w);
-        if (matches.length >= 6) break;
-      }
-    }
-    state.suggestionList = matches;
-    state.suggestionIdx = 0;
-    if (matches.length === 0) {
-      sugg.classList.remove('open');
-      return;
-    }
-    renderSuggestions(idx);
-    sugg.classList.add('open');
-  }
-
-  function renderSuggestions(idx) {
-    const wrap = document.querySelector('.word-input-wrap[data-index="' + idx + '"]');
-    if (!wrap) return;
-    const sugg = wrap.querySelector('.word-suggestions');
-    if (!sugg) return;
-    sugg.innerHTML = '';
-    state.suggestionList.forEach((w, i) => {
-      const item = document.createElement('div');
-      item.className = 'word-suggestion-item' + (i === state.suggestionIdx ? ' active' : '');
-      item.textContent = w;
-      item.addEventListener('mousedown', (ev) => {
-        ev.preventDefault();
-        const input = wrap.querySelector('.word-input');
-        input.value = w;
-        state.words[idx] = w;
-        updateWordValidation(idx, w);
-        updateWordCount();
-        updateFindButton();
-        sugg.classList.remove('open');
-        const next = document.querySelector('.word-input[data-index="' + (idx + 1) + '"]');
-        if (next) next.focus();
-      });
-      sugg.appendChild(item);
-    });
   }
 
   function handleWordPaste(ev) {
