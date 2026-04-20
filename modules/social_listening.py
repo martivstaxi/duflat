@@ -955,16 +955,34 @@ Assign three labels for EACH mention, based on content_english and content_origi
    - neutral: informational, mixed, ambiguous
 
 2. sensitivity: "critical" | "high" | "medium" | "low"
-   - "critical" (P0) — CRISIS LEVEL requiring PR response within 24h: government/regulatory action (ban, investigation, sanctions, legal action, court rulings against Bilibili), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown).
-   - "high" (P1) — NOTABLE EVENT worth highlighting, NOT routine. Can be positive OR negative. Rule of thumb: a reader skimming their feed would pause at this. Examples:
-     * Major positive milestones: first-ever international esports title win, record-breaking engagement numbers (100M+ viewers, MAU/DAU all-time highs), breakthrough cultural events (NYE/Spring Festival Gala with hundreds of millions of viewers)
-     * Strategic launches: open-sourcing a major AI model, flagship product release (AniSora major version), algorithm overhauls that change the user experience
-     * Notable brand/partnership moves: global brand entering the platform for the first time (Apple, Nike etc.), major exclusive deal
-     * Competitive/industry shifts: losing to or beating a major competitor, notable market-share move, competitor gaining ground on Bilibili
-     * Notable concerns short of crisis: data privacy or security complaints gaining traction, moderation disputes spreading, creator frustrations going viral, negative journalist critique, safety research findings about the platform
-   - "medium" (P2, shown) — INFORMATIONAL routine coverage: regular feature updates, ordinary partnership announcements, routine neutral news reports, typical creator announcements, match previews without high stakes, industry overview where Bilibili is discussed substantively but not the star.
-   - "low" (P2, shown) — PASSING MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content.
-   IMPORTANT: Do not default to "low". Most content falls between "high" and "medium". If the story involves a concrete milestone, a notable shift, a measurable controversy, or a non-trivial event → lean toward "high". If it's a routine update or an ordinary news item with no particular stakes → "medium".
+   The priority scale measures RISK / CONCERN, not event importance. Positive news — even huge positive news — is never high-priority. High-priority is reserved for signals that something could be, is, or may become a problem for Bilibili.
+
+   - "critical" (P0) — ACTIVE CRISIS requiring PR response within 24h: regulatory/government action (ban, investigation, sanctions, legal action, adverse court rulings), confirmed data breach or security incident, major media exposé or scandal, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown), mass user revolt that is currently happening.
+
+   - "high" (P1) — CONCERNING SIGNAL worth monitoring: negative stories short of a crisis. Something is wrong or could go wrong. The common thread: a risk to user trust, brand reputation, creator relationships, or competitive position. Examples:
+     * Data privacy, security, or platform-safety worries raised by users, researchers, journalists ("Is Bilibili safe? Do I need a VPN?")
+     * Academic / journalistic research highlighting problems with the platform (harmful content reach, youth safety findings, moderation gaps)
+     * Creator dissatisfaction, disputes with the platform, talk of leaving
+     * User complaints about moderation, censorship, content policy going beyond isolated cases
+     * Negative journalist or analyst critique, opinion piece questioning strategy or practices
+     * Feature/product complaints gaining traction (bugs, unwanted changes, UX regression)
+     * Algorithm or policy changes that users are pushing back on
+     * Competitor making a move that threatens Bilibili's position, user migration signals
+     * Accessibility or technical problems getting visible attention
+     * Brand-reputation risk: negative cultural framing, PR misstep short of scandal
+     A P1 item should read like a warning light on a dashboard, not a trophy.
+
+   - "medium" (P2, shown) — NOTABLE BUT UNCONCERNING: coverage that is substantive and not trivial, but carries no risk signal. This is the correct bucket for positive milestones and routine non-risk news:
+     * Engagement records, MAU/DAU milestones, record viewer numbers
+     * Esports wins, cultural-event successes (NYE Gala, Spring Festival Gala) with huge audiences
+     * Product launches, AI tool releases, flagship feature rollouts (AniSora launch, new algorithm rollout — unless users are clearly pushing back)
+     * Brand partnerships, global brands joining the platform (Apple, Nike etc.)
+     * Feature updates, creator announcements, partnership deals
+     * Industry overview pieces that discuss Bilibili substantively
+
+   - "low" (P2, shown) — PASSING / TRIVIAL MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content, match previews/recaps with no special stakes, narrow how-to or tip content.
+
+   IMPORTANT: Positive news is never "high". The moment you're about to tag something "high" because it's impressive, stop and ask: "Does this describe a concern, a risk, or a negative signal?" If no → it's "medium" or "low", not "high". If the story reads like a win for Bilibili, it cannot be P1.
 
 3. source_type: "government" | "news_major" | "news_minor" | "blog" | "forum" | "social"
    - government: regulator, ministry, official agency (NOT financial regulators — those wouldn't be here)
