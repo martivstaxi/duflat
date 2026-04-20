@@ -281,7 +281,7 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 }
 
 /* ───── Mention cards ───── */
-.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 50px; }
+.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 42px; }
 .mention-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
@@ -296,28 +296,30 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     border-color: var(--border);
 }
 
-/* Priority marker */
+/* Priority marker — small pill, aligned with card-top */
 .priority-marker {
-    position: absolute; left: -42px; top: 50%; transform: translateY(-50%);
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: inherit; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
-    border-radius: 10px; user-select: none;
+    position: absolute; left: -38px; top: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 3px 7px;
+    border-radius: 980px;
+    font-family: inherit; font-size: .55rem; font-weight: 700;
+    letter-spacing: .08em; line-height: 1;
+    user-select: none;
     transition: transform .2s var(--ease);
 }
 .priority-marker.p0 {
     background: var(--negative); color: #fff;
-    box-shadow: 0 2px 8px rgba(181,74,53,.30), inset 0 1px 0 rgba(255,255,255,.18);
+    box-shadow: 0 1px 3px rgba(181,74,53,.22);
 }
 .priority-marker.p1 {
     background: #d18a2c; color: #fff;
-    box-shadow: 0 2px 8px rgba(209,138,44,.28), inset 0 1px 0 rgba(255,255,255,.18);
+    box-shadow: 0 1px 3px rgba(209,138,44,.22);
 }
 .priority-marker.p2 {
     background: transparent; color: var(--tertiary);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
 }
-.mention-card:hover .priority-marker { transform: translateY(-50%) scale(1.06); }
+.mention-card:hover .priority-marker { transform: translateX(-2px); }
 
 .card-top {
     display: flex; align-items: center; gap: 8px;
@@ -459,10 +461,10 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .mentions { padding: 0 0 16px 36px; gap: 10px; }
+    .mentions { padding: 0 0 16px 30px; gap: 10px; }
     .priority-marker {
-        left: -32px; width: 26px; height: 26px;
-        font-size: .58rem; border-radius: 8px;
+        left: -28px; top: 16px;
+        padding: 2px 6px; font-size: .5rem;
     }
     .mention-card { padding: 16px 18px; border-radius: 16px; }
     .card-quote { font-size: .88rem; line-height: 1.55; }
