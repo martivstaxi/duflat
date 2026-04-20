@@ -726,131 +726,271 @@ def get_mentions(days=None, specific_date=None, limit=100):
 # HAIKU ANALYSIS (replaces manual AI analysis)
 # ─────────────────────────────────────────────
 
-def _analyze_with_haiku(items):
-    """
-    Use Claude Haiku to analyze 2026-dated content in ONE batch call.
-    Returns list of mention dicts ready for save_mentions().
-    """
-    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
-    if not api_key or not items:
-        return []
+_TLD_LANG_HINTS = {
+    '.ru': 'Russian', '.jp': 'Japanese',
+    '.tw': 'Traditional Chinese', '.hk': 'Traditional Chinese',
+    '.tr': 'Turkish', '.es': 'Spanish', '.mx': 'Spanish',
+    '.ar': 'Spanish', '.br': 'Portuguese', '.pt': 'Portuguese',
+    '.sa': 'Arabic', '.ae': 'Arabic', '.eg': 'Arabic',
+}
 
+
+def _haiku_call(prompt, max_tokens=4096):
+    """Shared Haiku call wrapper used by all pipeline layers. Returns parsed JSON or None."""
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return None
     try:
         import anthropic
     except ImportError:
-        return []
-
-    # Domain TLD → language hint mapping
-    _TLD_LANG_HINTS = {
-        '.ru': 'Russian', '.jp': 'Japanese',
-        '.tw': 'Traditional Chinese', '.hk': 'Traditional Chinese',
-        '.tr': 'Turkish', '.es': 'Spanish', '.mx': 'Spanish',
-        '.ar': 'Spanish', '.br': 'Portuguese', '.pt': 'Portuguese',
-        '.sa': 'Arabic', '.ae': 'Arabic', '.eg': 'Arabic',
-    }
-
-    # Build compact summaries for Haiku
-    entries = []
-    for item in items:
-        # Detect language hint from domain TLD
-        domain = item['platform']
-        lang_hint = ''
-        for tld, lang in _TLD_LANG_HINTS.items():
-            if domain.endswith(tld):
-                lang_hint = lang
-                break
-        entry = {
-            'url': item['url'],
-            'url_hash': item['url_hash'],
-            'platform': item['platform'],
-            'date': item.get('content_date', ''),
-            'text': item['text'][:2000],  # cap per item
-        }
-        if lang_hint:
-            entry['lang_hint'] = lang_hint
-        entries.append(entry)
-
-    prompt = f"""You are a social listening analyst. Your job is to capture what PEOPLE and COMMUNITIES OUTSIDE MAINLAND CHINA are saying about Bilibili — public opinion, user reactions, community sentiment, social commentary.
-
-SCOPE (STRICT):
-- ONLY international / non-Mainland-China perspectives: users in US, EU, Japan, Korea, Taiwan, Hong Kong, Southeast Asia, Latin America, Middle East, Turkey, Russia, etc.
-- SKIP anything originating from Mainland China (PRC state media, Mainland news sites, Mainland regulators, Mainland user forums like Weibo/Zhihu/Tieba, Simplified Chinese content).
-- If the article is clearly Mainland-Chinese-sourced or in Simplified Chinese (Mandarin), set content_original to empty string and country to "China" — it will be filtered out.
-- Financial/stock coverage is LOW priority. Focus on user opinion, cultural reaction, government (non-PRC) policy, international community discussion.
-
-For EACH article, write a plain-English summary that sounds like a social media insight, NOT a news headline. Use simple, everyday language. Avoid jargon, financial terms, or corporate-speak.
-
-Good examples:
-- "Users are excited about Bilibili's new anime lineup for winter 2026, especially Frieren Season 2."
-- "Fans are celebrating BLG's first international esports title after beating G2 in Brazil."
-- "Some investors worry the new algorithm change might push users away."
-
-Bad examples (too formal/news-like):
-- "Bilibili Inc. reported Q4 revenue of RMB 8.32 billion, an increase of 8% YoY."
-- "The company achieved its first full year of GAAP profitability."
-
-For EACH article, extract:
-- content_english: 1-2 sentence plain-English social insight (what people think/feel about this). Smooth, easy to read, like butter.
-- content_original: copy the most relevant 1-3 sentences VERBATIM from the original article text. Do NOT rewrite — keep the exact original wording. This is shown behind a "Details" button.
-- sentiment: "positive", "negative", or "neutral"
-- sensitivity: how sensitive/impactful is this mention? Use:
-  - "critical" — CRISIS LEVEL: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown). If it could require a PR response within 24h, it's critical.
-  - "high" — NOTABLE CONCERN worth monitoring: creator exodus or major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share at Bilibili's expense, negative industry opinion or journalist critique, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
-  - "medium" — INFORMATIONAL, routine coverage: feature launches, partnership announcements, neutral news reports, creator announcements, industry overview where Bilibili is discussed substantively, product updates.
-  - "low" — PASSING MENTION: Bilibili appears in a long list, brief unrelated reference, aggregator scraping with no substantive content.
-- source_type: classify the source:
-  - "government" — government body, regulator, official agency (SEC, CSRC, ministry, court)
-  - "news_major" — major international media (Reuters, Bloomberg, BBC, CNBC, NHK, etc.)
-  - "news_minor" — smaller/regional news outlets, trade press
-  - "financial" — stock analysis, investor research, earnings coverage
-  - "blog" — personal blog, opinion piece, review site
-  - "forum" — Reddit, discussion board, community forum
-  - "social" — social media post, tweet, YouTube comment
-- keywords: array of 2-4 single-word topic tags
-- author: author name if found, otherwise the platform name
-- country: country of origin if detectable, otherwise "International"
-- language: detect the language by reading the ACTUAL WORDS in content_original. Do NOT guess from the platform name or domain. Use: "English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese". Rules: if content_original contains Latin alphabet words in English → "English". Chinese scripts: 简体字 (simplified strokes) → "Simplified Chinese", 繁體字 (complex strokes, traditional) → "Traditional Chinese". If a lang_hint field is provided, use it as a strong tie-breaker only when the text is ambiguous. Example: aastocks.com/en/ page with English text → "English" (not Traditional Chinese just because it's a HK site).
-
-Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, sensitivity, source_type, keywords, author, country, language.
-
-Skip articles that do NOT mention Bilibili at all (complete false positives with no connection to Bilibili).
-SKIP ALL STOCK/FINANCIAL CONTENT — this is SOCIAL listening, NOT financial coverage. If an article's PRIMARY focus is one of these, SKIP it entirely: stock price movement, earnings reports, revenue/profit figures, analyst ratings or target prices, investor sentiment, trading volume, P/E ratios, dividend news, ADR/share class news, market cap, SEC/CSRC filings, IPO/offering news, shareholder matters, bond offerings, or any pure stock-ticker page.
-
-MIXED CONTENT RULE — CRITICAL: Some articles contain BOTH financial info AND a genuinely important non-financial Bilibili story (product launch, creator incident, policy/moderation dispute, AI/strategy announcement, M&A rumor, competitor dynamic, user experience, cultural moment). In those cases: DO NOT skip. Instead, write content_english covering ONLY the non-financial angle — omit earnings figures, stock moves, analyst views, revenue numbers entirely from your summary. Example: if a piece says "Bilibili's CFO announced AI investments; Q4 revenue was X billion" → summarize only the AI investment strategy, ignore the revenue figure.
-
-DO include (if non-financial angle exists): esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, creator news, product/feature coverage, policy/moderation discussions, cultural/social commentary, user sentiment.
-When in doubt between a social topic and a financial topic, SKIP financial and KEEP social — never write about stock/earnings/analyst matters.
-
-Articles:
-{json.dumps(entries, ensure_ascii=False)}"""
-
+        return None
     try:
         client = anthropic.Anthropic(api_key=api_key)
         resp = client.messages.create(
             model='claude-haiku-4-5-20251001',
-            max_tokens=8192,
+            max_tokens=max_tokens,
             messages=[{'role': 'user', 'content': prompt}],
         )
         text = resp.content[0].text.strip()
-        # Extract JSON from response
         if '```' in text:
             text = text.split('```')[1]
             if text.startswith('json'):
                 text = text[4:]
-        # Try full parse first, fallback to partial recovery
         try:
             return json.loads(text)
         except json.JSONDecodeError:
-            # Try to recover truncated JSON array
             last_brace = text.rfind('},')
             if last_brace > 0:
                 try:
                     return json.loads(text[:last_brace + 1] + ']')
                 except Exception:
                     pass
-            return []
+            return None
     except Exception:
+        return None
+
+
+def _layer1_triage(items):
+    """
+    LAYER 1 — TRIAGE: fast relevance filter.
+    Three yes/no checks: Bilibili actually mentioned, in scope (non-Mainland), has a social angle (not pure financial).
+    Returns list of items that pass all three checks.
+    """
+    if not items:
         return []
+
+    entries = []
+    for i, item in enumerate(items):
+        entries.append({
+            'idx': i,
+            'url': item['url'],
+            'platform': item['platform'],
+            'text': item['text'][:1200],  # small sample, this is just a filter
+        })
+
+    prompt = f"""You are a triage agent for a social listening platform tracking Bilibili.
+
+For EACH article, answer three yes/no questions. Only articles that answer YES to ALL THREE should be kept.
+
+1. MENTIONS_BILIBILI: Does this article substantively discuss Bilibili (哔哩哔哩 / 嗶哩嗶哩 / B站 / ビリビリ / BLG / Bilibili Gaming / AniSora)? Not just a name-drop in a list.
+
+2. IN_SCOPE: Is this content suitable for a non-Mainland-China social listening audience? OUT OF SCOPE = Mainland PRC state media, Mainland news sites, Mainland regulators, Mainland user forums (Weibo/Zhihu/Tieba/Douyin/Toutiao), Simplified Chinese (Mandarin) content. IN SCOPE = Traditional Chinese (Taiwan/HK), English, Japanese, Korean, Arabic, Turkish, Russian, Spanish, Portuguese, etc.
+
+3. HAS_SOCIAL_ANGLE: Is there a non-financial story here worth telling?
+   - SOCIAL angle = user opinion, creator news, product/feature, policy/moderation, AI/strategy, M&A rumor, competitor dynamic, esports (BLG), anime streaming, cultural moment, brand reputation.
+   - NOT a social angle = pure stock price movement, earnings numbers, analyst ratings, bond offering, dividend, IPO, market cap, revenue figures, SEC/CSRC filing.
+   - If article MIXES financial info + social story → YES (true). We will extract only the social part later.
+   - If article is PURELY financial with no social angle → NO (false).
+
+Return ONLY a JSON array: [{{"idx":0,"mentions_bilibili":true,"in_scope":true,"has_social_angle":true}}, ...]
+
+Articles:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+    verdicts = _haiku_call(prompt, max_tokens=2048)
+    if not verdicts:
+        # If triage fails, conservatively pass everything through — downstream layers will clean up
+        return items
+
+    kept = []
+    for v in verdicts:
+        idx = v.get('idx')
+        if idx is None or idx >= len(items):
+            continue
+        if v.get('mentions_bilibili') and v.get('in_scope') and v.get('has_social_angle'):
+            kept.append(items[idx])
+    return kept
+
+
+def _layer2_extract(items):
+    """
+    LAYER 2 — EXTRACT: structured field extraction, non-financial focus.
+    Pulls content_english, content_original, language, author, country, keywords.
+    """
+    if not items:
+        return []
+
+    entries = []
+    for i, item in enumerate(items):
+        domain = item['platform']
+        lang_hint = ''
+        for tld, lang in _TLD_LANG_HINTS.items():
+            if domain.endswith(tld):
+                lang_hint = lang
+                break
+        e = {
+            'idx': i,
+            'platform': item['platform'],
+            'text': item['text'][:2000],
+        }
+        if lang_hint:
+            e['lang_hint'] = lang_hint
+        entries.append(e)
+
+    prompt = f"""You are an extraction agent for a Bilibili social listening platform. The articles below have already passed a relevance filter — they all mention Bilibili, are in scope, and have a social story.
+
+Your job: extract structured fields. FOCUS ONLY on the non-financial angle of the story. Never write about stock prices, earnings figures, revenue numbers, analyst ratings, or dividends — even if the source article includes them.
+
+Write each content_english as a plain-English social insight — like a social media observation, NOT a news headline.
+
+GOOD examples (social voice, non-financial):
+- "Fans are hyped about Bilibili's anime lineup for winter 2026, especially Frieren Season 2."
+- "BLG's run at the international esports tournament has Chinese-speaking fans buzzing."
+- "Users are pushing back on the new moderation policy after several creators got suspended."
+- "Bilibili is doubling down on AI content tools, which has creators both excited and worried."
+
+BAD examples (financial/corporate, never write like this):
+- "Bilibili reported Q4 revenue of RMB 8.32 billion."
+- "Morgan Stanley raised its price target on BILI to $31."
+- "Investors are reacting positively to the bond offering."
+
+If the source article mixes financial + social angles (e.g., "CFO announced AI investments; revenue was X billion"), write ONLY about the AI investment angle. Omit all financial figures from content_english and skip financial sentences when picking content_original.
+
+For EACH article, extract:
+- content_english: 1-2 sentences, plain social insight tone, non-financial
+- content_original: 1-3 sentences copied VERBATIM from source text, in original language. Pick the sentences that carry the non-financial story. If only financial sentences exist, return empty string.
+- language: detect from content_original's actual characters. Use one of: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If `lang_hint` provided, use as tie-breaker only. (Simplified Chinese should not appear here — those were filtered.)
+- author: byline if present, else the platform domain
+- country: country of origin if detectable, else "International"
+- keywords: 2-4 single-word topic tags. Use social/product terms like "esports", "creators", "anime", "AI", "moderation", "policy". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.).
+
+Return ONLY a JSON array: [{{"idx":0,"content_english":"...","content_original":"...","language":"...","author":"...","country":"...","keywords":[...]}}, ...]
+
+Articles:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+    extracted = _haiku_call(prompt, max_tokens=4096)
+    if not extracted:
+        return []
+
+    result = []
+    for v in extracted:
+        idx = v.get('idx')
+        if idx is None or idx >= len(items):
+            continue
+        src = items[idx]
+        result.append({
+            'url': src['url'],
+            'url_hash': src['url_hash'],
+            'platform': src['platform'],
+            'content_date': src.get('content_date', ''),
+            'content_english': v.get('content_english', ''),
+            'content_original': v.get('content_original', ''),
+            'language': v.get('language', ''),
+            'author': v.get('author', ''),
+            'country': v.get('country', ''),
+            'keywords': v.get('keywords', []),
+        })
+    return result
+
+
+def _layer3_classify(mentions):
+    """
+    LAYER 3 — CLASSIFY: assign sentiment, sensitivity (P0/P1/P2), source_type.
+    """
+    if not mentions:
+        return []
+
+    entries = []
+    for i, m in enumerate(mentions):
+        entries.append({
+            'idx': i,
+            'platform': m.get('platform', ''),
+            'content_english': (m.get('content_english') or '')[:400],
+            'content_original': (m.get('content_original') or '')[:400],
+        })
+
+    prompt = f"""You are a classification agent for a Bilibili social listening platform. The mentions below have already been extracted and are confirmed as relevant, in-scope, non-financial social content.
+
+Assign three labels for EACH mention, based on content_english and content_original:
+
+1. sentiment: "positive" | "negative" | "neutral"
+   - positive: users/commentators express excitement, approval, support, praise
+   - negative: criticism, complaints, controversy, backlash, concern
+   - neutral: informational, mixed, ambiguous
+
+2. sensitivity: "critical" | "high" | "medium" | "low"
+   - "critical" — CRISIS LEVEL requiring PR response within 24h: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown).
+   - "high" — NOTABLE CONCERN worth monitoring: creator exodus, major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share, negative industry opinion or journalist critique, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
+   - "medium" — INFORMATIONAL routine coverage: feature launches, partnership announcements, neutral news reports, creator announcements, industry overview discussing Bilibili substantively, product updates.
+   - "low" — PASSING MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content.
+
+3. source_type: "government" | "news_major" | "news_minor" | "blog" | "forum" | "social"
+   - government: regulator, ministry, official agency (NOT financial regulators — those wouldn't be here)
+   - news_major: Reuters, Bloomberg, BBC, NHK, CNBC, AP, AFP, etc.
+   - news_minor: smaller regional outlets, trade press, niche industry publications
+   - blog: personal blog, opinion piece, review site
+   - forum: Reddit, discussion board, community forum
+   - social: social media post, tweet, YouTube comment, Instagram
+   (Do NOT use "financial" — financial content was filtered out in earlier layers.)
+
+Return ONLY a JSON array: [{{"idx":0,"sentiment":"...","sensitivity":"...","source_type":"..."}}, ...]
+
+Mentions:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+    verdicts = _haiku_call(prompt, max_tokens=2048)
+    if not verdicts:
+        # If classification fails, assign safe defaults so mentions are still saved
+        for m in mentions:
+            m.setdefault('sentiment', 'neutral')
+            m.setdefault('sensitivity', 'low')
+            m.setdefault('source_type', 'news_minor')
+        return mentions
+
+    for v in verdicts:
+        idx = v.get('idx')
+        if idx is None or idx >= len(mentions):
+            continue
+        mentions[idx]['sentiment'] = v.get('sentiment', 'neutral')
+        mentions[idx]['sensitivity'] = v.get('sensitivity', 'low')
+        mentions[idx]['source_type'] = v.get('source_type', 'news_minor')
+
+    # Safety: fill defaults for any mention the classifier skipped
+    for m in mentions:
+        m.setdefault('sentiment', 'neutral')
+        m.setdefault('sensitivity', 'low')
+        m.setdefault('source_type', 'news_minor')
+    return mentions
+
+
+def _analyze_with_haiku(items):
+    """
+    Three-layer Haiku pipeline (replaces the old single-prompt call):
+      L1 TRIAGE  → relevance + scope + social-angle filter (drops garbage cheaply)
+      L2 EXTRACT → content_english, content_original, language, author, country, keywords
+      L3 CLASSIFY → sentiment, sensitivity, source_type
+    Each layer has a narrow focus so Haiku attention stays sharp.
+    """
+    if not items:
+        return []
+    triaged = _layer1_triage(items)
+    if not triaged:
+        return []
+    extracted = _layer2_extract(triaged)
+    if not extracted:
+        return []
+    return _layer3_classify(extracted)
 
 
 # ─────────────────────────────────────────────
@@ -884,12 +1024,8 @@ def scan_urls(urls):
             'skipped': 0,
         }
 
-    # Step 3: Haiku analysis
+    # Step 3: 3-layer Haiku pipeline (triage → extract → classify)
     mentions = _analyze_with_haiku(items_2026)
-
-    # Step 3b: AI validation + repair (second Haiku pass)
-    if mentions:
-        mentions = _ai_validate_and_repair(mentions)
 
     # Step 4: save (heuristic validation also runs inside save_mentions)
     if mentions:
