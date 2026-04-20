@@ -147,8 +147,8 @@ function renderFilterDropdown() {
         const sv = m.sensitivity || 'low';
         sensitivities[sv] = (sensitivities[sv] || 0) + 1;
     });
-    const sensOrder = ['critical','high','medium','low'];
-    const sensLabels = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+    const sensOrder = ['critical','high','medium'];
+    const sensLabels = {critical:'P0',high:'P1',medium:'P2'};
     html += `<div class="filter-section">
         <div class="filter-section-title">Sensitivity</div>
         <div class="filter-options">
@@ -254,7 +254,7 @@ function renderActiveChips() {
         html += `<span class="chip">${label}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     if (currentSensitivity !== 'all') {
-        const sensLabels = {critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+        const sensLabels = {critical:'P0',high:'P1',medium:'P2',low:'Low'};
         html += `<span class="chip">${sensLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
     }
     if (currentSourceType !== 'all') {
@@ -321,21 +321,19 @@ function renderCard(m, uid) {
         ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
         : '';
 
-    const sensitivityBadge = sensitivity !== 'low'
-        ? `<span class="sensitivity-badge sensitivity-${sensitivity}">${sensitivity}</span>`
+    const priorityMap = { critical: 'p0', high: 'p1', medium: 'p2' };
+    const priorityLabels = { critical: 'P0', high: 'P1', medium: 'P2' };
+    const priorityClass = priorityMap[sensitivity];
+    const priorityMarker = priorityClass
+        ? `<div class="priority-marker ${priorityClass}" title="${sensitivity}">${priorityLabels[sensitivity]}</div>`
         : '';
-
-    const sourceLabels = {government:'Gov',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
-    const sourceLabel = sourceLabels[sourceType] || sourceType;
-    const sourceTag = `<span class="source-tag source-${sourceType}">${sourceLabel}</span>`;
 
     const tagsHtml = (m.keywords || []).map(k => `<span class="tag">#${escapeHtml(k)}</span>`).join('');
 
-    return `<div class="mention-card ${s}${sensitivity === 'critical' ? ' sensitivity-critical-card' : sensitivity === 'high' ? ' sensitivity-high-card' : ''}">
+    return `<div class="mention-card ${s}">
+        ${priorityMarker}
         <div class="card-top">
             <span class="sentiment-dot"></span>
-            ${sensitivityBadge}
-            ${sourceTag}
             <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
             <span style="flex:1"></span>
             ${detailsBtn}
