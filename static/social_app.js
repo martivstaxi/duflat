@@ -160,25 +160,6 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
-    // Source Type
-    const sources = {};
-    base.forEach(m => {
-        const st = m.source_type || 'news_minor';
-        sources[st] = (sources[st] || 0) + 1;
-    });
-    const srcOrder = ['government','news_major','financial','news_minor','blog','forum','social'];
-    const srcLabels = {government:'Government',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
-    html += `<div class="filter-section">
-        <div class="filter-section-title">Source</div>
-        <div class="filter-options">
-            <button class="filter-option ${currentSourceType==='all'?'active':''}" onclick="setSourceType('all')">All<span class="opt-count">${base.length}</span></button>`;
-    srcOrder.forEach(st => {
-        if (sources[st]) {
-            html += `<button class="filter-option ${currentSourceType===st?'active':''}" onclick="setSourceType('${st}')">${srcLabels[st]}<span class="opt-count">${sources[st]}</span></button>`;
-        }
-    });
-    html += `</div></div>`;
-
     // Date section — 3 levels: 2026 → Month picker → Day list
     const dateSet = new Set(allDates);
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -256,10 +237,6 @@ function renderActiveChips() {
     if (currentSensitivity !== 'all') {
         const sensLabels = {critical:'P0',high:'P1',medium:'P2',low:'Low'};
         html += `<span class="chip">${sensLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
-    }
-    if (currentSourceType !== 'all') {
-        const srcLabels = {government:'Government',news_major:'Major News',news_minor:'News',financial:'Financial',blog:'Blog',forum:'Forum',social:'Social'};
-        html += `<span class="chip">${srcLabels[currentSourceType] || currentSourceType}<button class="chip-remove" onclick="setSourceType('all')">&times;</button></span>`;
     }
     document.getElementById('activeChips').innerHTML = html;
 }

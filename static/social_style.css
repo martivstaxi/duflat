@@ -133,7 +133,7 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
 .date-divider .label { font-size: .75rem; font-weight: 600; color: var(--muted); white-space: nowrap; letter-spacing: .3px; }
 
 /* Cards */
-.mentions { display: flex; flex-direction: column; gap: 14px; padding: 0 0 16px 46px; }
+.mentions { display: flex; flex-direction: column; gap: 14px; padding: 0 0 16px 36px; }
 .mention-card {
     background: rgba(255,255,255,.45); border: none; border-radius: 12px;
     padding: 20px 22px; position: relative; transition: all .2s;
@@ -141,17 +141,18 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
 }
 .mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 
-/* Priority marker — vertically centered outside card on the left */
+/* Priority marker — full card height, sits on the left just outside the card edge */
 .priority-marker {
-    position: absolute; left: -40px; top: 50%; transform: translateY(-50%);
-    width: 32px; padding: 5px 0; text-align: center;
-    font-family: inherit; font-size: .64rem; font-weight: 700; letter-spacing: .5px;
-    border-radius: 6px; color: #fff; user-select: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    position: absolute; left: -30px; top: 0; bottom: 0;
+    width: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: .68rem; font-weight: 700; letter-spacing: .6px;
+    border-radius: 8px; color: #fff; user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 .priority-marker.p0 { background: #dc2626; }
 .priority-marker.p1 { background: #f59e0b; }
-.priority-marker.p2 { background: #9ca3af; }
+.priority-marker.p2 { background: #e8e7e3; color: #a8a7a2; box-shadow: none; }
 
 .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .card-tag { font-size: .68rem; font-weight: 500; color: var(--muted); margin-left: auto; }
@@ -240,8 +241,8 @@ header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 
     }
 
     /* Cards */
-    .mentions { padding: 0 0 16px 34px; }
-    .priority-marker { left: -30px; width: 24px; font-size: .54rem; padding: 4px 0; letter-spacing: .3px; }
+    .mentions { padding: 0 0 16px 28px; }
+    .priority-marker { left: -24px; width: 22px; font-size: .58rem; letter-spacing: .4px; border-radius: 6px; }
     .mention-card { padding: 14px 16px; }
     .card-quote { font-size: .82rem; line-height: 1.6; }
     .card-meta { font-size: .68rem; }
