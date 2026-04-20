@@ -12,11 +12,43 @@
     --accent: #c15f3c;
 }
 
-body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+body { font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+html[lang^="zh"] body { font-family: 'Noto Sans SC', 'Inter', -apple-system, sans-serif; }
+
 .container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
 
 header { padding: 48px 0 16px; text-align: center; }
 header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; }
+html[lang^="zh"] header h1 { font-family: 'Noto Sans SC', 'Merriweather', serif; font-weight: 900; }
+
+.test-badge {
+    margin-top: 10px; display: inline-block;
+    background: rgba(193,95,60,.12); border: 1px solid rgba(193,95,60,.25);
+    border-radius: 6px; padding: 4px 12px;
+    font-size: .72rem; color: var(--accent);
+    font-weight: 600; letter-spacing: .5px;
+}
+
+/* Language toggle — top-right, fixed */
+.lang-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 200;
+    display: inline-flex; gap: 2px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.lang-btn {
+    padding: 5px 12px; border-radius: 999px; border: none;
+    background: transparent; font-family: inherit; font-size: .7rem; font-weight: 600;
+    color: var(--muted); cursor: pointer; transition: all .15s; line-height: 1;
+    min-width: 36px;
+}
+.lang-btn:hover { color: var(--text); }
+.lang-btn.active { background: var(--accent); color: #fff; }
+@media (max-width: 600px) {
+    .lang-toggle { top: 10px; right: 10px; padding: 2px; }
+    .lang-btn { padding: 4px 10px; font-size: .65rem; min-width: 32px; }
+}
 
 /* Sentiment buttons — centered under title */
 .sentiment-btns {

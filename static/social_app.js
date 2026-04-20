@@ -20,6 +20,133 @@ let showMonths = false; // whether month list is expanded
 const CACHE_KEY = 'social_mentions_cache';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// ─────────────────────────────────────────────
+// I18N — English + Simplified Chinese UI
+// Mention content itself (content_english / content_original) is NEVER translated.
+// ─────────────────────────────────────────────
+const I18N = {
+    en: {
+        title: 'Social Listening',
+        testBuild: 'TEST BUILD',
+        loading: 'Loading mentions...',
+        failedLoad: 'Failed to load.',
+        retry: 'Retry',
+        noMentions: 'No mentions found.',
+        tryClearing: ' Try clearing filters.',
+        browseByDate: 'Browse by date',
+        all: 'All',
+        positive: 'Positive',
+        negative: 'Negative',
+        neutral: 'Neutral',
+        filterLanguage: 'Language',
+        filterPriority: 'Priority',
+        filterDate: 'Date',
+        filterMonth: 'Month',
+        unknownDate: 'Unknown date',
+        unknownLang: 'Unknown',
+        close: 'Close',
+        original: 'Original',
+        olderTitle: 'Older',
+        newerTitle: 'Newer',
+        allDatesTop: 'All',
+        allDatesBottom: 'dates',
+        months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        dayShort: ['S','M','T','W','T','F','S'],
+        langs: {},
+        dateLocale: 'en-US',
+    },
+    zh: {
+        title: '社交聆听',
+        testBuild: '测试版',
+        loading: '正在加载内容...',
+        failedLoad: '加载失败。',
+        retry: '重试',
+        noMentions: '未找到内容。',
+        tryClearing: '请尝试清除筛选条件。',
+        browseByDate: '按日期浏览',
+        all: '全部',
+        positive: '正面',
+        negative: '负面',
+        neutral: '中性',
+        filterLanguage: '语言',
+        filterPriority: '优先级',
+        filterDate: '日期',
+        filterMonth: '月份',
+        unknownDate: '未知日期',
+        unknownLang: '未知',
+        close: '关闭',
+        original: '原文',
+        olderTitle: '较新',
+        newerTitle: '较旧',
+        allDatesTop: '全部',
+        allDatesBottom: '日期',
+        months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+        dayShort: ['日','一','二','三','四','五','六'],
+        langs: {
+            English: '英语', Japanese: '日语', Arabic: '阿拉伯语',
+            'Traditional Chinese': '繁体中文', 'Simplified Chinese': '简体中文',
+            Chinese: '中文', Turkish: '土耳其语', Russian: '俄语',
+            Spanish: '西班牙语', Portuguese: '葡萄牙语', Korean: '韩语',
+            French: '法语', German: '德语', Italian: '意大利语',
+            Hindi: '印地语', Thai: '泰语', Vietnamese: '越南语',
+            Indonesian: '印尼语', Dutch: '荷兰语', Polish: '波兰语',
+            Unknown: '未知',
+        },
+        dateLocale: 'zh-CN',
+    },
+};
+
+function detectInitialLang() {
+    try {
+        const saved = localStorage.getItem('ui_lang');
+        if (saved === 'zh' || saved === 'en') return saved;
+    } catch (e) {}
+    const nav = ((navigator.language || navigator.userLanguage || 'en') + '').toLowerCase();
+    return nav.startsWith('zh') ? 'zh' : 'en';
+}
+
+let uiLang = detectInitialLang();
+document.documentElement.lang = (uiLang === 'zh' ? 'zh-CN' : 'en');
+
+function T(k) {
+    const v = I18N[uiLang] && I18N[uiLang][k];
+    if (v !== undefined) return v;
+    return (I18N.en[k] !== undefined ? I18N.en[k] : k);
+}
+
+function TL(lang) {
+    if (!lang || lang === 'Unknown') return T('unknownLang');
+    if (uiLang === 'zh') {
+        return I18N.zh.langs[lang] || lang;
+    }
+    return lang;
+}
+
+function setUILang(l) {
+    if (l !== 'en' && l !== 'zh') return;
+    uiLang = l;
+    try { localStorage.setItem('ui_lang', l); } catch (e) {}
+    document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+    document.title = 'Duflat — ' + T('title') + ' TEST';
+    // Refresh static header texts too
+    const titleEl = document.getElementById('siteTitle');
+    if (titleEl) titleEl.textContent = T('title');
+    const badgeEl = document.getElementById('testBuildBadge');
+    if (badgeEl) badgeEl.textContent = T('testBuild');
+    const archTitle = document.getElementById('archiveTitle');
+    if (archTitle) archTitle.textContent = T('browseByDate');
+    renderLangToggle();
+    renderAll();
+}
+
+function renderLangToggle() {
+    const el = document.getElementById('langToggle');
+    if (!el) return;
+    el.innerHTML =
+        `<button class="lang-btn ${uiLang==='en'?'active':''}" onclick="setUILang('en')">EN</button>` +
+        `<button class="lang-btn ${uiLang==='zh'?'active':''}" onclick="setUILang('zh')">中文</button>`;
+}
+
 function _applyData(data) {
     const today = new Date().toISOString().slice(0, 10);
     const mentions = (data.mentions || []).filter(m => !m.content_date || m.content_date <= today);
@@ -40,10 +167,10 @@ async function loadMentions() {
             // Stale cache — show it while fetching fresh
             _applyData(cached.data);
         } else {
-            document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
+            document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
         }
     } catch (e) {
-        document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Loading mentions...</div>';
+        document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
     }
 
     // Fetch fresh data in background
@@ -54,7 +181,7 @@ async function loadMentions() {
         _applyData(data);
     } catch (e) {
         if (!allMentions.length) {
-            document.getElementById('content').innerHTML = `<div class="empty">Failed to load. <a href="#" onclick="loadMentions();return false">Retry</a></div>`;
+            document.getElementById('content').innerHTML = `<div class="empty">${escapeHtml(T('failedLoad'))} <a href="#" onclick="loadMentions();return false">${escapeHtml(T('retry'))}</a></div>`;
         }
     }
 }
@@ -76,15 +203,15 @@ function renderSentimentBtns() {
     const neu = filtered.filter(m => m.sentiment === 'neutral').length;
 
     document.getElementById('sentimentBtns').innerHTML =
-        `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All <span class="count">${filtered.length}</span></button>` +
+        `<button class="sent-btn all-btn ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">${escapeHtml(T('all'))} <span class="count">${filtered.length}</span></button>` +
         `<button class="sent-btn pos ${currentFilter==='positive'?'active':''}" onclick="setFilter('positive')">
-            <span class="dot" style="background:var(--positive)"></span>Positive <span class="count">${pos}</span>
+            <span class="dot" style="background:var(--positive)"></span>${escapeHtml(T('positive'))} <span class="count">${pos}</span>
         </button>` +
         `<button class="sent-btn neg ${currentFilter==='negative'?'active':''}" onclick="setFilter('negative')">
-            <span class="dot" style="background:var(--negative)"></span>Negative <span class="count">${neg}</span>
+            <span class="dot" style="background:var(--negative)"></span>${escapeHtml(T('negative'))} <span class="count">${neg}</span>
         </button>` +
         `<button class="sent-btn neu ${currentFilter==='neutral'?'active':''}" onclick="setFilter('neutral')">
-            <span class="dot" style="background:var(--neutral)"></span>Neutral <span class="count">${neu}</span>
+            <span class="dot" style="background:var(--neutral)"></span>${escapeHtml(T('neutral'))} <span class="count">${neu}</span>
         </button>` +
         `<button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel(event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
@@ -133,11 +260,11 @@ function renderFilterDropdown() {
     const langKeys = Object.keys(langs).sort();
 
     let html = `<div class="filter-section">
-        <div class="filter-section-title">Language</div>
+        <div class="filter-section-title">${escapeHtml(T('filterLanguage'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${currentLang==='all'?'active':''}" onclick="setLang('all')">All<span class="opt-count">${base.length}</span></button>`;
+            <button class="filter-option ${currentLang==='all'?'active':''}" onclick="setLang('all')">${escapeHtml(T('all'))}<span class="opt-count">${base.length}</span></button>`;
     langKeys.forEach(lang => {
-        html += `<button class="filter-option ${currentLang===lang?'active':''}" onclick="setLang('${escapeHtml(lang)}')">${escapeHtml(lang)}<span class="opt-count">${langs[lang]}</span></button>`;
+        html += `<button class="filter-option ${currentLang===lang?'active':''}" onclick="setLang('${escapeHtml(lang)}')">${escapeHtml(TL(lang))}<span class="opt-count">${langs[lang]}</span></button>`;
     });
     html += `</div></div>`;
 
@@ -149,9 +276,9 @@ function renderFilterDropdown() {
     const priOrder = ['p0','p1','p2'];
     const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
     html += `<div class="filter-section">
-        <div class="filter-section-title">Priority</div>
+        <div class="filter-section-title">${escapeHtml(T('filterPriority'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${currentSensitivity==='all'?'active':''}" onclick="setSensitivity('all')">All<span class="opt-count">${base.length}</span></button>`;
+            <button class="filter-option ${currentSensitivity==='all'?'active':''}" onclick="setSensitivity('all')">${escapeHtml(T('all'))}<span class="opt-count">${base.length}</span></button>`;
     priOrder.forEach(p => {
         if (priorityCounts[p]) {
             html += `<button class="filter-option ${currentSensitivity===p?'active':''}" onclick="setSensitivity('${p}')">${priLabels[p]}<span class="opt-count">${priorityCounts[p]}</span></button>`;
@@ -161,15 +288,16 @@ function renderFilterDropdown() {
 
     // Date section — 3 levels: 2026 → Month picker → Day list
     const dateSet = new Set(allDates);
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthNames = I18N[uiLang].months;
+    const dayShort = I18N[uiLang].dayShort;
 
     html += `<div class="filter-section">
-        <div class="filter-section-title">Date</div>
+        <div class="filter-section-title">${escapeHtml(T('filterDate'))}</div>
         <div class="filter-options">
             <button class="filter-option ${!currentDateFilter && filterMonth===null?'active':''}" onclick="filterSelectYear()">2026<span class="opt-count">${allMentions.length}</span></button>`;
 
     // "Month" toggle button
-    html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Month</button>`;
+    html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">${escapeHtml(T('filterMonth'))}</button>`;
 
     if (showMonths && filterMonth === null) {
         // Month list — 12 months, disable months with no content
@@ -183,7 +311,7 @@ function renderFilterDropdown() {
         for (let mo = 0; mo < 12; mo++) {
             const isFuture = mo > currentMonth;
             const cls = isFuture ? 'filter-option disabled' : 'filter-option';
-            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${monthNames[mo]}</button>`;
+            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(monthNames[mo])}</button>`;
         }
     } else if (filterMonth !== null) {
         // Calendar for selected month
@@ -193,11 +321,11 @@ function renderFilterDropdown() {
         html += `</div>
         <div class="cal-header">
             <button onclick="filterCalPrev(event)">&#8249;</button>
-            <span class="cal-title">${monthNames[mo]} 2026</span>
+            <span class="cal-title">${escapeHtml(monthNames[mo])} 2026</span>
             <button onclick="filterCalNext(event)">&#8250;</button>
         </div>
         <div class="cal-grid">`;
-        ['S','M','T','W','T','F','S'].forEach(d => { html += `<div class="cal-day-name">${d}</div>`; });
+        dayShort.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
         for (let i = 0; i < firstDay; i++) html += `<div></div>`;
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `2026-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -226,12 +354,12 @@ function renderFilterDropdown() {
 function renderActiveChips() {
     let html = '';
     if (currentLang !== 'all') {
-        html += `<span class="chip">${escapeHtml(currentLang)}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
+        html += `<span class="chip">${escapeHtml(TL(currentLang))}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
     }
     if (currentDateFilter) {
         const dt = new Date(currentDateFilter + 'T00:00:00');
-        const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        html += `<span class="chip">${label}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
+        const label = dt.toLocaleDateString(I18N[uiLang].dateLocale, { month: 'short', day: 'numeric' });
+        html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     if (currentSensitivity !== 'all') {
         const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
@@ -261,9 +389,8 @@ function renderMentions() {
     const filtered = getFilteredMentions();
 
     if (filtered.length === 0) {
-        const hint = currentFilter !== 'all' || currentLang !== 'all'
-            ? ' Try clearing filters.' : '';
-        el.innerHTML = `<div class="empty">No mentions found.${hint}</div>`;
+        const hint = currentFilter !== 'all' || currentLang !== 'all' ? T('tryClearing') : '';
+        el.innerHTML = `<div class="empty">${escapeHtml(T('noMentions'))}${escapeHtml(hint)}</div>`;
         return;
     }
 
@@ -280,7 +407,7 @@ function renderMentions() {
     const dates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
     dates.forEach(date => {
-        html += `<div class="date-divider"><span class="line"></span><span class="label">${formatDateLong(date)}</span><span class="line"></span></div>`;
+        html += `<div class="date-divider"><span class="line"></span><span class="label">${escapeHtml(formatDateLong(date))}</span><span class="line"></span></div>`;
         grouped[date].forEach((m, i) => {
             html += renderCard(m, `${date}-${i}`);
         });
@@ -293,14 +420,15 @@ function renderMentions() {
 function renderCard(m, uid) {
     const s = m.sentiment || 'neutral';
     const sensitivity = m.sensitivity || 'low';
-    const sourceType = m.source_type || 'news_minor';
     const hasOriginal = m.content_original && m.content_original !== m.content_english;
+    const rawLang = m.language || 'Unknown';
+    const langDisplay = TL(rawLang);
+    const closeLabel = T('close');
     const detailsHtml = hasOriginal
-        ? `<div class="card-details" id="det-${uid}"><div class="original-label">Original (${escapeHtml(m.language || 'Unknown')})</div>${escapeHtml(m.content_original)}</div>`
+        ? `<div class="card-details" id="det-${uid}"><div class="original-label">${escapeHtml(T('original'))} (${escapeHtml(langDisplay)})</div>${escapeHtml(m.content_original)}</div>`
         : '';
-    const lang = m.language || 'Original';
     const detailsBtn = hasOriginal
-        ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
+        ? `<button class="details-btn" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(langDisplay)}','${escapeHtml(closeLabel)}')">${escapeHtml(langDisplay)}</button>`
         : '';
 
     const priorityMap = { critical: 'p0', high: 'p1', medium: 'p2', low: 'p2' };
@@ -331,9 +459,10 @@ function renderArchive() {
         return;
     }
     document.getElementById('archiveSection').style.display = '';
+    const archTitle = document.getElementById('archiveTitle');
+    if (archTitle) archTitle.textContent = T('browseByDate');
     const container = document.getElementById('archiveDates');
 
-    const totalPages = Math.ceil(allDates.length / DATES_PER_PAGE);
     const start = archivePage * DATES_PER_PAGE;
     const end = Math.min(start + DATES_PER_PAGE, allDates.length);
     const pageDates = allDates.slice(start, end);
@@ -345,26 +474,26 @@ function renderArchive() {
 
     let html = '';
 
-    // Prev button
-    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Newer">${prevSvg}</button>`;
+    // Prev button (visually left = newer dates)
+    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="${escapeHtml(T('newerTitle'))}">${prevSvg}</button>`;
 
     // "All" button — always visible
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-        <span class="day">All</span><span class="month">dates</span>
+        <span class="day">${escapeHtml(T('allDatesTop'))}</span><span class="month">${escapeHtml(T('allDatesBottom'))}</span>
     </button>`;
 
     // Date buttons
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
         const day = dt.getDate();
-        const month = dt.toLocaleDateString('en-US', { month: 'short' });
+        const month = dt.toLocaleDateString(I18N[uiLang].dateLocale, { month: 'short' });
         html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
-            <span class="day">${day}</span><span class="month">${month}</span>
+            <span class="day">${day}</span><span class="month">${escapeHtml(month)}</span>
         </button>`;
     });
 
-    // Next button
-    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Older">${nextSvg}</button>`;
+    // Next button (visually right = older dates)
+    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="${escapeHtml(T('olderTitle'))}">${nextSvg}</button>`;
 
     container.innerHTML = html;
 }
@@ -481,23 +610,35 @@ function filterPickDate(dateStr) {
     selectDate(dateStr);
 }
 
-function toggleDetails(id, btn, lang) {
+function toggleDetails(id, btn, label, closeLabel) {
     const panel = document.getElementById(id);
     if (!panel) return;
     const isOpen = panel.classList.toggle('open');
     btn.classList.toggle('open', isOpen);
-    btn.textContent = isOpen ? 'Close' : lang;
+    btn.textContent = isOpen ? closeLabel : label;
 }
 
 function formatDateLong(d) {
-    if (!d || d === 'Unknown') return 'Unknown date';
+    if (!d || d === 'Unknown') return T('unknownDate');
     const dt = new Date(d + 'T00:00:00');
-    return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return dt.toLocaleDateString(I18N[uiLang].dateLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    if (str === null || str === undefined) return '';
+    return (str + '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── Init ───
+document.title = 'Duflat — ' + T('title') + ' TEST';
+const _titleEl = document.getElementById('siteTitle');
+if (_titleEl) _titleEl.textContent = T('title');
+const _badgeEl = document.getElementById('testBuildBadge');
+if (_badgeEl) _badgeEl.textContent = T('testBuild');
+const _loadingTxt = document.getElementById('loadingText');
+if (_loadingTxt) _loadingTxt.textContent = T('loading');
+const _archTitle = document.getElementById('archiveTitle');
+if (_archTitle) _archTitle.textContent = T('browseByDate');
+
+renderLangToggle();
 loadMentions();
