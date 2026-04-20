@@ -281,14 +281,15 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 }
 
 /* ───── Mention cards ───── */
-.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 50px; }
+.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 0; }
 .mention-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
     border-radius: 18px;
-    padding: 22px 24px; position: relative;
+    padding: 20px 24px; position: relative;
     transition: transform .2s var(--ease), box-shadow .25s var(--ease), border-color .2s var(--ease);
     box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 .mention-card:hover {
     transform: translateY(-2px);
@@ -296,28 +297,42 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     border-color: var(--border);
 }
 
-/* Priority marker */
+/* Subtle priority accent bar — left edge, vertical */
+.mention-card:has(.priority-marker.p0)::before,
+.mention-card:has(.priority-marker.p1)::before {
+    content: ''; position: absolute; left: 0; top: 18px; bottom: 18px;
+    width: 3px; border-radius: 0 3px 3px 0;
+}
+.mention-card:has(.priority-marker.p0)::before { background: var(--negative); }
+.mention-card:has(.priority-marker.p1)::before { background: #d18a2c; }
+
+/* Priority marker — inline tinted pill, refined */
 .priority-marker {
-    position: absolute; left: -42px; top: 50%; transform: translateY(-50%);
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: inherit; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
-    border-radius: 10px; user-select: none;
-    transition: transform .2s var(--ease);
+    display: inline-flex; align-items: center; gap: 5px;
+    margin: 0 0 10px 0;
+    padding: 3px 9px 3px 8px;
+    border-radius: 980px;
+    font-family: inherit; font-size: .58rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    user-select: none; line-height: 1.4;
+}
+.priority-marker::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    flex-shrink: 0;
 }
 .priority-marker.p0 {
-    background: var(--negative); color: #fff;
-    box-shadow: 0 2px 8px rgba(181,74,53,.30), inset 0 1px 0 rgba(255,255,255,.18);
+    background: rgba(181,74,53,.10);
+    color: var(--negative);
+    border: 1px solid rgba(181,74,53,.22);
 }
+.priority-marker.p0::before { background: var(--negative); }
 .priority-marker.p1 {
-    background: #d18a2c; color: #fff;
-    box-shadow: 0 2px 8px rgba(209,138,44,.28), inset 0 1px 0 rgba(255,255,255,.18);
+    background: rgba(209,138,44,.10);
+    color: #a36b1f;
+    border: 1px solid rgba(209,138,44,.24);
 }
-.priority-marker.p2 {
-    background: transparent; color: var(--tertiary);
-    border: 1.5px solid var(--border);
-}
-.mention-card:hover .priority-marker { transform: translateY(-50%) scale(1.06); }
+.priority-marker.p1::before { background: #d18a2c; }
+.priority-marker.p2 { display: none; }
 
 .card-top {
     display: flex; align-items: center; gap: 8px;
@@ -459,12 +474,17 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .mentions { padding: 0 0 16px 36px; gap: 10px; }
+    .mentions { padding: 0 0 16px 0; gap: 10px; }
     .priority-marker {
-        left: -32px; width: 26px; height: 26px;
-        font-size: .58rem; border-radius: 8px;
+        font-size: .54rem; padding: 2px 8px 2px 7px;
+        margin-bottom: 8px;
     }
+    .priority-marker::before { width: 4px; height: 4px; }
     .mention-card { padding: 16px 18px; border-radius: 16px; }
+    .mention-card:has(.priority-marker.p0)::before,
+    .mention-card:has(.priority-marker.p1)::before {
+        top: 14px; bottom: 14px;
+    }
     .card-quote { font-size: .88rem; line-height: 1.55; }
     .card-meta { font-size: .7rem; }
     .card-details { padding: 12px 14px; font-size: .82rem; }
