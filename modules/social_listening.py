@@ -814,9 +814,12 @@ For EACH article, extract:
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, sensitivity, source_type, keywords, author, country, language.
 
 Skip articles that do NOT mention Bilibili at all (complete false positives with no connection to Bilibili).
-SKIP ALL STOCK/FINANCIAL CONTENT — this is SOCIAL listening, NOT financial coverage. Exclude articles whose primary focus is: stock price movement, earnings reports, revenue/profit figures, analyst ratings or target prices, investor sentiment, trading volume, P/E ratios, dividend news, ADR/share class news, market cap, SEC/CSRC filings, IPO/offering news, shareholder matters, or any pure stock-ticker page. If an article mentions a stock price in passing but is really about something else (product, creator, policy), keep it.
-DO include: esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, creator news, product/feature coverage, policy/moderation discussions, cultural/social commentary, user sentiment.
-When in doubt between a social topic and a financial topic, SKIP financial and KEEP social.
+SKIP ALL STOCK/FINANCIAL CONTENT — this is SOCIAL listening, NOT financial coverage. If an article's PRIMARY focus is one of these, SKIP it entirely: stock price movement, earnings reports, revenue/profit figures, analyst ratings or target prices, investor sentiment, trading volume, P/E ratios, dividend news, ADR/share class news, market cap, SEC/CSRC filings, IPO/offering news, shareholder matters, bond offerings, or any pure stock-ticker page.
+
+MIXED CONTENT RULE — CRITICAL: Some articles contain BOTH financial info AND a genuinely important non-financial Bilibili story (product launch, creator incident, policy/moderation dispute, AI/strategy announcement, M&A rumor, competitor dynamic, user experience, cultural moment). In those cases: DO NOT skip. Instead, write content_english covering ONLY the non-financial angle — omit earnings figures, stock moves, analyst views, revenue numbers entirely from your summary. Example: if a piece says "Bilibili's CFO announced AI investments; Q4 revenue was X billion" → summarize only the AI investment strategy, ignore the revenue figure.
+
+DO include (if non-financial angle exists): esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, creator news, product/feature coverage, policy/moderation discussions, cultural/social commentary, user sentiment.
+When in doubt between a social topic and a financial topic, SKIP financial and KEEP social — never write about stock/earnings/analyst matters.
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
