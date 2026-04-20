@@ -448,12 +448,12 @@ function renderCard(m, uid) {
         <div class="card-top">
             <span class="sentiment-dot"></span>
             <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
-            ${priorityMarker}
             <span style="flex:1"></span>
             ${detailsBtn}
         </div>
         <div class="card-quote">${escapeHtml(displayQuote)}</div>
         ${detailsHtml}
+        ${priorityMarker}
     </div>`;
 }
 

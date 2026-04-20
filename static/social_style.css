@@ -296,15 +296,14 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     border-color: var(--border);
 }
 
-/* Priority marker — small round avatar, inline in card-top */
+/* Priority marker — round avatar at bottom-left of card */
 .priority-marker {
-    width: 20px; height: 20px;
+    width: 22px; height: 22px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%;
-    font-family: inherit; font-size: .46rem; font-weight: 700;
+    font-family: inherit; font-size: .48rem; font-weight: 700;
     letter-spacing: .02em; line-height: 1;
     user-select: none; flex-shrink: 0;
-    margin-left: 4px;
     transition: transform .2s var(--ease);
 }
 .priority-marker.p0 {
@@ -463,9 +462,8 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 
     .mentions { padding: 0 0 16px 0; gap: 10px; }
     .priority-marker {
-        width: 18px; height: 18px;
-        font-size: .44rem;
-        margin-left: 3px;
+        width: 20px; height: 20px;
+        font-size: .46rem;
     }
     .mention-card { padding: 16px 18px; border-radius: 16px; }
     .card-quote { font-size: .88rem; line-height: 1.55; }
