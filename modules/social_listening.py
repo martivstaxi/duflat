@@ -770,15 +770,28 @@ def _haiku_call(prompt, max_tokens=4096):
         return None
 
 
+def _chunks(lst, size):
+    for i in range(0, len(lst), size):
+        yield lst[i:i + size]
+
+
 def _layer1_triage(items):
     """
     LAYER 1 — TRIAGE: fast relevance filter.
     Three yes/no checks: Bilibili actually mentioned, in scope (non-Mainland), has a social angle (not pure financial).
     Returns list of items that pass all three checks.
+    Batches items in groups of 12 to keep JSON output well under max_tokens.
     """
     if not items:
         return []
 
+    kept = []
+    for batch in _chunks(items, 12):
+        kept.extend(_layer1_triage_batch(batch))
+    return kept
+
+
+def _layer1_triage_batch(items):
     entries = []
     for i, item in enumerate(items):
         entries.append({
@@ -825,11 +838,17 @@ Articles:
 def _layer2_extract(items):
     """
     LAYER 2 — EXTRACT: structured field extraction, non-financial focus.
-    Pulls content_english, content_original, language, author, country, keywords.
+    Batches items in groups of 8 since each mention's output is heavy (content_english + content_original).
     """
     if not items:
         return []
+    result = []
+    for batch in _chunks(items, 8):
+        result.extend(_layer2_extract_batch(batch))
+    return result
 
+
+def _layer2_extract_batch(items):
     entries = []
     for i, item in enumerate(items):
         domain = item['platform']
@@ -907,10 +926,16 @@ Articles:
 def _layer3_classify(mentions):
     """
     LAYER 3 — CLASSIFY: assign sentiment, sensitivity (P0/P1/P2), source_type.
+    Batches in groups of 15 — output is small (just 3 labels per item).
     """
     if not mentions:
         return []
+    for batch in _chunks(mentions, 15):
+        _layer3_classify_batch(batch)
+    return mentions
 
+
+def _layer3_classify_batch(mentions):
     entries = []
     for i, m in enumerate(mentions):
         entries.append({
