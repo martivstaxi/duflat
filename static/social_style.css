@@ -281,7 +281,7 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 }
 
 /* ───── Mention cards ───── */
-.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 50px; }
+.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 0; }
 .mention-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
@@ -296,15 +296,15 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     border-color: var(--border);
 }
 
-/* Priority marker — round avatar, aligned with card-top row */
+/* Priority marker — small round avatar, inline in card-top */
 .priority-marker {
-    position: absolute; left: -42px; top: 22px;
-    width: 30px; height: 30px;
+    width: 20px; height: 20px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%;
-    font-family: inherit; font-size: .52rem; font-weight: 700;
-    letter-spacing: .04em; line-height: 1;
-    user-select: none;
+    font-family: inherit; font-size: .46rem; font-weight: 700;
+    letter-spacing: .02em; line-height: 1;
+    user-select: none; flex-shrink: 0;
+    margin-left: 4px;
     transition: transform .2s var(--ease);
 }
 .priority-marker.p0 {
@@ -319,7 +319,7 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     background: transparent; color: var(--tertiary);
     border: 1px solid var(--border);
 }
-.mention-card:hover .priority-marker { transform: translateX(-2px); }
+.mention-card:hover .priority-marker { transform: scale(1.08); }
 
 .card-top {
     display: flex; align-items: center; gap: 8px;
@@ -461,11 +461,11 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .mentions { padding: 0 0 16px 40px; gap: 10px; }
+    .mentions { padding: 0 0 16px 0; gap: 10px; }
     .priority-marker {
-        left: -34px; top: 16px;
-        width: 26px; height: 26px;
-        font-size: .48rem;
+        width: 18px; height: 18px;
+        font-size: .44rem;
+        margin-left: 3px;
     }
     .mention-card { padding: 16px 18px; border-radius: 16px; }
     .card-quote { font-size: .88rem; line-height: 1.55; }
