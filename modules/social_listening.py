@@ -594,12 +594,12 @@ def save_mentions(mentions):
                 row, on_conflict='content_hash'
             ).execute()
             saved += 1
-            if row['sensitivity'] in ('critical', 'high'):
+            if row['sensitivity'] == 'critical':
                 alert_queue.append(m)
         except Exception:
             skipped += 1
 
-    # Alert for critical/high sensitivity mentions
+    # Alert for critical (P0) sensitivity mentions only
     if alert_queue:
         _send_telegram_alerts(alert_queue)
         _send_email_alerts(alert_queue)
@@ -612,7 +612,7 @@ def save_mentions(mentions):
 # ─────────────────────────────────────────────
 
 def _send_telegram_alerts(mentions):
-    """Send Telegram notification for critical/high sensitivity mentions."""
+    """Send Telegram notification for critical (P0) sensitivity mentions."""
     token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
     if not token or not chat_id:
@@ -620,7 +620,7 @@ def _send_telegram_alerts(mentions):
 
     for m in mentions:
         sensitivity = m.get('sensitivity', 'low')
-        icon = '\U0001F6A8' if sensitivity == 'critical' else '\u26A0\uFE0F'
+        icon = '\U0001F6A8'
         source_type = m.get('source_type', '')
         platform = m.get('platform', '')
         url = m.get('url', '')
@@ -651,7 +651,7 @@ def _send_telegram_alerts(mentions):
 
 
 def _send_email_alerts(mentions):
-    """Send email notification for critical/high sensitivity mentions via Resend."""
+    """Send email notification for critical (P0) sensitivity mentions via Resend."""
     api_key = os.environ.get('RESEND_API_KEY', '')
     to_raw = os.environ.get('ALERT_EMAIL_TO', '')
     to_list = [e.strip() for e in to_raw.split(',') if e.strip()]
@@ -670,7 +670,7 @@ def _send_email_alerts(mentions):
         subject = f"[{sensitivity.upper()}] Bilibili mention — {source_type}"
 
         body = (
-            f"<h2 style='color:{('#dc2626' if sensitivity == 'critical' else '#f59e0b')}'>"
+            f"<h2 style='color:#dc2626'>"
             f"{sensitivity.upper()} Mention Detected</h2>"
             f"<p style='font-size:16px;line-height:1.6'>{content}</p>"
             f"<table style='font-size:14px;border-collapse:collapse'>"
