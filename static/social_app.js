@@ -141,21 +141,20 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
-    // Sensitivity
-    const sensitivities = {};
+    // Priority (P0/P1/P2) — merges critical→P0, high→P1, medium+low→P2
+    const priorityCounts = { p0: 0, p1: 0, p2: 0 };
     base.forEach(m => {
-        const sv = m.sensitivity || 'low';
-        sensitivities[sv] = (sensitivities[sv] || 0) + 1;
+        priorityCounts[sensToPriority(m.sensitivity)]++;
     });
-    const sensOrder = ['critical','high','medium'];
-    const sensLabels = {critical:'P0',high:'P1',medium:'P2'};
+    const priOrder = ['p0','p1','p2'];
+    const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
     html += `<div class="filter-section">
-        <div class="filter-section-title">Sensitivity</div>
+        <div class="filter-section-title">Priority</div>
         <div class="filter-options">
             <button class="filter-option ${currentSensitivity==='all'?'active':''}" onclick="setSensitivity('all')">All<span class="opt-count">${base.length}</span></button>`;
-    sensOrder.forEach(sv => {
-        if (sensitivities[sv]) {
-            html += `<button class="filter-option ${currentSensitivity===sv?'active':''}" onclick="setSensitivity('${sv}')">${sensLabels[sv]}<span class="opt-count">${sensitivities[sv]}</span></button>`;
+    priOrder.forEach(p => {
+        if (priorityCounts[p]) {
+            html += `<button class="filter-option ${currentSensitivity===p?'active':''}" onclick="setSensitivity('${p}')">${priLabels[p]}<span class="opt-count">${priorityCounts[p]}</span></button>`;
         }
     });
     html += `</div></div>`;
@@ -235,10 +234,16 @@ function renderActiveChips() {
         html += `<span class="chip">${label}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     if (currentSensitivity !== 'all') {
-        const sensLabels = {critical:'P0',high:'P1',medium:'P2',low:'Low'};
-        html += `<span class="chip">${sensLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
+        const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
+        html += `<span class="chip">${priLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
     }
     document.getElementById('activeChips').innerHTML = html;
+}
+
+function sensToPriority(s) {
+    if (s === 'critical') return 'p0';
+    if (s === 'high') return 'p1';
+    return 'p2';
 }
 
 function getFilteredMentions() {
@@ -246,7 +251,7 @@ function getFilteredMentions() {
     if (currentDateFilter) list = list.filter(m => m.content_date === currentDateFilter);
     if (currentFilter !== 'all') list = list.filter(m => m.sentiment === currentFilter);
     if (currentLang !== 'all') list = list.filter(m => (m.language || 'Unknown') === currentLang);
-    if (currentSensitivity !== 'all') list = list.filter(m => (m.sensitivity || 'low') === currentSensitivity);
+    if (currentSensitivity !== 'all') list = list.filter(m => sensToPriority(m.sensitivity) === currentSensitivity);
     if (currentSourceType !== 'all') list = list.filter(m => (m.source_type || 'news_minor') === currentSourceType);
     return list;
 }
@@ -298,12 +303,11 @@ function renderCard(m, uid) {
         ? `<button class="details-btn" data-lang="${escapeHtml(lang)}" onclick="toggleDetails('det-${uid}',this,'${escapeHtml(lang)}')">${escapeHtml(lang)}</button>`
         : '';
 
-    const priorityMap = { critical: 'p0', high: 'p1', medium: 'p2' };
-    const priorityLabels = { critical: 'P0', high: 'P1', medium: 'P2' };
-    const priorityClass = priorityMap[sensitivity];
-    const priorityMarker = priorityClass
-        ? `<div class="priority-marker ${priorityClass}" title="${sensitivity}">${priorityLabels[sensitivity]}</div>`
-        : '';
+    const priorityMap = { critical: 'p0', high: 'p1', medium: 'p2', low: 'p2' };
+    const priorityLabels = { critical: 'P0', high: 'P1', medium: 'P2', low: 'P2' };
+    const priorityClass = priorityMap[sensitivity] || 'p2';
+    const priorityLabel = priorityLabels[sensitivity] || 'P2';
+    const priorityMarker = `<div class="priority-marker ${priorityClass}" title="${sensitivity || 'low'}">${priorityLabel}</div>`;
 
     const tagsHtml = (m.keywords || []).map(k => `<span class="tag">#${escapeHtml(k)}</span>`).join('');
 
