@@ -925,102 +925,196 @@ Articles:
 
 def _layer3_classify(mentions):
     """
-    LAYER 3 — CLASSIFY: assign sentiment, sensitivity (P0/P1/P2), source_type.
-    Batches in groups of 15 — output is small (just 3 labels per item).
+    LAYER 3 — CLASSIFY in two focused passes so Haiku stays sharp:
+
+      3A. SENSITIVITY — two binary sub-layers:
+            - P0 check (critical): active-crisis detector, narrow prompt
+            - P1 check (high): concern/risk detector for non-P0 items
+            - everything else → P2 ("medium")
+
+      3B. META — sentiment + source_type in a separate dar-focused call.
+
+    Splitting these prevents the old problem where one mega-prompt made Haiku
+    under-call P0/P1 because it was also worrying about sentiment/source_type.
     """
     if not mentions:
         return []
     for batch in _chunks(mentions, 15):
-        _layer3_classify_batch(batch)
+        _layer3_sensitivity_batch(batch)
+    for batch in _chunks(mentions, 15):
+        _layer3_meta_batch(batch)
     return mentions
 
 
-def _layer3_classify_batch(mentions):
-    entries = []
-    for i, m in enumerate(mentions):
-        entries.append({
-            'idx': i,
-            'platform': m.get('platform', ''),
-            'content_english': (m.get('content_english') or '')[:400],
-            'content_original': (m.get('content_original') or '')[:400],
-        })
+def _layer3_sensitivity_batch(mentions):
+    """Two focused binary passes: P0 detector, then P1 detector on survivors."""
+    entries_all = [{
+        'idx': i,
+        'platform': m.get('platform', ''),
+        'content_english': (m.get('content_english') or '')[:400],
+        'content_original': (m.get('content_original') or '')[:400],
+    } for i, m in enumerate(mentions)]
 
-    prompt = f"""You are a classification agent for a Bilibili social listening platform. The mentions below have already been extracted and are confirmed as relevant, in-scope, non-financial social content.
+    # ── 3A-i: P0 binary detector ─────────────────────────────────────
+    p0_prompt = f"""You are a P0 (ACTIVE CRISIS) detector for a Bilibili social listening platform.
 
-Assign three labels for EACH mention, based on content_english and content_original:
+For EACH item answer "yes" or "no". Answer "yes" ONLY if the item clearly describes ONE of the following, happening NOW or very recently, and specifically about Bilibili:
 
-1. sentiment: "positive" | "negative" | "neutral"
-   - positive: users/commentators express excitement, approval, support, praise
-   - negative: criticism, complaints, controversy, backlash, concern
-   - neutral: informational, mixed, ambiguous
+- Regulatory / government action against Bilibili: ban, formal investigation, sanctions, legal proceeding, adverse court ruling, enforcement order
+- Confirmed data breach or security incident at Bilibili
+- Major media exposé or scandal specifically about Bilibili
+- Content-safety incident forcing takedowns (child-safety, illegal content, CSAM)
+- Large-scale user backlash / viral controversy currently unfolding (not historical)
+- Mass creator revolt currently happening
 
-2. sensitivity: "critical" | "high" | "medium" | "low"
-   The priority scale measures RISK / CONCERN, not event importance. Positive news — even huge positive news — is never high-priority. High-priority is reserved for signals that something could be, is, or may become a problem for Bilibili.
+Hard rules — answer "no" in all of these cases:
+- Any positive news (milestones, records, product wins, gala success, partnerships) — positive is NEVER P0
+- Speculation, commentary, analysis, opinion pieces
+- Financial / stock / earnings coverage that slipped through
+- Historical events already resolved
+- Passing mentions where Bilibili is tangential
+- Anything you are unsure about → "no"
 
-   - "critical" (P0) — ACTIVE CRISIS requiring PR response within 24h: regulatory/government action (ban, investigation, sanctions, legal action, adverse court rulings), confirmed data breach or security incident, major media exposé or scandal, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown), mass user revolt that is currently happening.
+Return ONLY a JSON array: [{{"idx":0,"p0":"yes"}}, {{"idx":1,"p0":"no"}}, ...]
 
-   - "high" (P1) — CONCERNING SIGNAL worth monitoring: negative stories short of a crisis. Something is wrong or could go wrong. The common thread: a risk to user trust, brand reputation, creator relationships, or competitive position. Examples:
-     * Data privacy, security, or platform-safety worries raised by users, researchers, journalists ("Is Bilibili safe? Do I need a VPN?")
-     * Academic / journalistic research highlighting problems with the platform (harmful content reach, youth safety findings, moderation gaps)
-     * Creator dissatisfaction, disputes with the platform, talk of leaving
-     * User complaints about moderation, censorship, content policy going beyond isolated cases
-     * Negative journalist or analyst critique, opinion piece questioning strategy or practices
-     * Feature/product complaints gaining traction (bugs, unwanted changes, UX regression)
-     * Algorithm or policy changes that users are pushing back on
-     * Competitor making a move that threatens Bilibili's position, user migration signals
-     * Accessibility or technical problems getting visible attention
-     * Brand-reputation risk: negative cultural framing, PR misstep short of scandal
-     A P1 item should read like a warning light on a dashboard, not a trophy.
+Mentions:
+{json.dumps(entries_all, ensure_ascii=False)}"""
 
-   - "medium" (P2, shown) — NOTABLE BUT UNCONCERNING: coverage that is substantive and not trivial, but carries no risk signal. This is the correct bucket for positive milestones and routine non-risk news:
-     * Engagement records, MAU/DAU milestones, record viewer numbers
-     * Esports wins, cultural-event successes (NYE Gala, Spring Festival Gala) with huge audiences
-     * Product launches, AI tool releases, flagship feature rollouts (AniSora launch, new algorithm rollout — unless users are clearly pushing back)
-     * Brand partnerships, global brands joining the platform (Apple, Nike etc.)
-     * Feature updates, creator announcements, partnership deals
-     * Industry overview pieces that discuss Bilibili substantively
+    p0_verdicts = _haiku_call(p0_prompt, max_tokens=1024)
+    p0_indices = set()
+    if p0_verdicts:
+        for v in p0_verdicts:
+            idx = v.get('idx')
+            if idx is None or not isinstance(idx, int) or idx >= len(mentions):
+                continue
+            if str(v.get('p0', 'no')).strip().lower() == 'yes':
+                p0_indices.add(idx)
 
-   - "low" (P2, shown) — PASSING / TRIVIAL MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content, match previews/recaps with no special stakes, narrow how-to or tip content.
+    # ── 3A-ii: P1 binary detector on non-P0 survivors ────────────────
+    p1_indices = set()
+    non_p0 = [e for e in entries_all if e['idx'] not in p0_indices]
+    if non_p0:
+        p1_prompt = f"""You are a P1 (CONCERN / RISK SIGNAL) detector for a Bilibili social listening platform. These items have already been confirmed as NOT a P0 crisis.
 
-   IMPORTANT: Positive news is never "high". The moment you're about to tag something "high" because it's impressive, stop and ask: "Does this describe a concern, a risk, or a negative signal?" If no → it's "medium" or "low", not "high". If the story reads like a win for Bilibili, it cannot be P1.
+For EACH item answer "yes" or "no". Answer "yes" if the item describes a concern, risk, or negative signal for Bilibili — something that is or could become a problem for user trust, brand reputation, creator relationships, product experience, or competitive position. Examples of P1 signals:
 
-3. source_type: "government" | "news_major" | "news_minor" | "blog" | "forum" | "social"
-   - government: regulator, ministry, official agency (NOT financial regulators — those wouldn't be here)
-   - news_major: Reuters, Bloomberg, BBC, NHK, CNBC, AP, AFP, etc.
-   - news_minor: smaller regional outlets, trade press, niche industry publications
-   - blog: personal blog, opinion piece, review site
-   - forum: Reddit, discussion board, community forum
-   - social: social media post, tweet, YouTube comment, Instagram
-   (Do NOT use "financial" — financial content was filtered out in earlier layers.)
+- Data privacy, security, or platform-safety worries raised by users, researchers, or journalists (even speculative, e.g. "is Bilibili safe to use?")
+- Academic / journalistic research highlighting problems: harmful content reach, youth-safety findings, moderation gaps, misinformation
+- Creator dissatisfaction, disputes with Bilibili, talk of leaving the platform
+- User complaints about moderation, censorship, or content policy going beyond isolated cases
+- Negative journalist / analyst critique or opinion piece questioning Bilibili's strategy or practices
+- Feature / product complaints gaining visible traction (bugs, unwanted UX changes, regressions)
+- Algorithm or policy changes that users are pushing back on
+- Competitor move that threatens Bilibili's position, user-migration signals
+- Accessibility or technical problems getting visible attention
+- Brand-reputation risk: negative cultural framing, PR misstep short of scandal
 
-Return ONLY a JSON array: [{{"idx":0,"sentiment":"...","sensitivity":"...","source_type":"..."}}, ...]
+Hard rules — answer "no" in all of these cases:
+- Positive milestones: MAU / DAU records, record viewer counts, esports wins, gala audiences, anniversary successes
+- Product launches, AI tool releases, new features announced or celebrated (unless the coverage is about clear user pushback)
+- Brand partnerships, global brands joining the platform
+- Neutral industry overviews or list inclusions
+- Trivia, tips, passing mentions, aggregator-style scraping
+- If the story reads like a WIN for Bilibili → "no"
+- If you are unsure → "no"
+
+A P1 item should read like a warning light on a dashboard, not a trophy.
+
+Return ONLY a JSON array: [{{"idx":0,"p1":"yes"}}, ...]  (use the SAME idx values as in the input)
+
+Mentions:
+{json.dumps(non_p0, ensure_ascii=False)}"""
+
+        p1_verdicts = _haiku_call(p1_prompt, max_tokens=1024)
+        if p1_verdicts:
+            for v in p1_verdicts:
+                idx = v.get('idx')
+                if idx is None or not isinstance(idx, int) or idx >= len(mentions):
+                    continue
+                if idx in p0_indices:
+                    continue
+                if str(v.get('p1', 'no')).strip().lower() == 'yes':
+                    p1_indices.add(idx)
+
+    # ── Write sensitivity label onto each mention ────────────────────
+    for i in range(len(mentions)):
+        if i in p0_indices:
+            mentions[i]['sensitivity'] = 'critical'
+        elif i in p1_indices:
+            mentions[i]['sensitivity'] = 'high'
+        else:
+            mentions[i]['sensitivity'] = 'medium'
+
+
+def _layer3_meta_batch(mentions):
+    """Separate, focused call for sentiment + source_type (not mixed with sensitivity)."""
+    entries = [{
+        'idx': i,
+        'platform': m.get('platform', ''),
+        'content_english': (m.get('content_english') or '')[:400],
+    } for i, m in enumerate(mentions)]
+
+    prompt = f"""Classify each Bilibili-related mention by sentiment and source_type.
+
+sentiment: "positive" | "negative" | "neutral"
+
+  IMPORTANT: judge what the described event / information means FOR BILIBILI, NOT the writing tone of the source. A news article written in a neutral, factual reporting style can still be clearly positive or negative sentiment if the underlying event is a win or a problem for Bilibili. Do not confuse "reporter tone is calm" with "neutral sentiment".
+
+  - "positive" — the event is GOOD NEWS for Bilibili. Examples:
+      * Records, milestones, growth figures, MAU / DAU highs, record viewers
+      * Awards, wins, successful launches (AniSora, AI tools, new features launched and received well)
+      * Global brand partnerships joining the platform
+      * Esports wins, cultural-event successes, viral positive moments
+      * User excitement, fan praise, creator compliments
+      * Successful IP collaborations, well-received content drops
+
+  - "negative" — the event is BAD NEWS for Bilibili. Examples:
+      * Complaints, criticism, controversy, backlash, user frustration
+      * Creator disputes, talk of leaving, moderation disputes
+      * Regulatory pressure, legal action, investigation, bans
+      * Platform-safety, privacy, security concerns
+      * Negative reviews of features, bugs gaining traction
+      * Declining metrics framed as concerning, critical analyst takes
+      * Scandals, exposés, negative cultural framing
+      * Competitor threat narratives where Bilibili loses ground
+
+  - "neutral" — use ONLY when the item is genuinely flat with no clear good-or-bad angle for Bilibili:
+      * Bilibili appears as one of many platforms in a list with no specific coloring
+      * A how-to / tip / background reference
+      * An industry overview that does not lean positive or negative about Bilibili specifically
+      * Pure factual announcements with no evaluative content (rare)
+
+  Default to positive or negative whenever there is a discernible direction. "neutral" should be rare — reserve it for truly flat mentions. When in doubt between neutral and one of the other two, pick whichever side the underlying event leans toward, however slightly.
+
+source_type: "government" | "news_major" | "news_minor" | "blog" | "forum" | "social"
+  - government: regulator, ministry, official agency
+  - news_major: Reuters, Bloomberg, BBC, NHK, CNBC, AP, AFP, major national outlets
+  - news_minor: smaller regional outlets, trade press, niche industry publications
+  - blog: personal blog, opinion site, review site
+  - forum: Reddit, discussion board, community forum
+  - social: social media post, tweet, YouTube / IG / TikTok comment
+  (Do NOT use "financial" — financial content was filtered out in earlier layers.)
+
+Return ONLY a JSON array: [{{"idx":0,"sentiment":"...","source_type":"..."}}, ...]
 
 Mentions:
 {json.dumps(entries, ensure_ascii=False)}"""
 
-    verdicts = _haiku_call(prompt, max_tokens=2048)
+    verdicts = _haiku_call(prompt, max_tokens=1024)
     if not verdicts:
-        # If classification fails, assign safe defaults so mentions are still saved
         for m in mentions:
             m.setdefault('sentiment', 'neutral')
-            m.setdefault('sensitivity', 'low')
             m.setdefault('source_type', 'news_minor')
-        return mentions
-
+        return
     for v in verdicts:
         idx = v.get('idx')
-        if idx is None or idx >= len(mentions):
+        if idx is None or not isinstance(idx, int) or idx >= len(mentions):
             continue
         mentions[idx]['sentiment'] = v.get('sentiment', 'neutral')
-        mentions[idx]['sensitivity'] = v.get('sensitivity', 'low')
         mentions[idx]['source_type'] = v.get('source_type', 'news_minor')
-
-    # Safety: fill defaults for any mention the classifier skipped
     for m in mentions:
         m.setdefault('sentiment', 'neutral')
-        m.setdefault('sensitivity', 'low')
         m.setdefault('source_type', 'news_minor')
-    return mentions
 
 
 def _analyze_with_haiku(items):
