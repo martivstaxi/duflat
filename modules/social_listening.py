@@ -794,10 +794,10 @@ For EACH article, extract:
 - content_original: copy the most relevant 1-3 sentences VERBATIM from the original article text. Do NOT rewrite — keep the exact original wording. This is shown behind a "Details" button.
 - sentiment: "positive", "negative", or "neutral"
 - sensitivity: how sensitive/impactful is this mention? Use:
-  - "critical" — government action, regulatory ban/investigation, official sanctions, legal action against Bilibili
-  - "high" — major media negative coverage, data breach, large-scale user backlash, security incident
-  - "medium" — analyst downgrade, minor controversy, competitor comparison, policy change
-  - "low" — casual opinion, routine news, general discussion
+  - "critical" — CRISIS LEVEL: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown), stock halt or major financial restatement. If it could require a PR response within 24h, it's critical.
+  - "high" — NOTABLE CONCERN worth monitoring: analyst downgrade or earnings miss, significant stock decline, creator exodus or major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share at Bilibili's expense, negative industry analysis or journalist opinion piece, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
+  - "medium" — INFORMATIONAL, routine coverage: earnings beats or positive financial news, feature launches, partnership announcements, neutral news reports, creator announcements, industry overview where Bilibili is discussed substantively, balanced analyst coverage, product updates.
+  - "low" — PASSING MENTION: Bilibili appears in a long list, brief unrelated reference, aggregator scraping with no substantive content, stock ticker with no commentary.
 - source_type: classify the source:
   - "government" — government body, regulator, official agency (SEC, CSRC, ministry, court)
   - "news_major" — major international media (Reuters, Bloomberg, BBC, CNBC, NHK, etc.)
