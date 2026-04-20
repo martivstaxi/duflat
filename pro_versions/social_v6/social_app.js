@@ -1,505 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat — Social Listening</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-    /* Warm refined palette — sand, cream, terracotta */
-    --bg: #f6f3ec;
-    --bg-elevated: #ffffff;
-    --card: #ffffff;
-    --border: #d8d2c3;
-    --border-subtle: #e8e3d4;
-    --hairline: #efeadd;
-
-    --text: #2b2620;
-    --text-secondary: #524b41;
-    --muted: #7a7167;
-    --tertiary: #9d9387;
-
-    --positive: #3d8a5e;
-    --negative: #b54a35;
-    --neutral:  #b08322;
-
-    --accent: #b85d3a;
-    --accent-hover: #a45131;
-    --accent-soft: rgba(184,93,58,.10);
-    --accent-tint: #f3e6dc;
-
-    --shadow-sm: 0 1px 2px rgba(63,47,30,.04);
-    --shadow-md: 0 4px 14px rgba(63,47,30,.06), 0 1px 3px rgba(63,47,30,.04);
-    --shadow-lg: 0 14px 40px rgba(63,47,30,.12), 0 2px 6px rgba(63,47,30,.05);
-
-    --ease: cubic-bezier(.4,0,.2,1);
-    --ease-out: cubic-bezier(.16,1,.3,1);
-
-    --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-                    "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-html, body { background: var(--bg); }
-body {
-    font-family: var(--font-system);
-    color: var(--text);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "ss01", "cv11";
-    text-rendering: optimizeLegibility;
-}
-html[lang^="zh"] body { font-family: "Noto Sans SC", var(--font-system); }
-
-.container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
-
-header { padding: 88px 0 28px; text-align: center; }
-header h1 {
-    font-family: var(--font-system);
-    font-size: 2.6rem;
-    font-weight: 700;
-    letter-spacing: -.025em;
-    line-height: 1.08;
-    color: var(--text);
-}
-html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); letter-spacing: -.01em; }
-
-.lang-toggle {
-    position: fixed; top: 18px; right: 18px; z-index: 200;
-    display: inline-flex; gap: 1px;
-    background: rgba(255,255,255,.72);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    backdrop-filter: saturate(180%) blur(20px);
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: 980px; padding: 4px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.04);
-}
-.lang-btn {
-    padding: 6px 14px; border-radius: 980px; border: none;
-    background: transparent;
-    font-family: inherit; font-size: .72rem; font-weight: 600;
-    color: var(--muted); cursor: pointer;
-    transition: color .2s var(--ease), background .2s var(--ease);
-    line-height: 1; min-width: 38px;
-}
-.lang-btn:hover { color: var(--text); }
-.lang-btn.active { background: var(--accent); color: #fff; }
-
-@media (max-width: 600px) {
-    .lang-toggle { top: 12px; right: 12px; padding: 3px; }
-    .lang-btn { padding: 5px 11px; font-size: .68rem; min-width: 34px; }
-}
-
-.sentiment-btns {
-    display: flex; gap: 6px; justify-content: center;
-    padding: 10px 0 36px; flex-wrap: wrap;
-}
-.sent-btn {
-    padding: 8px 16px; border-radius: 980px;
-    border: 1px solid var(--border-subtle);
-    background: var(--card);
-    font-family: inherit; font-size: .78rem; font-weight: 500;
-    color: var(--text-secondary); cursor: pointer;
-    transition: all .2s var(--ease); user-select: none;
-    display: flex; align-items: center; gap: 7px;
-    box-shadow: var(--shadow-sm);
-}
-.sent-btn:hover {
-    border-color: var(--border); color: var(--text);
-    transform: translateY(-1px); box-shadow: var(--shadow-md);
-}
-.sent-btn .dot { width: 7px; height: 7px; border-radius: 50%; }
-.sent-btn .count { font-size: .68rem; font-weight: 500; opacity: .6; font-variant-numeric: tabular-nums; }
-
-.sent-btn.active.pos { background: var(--positive); color: #fff; border-color: var(--positive); }
-.sent-btn.active.neg { background: var(--negative); color: #fff; border-color: var(--negative); }
-.sent-btn.active.neu { background: var(--neutral); color: #fff; border-color: var(--neutral); }
-.sent-btn.active.pos .dot,
-.sent-btn.active.neg .dot,
-.sent-btn.active.neu .dot { background: #fff; }
-.sent-btn.active.all-btn {
-    background: var(--accent); border-color: var(--accent); color: #fff;
-}
-.sent-btn.all-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
-.sent-btn.active.all-btn svg { stroke: #fff; }
-
-.filter-toggle {
-    display: flex; align-items: center; justify-content: center;
-    padding: 8px 12px; border-radius: 980px;
-    border: 1px solid var(--border-subtle);
-    background: var(--card);
-    font-family: inherit; font-size: .78rem; font-weight: 500;
-    color: var(--text-secondary); cursor: pointer;
-    transition: all .2s var(--ease); position: relative;
-    box-shadow: var(--shadow-sm);
-}
-.filter-toggle:hover {
-    border-color: var(--border); color: var(--text);
-    transform: translateY(-1px); box-shadow: var(--shadow-md);
-}
-.filter-toggle.has-filter {
-    border-color: var(--accent); color: var(--accent); background: var(--card);
-}
-.filter-toggle svg { width: 14px; height: 14px; }
-.filter-badge {
-    position: absolute; top: -4px; right: -4px;
-    width: 17px; height: 17px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    font-size: .58rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,.15); font-variant-numeric: tabular-nums;
-}
-
-.active-chips {
-    display: flex; gap: 6px; flex-wrap: wrap;
-    margin-bottom: 22px; justify-content: center;
-}
-.active-chips:empty { display: none; }
-.chip {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px 5px 12px; border-radius: 980px;
-    font-size: .72rem; font-weight: 500;
-    background: var(--hairline); color: var(--text-secondary);
-    border: 1px solid transparent;
-    transition: background .15s var(--ease);
-}
-.chip:hover { background: var(--border-subtle); }
-.chip-remove {
-    width: 16px; height: 16px; border: none; background: rgba(0,0,0,.08);
-    border-radius: 50%; cursor: pointer; color: var(--muted);
-    font-size: .7rem; line-height: 1;
-    padding: 0; margin-left: 2px;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s var(--ease);
-}
-.chip-remove:hover { background: var(--negative); color: #fff; }
-
-#filterDropdownAnchor { position: relative; }
-#filterDropdownAnchor .filter-dropdown {
-    display: none; position: absolute; top: 0; right: 0;
-    background: var(--card);
-    border: 1px solid var(--border-subtle); border-radius: 16px;
-    box-shadow: var(--shadow-lg);
-    padding: 18px; z-index: 100; min-width: 280px;
-}
-#filterDropdownAnchor.open .filter-dropdown {
-    display: block;
-    animation: dropdownIn .25s var(--ease-out);
-}
-@keyframes dropdownIn {
-    from { opacity: 0; transform: translateY(-6px) scale(.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.filter-section { margin-bottom: 16px; }
-.filter-section:last-child { margin-bottom: 0; }
-.filter-section-title {
-    font-size: .65rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--tertiary); margin-bottom: 10px;
-}
-.filter-options { display: flex; flex-direction: column; gap: 2px; }
-.filter-option {
-    display: flex; align-items: center; gap: 9px;
-    padding: 8px 11px; border-radius: 8px; border: none;
-    background: none;
-    font-family: inherit; font-size: .82rem; font-weight: 400;
-    color: var(--text); cursor: pointer;
-    transition: background .15s var(--ease);
-    text-align: left; width: 100%;
-}
-.filter-option:hover { background: var(--hairline); }
-.filter-option.active { background: var(--accent-tint); color: var(--accent); font-weight: 600; }
-.filter-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.filter-option .opt-count {
-    margin-left: auto; font-size: .7rem; color: var(--tertiary);
-    font-weight: 500; font-variant-numeric: tabular-nums;
-}
-.filter-option.active .opt-count { color: var(--accent); opacity: .65; }
-.filter-option.disabled { opacity: .3; pointer-events: none; }
-
-.cal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 0 10px;
-}
-.cal-header .cal-title { font-size: .82rem; font-weight: 600; color: var(--text); }
-.cal-header button {
-    background: none; border: none; cursor: pointer;
-    padding: 4px 8px; font-size: .9rem; color: var(--muted);
-    border-radius: 6px; transition: all .15s var(--ease);
-}
-.cal-header button:hover { background: var(--hairline); color: var(--text); }
-
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-.cal-grid .cal-day-name {
-    font-size: .58rem; font-weight: 600; color: var(--tertiary);
-    padding: 2px 0 8px; text-transform: uppercase; letter-spacing: .06em;
-}
-.cal-grid .cal-day {
-    padding: 7px 2px; border-radius: 8px; border: none; background: none;
-    font-family: inherit; font-size: .76rem; font-weight: 400;
-    color: var(--text); cursor: pointer;
-    transition: all .15s var(--ease); font-variant-numeric: tabular-nums;
-}
-.cal-grid .cal-day:hover { background: var(--hairline); }
-.cal-grid .cal-day.active { background: var(--accent); color: #fff; font-weight: 600; }
-.cal-grid .cal-day.disabled { opacity: .25; pointer-events: none; }
-.cal-grid .cal-day.has-content { font-weight: 600; }
-
-.loading { text-align: center; padding: 80px 0; color: var(--muted); font-size: .88rem; }
-.loading .spinner {
-    width: 22px; height: 22px;
-    border: 2.5px solid var(--border-subtle);
-    border-top-color: var(--accent);
-    border-radius: 50%; animation: spin .7s linear infinite;
-    margin: 0 auto 14px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.empty { text-align: center; padding: 80px 0; color: var(--muted); font-size: .88rem; }
-
-.date-divider { display: flex; align-items: center; gap: 18px; margin: 36px 0 20px; }
-.date-divider:first-child { margin-top: 0; }
-.date-divider .line { flex: 1; height: 1px; background: var(--border-subtle); }
-.date-divider .label {
-    font-size: .68rem; font-weight: 600; color: var(--tertiary);
-    white-space: nowrap; letter-spacing: .08em; text-transform: uppercase;
-    font-variant-numeric: tabular-nums;
-}
-
-.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 38px; }
-.mention-card {
-    background: var(--card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 18px;
-    padding: 22px 24px; position: relative;
-    transition: transform .2s var(--ease), box-shadow .25s var(--ease), border-color .2s var(--ease);
-    box-shadow: var(--shadow-sm);
-}
-.mention-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--border);
-}
-
-.priority-marker {
-    position: absolute; left: -32px; top: 22px;
-    width: 22px; height: 22px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    font-family: inherit; font-size: .48rem; font-weight: 700;
-    letter-spacing: .02em; line-height: 1;
-    user-select: none; flex-shrink: 0;
-    transition: transform .2s var(--ease);
-}
-.priority-marker.p0 {
-    background: var(--negative); color: #fff;
-    box-shadow: 0 1px 3px rgba(181,74,53,.22);
-}
-.priority-marker.p1 {
-    background: #d18a2c; color: #fff;
-    box-shadow: 0 1px 3px rgba(209,138,44,.22);
-}
-.priority-marker.p2 {
-    background: transparent; color: var(--tertiary);
-    border: 1px solid var(--border);
-}
-.mention-card:hover .priority-marker { transform: scale(1.08); }
-
-.card-top {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 12px; flex-wrap: wrap;
-}
-.card-tag {
-    font-size: .68rem; font-weight: 500; color: var(--tertiary);
-    margin-left: auto; font-variant-numeric: tabular-nums;
-}
-.sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.positive .sentiment-dot { background: var(--positive); }
-.negative .sentiment-dot { background: var(--negative); }
-.neutral  .sentiment-dot { background: var(--neutral); }
-
-.sensitivity-badge {
-    font-size: .6rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .06em; padding: 3px 8px; border-radius: 5px; line-height: 1;
-}
-.sensitivity-critical { background: var(--negative); color: #fff; }
-.sensitivity-high     { background: #d18a2c; color: #fff; }
-.sensitivity-medium   { background: var(--muted); color: #fff; }
-.sensitivity-critical-card { border-left: 3px solid var(--negative); }
-.sensitivity-high-card     { border-left: 3px solid #d18a2c; }
-
-.source-tag {
-    font-size: .6rem; font-weight: 600; padding: 3px 7px; border-radius: 5px;
-    color: var(--text-secondary); background: var(--hairline); line-height: 1;
-}
-.source-government { background: #f7e6e1; color: #8a3826; }
-.source-news_major { background: #ece8de; color: #4a4034; }
-.source-financial  { background: #e6efe5; color: #2d5a3f; }
-
-.card-meta { font-size: .74rem; color: var(--tertiary); }
-.card-meta a { text-decoration: none; font-weight: 500; transition: opacity .15s; }
-.card-meta a:hover { opacity: .7; text-decoration: underline; }
-.positive .card-meta a { color: var(--positive); }
-.negative .card-meta a { color: var(--negative); }
-.neutral  .card-meta a { color: var(--neutral); }
-.card-meta .sep { margin: 0 6px; opacity: .35; }
-
-.card-quote {
-    font-size: .94rem; line-height: 1.6;
-    color: var(--text); margin-bottom: 14px;
-    letter-spacing: -.005em;
-}
-
-.card-details {
-    display: none; margin-bottom: 14px; padding: 16px 18px;
-    background: var(--bg); border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    font-size: .88rem; line-height: 1.65; color: var(--text-secondary);
-}
-.card-details.open { display: block; animation: fadeIn .2s var(--ease-out); }
-.card-details .original-label {
-    font-size: .62rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--tertiary); margin-bottom: 8px;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-3px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.details-btn {
-    font-size: .68rem; font-weight: 500; color: var(--text-secondary);
-    background: var(--card); border: 1px solid var(--border-subtle);
-    border-radius: 980px; padding: 5px 12px; cursor: pointer;
-    transition: all .15s var(--ease); font-family: inherit;
-}
-.details-btn:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-sm); }
-.details-btn.open { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-.archive-section {
-    margin-top: 64px; padding: 40px 0 72px;
-    border-top: 1px solid var(--border-subtle); text-align: center;
-}
-.archive-section h2 {
-    font-size: .68rem; font-weight: 600; color: var(--tertiary);
-    text-transform: uppercase; letter-spacing: .12em; margin-bottom: 22px;
-}
-.archive-dates { display: flex; gap: 8px; justify-content: center; align-items: center; }
-.archive-date-btn {
-    padding: 10px 18px; border-radius: 12px;
-    border: 1px solid var(--border-subtle);
-    background: var(--card);
-    font-family: inherit; font-size: .78rem; font-weight: 500;
-    color: var(--text); cursor: pointer;
-    transition: all .2s var(--ease); min-width: 64px;
-    box-shadow: var(--shadow-sm);
-}
-.archive-date-btn:hover {
-    border-color: var(--border); transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-.archive-date-btn.active {
-    background: var(--accent); color: #fff; border-color: var(--accent);
-}
-.archive-date-btn .day {
-    font-weight: 600; font-size: .9rem; display: block;
-    font-variant-numeric: tabular-nums;
-}
-.archive-date-btn .month {
-    font-size: .64rem; color: inherit; opacity: .6;
-    text-transform: uppercase; letter-spacing: .06em; margin-top: 2px;
-}
-.archive-nav {
-    width: 38px; height: 38px; border-radius: 50%;
-    border: 1px solid var(--border-subtle);
-    background: var(--card); cursor: pointer;
-    transition: all .2s var(--ease);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; box-shadow: var(--shadow-sm);
-}
-.archive-nav:hover {
-    border-color: var(--border); background: var(--card);
-    transform: translateY(-2px); box-shadow: var(--shadow-md);
-}
-.archive-nav svg { width: 14px; height: 14px; stroke: var(--text-secondary); transition: stroke .15s; }
-.archive-nav:hover svg { stroke: var(--text); }
-.archive-nav.disabled { opacity: .35; pointer-events: none; }
-
-@media (max-width: 600px) {
-    .container { padding: 0 16px; }
-
-    header { padding: 56px 0 18px; }
-    header h1 { font-size: 1.85rem; letter-spacing: -.02em; }
-
-    .sentiment-btns { flex-wrap: wrap; gap: 5px; padding: 8px 0 24px; }
-    .sent-btn { padding: 7px 13px; font-size: .72rem; }
-    .sent-btn .count { font-size: .62rem; }
-    .filter-toggle { padding: 7px 11px; font-size: .72rem; }
-
-    #filterDropdownAnchor .filter-dropdown {
-        right: auto; left: 0; min-width: unset; width: 100%;
-        padding: 16px; max-height: 60vh; overflow-y: auto;
-    }
-
-    .mentions { padding: 0 0 16px 30px; gap: 10px; }
-    .priority-marker {
-        left: -26px; top: 16px;
-        width: 20px; height: 20px;
-        font-size: .46rem;
-    }
-    .mention-card { padding: 16px 18px; border-radius: 16px; }
-    .card-quote { font-size: .88rem; line-height: 1.55; }
-    .card-meta { font-size: .7rem; }
-    .card-details { padding: 12px 14px; font-size: .82rem; }
-    .details-btn { font-size: .64rem; padding: 4px 10px; }
-
-    .date-divider { gap: 12px; margin: 24px 0 16px; }
-    .date-divider .label { font-size: .62rem; }
-
-    .archive-section { margin-top: 40px; padding: 28px 0 56px; }
-    .archive-section h2 { font-size: .62rem; margin-bottom: 16px; letter-spacing: .1em; }
-    .archive-dates { gap: 6px; }
-    .archive-date-btn { padding: 8px 12px; min-width: 52px; font-size: .72rem; }
-    .archive-date-btn .day { font-size: .82rem; }
-    .archive-date-btn .month { font-size: .58rem; }
-    .archive-nav { width: 34px; height: 34px; }
-    .archive-nav svg { width: 12px; height: 12px; }
-
-    .active-chips { gap: 5px; margin-bottom: 16px; }
-    .chip { font-size: .68rem; padding: 4px 9px 4px 11px; }
-}
-    </style>
-</head>
-<body>
-    <div class="lang-toggle" id="langToggle"></div>
-
-    <div class="container">
-        <header>
-            <h1 id="siteTitle">Social Listening</h1>
-        </header>
-
-        <div class="sentiment-btns" id="sentimentBtns"></div>
-        <div id="filterDropdownAnchor"></div>
-
-        <div class="active-chips" id="activeChips"></div>
-
-        <div id="content">
-            <div class="loading" id="loadingBlock"><div class="spinner"></div><span id="loadingText">Loading mentions...</span></div>
-        </div>
-
-        <div class="archive-section" id="archiveSection" style="display:none">
-            <h2 id="archiveTitle">Browse by date</h2>
-            <div class="archive-dates" id="archiveDates"></div>
-        </div>
-    </div>
-
-    <script>
 const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? '' : 'https://duflat-production.up.railway.app';
 
+// Warm up Railway immediately — fire-and-forget, no await
 if (API) fetch(API + '/ping').catch(() => {});
 
 let allMentions = [];
@@ -510,17 +12,22 @@ let currentDateFilter = null;
 let filterOpen = false;
 let archivePage = 0;
 const DATES_PER_PAGE = 4;
-let filterMonth = null;
+let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
 let currentSensitivity = 'all';
 let currentSourceType = 'all';
-let showMonths = false;
+let showMonths = false; // whether month list is expanded
 
 const CACHE_KEY = 'social_mentions_cache';
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// ─────────────────────────────────────────────
+// I18N — English + Simplified Chinese UI
+// Mention content itself (content_english / content_original) is NEVER translated.
+// ─────────────────────────────────────────────
 const I18N = {
     en: {
         title: 'Social Listening',
+        testBuild: 'TEST BUILD',
         loading: 'Loading mentions...',
         failedLoad: 'Failed to load.',
         retry: 'Retry',
@@ -550,6 +57,7 @@ const I18N = {
     },
     zh: {
         title: '社交聆听',
+        testBuild: '测试版',
         loading: '正在加载内容...',
         failedLoad: '加载失败。',
         retry: '重试',
@@ -619,9 +127,12 @@ function setUILang(l) {
     uiLang = l;
     try { localStorage.setItem('ui_lang', l); } catch (e) {}
     document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
-    document.title = 'Duflat — ' + T('title');
+    document.title = 'Duflat — ' + T('title') + ' TEST';
+    // Refresh static header texts too
     const titleEl = document.getElementById('siteTitle');
     if (titleEl) titleEl.textContent = T('title');
+    const badgeEl = document.getElementById('testBuildBadge');
+    if (badgeEl) badgeEl.textContent = T('testBuild');
     const archTitle = document.getElementById('archiveTitle');
     if (archTitle) archTitle.textContent = T('browseByDate');
     renderLangToggle();
@@ -647,11 +158,13 @@ function _applyData(data) {
 }
 
 async function loadMentions() {
+    // Show cached data instantly if available
     try {
         const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
         if (cached && cached.data && (Date.now() - cached.ts) < CACHE_TTL) {
             _applyData(cached.data);
         } else if (cached && cached.data) {
+            // Stale cache — show it while fetching fresh
             _applyData(cached.data);
         } else {
             document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
@@ -660,6 +173,7 @@ async function loadMentions() {
         document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
     }
 
+    // Fetch fresh data in background
     try {
         const resp = await fetch(`${API}/social/mentions?days=365`);
         const data = await resp.json();
@@ -737,6 +251,7 @@ function updateFilterToggle() {
 function renderFilterDropdown() {
     const base = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
 
+    // Languages
     const langs = {};
     base.forEach(m => {
         const lang = m.language || 'Unknown';
@@ -753,6 +268,7 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
+    // Priority (P0/P1/P2) — merges critical→P0, high→P1, medium+low→P2
     const priorityCounts = { p0: 0, p1: 0, p2: 0 };
     base.forEach(m => {
         priorityCounts[sensToPriority(m.sensitivity)]++;
@@ -770,6 +286,7 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
+    // Date section — 3 levels: 2026 → Month picker → Day list
     const dateSet = new Set(allDates);
     const monthNames = I18N[uiLang].months;
     const dayShort = I18N[uiLang].dayShort;
@@ -779,25 +296,28 @@ function renderFilterDropdown() {
         <div class="filter-options">
             <button class="filter-option ${!currentDateFilter && filterMonth===null?'active':''}" onclick="filterSelectYear()">2026<span class="opt-count">${allMentions.length}</span></button>`;
 
+    // "Month" toggle button
     html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">${escapeHtml(T('filterMonth'))}</button>`;
 
     if (showMonths && filterMonth === null) {
+        // Month list — 12 months, disable months with no content
         const monthCounts = {};
         allMentions.forEach(m => {
             if (!m.content_date) return;
             const mo = parseInt(m.content_date.slice(5, 7), 10) - 1;
             monthCounts[mo] = (monthCounts[mo] || 0) + 1;
         });
-        const currentMonth = new Date().getMonth();
+        const currentMonth = new Date().getMonth(); // 0-11
         for (let mo = 0; mo < 12; mo++) {
             const isFuture = mo > currentMonth;
             const cls = isFuture ? 'filter-option disabled' : 'filter-option';
             html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(monthNames[mo])}</button>`;
         }
     } else if (filterMonth !== null) {
+        // Calendar for selected month
         const mo = filterMonth;
         const daysInMonth = new Date(2026, mo + 1, 0).getDate();
-        const firstDay = new Date(2026, mo, 1).getDay();
+        const firstDay = new Date(2026, mo, 1).getDay(); // 0=Sun
         html += `</div>
         <div class="cal-header">
             <button onclick="filterCalPrev(event)">&#8249;</button>
@@ -904,6 +424,8 @@ function renderCard(m, uid) {
     const langDisplay = TL(rawLang);
     const closeLabel = T('close');
 
+    // Card quote: localized Chinese translation if UI is zh and it exists, else English summary.
+    // content_original is never shown here — it lives inside the details panel only.
     const displayQuote = (uiLang === 'zh' && m.content_chinese)
         ? m.content_chinese
         : (m.content_english || m.content_original || '');
@@ -956,12 +478,15 @@ function renderArchive() {
 
     let html = '';
 
+    // Prev button (visually left = newer dates)
     html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="${escapeHtml(T('newerTitle'))}">${prevSvg}</button>`;
 
+    // "All" button — always visible
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
         <span class="day">${escapeHtml(T('allDatesTop'))}</span><span class="month">${escapeHtml(T('allDatesBottom'))}</span>
     </button>`;
 
+    // Date buttons
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
         const day = dt.getDate();
@@ -971,6 +496,7 @@ function renderArchive() {
         </button>`;
     });
 
+    // Next button (visually right = older dates)
     html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="${escapeHtml(T('olderTitle'))}">${nextSvg}</button>`;
 
     container.innerHTML = html;
@@ -1107,9 +633,12 @@ function escapeHtml(str) {
     return (str + '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-document.title = 'Duflat — ' + T('title');
+// ─── Init ───
+document.title = 'Duflat — ' + T('title') + ' TEST';
 const _titleEl = document.getElementById('siteTitle');
 if (_titleEl) _titleEl.textContent = T('title');
+const _badgeEl = document.getElementById('testBuildBadge');
+if (_badgeEl) _badgeEl.textContent = T('testBuild');
 const _loadingTxt = document.getElementById('loadingText');
 if (_loadingTxt) _loadingTxt.textContent = T('loading');
 const _archTitle = document.getElementById('archiveTitle');
@@ -1117,6 +646,3 @@ if (_archTitle) _archTitle.textContent = T('browseByDate');
 
 renderLangToggle();
 loadMentions();
-    </script>
-</body>
-</html>
