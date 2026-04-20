@@ -794,10 +794,10 @@ For EACH article, extract:
 - content_original: copy the most relevant 1-3 sentences VERBATIM from the original article text. Do NOT rewrite — keep the exact original wording. This is shown behind a "Details" button.
 - sentiment: "positive", "negative", or "neutral"
 - sensitivity: how sensitive/impactful is this mention? Use:
-  - "critical" — CRISIS LEVEL: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown), stock halt or major financial restatement. If it could require a PR response within 24h, it's critical.
-  - "high" — NOTABLE CONCERN worth monitoring: analyst downgrade or earnings miss, significant stock decline, creator exodus or major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share at Bilibili's expense, negative industry analysis or journalist opinion piece, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
-  - "medium" — INFORMATIONAL, routine coverage: earnings beats or positive financial news, feature launches, partnership announcements, neutral news reports, creator announcements, industry overview where Bilibili is discussed substantively, balanced analyst coverage, product updates.
-  - "low" — PASSING MENTION: Bilibili appears in a long list, brief unrelated reference, aggregator scraping with no substantive content, stock ticker with no commentary.
+  - "critical" — CRISIS LEVEL: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown). If it could require a PR response within 24h, it's critical.
+  - "high" — NOTABLE CONCERN worth monitoring: creator exodus or major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share at Bilibili's expense, negative industry opinion or journalist critique, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
+  - "medium" — INFORMATIONAL, routine coverage: feature launches, partnership announcements, neutral news reports, creator announcements, industry overview where Bilibili is discussed substantively, product updates.
+  - "low" — PASSING MENTION: Bilibili appears in a long list, brief unrelated reference, aggregator scraping with no substantive content.
 - source_type: classify the source:
   - "government" — government body, regulator, official agency (SEC, CSRC, ministry, court)
   - "news_major" — major international media (Reuters, Bloomberg, BBC, CNBC, NHK, etc.)
@@ -814,9 +814,9 @@ For EACH article, extract:
 Return ONLY a JSON array. Each element must have: url, url_hash, platform, content_date, content_original, content_english, sentiment, sensitivity, source_type, keywords, author, country, language.
 
 Skip articles that do NOT mention Bilibili at all (complete false positives with no connection to Bilibili).
-Skip pages that are ONLY raw stock price tickers with no text (just numbers/charts, no sentences).
-DO include: financial news, earnings, analyst opinions, esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, anything where Bilibili is mentioned even if not the main focus.
-When in doubt, INCLUDE the article — it's better to save a borderline mention than to miss it.
+SKIP ALL STOCK/FINANCIAL CONTENT — this is SOCIAL listening, NOT financial coverage. Exclude articles whose primary focus is: stock price movement, earnings reports, revenue/profit figures, analyst ratings or target prices, investor sentiment, trading volume, P/E ratios, dividend news, ADR/share class news, market cap, SEC/CSRC filings, IPO/offering news, shareholder matters, or any pure stock-ticker page. If an article mentions a stock price in passing but is really about something else (product, creator, policy), keep it.
+DO include: esports match reports mentioning BLG/Bilibili Gaming, anime streaming news, AI tools from Bilibili, creator news, product/feature coverage, policy/moderation discussions, cultural/social commentary, user sentiment.
+When in doubt between a social topic and a financial topic, SKIP financial and KEEP social.
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
