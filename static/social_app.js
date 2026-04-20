@@ -444,8 +444,6 @@ function renderCard(m, uid) {
     const priorityLabel = priorityLabels[sensitivity] || 'P2';
     const priorityMarker = `<div class="priority-marker ${priorityClass}" title="${sensitivity || 'low'}">${priorityLabel}</div>`;
 
-    const tagsHtml = (m.keywords || []).slice(0, 3).map(k => `<span class="tag">#${escapeHtml(k)}</span>`).join('');
-
     return `<div class="mention-card ${s}">
         ${priorityMarker}
         <div class="card-top">
@@ -456,7 +454,6 @@ function renderCard(m, uid) {
         </div>
         <div class="card-quote">${escapeHtml(displayQuote)}</div>
         ${detailsHtml}
-        ${tagsHtml ? `<div class="card-bottom">${tagsHtml}</div>` : ''}
     </div>`;
 }
 
