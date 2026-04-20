@@ -285,6 +285,13 @@ def social_discover_reddit():
     return jsonify(discover_reddit())
 
 
+@app.route('/social/discover-hn', methods=['POST'])
+def social_discover_hn():
+    """Fetch Bilibili-related Hacker News stories + comments via Algolia API."""
+    from modules.social_listening import discover_hackernews
+    return jsonify(discover_hackernews())
+
+
 @app.route('/social/debug-reddit', methods=['GET'])
 def social_debug_reddit():
     """Debug: fetch one reddit URL from the Railway worker, return raw info."""

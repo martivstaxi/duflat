@@ -1211,6 +1211,19 @@ _DISCOVER_QUERIES = {
         'Bilibili banned',
         'Bilibili vs YouTube',
         'Bilibili community',
+        # Ecosystem expansion — VTuber, esports, AI, creator, policy
+        'Bilibili VTuber',
+        'Bilibili BLG',
+        'Bilibili LPL',
+        'Bilibili AniSora',
+        'Bilibili AI',
+        'Bilibili creator',
+        'Bilibili anime rights',
+        'Bilibili censorship',
+        'Bilibili moderation',
+        'Bilibili leak',
+        'Bilibili partnership',
+        'Bilibili livestream',
     ],
     'Japanese': [
         'ビリビリ',
@@ -1224,6 +1237,13 @@ _DISCOVER_QUERIES = {
         'ビリビリ ユーザー',
         'ビリビリ 中国',
         'ビリビリ 配信',
+        # Ecosystem
+        'ビリビリ アニメ',
+        'ビリビリ Vtuber',
+        'ビリビリ 声優',
+        'ビリビリ BLG',
+        'ビリビリ AI',
+        'ビリビリ AniSora',
     ],
     'Arabic': [
         'بيليبيلي',
@@ -1248,6 +1268,13 @@ _DISCOVER_QUERIES = {
         'B站 更新',
         'B站 評價',
         'B站 直播',
+        # Ecosystem
+        '嗶哩嗶哩 動漫',
+        'B站 VTuber',
+        'B站 BLG',
+        'B站 AniSora',
+        'B站 AI',
+        'B站 創作者',
     ],
     'Turkish': [
         'Bilibili',
@@ -1438,10 +1465,24 @@ _DIRECT_CRAWL_SOURCES = [
     'https://techcrunch.com/tag/bilibili/',
     'https://www.theverge.com/search?q=bilibili',
     'https://www.scmp.com/topics/bilibili',
+    # English — niche gaming/anime (fills the gap news aggregators miss)
+    'https://www.animenewsnetwork.com/search/?q=bilibili',
+    'https://www.gematsu.com/?s=bilibili',
+    'https://www.eurogamer.net/search?q=bilibili',
+    'https://www.polygon.com/search?q=bilibili',
+    'https://kotaku.com/search?q=bilibili',
+    'https://www.pcgamer.com/search/?searchTerm=bilibili',
+    # English — Asia-tech non-Mainland
+    'https://kr-asia.com/?s=bilibili',
+    'https://restofworld.org/search/?q=bilibili',
+    'https://asia.nikkei.com/Search?keyword=bilibili',
     # Traditional Chinese
     'https://www.ithome.com.tw/search?q=bilibili',
+    'https://ec.ltn.com.tw/search?keyword=bilibili',
     # Japanese
     'https://fistbump-news.jp/?s=bilibili',
+    'https://www.4gamer.net/search/?text=bilibili',
+    'https://animeanime.jp/search/?q=bilibili',
     # Spanish/Portuguese
     'https://www.xataka.com/?s=bilibili',
     # Turkish
@@ -1759,6 +1800,159 @@ def discover_reddit():
 
     return {
         'platform': 'reddit',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+    }
+
+
+# ─────────────────────────────────────────────
+# HACKER NEWS — Algolia public API (stories + comments)
+# ─────────────────────────────────────────────
+
+_HN_QUERIES = ['bilibili', 'b站', 'bilibili gaming', 'anisora']
+
+
+def _fetch_hn_algolia(query, tags='story', pages=1):
+    """Fetch Bilibili-related HN hits via Algolia. tags='story' or 'comment'."""
+    from urllib.parse import quote_plus
+    hits = []
+    for p in range(pages):
+        url = (
+            f'https://hn.algolia.com/api/v1/search_by_date'
+            f'?query={quote_plus(query)}&tags={tags}&hitsPerPage=50&page={p}'
+        )
+        try:
+            resp = requests.get(url, timeout=6)
+        except Exception as e:
+            print(f'[hn] {tags}={query} request_exception={e}', flush=True)
+            break
+        if resp.status_code != 200:
+            print(f'[hn] {tags}={query} status={resp.status_code}', flush=True)
+            break
+        try:
+            data = resp.json()
+        except Exception as e:
+            print(f'[hn] {tags}={query} json_err={e}', flush=True)
+            break
+        batch = data.get('hits', []) or []
+        hits.extend(batch)
+        if len(batch) < 50:
+            break
+    print(f'[hn] {tags}={query} hits={len(hits)}', flush=True)
+    return hits
+
+
+def _hn_hit_to_item(h, tags):
+    """Convert an Algolia hit to pipeline item. tags: 'story' or 'comment'."""
+    object_id = h.get('objectID')
+    if not object_id:
+        return None
+    story_id = h.get('story_id') or object_id
+    hn_url = f'https://news.ycombinator.com/item?id={story_id if tags == "comment" else object_id}'
+    created_at = h.get('created_at', '')
+    try:
+        dt = datetime.strptime(created_at[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    title = h.get('title') or h.get('story_title') or ''
+    body  = h.get('story_text') or h.get('comment_text') or ''
+    ext   = h.get('url') or ''
+    parts = [f'[HN {tags}]']
+    if title: parts.append(title)
+    if ext:   parts.append(f'(external: {ext})')
+    if body:  parts.append(body)
+    text = '\n\n'.join(parts).strip()
+    if len(text) < 40:
+        return None
+    return {
+        'url': hn_url,
+        'url_hash': hash_url(hn_url),
+        'platform': 'news.ycombinator.com',
+        'text': text[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_hackernews():
+    """Fetch Bilibili-related HN stories + comments, analyze, save."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for q in _HN_QUERIES:
+        if time.time() - fetch_start > 30:
+            break
+        for tags in ('story', 'comment'):
+            hits = _fetch_hn_algolia(q, tags=tags, pages=1)
+            for h in hits:
+                item = _hn_hit_to_item(h, tags)
+                if item and item['url'] not in seen:
+                    blob = item['text'].lower()
+                    if 'bilibili' not in blob and 'b站' not in blob and '哔哩' not in blob and '嗶哩' not in blob:
+                        continue
+                    seen.add(item['url'])
+                    all_items.append(item)
+
+    print(f'[hn] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'hackernews', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[hn] check_urls error: {e}', flush=True)
+        return {'platform': 'hackernews', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[hn] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'hackernews', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'news.ycombinator.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[hn] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[hn] haiku error: {e}', flush=True)
+        return {'platform': 'hackernews', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[hn] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[hn] save error: {e}', flush=True)
+        return {'platform': 'hackernews', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'hackernews',
         'fetched': len(all_items),
         'new': len(items_new),
         'saved': result.get('saved', 0),
