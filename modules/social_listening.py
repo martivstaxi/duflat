@@ -1809,7 +1809,7 @@ def translate_missing_chinese():
     translated = 0
     skipped = 0
 
-    for batch in _chunks(pending, 20):
+    for batch in _chunks(pending, 10):
         entries = [{'idx': i, 'en': r['content_english']} for i, r in enumerate(batch)]
         prompt = f"""Translate each English social-listening insight into Simplified Chinese.
 
@@ -1826,7 +1826,7 @@ Return ONLY a JSON array: [{{"idx":0,"zh":"..."}}, ...]
 Items:
 {json.dumps(entries, ensure_ascii=False)}"""
 
-        verdicts = _haiku_call(prompt, max_tokens=2048)
+        verdicts = _haiku_call(prompt, max_tokens=4096)
         if not verdicts:
             skipped += len(batch)
             continue
