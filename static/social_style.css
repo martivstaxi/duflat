@@ -281,7 +281,7 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 }
 
 /* ───── Mention cards ───── */
-.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 0; }
+.mentions { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 38px; }
 .mention-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
@@ -296,8 +296,9 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     border-color: var(--border);
 }
 
-/* Priority marker — round avatar at bottom-left of card */
+/* Priority marker — round avatar floating outside card, left of source link */
 .priority-marker {
+    position: absolute; left: -32px; top: 22px;
     width: 22px; height: 22px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 50%;
@@ -460,8 +461,9 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .mentions { padding: 0 0 16px 0; gap: 10px; }
+    .mentions { padding: 0 0 16px 30px; gap: 10px; }
     .priority-marker {
+        left: -26px; top: 16px;
         width: 20px; height: 20px;
         font-size: .46rem;
     }

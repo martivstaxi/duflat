@@ -445,6 +445,7 @@ function renderCard(m, uid) {
     const priorityMarker = `<div class="priority-marker ${priorityClass}" title="${sensitivity || 'low'}">${priorityLabel}</div>`;
 
     return `<div class="mention-card ${s}">
+        ${priorityMarker}
         <div class="card-top">
             <span class="sentiment-dot"></span>
             <span class="card-meta"><a href="${escapeHtml(m.url)}" target="_blank" rel="noopener">${escapeHtml(m.platform || '')}</a></span>
@@ -453,7 +454,6 @@ function renderCard(m, uid) {
         </div>
         <div class="card-quote">${escapeHtml(displayQuote)}</div>
         ${detailsHtml}
-        ${priorityMarker}
     </div>`;
 }
 
