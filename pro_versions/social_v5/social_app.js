@@ -1,331 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat — Social Listening</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700;900&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-    --bg: #f5f5f3;
-    --card: #ffffff;
-    --border: #e5e5e3;
-    --text: #1a1a1a;
-    --muted: #888;
-    --positive: #16a34a;
-    --negative: #dc2626;
-    --neutral: #ca8a04;
-    --accent: #c15f3c;
-}
-
-body { font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
-html[lang^="zh"] body { font-family: 'Noto Sans SC', 'Inter', -apple-system, sans-serif; }
-
-.container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
-
-header { padding: 48px 0 16px; text-align: center; }
-header h1 { font-family: 'Merriweather', serif; font-size: 1.6rem; font-weight: 900; }
-html[lang^="zh"] header h1 { font-family: 'Noto Sans SC', 'Merriweather', serif; font-weight: 900; }
-
-/* Language toggle — top-right, fixed */
-.lang-toggle {
-    position: fixed; top: 14px; right: 14px; z-index: 200;
-    display: inline-flex; gap: 2px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 999px; padding: 3px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.04);
-}
-.lang-btn {
-    padding: 5px 12px; border-radius: 999px; border: none;
-    background: transparent; font-family: inherit; font-size: .7rem; font-weight: 600;
-    color: var(--muted); cursor: pointer; transition: all .15s; line-height: 1;
-    min-width: 36px;
-}
-.lang-btn:hover { color: var(--text); }
-.lang-btn.active { background: var(--accent); color: #fff; }
-@media (max-width: 600px) {
-    .lang-toggle { top: 10px; right: 10px; padding: 2px; }
-    .lang-btn { padding: 4px 10px; font-size: .65rem; min-width: 32px; }
-}
-
-/* Sentiment buttons — centered under title */
-.sentiment-btns {
-    display: flex; gap: 8px; justify-content: center;
-    padding: 14px 0 30px;
-}
-.sent-btn {
-    padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border);
-    background: var(--card); font-family: inherit; font-size: .75rem; font-weight: 600;
-    color: var(--muted); cursor: pointer; transition: all .15s; user-select: none;
-    display: flex; align-items: center; gap: 5px;
-}
-.sent-btn:hover { border-color: #aaa; color: var(--text); }
-.sent-btn .dot { width: 7px; height: 7px; border-radius: 50%; }
-.sent-btn .count { font-size: .65rem; font-weight: 500; opacity: .7; }
-.sent-btn.active.pos { background: var(--positive); color: #fff; border-color: var(--positive); }
-.sent-btn.active.neg { background: var(--negative); color: #fff; border-color: var(--negative); }
-.sent-btn.active.neu { background: var(--neutral); color: #fff; border-color: var(--neutral); }
-.sent-btn.active.pos .dot, .sent-btn.active.neg .dot, .sent-btn.active.neu .dot { background: #fff; }
-.sent-btn.active.all-btn { background: var(--card); border-color: var(--accent); color: var(--accent); }
-.sent-btn.all-btn svg { width: 14px; height: 14px; stroke: var(--muted); }
-.sent-btn.active.all-btn svg { stroke: var(--accent); }
-
-.filter-toggle {
-    display: flex; align-items: center; justify-content: center;
-    padding: 6px 10px; border-radius: 20px; border: 1.5px solid var(--border);
-    background: var(--card); font-family: inherit; font-size: .75rem; font-weight: 600;
-    color: var(--muted); cursor: pointer; transition: all .15s; position: relative;
-}
-.filter-toggle:hover { border-color: #aaa; color: var(--text); }
-.filter-toggle.has-filter { border-color: var(--accent); color: var(--accent); }
-.filter-toggle svg { width: 14px; height: 14px; }
-.filter-badge {
-    position: absolute; top: -5px; right: -5px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    font-size: .6rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-}
-
-/* Active filter chips */
-.active-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; justify-content: center; }
-.active-chips:empty { display: none; }
-.chip {
-    display: flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: .7rem; font-weight: 600;
-    background: #f0efeb; color: var(--text); border: 1px solid var(--border);
-}
-.chip-remove {
-    width: 14px; height: 14px; border: none; background: none;
-    cursor: pointer; color: var(--muted); font-size: .8rem; line-height: 1;
-    padding: 0; margin-left: 2px;
-}
-.chip-remove:hover { color: var(--negative); }
-
-/* Filter dropdown — lives in #filterDropdownAnchor, outside flex row */
-#filterDropdownAnchor { position: relative; }
-#filterDropdownAnchor .filter-dropdown {
-    display: none; position: absolute; top: 0; right: 0;
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0,0,0,.1); padding: 16px; z-index: 100;
-    min-width: 260px;
-}
-#filterDropdownAnchor.open .filter-dropdown { display: block; }
-.filter-section { margin-bottom: 14px; }
-.filter-section:last-child { margin-bottom: 0; }
-.filter-section-title {
-    font-size: .65rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .8px; color: var(--muted); margin-bottom: 8px;
-}
-.filter-options { display: flex; flex-direction: column; gap: 4px; }
-.filter-option {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 10px; border-radius: 6px; border: none;
-    background: none; font-family: inherit; font-size: .78rem; font-weight: 500;
-    color: var(--text); cursor: pointer; transition: background .1s; text-align: left; width: 100%;
-}
-.filter-option:hover { background: #f5f5f3; }
-.filter-option.active { background: #f0efeb; font-weight: 700; }
-.filter-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.filter-option .opt-count { margin-left: auto; font-size: .68rem; color: var(--muted); font-weight: 500; }
-.filter-option.disabled { opacity: .35; pointer-events: none; }
-
-/* Calendar grid */
-.cal-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 8px; }
-.cal-header .cal-title { font-size: .78rem; font-weight: 700; }
-.cal-header button { background: none; border: none; cursor: pointer; padding: 2px 6px; font-size: .85rem; color: var(--muted); border-radius: 4px; }
-.cal-header button:hover { background: #f0efeb; color: var(--text); }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-.cal-grid .cal-day-name { font-size: .6rem; font-weight: 700; color: var(--muted); padding: 2px 0 6px; }
-.cal-grid .cal-day {
-    padding: 6px 2px; border-radius: 6px; border: none; background: none;
-    font-family: inherit; font-size: .74rem; font-weight: 500; color: var(--text);
-    cursor: pointer; transition: all .1s;
-}
-.cal-grid .cal-day:hover { background: #f0efeb; }
-.cal-grid .cal-day.active { background: var(--accent); color: #fff; font-weight: 700; }
-.cal-grid .cal-day.disabled { opacity: .25; pointer-events: none; }
-.cal-grid .cal-day.has-content { font-weight: 700; }
-
-
-/* Loading */
-.loading { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
-.loading .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; margin: 0 auto 12px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.empty { text-align: center; padding: 60px 0; color: var(--muted); font-size: .85rem; }
-
-/* Date divider */
-.date-divider { display: flex; align-items: center; gap: 16px; margin: 28px 0 18px; }
-.date-divider:first-child { margin-top: 0; }
-.date-divider .line { flex: 1; height: 1px; background: var(--border); }
-.date-divider .label { font-size: .75rem; font-weight: 600; color: var(--muted); white-space: nowrap; letter-spacing: .3px; }
-
-/* Cards */
-.mentions { display: flex; flex-direction: column; gap: 14px; padding: 0 0 16px 44px; }
-.mention-card {
-    background: rgba(255,255,255,.45); border: none; border-radius: 12px;
-    padding: 20px 22px; position: relative; transition: all .2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,.03);
-}
-.mention-card:hover { background: rgba(255,255,255,.7); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-
-/* Priority marker — small rounded square, vertically centered outside card */
-.priority-marker {
-    position: absolute; left: -40px; top: 50%; transform: translateY(-50%);
-    width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: inherit; font-size: .68rem; font-weight: 700; letter-spacing: .4px;
-    border-radius: 10px; user-select: none;
-    transition: transform .15s;
-}
-.priority-marker.p0 { background: #dc2626; color: #fff; box-shadow: 0 1px 4px rgba(220,38,38,.25); }
-.priority-marker.p1 { background: #f59e0b; color: #fff; box-shadow: 0 1px 4px rgba(245,158,11,.25); }
-.priority-marker.p2 { background: transparent; color: #b8b4ab; border: 1.5px solid #d9d5cb; }
-.mention-card:hover .priority-marker { transform: translateY(-50%) scale(1.04); }
-
-.card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.card-tag { font-size: .68rem; font-weight: 500; color: var(--muted); margin-left: auto; }
-.sentiment-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.positive .sentiment-dot { background: var(--positive); }
-.negative .sentiment-dot { background: var(--negative); }
-.neutral  .sentiment-dot { background: var(--neutral); }
-
-/* Sensitivity badges */
-.sensitivity-badge { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; border-radius: 4px; line-height: 1; }
-.sensitivity-critical { background: #dc2626; color: #fff; }
-.sensitivity-high { background: #f59e0b; color: #fff; }
-.sensitivity-medium { background: #6b7280; color: #fff; }
-.sensitivity-critical-card { border-left: 3px solid #dc2626; }
-.sensitivity-high-card { border-left: 3px solid #f59e0b; }
-
-/* Source type tags */
-.source-tag { font-size: .62rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; color: #555; background: #f0f0ee; line-height: 1; }
-.source-government { background: #fef2f2; color: #991b1b; }
-.source-news_major { background: #eff6ff; color: #1e40af; }
-.source-financial { background: #f0fdf4; color: #166534; }
-
-.card-meta { font-size: .72rem; color: var(--muted); }
-.card-meta a { text-decoration: none; font-weight: 600; }
-.positive .card-meta a { color: var(--positive); }
-.negative .card-meta a { color: var(--negative); }
-.neutral  .card-meta a { color: var(--neutral); }
-.card-meta a:hover { text-decoration: underline; }
-.card-meta .sep { margin: 0 5px; opacity: .4; }
-
-.card-quote { font-size: .88rem; line-height: 1.7; color: #2a2a2a; margin-bottom: 12px; }
-
-.card-details { display: none; margin-bottom: 12px; padding: 14px 16px; background: #fafaf8; border: 1px solid var(--border); border-radius: 8px; font-size: .85rem; line-height: 1.7; color: #333; }
-.card-details.open { display: block; animation: fadeIn .15s ease; }
-.card-details .original-label { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-
-.details-btn {
-    font-size: .68rem; font-weight: 600; color: var(--text);
-    background: var(--card); border: 1.5px solid var(--border); border-radius: 6px;
-    padding: 4px 10px; cursor: pointer; transition: all .15s; font-family: inherit;
-}
-.details-btn:hover { border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-.details-btn.open { background: var(--text); color: #fff; border-color: var(--text); }
-
-/* Archive date picker — Google-style pagination */
-.archive-section { margin-top: 48px; padding: 32px 0 64px; border-top: 1px solid var(--border); text-align: center; }
-.archive-section h2 { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-.archive-dates { display: flex; gap: 8px; justify-content: center; align-items: center; }
-.archive-date-btn {
-    padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--border);
-    background: var(--card); font-family: inherit; font-size: .78rem; font-weight: 500;
-    color: var(--text); cursor: pointer; transition: all .15s; min-width: 62px;
-}
-.archive-date-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
-.archive-date-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.archive-date-btn .day { font-weight: 700; font-size: .85rem; display: block; }
-.archive-date-btn .month { font-size: .65rem; color: inherit; opacity: .7; }
-.archive-nav {
-    width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border);
-    background: var(--card); cursor: pointer; transition: all .15s;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.archive-nav:hover { border-color: var(--accent); background: #faf8f6; }
-.archive-nav svg { width: 16px; height: 16px; stroke: var(--muted); transition: stroke .15s; }
-.archive-nav:hover svg { stroke: var(--accent); }
-.archive-nav.disabled { opacity: .3; pointer-events: none; }
-
-@media (max-width: 600px) {
-    .container { padding: 0 14px; }
-
-    header { padding: 28px 0 10px; }
-    header h1 { font-size: 1.25rem; }
-
-    /* Sentiment buttons — wrap on small screens */
-    .sentiment-btns { flex-wrap: wrap; gap: 6px; padding: 10px 0 20px; }
-    .sent-btn { padding: 5px 12px; font-size: .7rem; }
-    .sent-btn .count { font-size: .6rem; }
-
-    /* Filter dropdown — full width on mobile */
-    #filterDropdownAnchor .filter-dropdown {
-        right: auto; left: 0; min-width: unset; width: 100%;
-        padding: 14px; max-height: 60vh; overflow-y: auto;
-    }
-
-    /* Cards */
-    .mentions { padding: 0 0 16px 32px; }
-    .priority-marker { left: -28px; width: 24px; height: 24px; font-size: .58rem; letter-spacing: .3px; border-radius: 7px; }
-    .mention-card { padding: 14px 16px; }
-    .card-quote { font-size: .82rem; line-height: 1.6; }
-    .card-meta { font-size: .68rem; }
-    .card-details { padding: 10px 12px; font-size: .8rem; }
-    .details-btn { font-size: .64rem; padding: 3px 8px; }
-
-    /* Date divider */
-    .date-divider { gap: 10px; margin: 20px 0 14px; }
-    .date-divider .label { font-size: .7rem; }
-
-    /* Archive — scroll horizontally */
-    .archive-section { margin-top: 32px; padding: 24px 0 48px; }
-    .archive-section h2 { font-size: .75rem; margin-bottom: 12px; }
-    .archive-dates { gap: 6px; }
-    .archive-date-btn { padding: 6px 10px; min-width: 48px; font-size: .72rem; }
-    .archive-date-btn .day { font-size: .78rem; }
-    .archive-date-btn .month { font-size: .6rem; }
-    .archive-nav { width: 34px; height: 34px; }
-    .archive-nav svg { width: 14px; height: 14px; }
-
-    /* Chips */
-    .active-chips { gap: 4px; margin-bottom: 14px; }
-    .chip { font-size: .65rem; padding: 3px 8px; }
-}
-    </style>
-</head>
-<body>
-    <div class="lang-toggle" id="langToggle"></div>
-
-    <div class="container">
-        <header>
-            <h1 id="siteTitle">Social Listening</h1>
-        </header>
-
-        <div class="sentiment-btns" id="sentimentBtns"></div>
-        <div id="filterDropdownAnchor"></div>
-
-        <div class="active-chips" id="activeChips"></div>
-
-        <div id="content">
-            <div class="loading" id="loadingBlock"><div class="spinner"></div><span id="loadingText">Loading mentions...</span></div>
-        </div>
-
-        <div class="archive-section" id="archiveSection" style="display:none">
-            <h2 id="archiveTitle">Browse by date</h2>
-            <div class="archive-dates" id="archiveDates"></div>
-        </div>
-    </div>
-
-    <script>
 const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? '' : 'https://duflat-production.up.railway.app';
 
@@ -340,13 +12,13 @@ let currentDateFilter = null;
 let filterOpen = false;
 let archivePage = 0;
 const DATES_PER_PAGE = 4;
-let filterMonth = null;
+let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
 let currentSensitivity = 'all';
 let currentSourceType = 'all';
-let showMonths = false;
+let showMonths = false; // whether month list is expanded
 
 const CACHE_KEY = 'social_mentions_cache';
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ─────────────────────────────────────────────
 // I18N — English + Simplified Chinese UI
@@ -355,6 +27,7 @@ const CACHE_TTL = 5 * 60 * 1000;
 const I18N = {
     en: {
         title: 'Social Listening',
+        testBuild: 'TEST BUILD',
         loading: 'Loading mentions...',
         failedLoad: 'Failed to load.',
         retry: 'Retry',
@@ -384,6 +57,7 @@ const I18N = {
     },
     zh: {
         title: '社交聆听',
+        testBuild: '测试版',
         loading: '正在加载内容...',
         failedLoad: '加载失败。',
         retry: '重试',
@@ -453,9 +127,12 @@ function setUILang(l) {
     uiLang = l;
     try { localStorage.setItem('ui_lang', l); } catch (e) {}
     document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
-    document.title = 'Duflat — ' + T('title');
+    document.title = 'Duflat — ' + T('title') + ' TEST';
+    // Refresh static header texts too
     const titleEl = document.getElementById('siteTitle');
     if (titleEl) titleEl.textContent = T('title');
+    const badgeEl = document.getElementById('testBuildBadge');
+    if (badgeEl) badgeEl.textContent = T('testBuild');
     const archTitle = document.getElementById('archiveTitle');
     if (archTitle) archTitle.textContent = T('browseByDate');
     renderLangToggle();
@@ -481,11 +158,13 @@ function _applyData(data) {
 }
 
 async function loadMentions() {
+    // Show cached data instantly if available
     try {
         const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
         if (cached && cached.data && (Date.now() - cached.ts) < CACHE_TTL) {
             _applyData(cached.data);
         } else if (cached && cached.data) {
+            // Stale cache — show it while fetching fresh
             _applyData(cached.data);
         } else {
             document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
@@ -494,6 +173,7 @@ async function loadMentions() {
         document.getElementById('content').innerHTML = `<div class="loading"><div class="spinner"></div>${escapeHtml(T('loading'))}</div>`;
     }
 
+    // Fetch fresh data in background
     try {
         const resp = await fetch(`${API}/social/mentions?days=365`);
         const data = await resp.json();
@@ -571,6 +251,7 @@ function updateFilterToggle() {
 function renderFilterDropdown() {
     const base = currentDateFilter ? allMentions.filter(m => m.content_date === currentDateFilter) : allMentions;
 
+    // Languages
     const langs = {};
     base.forEach(m => {
         const lang = m.language || 'Unknown';
@@ -587,6 +268,7 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
+    // Priority (P0/P1/P2) — merges critical→P0, high→P1, medium+low→P2
     const priorityCounts = { p0: 0, p1: 0, p2: 0 };
     base.forEach(m => {
         priorityCounts[sensToPriority(m.sensitivity)]++;
@@ -604,6 +286,7 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
+    // Date section — 3 levels: 2026 → Month picker → Day list
     const dateSet = new Set(allDates);
     const monthNames = I18N[uiLang].months;
     const dayShort = I18N[uiLang].dayShort;
@@ -613,25 +296,28 @@ function renderFilterDropdown() {
         <div class="filter-options">
             <button class="filter-option ${!currentDateFilter && filterMonth===null?'active':''}" onclick="filterSelectYear()">2026<span class="opt-count">${allMentions.length}</span></button>`;
 
+    // "Month" toggle button
     html += `<button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">${escapeHtml(T('filterMonth'))}</button>`;
 
     if (showMonths && filterMonth === null) {
+        // Month list — 12 months, disable months with no content
         const monthCounts = {};
         allMentions.forEach(m => {
             if (!m.content_date) return;
             const mo = parseInt(m.content_date.slice(5, 7), 10) - 1;
             monthCounts[mo] = (monthCounts[mo] || 0) + 1;
         });
-        const currentMonth = new Date().getMonth();
+        const currentMonth = new Date().getMonth(); // 0-11
         for (let mo = 0; mo < 12; mo++) {
             const isFuture = mo > currentMonth;
             const cls = isFuture ? 'filter-option disabled' : 'filter-option';
             html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(monthNames[mo])}</button>`;
         }
     } else if (filterMonth !== null) {
+        // Calendar for selected month
         const mo = filterMonth;
         const daysInMonth = new Date(2026, mo + 1, 0).getDate();
-        const firstDay = new Date(2026, mo, 1).getDay();
+        const firstDay = new Date(2026, mo, 1).getDay(); // 0=Sun
         html += `</div>
         <div class="cal-header">
             <button onclick="filterCalPrev(event)">&#8249;</button>
@@ -738,6 +424,8 @@ function renderCard(m, uid) {
     const langDisplay = TL(rawLang);
     const closeLabel = T('close');
 
+    // Card quote: localized Chinese translation if UI is zh and it exists, else English summary.
+    // content_original is never shown here — it lives inside the details panel only.
     const displayQuote = (uiLang === 'zh' && m.content_chinese)
         ? m.content_chinese
         : (m.content_english || m.content_original || '');
@@ -790,12 +478,15 @@ function renderArchive() {
 
     let html = '';
 
+    // Prev button (visually left = newer dates)
     html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="${escapeHtml(T('newerTitle'))}">${prevSvg}</button>`;
 
+    // "All" button — always visible
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
         <span class="day">${escapeHtml(T('allDatesTop'))}</span><span class="month">${escapeHtml(T('allDatesBottom'))}</span>
     </button>`;
 
+    // Date buttons
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
         const day = dt.getDate();
@@ -805,6 +496,7 @@ function renderArchive() {
         </button>`;
     });
 
+    // Next button (visually right = older dates)
     html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="${escapeHtml(T('olderTitle'))}">${nextSvg}</button>`;
 
     container.innerHTML = html;
@@ -942,9 +634,11 @@ function escapeHtml(str) {
 }
 
 // ─── Init ───
-document.title = 'Duflat — ' + T('title');
+document.title = 'Duflat — ' + T('title') + ' TEST';
 const _titleEl = document.getElementById('siteTitle');
 if (_titleEl) _titleEl.textContent = T('title');
+const _badgeEl = document.getElementById('testBuildBadge');
+if (_badgeEl) _badgeEl.textContent = T('testBuild');
 const _loadingTxt = document.getElementById('loadingText');
 if (_loadingTxt) _loadingTxt.textContent = T('loading');
 const _archTitle = document.getElementById('archiveTitle');
@@ -952,6 +646,3 @@ if (_archTitle) _archTitle.textContent = T('browseByDate');
 
 renderLangToggle();
 loadMentions();
-    </script>
-</body>
-</html>
