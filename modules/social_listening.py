@@ -891,7 +891,7 @@ For EACH article, extract:
 - language: detect from content_original's actual characters. Use one of: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If `lang_hint` provided, use as tie-breaker only. (Simplified Chinese should not appear here — those were filtered.)
 - author: byline if present, else the platform domain
 - country: country of origin if detectable, else "International"
-- keywords: 2-4 single-word topic tags. Use social/product terms like "esports", "creators", "anime", "AI", "moderation", "policy". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.).
+- keywords: EXACTLY 2 or 3 single-word topic tags (max 3, never more). Use social/product terms like "esports", "creators", "anime", "AI", "moderation", "policy". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.).
 
 Return ONLY a JSON array: [{{"idx":0,"content_english":"...","content_original":"...","language":"...","author":"...","country":"...","keywords":[...]}}, ...]
 
