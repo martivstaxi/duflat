@@ -335,6 +335,13 @@ def social_reclassify():
     return jsonify(reclassify_all_mentions())
 
 
+@app.route('/social/translate-missing', methods=['POST'])
+def social_translate_missing():
+    """Admin: backfill content_chinese (Simplified) for mentions still lacking it."""
+    from modules.social_listening import translate_missing_chinese
+    return jsonify(translate_missing_chinese())
+
+
 @app.route('/social/debug-haiku', methods=['POST'])
 def social_debug_haiku():
     """Debug: process URLs through pipeline and return raw Haiku output (no save)."""

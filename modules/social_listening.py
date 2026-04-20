@@ -584,6 +584,7 @@ def save_mentions(mentions):
             'source_type': m.get('source_type', 'news_minor'),
             'content_original': original,
             'content_english': m.get('content_english', ''),
+            'content_chinese': m.get('content_chinese', ''),
             'keywords': m.get('keywords', []),
             'content_date': m.get('content_date'),
         }
@@ -887,13 +888,14 @@ If the source article mixes financial + social angles (e.g., "CFO announced AI i
 
 For EACH article, extract:
 - content_english: 1-2 sentences, plain social insight tone, non-financial
+- content_chinese: Simplified Chinese translation of content_english, same length and tone. Natural Chinese social-listening voice (not machine-literal word-for-word). Keep brand/product names in Latin letters (e.g. "Bilibili", "AniSora", "AI", "BLG", "PGL"). Use Simplified Chinese characters ONLY. This is purely for UI localization and does not change the scope rules.
 - content_original: 1-3 sentences copied VERBATIM from source text, in original language. Pick the sentences that carry the non-financial story. If only financial sentences exist, return empty string.
 - language: detect from content_original's actual characters. Use one of: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If `lang_hint` provided, use as tie-breaker only. (Simplified Chinese should not appear here — those were filtered.)
 - author: byline if present, else the platform domain
 - country: country of origin if detectable, else "International"
 - keywords: EXACTLY 2 or 3 single-word topic tags (max 3, never more). Use social/product terms like "esports", "creators", "anime", "AI", "moderation", "policy". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.).
 
-Return ONLY a JSON array: [{{"idx":0,"content_english":"...","content_original":"...","language":"...","author":"...","country":"...","keywords":[...]}}, ...]
+Return ONLY a JSON array: [{{"idx":0,"content_english":"...","content_chinese":"...","content_original":"...","language":"...","author":"...","country":"...","keywords":[...]}}, ...]
 
 Articles:
 {json.dumps(entries, ensure_ascii=False)}"""
@@ -914,6 +916,7 @@ Articles:
             'platform': src['platform'],
             'content_date': src.get('content_date', ''),
             'content_english': v.get('content_english', ''),
+            'content_chinese': v.get('content_chinese', ''),
             'content_original': v.get('content_original', ''),
             'language': v.get('language', ''),
             'author': v.get('author', ''),
@@ -1782,6 +1785,80 @@ def delete_mentions_by_domain(domain):
         return len(res.data or [])
     except Exception:
         return 0
+
+
+def translate_missing_chinese():
+    """
+    Admin: backfill content_chinese for every mention that is still missing one.
+    Uses Haiku in batches of 20 — tiny prompt, tiny output, single field per item.
+    Returns {'total': N, 'translated': M, 'skipped': K}.
+    """
+    try:
+        res = _db().table('social_mentions').select(
+            'id, content_english, content_chinese'
+        ).execute()
+        rows = res.data or []
+    except Exception as e:
+        return {'error': f'fetch_failed: {e}'}
+
+    pending = [r for r in rows if (r.get('content_english') or '').strip()
+               and not (r.get('content_chinese') or '').strip()]
+    if not pending:
+        return {'total': len(rows), 'translated': 0, 'pending': 0}
+
+    translated = 0
+    skipped = 0
+
+    for batch in _chunks(pending, 20):
+        entries = [{'idx': i, 'en': r['content_english']} for i, r in enumerate(batch)]
+        prompt = f"""Translate each English social-listening insight into Simplified Chinese.
+
+Guidelines:
+- Keep the same length and tone as the English original (short, social voice, not formal news)
+- Use natural Simplified Chinese phrasing — not machine-literal word-for-word
+- Keep brand / product / team names in Latin letters: Bilibili, AniSora, AI, BLG, PGL, Apple, Nike, etc.
+- Simplified Chinese characters ONLY (no Traditional Chinese)
+- Do not add information that is not in the English source
+- Do not change the meaning
+
+Return ONLY a JSON array: [{{"idx":0,"zh":"..."}}, ...]
+
+Items:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+        verdicts = _haiku_call(prompt, max_tokens=2048)
+        if not verdicts:
+            skipped += len(batch)
+            continue
+
+        zh_by_idx = {}
+        for v in verdicts:
+            idx = v.get('idx')
+            if idx is None or not isinstance(idx, int) or idx >= len(batch):
+                continue
+            zh = (v.get('zh') or '').strip()
+            if zh:
+                zh_by_idx[idx] = zh
+
+        for i, row in enumerate(batch):
+            zh = zh_by_idx.get(i)
+            if not zh:
+                skipped += 1
+                continue
+            try:
+                _db().table('social_mentions').update(
+                    {'content_chinese': zh}
+                ).eq('id', row['id']).execute()
+                translated += 1
+            except Exception:
+                skipped += 1
+
+    return {
+        'total': len(rows),
+        'pending': len(pending),
+        'translated': translated,
+        'skipped': skipped,
+    }
 
 
 def reclassify_all_mentions():

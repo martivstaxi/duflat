@@ -420,10 +420,17 @@ function renderMentions() {
 function renderCard(m, uid) {
     const s = m.sentiment || 'neutral';
     const sensitivity = m.sensitivity || 'low';
-    const hasOriginal = m.content_original && m.content_original !== m.content_english;
     const rawLang = m.language || 'Unknown';
     const langDisplay = TL(rawLang);
     const closeLabel = T('close');
+
+    // Card quote: localized Chinese translation if UI is zh and it exists, else English summary.
+    // content_original is never shown here — it lives inside the details panel only.
+    const displayQuote = (uiLang === 'zh' && m.content_chinese)
+        ? m.content_chinese
+        : (m.content_english || m.content_original || '');
+
+    const hasOriginal = m.content_original && m.content_original !== m.content_english;
     const detailsHtml = hasOriginal
         ? `<div class="card-details" id="det-${uid}"><div class="original-label">${escapeHtml(T('original'))} (${escapeHtml(langDisplay)})</div>${escapeHtml(m.content_original)}</div>`
         : '';
@@ -447,7 +454,7 @@ function renderCard(m, uid) {
             <span style="flex:1"></span>
             ${detailsBtn}
         </div>
-        <div class="card-quote">${escapeHtml(m.content_english || m.content_original)}</div>
+        <div class="card-quote">${escapeHtml(displayQuote)}</div>
         ${detailsHtml}
         ${tagsHtml ? `<div class="card-bottom">${tagsHtml}</div>` : ''}
     </div>`;
