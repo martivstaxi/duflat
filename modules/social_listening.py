@@ -955,10 +955,16 @@ Assign three labels for EACH mention, based on content_english and content_origi
    - neutral: informational, mixed, ambiguous
 
 2. sensitivity: "critical" | "high" | "medium" | "low"
-   - "critical" — CRISIS LEVEL requiring PR response within 24h: government/regulatory action (ban, investigation, sanctions, legal action), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown).
-   - "high" — NOTABLE CONCERN worth monitoring: creator exodus, major talent departure, moderation/censorship dispute gaining traction, competitor gaining market share, negative industry opinion or journalist critique, content policy criticism, product/feature complaints going viral, minor controversy spreading beyond niche circles.
-   - "medium" — INFORMATIONAL routine coverage: feature launches, partnership announcements, neutral news reports, creator announcements, industry overview discussing Bilibili substantively, product updates.
-   - "low" — PASSING MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content.
+   - "critical" (P0) — CRISIS LEVEL requiring PR response within 24h: government/regulatory action (ban, investigation, sanctions, legal action, court rulings against Bilibili), data breach or security incident, major media exposé or scandal coverage, large-scale user backlash or viral controversy, content safety incident (child safety, illegal content takedown).
+   - "high" (P1) — NOTABLE EVENT worth highlighting, NOT routine. Can be positive OR negative. Rule of thumb: a reader skimming their feed would pause at this. Examples:
+     * Major positive milestones: first-ever international esports title win, record-breaking engagement numbers (100M+ viewers, MAU/DAU all-time highs), breakthrough cultural events (NYE/Spring Festival Gala with hundreds of millions of viewers)
+     * Strategic launches: open-sourcing a major AI model, flagship product release (AniSora major version), algorithm overhauls that change the user experience
+     * Notable brand/partnership moves: global brand entering the platform for the first time (Apple, Nike etc.), major exclusive deal
+     * Competitive/industry shifts: losing to or beating a major competitor, notable market-share move, competitor gaining ground on Bilibili
+     * Notable concerns short of crisis: data privacy or security complaints gaining traction, moderation disputes spreading, creator frustrations going viral, negative journalist critique, safety research findings about the platform
+   - "medium" (P2, shown) — INFORMATIONAL routine coverage: regular feature updates, ordinary partnership announcements, routine neutral news reports, typical creator announcements, match previews without high stakes, industry overview where Bilibili is discussed substantively but not the star.
+   - "low" (P2, shown) — PASSING MENTION: Bilibili appears in a long list or brief reference, aggregator scraping with no substantive content.
+   IMPORTANT: Do not default to "low". Most content falls between "high" and "medium". If the story involves a concrete milestone, a notable shift, a measurable controversy, or a non-trivial event → lean toward "high". If it's a routine update or an ordinary news item with no particular stakes → "medium".
 
 3. source_type: "government" | "news_major" | "news_minor" | "blog" | "forum" | "social"
    - government: regulator, ministry, official agency (NOT financial regulators — those wouldn't be here)
@@ -1664,6 +1670,60 @@ def delete_mentions_by_domain(domain):
         return len(res.data or [])
     except Exception:
         return 0
+
+
+def reclassify_all_mentions():
+    """
+    Admin: re-run L3 classification on every existing mention in the DB.
+    Useful after tuning the sensitivity / sentiment / source_type rules.
+    Returns {'total': N, 'updated': M, 'before': {...}, 'after': {...}}.
+    """
+    try:
+        res = _db().table('social_mentions').select(
+            'id, platform, content_english, content_original, sentiment, sensitivity, source_type'
+        ).execute()
+        rows = res.data or []
+    except Exception as e:
+        return {'error': f'fetch_failed: {e}'}
+
+    if not rows:
+        return {'total': 0, 'updated': 0}
+
+    from collections import Counter
+    before = Counter(r.get('sensitivity', 'low') for r in rows)
+
+    # Build mention-like dicts for _layer3_classify
+    mentions = [{
+        'platform': r.get('platform', ''),
+        'content_english': r.get('content_english', ''),
+        'content_original': r.get('content_original', ''),
+        '_id': r['id'],
+    } for r in rows]
+
+    classified = _layer3_classify(mentions)
+
+    updated = 0
+    for m in classified:
+        mid = m.get('_id')
+        if not mid:
+            continue
+        try:
+            _db().table('social_mentions').update({
+                'sentiment': m.get('sentiment', 'neutral'),
+                'sensitivity': m.get('sensitivity', 'low'),
+                'source_type': m.get('source_type', 'news_minor'),
+            }).eq('id', mid).execute()
+            updated += 1
+        except Exception:
+            continue
+
+    after = Counter(m.get('sensitivity', 'low') for m in classified)
+    return {
+        'total': len(rows),
+        'updated': updated,
+        'before': dict(before),
+        'after': dict(after),
+    }
 
 
 def update_mention(mid, content_english=None, content_original=None, language=None):

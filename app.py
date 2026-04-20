@@ -328,6 +328,13 @@ def social_cleanup():
     return jsonify(result)
 
 
+@app.route('/social/reclassify', methods=['POST'])
+def social_reclassify():
+    """Admin: re-run L3 classification on every existing mention with the current rules."""
+    from modules.social_listening import reclassify_all_mentions
+    return jsonify(reclassify_all_mentions())
+
+
 @app.route('/social/debug-haiku', methods=['POST'])
 def social_debug_haiku():
     """Debug: process URLs through pipeline and return raw Haiku output (no save)."""
