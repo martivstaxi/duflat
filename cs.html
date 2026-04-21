@@ -3,66 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat — CS Reviews (BiliBili)</title>
+    <title>Duflat — CS Reviews</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/cs_style.css">
 </head>
 <body>
-    <main>
-        <header class="cs-header">
-            <div class="cs-title-row">
-                <h1 class="cs-title">CS Reviews</h1>
-                <span class="cs-app-pill" id="appPill">BiliBili</span>
-            </div>
-            <p class="cs-sub">Apple App Store + Google Play yorumlari, tum dunya, ham metin.</p>
-
-            <div class="cs-stats" id="statsRow">
-                <div class="cs-stat"><span class="cs-stat-num" id="statTotal">—</span><span class="cs-stat-lbl">son 24sa</span></div>
-                <div class="cs-stat"><span class="cs-stat-num" id="statApple">—</span><span class="cs-stat-lbl">Apple</span></div>
-                <div class="cs-stat"><span class="cs-stat-num" id="statGplay">—</span><span class="cs-stat-lbl">Google Play</span></div>
-                <div class="cs-stat"><span class="cs-stat-num" id="statAvg">—</span><span class="cs-stat-lbl">ort. puan</span></div>
-            </div>
+    <div class="container">
+        <header>
+            <h1>CS Reviews</h1>
+            <p class="sub" id="subLine">BiliBili · Apple App Store & Google Play</p>
         </header>
 
-        <section class="cs-filters">
-            <select id="fPlatform">
-                <option value="">Tum platformlar</option>
-                <option value="apple">Apple</option>
-                <option value="google_play">Google Play</option>
-            </select>
-            <select id="fRating">
-                <option value="">Tum puanlar</option>
-                <option value="5">5 yildiz</option>
-                <option value="4">4 yildiz</option>
-                <option value="3">3 yildiz</option>
-                <option value="2">2 yildiz</option>
-                <option value="1">1 yildiz</option>
-            </select>
-            <select id="fDays">
-                <option value="d1">Son 1 gun</option>
-                <option value="d3">Son 3 gun</option>
-                <option value="d7">Son 7 gun</option>
-                <option value="d30">Son 30 gun</option>
-                <option value="y2026" selected>2026</option>
-            </select>
-            <input id="fCountry" type="text" placeholder="Ulke (us, jp, tw...)" maxlength="2" spellcheck="false">
-            <input id="fSearch" type="text" placeholder="Metinde ara..." spellcheck="false">
-            <button id="btnRefresh" class="btn-primary">Yenile</button>
-            <button id="btnPoll" class="btn-ghost" title="Yeni yorumlari tara (~1–2 dk)">Simdi tara</button>
-        </section>
+        <div class="rating-btns" id="ratingBtns"></div>
+        <div id="filterDropdownAnchor"></div>
+        <div class="active-chips" id="activeChips"></div>
 
-        <div id="lastPoll" class="cs-lastpoll"></div>
-        <div id="statusMsg" class="cs-status"></div>
-
-        <section id="reviewList" class="cs-list"></section>
-
-        <div id="loader" class="cs-loader" hidden>
-            <div class="spinner"></div>
-            <div id="loaderText">Yukleniyor...</div>
+        <div id="content">
+            <div class="loading"><div class="spinner"></div><span id="loadingText">Yorumlar yukleniyor...</span></div>
         </div>
-    </main>
+
+        <div class="footer-info" id="footerInfo"></div>
+
+        <button id="btnPoll" class="poll-fab" title="Yeni yorumlari tara (~1-2 dk)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            <span>Simdi tara</span>
+        </button>
+    </div>
 
     <script src="/static/cs_app.js"></script>
 </body>
