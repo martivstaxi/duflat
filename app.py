@@ -493,11 +493,15 @@ def cs_reviews_list():
     else:
         stats = cs_reviews.get_stats(days=1)
     last = cs_reviews.get_last_poll()
+    dates = cs_reviews.get_available_dates(
+        year=year, days=int(days) if days else None,
+    )
     return jsonify({
         'reviews': rows,
         'stats': stats,
         'last_poll': last,
         'app': cs_reviews.APP_CONFIG,
+        'available_dates': dates,
     })
 
 

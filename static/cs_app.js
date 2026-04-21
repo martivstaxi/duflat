@@ -4,17 +4,26 @@ const API = (location.hostname === 'localhost' || location.hostname === '127.0.0
 
 if (API) fetch(API + '/ping').catch(() => {});
 
-const CACHE_KEY = 'cs_reviews_cache';
+const CACHE_KEY = 'cs_reviews_cache_v2';
 const CACHE_TTL = 5 * 60 * 1000;
 
+const DATES_PER_PAGE = 4;
+const MONTHS_TR = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
+const DAY_SHORT_TR = ['Pz','Pt','Sa','Ca','Pe','Cu','Ct'];
+
 let allReviews = [];
+let allDates = [];
 let lastPollMeta = null;
 let appInfo = null;
 
-let currentRating = 'all';     // 'all' | 1..5
-let currentPlatform = 'all';   // 'all' | 'apple' | 'google_play'
-let currentCountry = 'all';    // 'all' | 'us' | 'jp' | ...
+let currentRating = 'all';         // 'all' | 1..5
+let currentPlatform = 'all';       // 'all' | 'apple' | 'google_play'
+let currentCountry = 'all';        // 'all' | 'us' | 'jp' | ...
 let currentYear = new Date().getFullYear().toString();
+let currentDateFilter = null;      // 'YYYY-MM-DD' or null
+let archivePage = 0;               // bottom navigator page
+let filterMonth = null;            // 0..11 when a month is being browsed in dropdown
+let showMonths = false;            // month-list visible inside dropdown
 let filterOpen = false;
 
 const els = {
@@ -25,6 +34,8 @@ const els = {
     footer: document.getElementById('footerInfo'),
     pollBtn: document.getElementById('btnPoll'),
     subLine: document.getElementById('subLine'),
+    archive: document.getElementById('archiveSection'),
+    archiveDates: document.getElementById('archiveDates'),
 };
 
 function escapeHtml(s) {
@@ -66,6 +77,7 @@ function applyData(data) {
     const rows = (data.reviews || []).slice();
     rows.sort((a, b) => (b.review_date || '').localeCompare(a.review_date || ''));
     allReviews = rows;
+    allDates = (data.available_dates || []).slice().sort((a, b) => b.localeCompare(a));
     lastPollMeta = data.last_poll || null;
     appInfo = data.app || null;
     if (appInfo && appInfo.name) {
@@ -105,11 +117,14 @@ async function loadReviews() {
 }
 
 // ── Filtering ──────────────────────────────
+function dateOf(r) { return (r.review_date || '').slice(0, 10); }
+
 function getFiltered() {
     return allReviews.filter(r => {
         if (currentRating !== 'all' && r.rating !== currentRating) return false;
         if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
         if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
+        if (currentDateFilter && dateOf(r) !== currentDateFilter) return false;
         return true;
     });
 }
@@ -118,6 +133,7 @@ function getRatingBase() {
     return allReviews.filter(r => {
         if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
         if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
+        if (currentDateFilter && dateOf(r) !== currentDateFilter) return false;
         return true;
     });
 }
@@ -128,6 +144,7 @@ function renderAll() {
     renderFilterDropdown();
     renderActiveChips();
     renderReviews();
+    renderArchive();
     renderFooter();
 }
 
@@ -161,6 +178,7 @@ function updateFilterToggle() {
     let count = 0;
     if (currentPlatform !== 'all') count++;
     if (currentCountry !== 'all') count++;
+    if (currentDateFilter) count++;
     btn.classList.toggle('has-filter', count > 0);
     const existing = btn.querySelector('.filter-badge');
     if (existing) existing.remove();
@@ -203,6 +221,62 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
+    // ── Date section: year → month list → calendar
+    const dateSet = new Set(allDates);
+    const yearActive = !currentDateFilter && filterMonth === null && !showMonths;
+    html += `<div class="filter-section">
+        <div class="filter-section-title">Tarih</div>
+        <div class="filter-options">
+            <button class="filter-option ${yearActive?'active':''}" onclick="filterSelectYear()">${escapeHtml(currentYear)}<span class="opt-count">${allReviews.length}</span></button>
+            <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Ay sec</button>`;
+
+    if (showMonths && filterMonth === null) {
+        const monthCounts = {};
+        allReviews.forEach(r => {
+            const d = dateOf(r);
+            if (!d) return;
+            const mo = parseInt(d.slice(5, 7), 10) - 1;
+            if (mo >= 0 && mo < 12) monthCounts[mo] = (monthCounts[mo] || 0) + 1;
+        });
+        const currentMonth = new Date().getMonth();
+        for (let mo = 0; mo < 12; mo++) {
+            const cnt = monthCounts[mo] || 0;
+            const disabled = mo > currentMonth || cnt === 0;
+            const cls = disabled ? 'filter-option disabled' : 'filter-option';
+            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(MONTHS_TR[mo])}<span class="opt-count">${cnt}</span></button>`;
+        }
+        html += `</div>`;
+    } else if (filterMonth !== null) {
+        const mo = filterMonth;
+        const year = parseInt(currentYear, 10);
+        const daysInMonth = new Date(year, mo + 1, 0).getDate();
+        const firstDay = new Date(year, mo, 1).getDay();
+        const currentMonth = new Date().getMonth();
+        html += `</div>
+        <div class="cal-header">
+            <button onclick="filterCalPrev(event)" ${filterMonth===0?'disabled':''}>&#8249;</button>
+            <span class="cal-title">${escapeHtml(MONTHS_TR[mo])} ${year}</span>
+            <button onclick="filterCalNext(event)" ${filterMonth>=currentMonth?'disabled':''}>&#8250;</button>
+        </div>
+        <div class="cal-grid">`;
+        DAY_SHORT_TR.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
+        for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const hasContent = dateSet.has(dateStr);
+            const isActive = currentDateFilter === dateStr;
+            let cls = 'cal-day';
+            if (!hasContent) cls += ' disabled';
+            else cls += ' has-content';
+            if (isActive) cls += ' active';
+            html += `<button class="${cls}" onclick="filterPickDate('${dateStr}')">${d}</button>`;
+        }
+        html += `</div>`;
+    } else {
+        html += `</div>`;
+    }
+    html += `</div>`;
+
     let dropdown = els.filterAnchor.querySelector('.filter-dropdown');
     if (!dropdown) {
         els.filterAnchor.innerHTML = '<div class="filter-dropdown"></div>';
@@ -222,6 +296,11 @@ function renderActiveChips() {
     }
     if (currentCountry !== 'all') {
         html += `<span class="chip">${escapeHtml(currentCountry.toUpperCase())}<button class="chip-remove" onclick="setCountry('all')">&times;</button></span>`;
+    }
+    if (currentDateFilter) {
+        const dt = new Date(currentDateFilter + 'T00:00:00');
+        const label = dt.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
+        html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     els.activeChips.innerHTML = html;
 }
@@ -257,7 +336,7 @@ function renderCard(r) {
     const author = r.author ? `<span class="author">${escapeHtml(r.author)}</span>` : '';
     const version = r.app_version ? `<span class="version">v${escapeHtml(r.app_version)}</span>` : '';
     const platform = r.platform || '';
-    return `<div class="review-card">
+    return `<div class="review-card r${rating}">
         ${marker}
         <div class="card-top">
             <span class="platform-badge ${platform}">${escapeHtml(platformLabel(platform))}</span>
@@ -269,6 +348,112 @@ function renderCard(r) {
         ${title}
         <div class="card-content">${escapeHtml(r.content || '')}</div>
     </div>`;
+}
+
+function renderArchive() {
+    if (!allDates.length) {
+        els.archive.style.display = 'none';
+        return;
+    }
+    els.archive.style.display = '';
+    const start = archivePage * DATES_PER_PAGE;
+    const end = Math.min(start + DATES_PER_PAGE, allDates.length);
+    const pageDates = allDates.slice(start, end);
+    const hasPrev = archivePage > 0;
+    const hasNext = end < allDates.length;
+
+    const prevSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+    const nextSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
+
+    let html = '';
+    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Yeni">${prevSvg}</button>`;
+    html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
+        <span class="day">Tumu</span><span class="month">tarih</span>
+    </button>`;
+    pageDates.forEach(d => {
+        const dt = new Date(d + 'T00:00:00');
+        const day = dt.getDate();
+        const month = dt.toLocaleDateString('tr-TR', { month: 'short' });
+        html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
+            <span class="day">${day}</span><span class="month">${escapeHtml(month)}</span>
+        </button>`;
+    });
+    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Eski">${nextSvg}</button>`;
+    els.archiveDates.innerHTML = html;
+}
+
+function archivePrev() {
+    if (archivePage <= 0) return;
+    const y = els.archive.getBoundingClientRect().top;
+    archivePage--;
+    renderArchive();
+    const drift = els.archive.getBoundingClientRect().top - y;
+    if (Math.abs(drift) > 2) window.scrollBy(0, drift);
+}
+
+function archiveNext() {
+    const totalPages = Math.ceil(allDates.length / DATES_PER_PAGE);
+    if (archivePage >= totalPages - 1) return;
+    const y = els.archive.getBoundingClientRect().top;
+    archivePage++;
+    renderArchive();
+    const drift = els.archive.getBoundingClientRect().top - y;
+    if (Math.abs(drift) > 2) window.scrollBy(0, drift);
+}
+
+function selectDate(date) {
+    const y = els.archive.getBoundingClientRect().top;
+    currentDateFilter = date;
+    if (!date) {
+        archivePage = 0;
+        filterMonth = null;
+        showMonths = false;
+    } else {
+        filterMonth = parseInt(date.slice(5, 7), 10) - 1;
+    }
+    renderAll();
+    const drift = els.archive.getBoundingClientRect().top - y;
+    if (Math.abs(drift) > 2) window.scrollBy(0, drift);
+}
+
+function filterSelectYear() {
+    filterMonth = null;
+    showMonths = false;
+    filterOpen = false;
+    els.filterAnchor.classList.remove('open');
+    if (currentDateFilter) selectDate(null);
+    else renderAll();
+}
+
+function toggleMonths(e) {
+    if (e) e.stopPropagation();
+    showMonths = !showMonths;
+    filterMonth = null;
+    renderFilterDropdown();
+}
+
+function filterSelectMonth(e, mo) {
+    if (e) e.stopPropagation();
+    filterMonth = mo;
+    showMonths = false;
+    renderFilterDropdown();
+}
+
+function filterCalPrev(e) {
+    if (e) e.stopPropagation();
+    if (filterMonth > 0) { filterMonth--; renderFilterDropdown(); }
+}
+
+function filterCalNext(e) {
+    if (e) e.stopPropagation();
+    const currentMonth = new Date().getMonth();
+    if (filterMonth < currentMonth) { filterMonth++; renderFilterDropdown(); }
+}
+
+function filterPickDate(dateStr) {
+    filterOpen = false;
+    els.filterAnchor.classList.remove('open');
+    selectDate(dateStr);
 }
 
 function renderFooter() {
