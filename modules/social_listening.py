@@ -2096,7 +2096,7 @@ def _fetch_bluesky_posts(query, limit=100):
     import time
     from urllib.parse import quote_plus
     url = (
-        'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts'
+        'https://api.bsky.app/xrpc/app.bsky.feed.searchPosts'
         f'?q={quote_plus(query)}&limit={limit}&sort=latest'
     )
     try:
