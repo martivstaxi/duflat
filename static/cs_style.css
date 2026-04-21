@@ -254,18 +254,6 @@ header .sub {
     border-color: var(--border);
 }
 
-/* Left-edge accent for low ratings (3px overlay on the 1px border) */
-.review-card::before {
-    content: ''; position: absolute;
-    left: -1px; top: -1px; bottom: -1px; width: 3px;
-    border-top-left-radius: 18px; border-bottom-left-radius: 18px;
-    background: transparent; pointer-events: none;
-    transition: background .2s var(--ease);
-}
-.review-card.r1::before { background: var(--negative); }
-.review-card.r2::before { background: #c86a48; }
-.review-card.r3::before { background: var(--neutral); }
-
 .rating-marker {
     position: absolute; left: -32px; top: 20px;
     width: 22px; height: 22px; border-radius: 50%;
@@ -418,9 +406,6 @@ header .sub {
         width: 20px; height: 20px; font-size: .56rem;
     }
     .review-card { padding: 16px 16px; border-radius: 16px; }
-    .review-card::before {
-        border-top-left-radius: 16px; border-bottom-left-radius: 16px;
-    }
     .card-content { font-size: .88rem; line-height: 1.55; }
     .card-title { font-size: .94rem; }
     .card-top { font-size: .68rem; }

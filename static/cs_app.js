@@ -336,7 +336,7 @@ function renderCard(r) {
     const author = r.author ? `<span class="author">${escapeHtml(r.author)}</span>` : '';
     const version = r.app_version ? `<span class="version">v${escapeHtml(r.app_version)}</span>` : '';
     const platform = r.platform || '';
-    return `<div class="review-card r${rating}">
+    return `<div class="review-card">
         ${marker}
         <div class="card-top">
             <span class="platform-badge ${platform}">${escapeHtml(platformLabel(platform))}</span>
