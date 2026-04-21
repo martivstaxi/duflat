@@ -618,6 +618,7 @@ def save_mentions(mentions):
     if alert_queue:
         _send_telegram_alerts(alert_queue)
         _send_email_alerts(alert_queue)
+        _send_wecom_alerts(alert_queue)
 
     return {
         'saved': saved,
@@ -720,6 +721,47 @@ def _send_email_alerts(mentions):
                 print(f'[resend] {r.status_code} {r.text[:300]}', flush=True)
         except Exception as e:
             print(f'[resend] exception {e}', flush=True)
+
+
+# ─────────────────────────────────────────────
+# WECOM ALERTS
+# ─────────────────────────────────────────────
+
+def _send_wecom_alerts(mentions):
+    """Send WeCom (企业微信) webhook notification for critical (P0) mentions."""
+    key = os.environ.get('WECOM_WEBHOOK_KEY', '')
+    if not key:
+        return
+
+    endpoint = f'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={key}'
+
+    for m in mentions:
+        sensitivity = m.get('sensitivity', 'low')
+        source_type = m.get('source_type', '')
+        platform = m.get('platform', '')
+        sentiment = m.get('sentiment', 'neutral')
+        content = m.get('content_english', '')
+        date = m.get('content_date', 'unknown')
+        url = m.get('url', '')
+
+        content_md = (
+            f'# <font color="warning">{sensitivity.upper()} mention detected</font>\n\n'
+            f'{content}\n\n'
+            f'> **Source:** {source_type} — {platform}\n'
+            f'> **Sentiment:** {sentiment}\n'
+            f'> **Date:** {date}'
+        )
+        if url:
+            content_md += f'\n> **Link:** [{url}]({url})'
+
+        try:
+            requests.post(
+                endpoint,
+                json={'msgtype': 'markdown', 'markdown': {'content': content_md}},
+                timeout=10,
+            )
+        except Exception:
+            pass  # alert failure should never block the pipeline
 
 
 # ─────────────────────────────────────────────

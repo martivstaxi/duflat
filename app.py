@@ -53,18 +53,23 @@ def ping():
 
 @app.route('/social/test-alert')
 def test_alert():
-    from modules.social_listening import _send_telegram_alerts, _send_email_alerts
+    from modules.social_listening import (
+        _send_telegram_alerts,
+        _send_email_alerts,
+        _send_wecom_alerts,
+    )
     test = [{
         'sensitivity': 'critical',
         'source_type': 'government',
         'platform': 'Test',
         'content_english': 'This is a test alert from Duflat Social Listening.',
         'sentiment': 'negative',
-        'content_date': '2026-04-17',
+        'content_date': '2026-04-21',
         'url': 'https://duflat.com/social',
     }]
     _send_telegram_alerts(test)
     _send_email_alerts(test)
+    _send_wecom_alerts(test)
     return jsonify({'status': 'sent'})
 
 
