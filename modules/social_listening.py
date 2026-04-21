@@ -1760,6 +1760,9 @@ def auto_discover(languages=None):
 _REDDIT_SUBREDDITS = [
     'Bilibili', 'gachagaming', 'China', 'HongKong',
     'animepiracy', 'Sino', 'Vtubers',
+    'anime', 'animenews', 'AnimeSuggest',
+    'GenshinImpact', 'HonkaiStarRail', 'Genshin_Impact',
+    'LeagueOfLegends', 'VtubersAdv', 'VCJ',
 ]
 
 _REDDIT_UA = 'Mozilla/5.0 (Duflat Social Listening) python-requests'
