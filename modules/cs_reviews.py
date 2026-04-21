@@ -37,6 +37,10 @@ APP_CONFIG = {
     'ios_id': '736536022',  # bilibili — "All Your Fav Videos" (bundle id tv.danmaku.bilianime)
 }
 
+# Country-state knobs — adjust here.
+INACTIVE_THRESHOLD = 3   # consecutive empty polls → country marked inactive
+DISCOVERY_DAYS = 30      # force a full re-scan of every country this often
+
 APPLE_COUNTRIES = [
     'us', 'gb', 'ca', 'au', 'nz', 'ie',
     'de', 'fr', 'it', 'es', 'nl', 'be', 'ch', 'at', 'se', 'no', 'dk', 'fi',
@@ -381,30 +385,153 @@ def save_reviews(reviews):
 
 
 # ─────────────────────────────────────────────
+# COUNTRY STATE — active / inactive tracking
+# ─────────────────────────────────────────────
+
+def _load_country_state():
+    """Return {(platform, country): row} — one entry per tracked pair."""
+    try:
+        res = _db().table('cs_country_state').select('*').execute()
+        return {(r['platform'], r['country']): r for r in (res.data or [])}
+    except Exception:
+        return {}
+
+
+def _last_full_scan_age_days():
+    """Days since the most recent full_scan=True poll_log row.
+    Returns None if we've never done one — which means we must do one now."""
+    try:
+        res = (_db().table('cs_poll_log')
+               .select('started_at')
+               .eq('full_scan', True)
+               .order('started_at', desc=True)
+               .limit(1).execute())
+        rows = res.data or []
+    except Exception:
+        return None
+    if not rows:
+        return None
+    try:
+        s = rows[0]['started_at']
+        if s.endswith('Z'):
+            s = s[:-1] + '+00:00'
+        t = datetime.fromisoformat(s)
+        return (datetime.now(timezone.utc) - t).total_seconds() / 86400
+    except Exception:
+        return None
+
+
+def _should_skip(platform, country, state, full_scan):
+    """Skip only inactive countries outside of discovery (full_scan) cycles."""
+    if full_scan:
+        return False
+    s = state.get((platform, country))
+    if not s:
+        return False  # never polled — must try at least once
+    return s.get('status') == 'inactive'
+
+
+def _update_country_state(counts):
+    """Upsert (platform, country, reviews_found) observations into state.
+    Keeps the consecutive-empty counter and promotes status accordingly."""
+    if not counts:
+        return
+    now_iso = datetime.now(timezone.utc).isoformat()
+    prev_map = _load_country_state()
+    rows = []
+    for platform, country, count in counts:
+        prev = prev_map.get((platform, country), {})
+        prev_empty = prev.get('consecutive_empty_count') or 0
+        prev_active_at = prev.get('last_active_at')
+        if count > 0:
+            status = 'active'
+            empty = 0
+            last_active = now_iso
+        else:
+            empty = prev_empty + 1
+            status = 'inactive' if empty >= INACTIVE_THRESHOLD else 'unknown'
+            last_active = prev_active_at
+        rows.append({
+            'platform': platform,
+            'country': country,
+            'status': status,
+            'last_poll_at': now_iso,
+            'last_active_at': last_active,
+            'last_review_count': count,
+            'consecutive_empty_count': empty,
+        })
+    try:
+        _db().table('cs_country_state').upsert(rows, on_conflict='platform,country').execute()
+    except Exception as e:
+        print(f'[cs] country_state upsert failed: {e}')
+
+
+def get_country_state(platform=None):
+    """Read the full state table, optionally filtered by platform."""
+    try:
+        q = _db().table('cs_country_state').select('*')
+        if platform:
+            q = q.eq('platform', platform)
+        res = q.order('platform').order('country').execute()
+        return res.data or []
+    except Exception:
+        return []
+
+
+# ─────────────────────────────────────────────
 # POLL ORCHESTRATOR
 # ─────────────────────────────────────────────
 
-def poll_all(platform=None, max_workers=10, log=True):
-    """Poll every configured country for the given platform(s)
-    ('apple', 'google_play', or None for both) and save new rows."""
-    started = time.time()
-    stats = {'platforms': {}, 'total_fetched': 0, 'total_new': 0, 'duration_sec': 0}
+def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
+    """Poll every configured country for the given platform(s).
 
-    jobs = []
+    platform : 'apple' | 'google_play' | None (both)
+    full_scan: True  → scan every country (including inactive ones)
+               False → scan only active/unknown countries
+               None  → auto: full scan if the last one was > DISCOVERY_DAYS ago."""
+    started = time.time()
+    stats = {
+        'platforms': {}, 'total_fetched': 0, 'total_new': 0,
+        'duration_sec': 0, 'full_scan': False,
+        'countries_scanned': 0, 'countries_skipped': 0,
+    }
+
+    if full_scan is None:
+        age = _last_full_scan_age_days()
+        full_scan = (age is None) or (age >= DISCOVERY_DAYS)
+    stats['full_scan'] = bool(full_scan)
+
+    state = _load_country_state() if not full_scan else {}
+
+    jobs, skipped = [], 0
     if platform in (None, 'apple'):
-        jobs.extend(('apple', cc, None) for cc in APPLE_COUNTRIES)
+        for cc in APPLE_COUNTRIES:
+            if _should_skip('apple', cc, state, full_scan):
+                skipped += 1
+            else:
+                jobs.append(('apple', cc, None))
     if platform in (None, 'google_play'):
-        jobs.extend(('google_play', cc, lg) for cc, lg in GPLAY_COUNTRIES.items())
+        for cc, lg in GPLAY_COUNTRIES.items():
+            if _should_skip('google_play', cc, state, full_scan):
+                skipped += 1
+            else:
+                jobs.append(('google_play', cc, lg))
+    stats['countries_scanned'] = len(jobs)
+    stats['countries_skipped'] = skipped
 
     gathered = {'apple': [], 'google_play': []}
+    counts = []  # (platform, country, review_count) for state update
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futs = {pool.submit(_poll_one, plat, cc, lg): plat for plat, cc, lg in jobs}
+        futs = {pool.submit(_poll_one, plat, cc, lg): (plat, cc)
+                for plat, cc, lg in jobs}
         for fut in as_completed(futs):
-            plat = futs[fut]
+            plat, cc = futs[fut]
             try:
-                gathered[plat].extend(fut.result() or [])
+                revs = fut.result() or []
             except Exception:
-                pass
+                revs = []
+            gathered[plat].extend(revs)
+            counts.append((plat, cc, len(revs)))
 
     for plat, revs in gathered.items():
         if not revs and (platform and platform != plat):
@@ -414,11 +541,16 @@ def poll_all(platform=None, max_workers=10, log=True):
         stats['total_fetched'] += len(revs)
         stats['total_new'] += save.get('saved', 0)
 
+    _update_country_state(counts)
+
     if log:
         try:
             _db().table('cs_poll_log').insert({
                 'platform': platform or 'both',
                 'country': 'ALL',
+                'full_scan': bool(full_scan),
+                'countries_scanned': stats['countries_scanned'],
+                'countries_skipped': stats['countries_skipped'],
                 'reviews_fetched': stats['total_fetched'],
                 'reviews_new': stats['total_new'],
                 'finished_at': datetime.now(timezone.utc).isoformat(),

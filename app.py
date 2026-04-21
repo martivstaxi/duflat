@@ -500,9 +500,11 @@ def cs_reviews_list():
 _cs_poll_state = {'active': False, 'last_result': None}
 
 
-def _cs_poll_background(platform):
+def _cs_poll_background(platform, full_scan):
     try:
-        _cs_poll_state['last_result'] = cs_reviews.poll_all(platform=platform)
+        _cs_poll_state['last_result'] = cs_reviews.poll_all(
+            platform=platform, full_scan=full_scan,
+        )
     except Exception as e:
         _cs_poll_state['last_result'] = {'error': str(e)}
         print(f'[cs_poll] background error: {e}')
@@ -517,19 +519,23 @@ def cs_poll():
     Body:
         {"platform": "apple"|"google_play"|null}  which platform(s)
         {"wait": true}                             block until finished (for UI)
+        {"full_scan": true}                        force re-scan of every country
 
     Default is fire-and-forget: returns 202 in <1s and runs in a
     background thread. Cron services (30s timeouts) should use the
-    default. The frontend button sets wait=true to get stats inline."""
+    default. The frontend button sets wait=true to get stats inline.
+    When full_scan is omitted, a 30-day discovery cycle is applied
+    automatically."""
     body = request.get_json(silent=True) or {}
     platform = body.get('platform')
     wait = bool(body.get('wait'))
+    full_scan = body.get('full_scan')  # True | False | None (auto)
     if platform not in (None, 'apple', 'google_play'):
         return jsonify({'error': 'platform must be apple, google_play, or null'}), 400
 
     if wait:
         try:
-            stats = cs_reviews.poll_all(platform=platform)
+            stats = cs_reviews.poll_all(platform=platform, full_scan=full_scan)
             return jsonify(stats)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -538,9 +544,31 @@ def cs_poll():
         return jsonify({'status': 'already_running'}), 202
 
     _cs_poll_state['active'] = True
-    t = threading.Thread(target=_cs_poll_background, args=(platform,), daemon=True)
+    t = threading.Thread(
+        target=_cs_poll_background, args=(platform, full_scan), daemon=True,
+    )
     t.start()
-    return jsonify({'status': 'started', 'platform': platform or 'both'}), 202
+    return jsonify({'status': 'started', 'platform': platform or 'both',
+                    'full_scan_requested': full_scan}), 202
+
+
+@app.route('/cs/countries', methods=['GET'])
+def cs_countries():
+    """Per-country status: which platforms are active/inactive/unknown."""
+    platform = request.args.get('platform') or None
+    rows = cs_reviews.get_country_state(platform=platform)
+    summary = {'active': 0, 'inactive': 0, 'unknown': 0}
+    for r in rows:
+        s = r.get('status', 'unknown')
+        summary[s] = summary.get(s, 0) + 1
+    return jsonify({
+        'summary': summary,
+        'config': {
+            'inactive_threshold': cs_reviews.INACTIVE_THRESHOLD,
+            'discovery_days': cs_reviews.DISCOVERY_DAYS,
+        },
+        'countries': rows,
+    })
 
 
 @app.route('/cs/poll-status', methods=['GET'])

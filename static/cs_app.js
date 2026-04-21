@@ -103,8 +103,16 @@ function renderStats(stats, lastPoll, app) {
 
     if (lastPoll) {
         const t = lastPoll.finished_at || lastPoll.started_at;
-        els.lastPoll.textContent = 'Son tarama: ' + (t ? relativeTime(t) : '—')
-            + (lastPoll.reviews_new != null ? ` · ${lastPoll.reviews_new} yeni` : '');
+        const parts = ['Son tarama: ' + (t ? relativeTime(t) : '—')];
+        if (lastPoll.reviews_new != null) parts.push(`${lastPoll.reviews_new} yeni yorum`);
+        if (lastPoll.countries_scanned != null) {
+            const skipTxt = lastPoll.countries_skipped
+                ? ` (${lastPoll.countries_skipped} pas)`
+                : '';
+            parts.push(`${lastPoll.countries_scanned} ulke tarandi${skipTxt}`);
+        }
+        if (lastPoll.full_scan) parts.push('tam tarama');
+        els.lastPoll.textContent = parts.join(' · ');
     } else {
         els.lastPoll.textContent = 'Henuz tarama yapilmadi.';
     }
@@ -149,7 +157,14 @@ async function triggerPoll() {
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        showStatus(`Tarama bitti · ${data.total_new || 0} yeni yorum · ${data.duration_sec || 0}s`, 'ok');
+        const extra = data.countries_scanned != null
+            ? ` · ${data.countries_scanned} ulke${data.countries_skipped ? ` (${data.countries_skipped} pas)` : ''}`
+            : '';
+        const fs = data.full_scan ? ' · tam tarama' : '';
+        showStatus(
+            `Tarama bitti · ${data.total_new || 0} yeni yorum${extra}${fs} · ${data.duration_sec || 0}s`,
+            'ok',
+        );
         await load();
     } catch (e) {
         showStatus('Tarama hatasi: ' + e.message, 'err');
