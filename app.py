@@ -26,6 +26,7 @@ from modules.social_listening import (
     get_mentions, compute_stats_and_dates, scan_urls,
     delete_mentions, update_mention, auto_discover, _analyze_with_haiku,
 )
+from modules import cs_reviews
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -41,6 +42,11 @@ if _supa_url and _supa_key:
         print(f'Supabase connected: {_supa_url[:40]}...')
     except Exception as e:
         print(f'Supabase init failed: {e}')
+    try:
+        cs_reviews.init_supabase(_supa_url, _supa_key)
+        print('CS reviews Supabase client ready')
+    except Exception as e:
+        print(f'CS reviews Supabase init failed: {e}')
 
 # ─────────────────────────────────────────────
 # MAIN ROUTES
@@ -446,6 +452,78 @@ def social_debug_sources():
     from modules.social_listening import _db
     result = _db().table('social_sources').select('url,domain,has_2026_content,checked_at').eq('has_2026_content', True).order('checked_at', desc=True).limit(20).execute()
     return jsonify(result.data)
+
+
+# ─────────────────────────────────────────────
+# CS REVIEWS ROUTES (Apple App Store + Google Play monitoring)
+# ─────────────────────────────────────────────
+
+@app.route('/cs')
+def cs_page():
+    return send_from_directory('.', 'cs.html')
+
+
+@app.route('/cs/reviews', methods=['GET'])
+def cs_reviews_list():
+    """Frontend query. Params: platform, country, rating, days, limit,
+    offset, search."""
+    platform = request.args.get('platform') or None
+    country = request.args.get('country') or None
+    rating = request.args.get('rating') or None
+    days = request.args.get('days') or None
+    search = request.args.get('search') or None
+    try:
+        limit = min(int(request.args.get('limit', 100)), 500)
+    except Exception:
+        limit = 100
+    try:
+        offset = max(int(request.args.get('offset', 0)), 0)
+    except Exception:
+        offset = 0
+    rows = cs_reviews.get_reviews(
+        platform=platform, country=country, rating=rating,
+        days=days, limit=limit, offset=offset, search=search,
+    )
+    stats = cs_reviews.get_stats(days=int(days) if days else 1)
+    last = cs_reviews.get_last_poll()
+    return jsonify({
+        'reviews': rows,
+        'stats': stats,
+        'last_poll': last,
+        'app': cs_reviews.APP_CONFIG,
+    })
+
+
+@app.route('/cs/poll', methods=['POST'])
+def cs_poll():
+    """Trigger a poll. Body: {"platform": "apple"|"google_play"|null}.
+    Runs synchronously; expect ~30–90s depending on platform coverage."""
+    body = request.get_json(silent=True) or {}
+    platform = body.get('platform')
+    if platform not in (None, 'apple', 'google_play'):
+        return jsonify({'error': 'platform must be apple, google_play, or null'}), 400
+    try:
+        stats = cs_reviews.poll_all(platform=platform)
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/cs/debug-fetch', methods=['GET'])
+def cs_debug_fetch():
+    """Debug: fetch one country from one platform, return raw result
+    without saving."""
+    platform = request.args.get('platform', 'apple')
+    country = request.args.get('country', 'us')
+    default_lang = cs_reviews.GPLAY_COUNTRIES.get(country, 'en')
+    lang = request.args.get('lang', default_lang)
+    if platform == 'apple':
+        revs = cs_reviews.fetch_apple_reviews(country)
+        return jsonify({'count': len(revs), 'reviews': revs})
+    if platform == 'google_play':
+        revs = cs_reviews.fetch_gplay_reviews(country, lang=lang)
+        return jsonify({'count': len(revs), 'reviews': revs})
+    return jsonify({'error': 'unknown platform'}), 400
 
 
 @app.route('/debug-email', methods=['GET'])
