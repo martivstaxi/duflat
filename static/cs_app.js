@@ -8,6 +8,7 @@ const CACHE_KEY = 'cs_reviews_cache_v2';
 const CACHE_TTL = 5 * 60 * 1000;
 
 const DATES_PER_PAGE = 4;
+const DEFAULT_RECENT_DAYS = 5;  // initial view window; user can drill deeper via archive/calendar
 const MONTHS_TR = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
 const DAY_SHORT_TR = ['Pz','Pt','Sa','Ca','Pe','Cu','Ct'];
 
@@ -119,13 +120,26 @@ async function loadReviews() {
 // ── Filtering ──────────────────────────────
 function dateOf(r) { return (r.review_date || '').slice(0, 10); }
 
+function isWithinRecent(dateStr) {
+    if (!dateStr) return false;
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - (DEFAULT_RECENT_DAYS - 1));
+    return new Date(dateStr + 'T00:00:00') >= cutoff;
+}
+
+function matchesDate(r) {
+    const d = dateOf(r);
+    if (currentDateFilter) return d === currentDateFilter;
+    return isWithinRecent(d);
+}
+
 function getFiltered() {
     return allReviews.filter(r => {
         if (currentRating !== 'all' && r.rating !== currentRating) return false;
         if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
         if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
-        if (currentDateFilter && dateOf(r) !== currentDateFilter) return false;
-        return true;
+        return matchesDate(r);
     });
 }
 
@@ -133,8 +147,7 @@ function getRatingBase() {
     return allReviews.filter(r => {
         if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
         if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
-        if (currentDateFilter && dateOf(r) !== currentDateFilter) return false;
-        return true;
+        return matchesDate(r);
     });
 }
 
@@ -221,13 +234,14 @@ function renderFilterDropdown() {
     });
     html += `</div></div>`;
 
-    // ── Date section: year → month list → calendar
+    // ── Date section: default (son N gun) → month list → calendar
     const dateSet = new Set(allDates);
-    const yearActive = !currentDateFilter && filterMonth === null && !showMonths;
+    const defaultActive = !currentDateFilter && filterMonth === null && !showMonths;
+    const recentCount = allReviews.filter(r => isWithinRecent(dateOf(r))).length;
     html += `<div class="filter-section">
         <div class="filter-section-title">Tarih</div>
         <div class="filter-options">
-            <button class="filter-option ${yearActive?'active':''}" onclick="filterSelectYear()">${escapeHtml(currentYear)}<span class="opt-count">${allReviews.length}</span></button>
+            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">Son ${DEFAULT_RECENT_DAYS} gun<span class="opt-count">${recentCount}</span></button>
             <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Ay sec</button>`;
 
     if (showMonths && filterMonth === null) {
@@ -368,7 +382,7 @@ function renderArchive() {
     let html = '';
     html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Yeni">${prevSvg}</button>`;
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-        <span class="day">Tumu</span><span class="month">tarih</span>
+        <span class="day">Son ${DEFAULT_RECENT_DAYS}</span><span class="month">gun</span>
     </button>`;
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
