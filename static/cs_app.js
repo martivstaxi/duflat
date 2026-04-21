@@ -161,7 +161,6 @@ function updateFilterToggle() {
     let count = 0;
     if (currentPlatform !== 'all') count++;
     if (currentCountry !== 'all') count++;
-    if (currentYear !== new Date().getFullYear().toString()) count++;
     btn.classList.toggle('has-filter', count > 0);
     const existing = btn.querySelector('.filter-badge');
     if (existing) existing.remove();
@@ -185,11 +184,8 @@ function renderFilterDropdown() {
     });
     const countryKeys = Object.keys(countryCounts).sort((a, b) => countryCounts[b] - countryCounts[a]);
 
-    const currentY = new Date().getFullYear();
-    const years = [];
-    for (let y = currentY; y >= currentY - 2; y--) years.push(y.toString());
-
     let html = `<div class="filter-section">
+
         <div class="filter-section-title">Platform</div>
         <div class="filter-options">
             <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">Tumu<span class="opt-count">${allReviews.length}</span></button>
@@ -204,14 +200,6 @@ function renderFilterDropdown() {
             <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">Tum ulkeler<span class="opt-count">${allReviews.length}</span></button>`;
     countryKeys.forEach(c => {
         html += `<button class="filter-option ${currentCountry===c?'active':''}" onclick="setCountry('${escapeHtml(c)}')">${escapeHtml(c.toUpperCase())}<span class="opt-count">${countryCounts[c]}</span></button>`;
-    });
-    html += `</div></div>`;
-
-    html += `<div class="filter-section">
-        <div class="filter-section-title">Yil</div>
-        <div class="filter-options">`;
-    years.forEach(y => {
-        html += `<button class="filter-option ${currentYear===y?'active':''}" onclick="setYear('${y}')">${y}</button>`;
     });
     html += `</div></div>`;
 
@@ -234,10 +222,6 @@ function renderActiveChips() {
     }
     if (currentCountry !== 'all') {
         html += `<span class="chip">${escapeHtml(currentCountry.toUpperCase())}<button class="chip-remove" onclick="setCountry('all')">&times;</button></span>`;
-    }
-    const thisYear = new Date().getFullYear().toString();
-    if (currentYear !== thisYear) {
-        html += `<span class="chip">${escapeHtml(currentYear)}<button class="chip-remove" onclick="setYear('${thisYear}')">&times;</button></span>`;
     }
     els.activeChips.innerHTML = html;
 }
@@ -319,12 +303,6 @@ function setCountry(v) {
     filterOpen = false;
     els.filterAnchor.classList.remove('open');
     renderAll();
-}
-function setYear(v) {
-    currentYear = v;
-    filterOpen = false;
-    els.filterAnchor.classList.remove('open');
-    loadReviews();
 }
 function toggleFilterPanel(e) {
     if (e) e.stopPropagation();

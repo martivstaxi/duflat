@@ -335,7 +335,15 @@ def _parse_gplay_review(rv, country, app_id):
 # ─────────────────────────────────────────────
 
 def save_reviews(reviews):
-    """Insert new reviews, skipping duplicates by review_hash."""
+    """Insert new reviews, skipping duplicates by review_hash.
+    Reviews from before the current calendar year are discarded
+    (scope rule: keep only the active year)."""
+    if not reviews:
+        return {'saved': 0, 'skipped': 0}
+
+    year_cutoff = f'{datetime.now(timezone.utc).year}-01-01'
+    reviews = [r for r in reviews
+               if (r.get('review_date') or '') >= year_cutoff]
     if not reviews:
         return {'saved': 0, 'skipped': 0}
 
