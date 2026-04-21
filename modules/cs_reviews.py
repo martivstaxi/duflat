@@ -41,12 +41,15 @@ APP_CONFIG = {
 INACTIVE_THRESHOLD = 3   # consecutive empty polls → country marked inactive
 DISCOVERY_DAYS = 30      # force a full re-scan of every country this often
 
+# Scope rule: Mainland China excluded across all platforms. HK, TW, MO in scope.
+EXCLUDED_COUNTRIES = {'cn'}
+
 APPLE_COUNTRIES = [
     'us', 'gb', 'ca', 'au', 'nz', 'ie',
     'de', 'fr', 'it', 'es', 'nl', 'be', 'ch', 'at', 'se', 'no', 'dk', 'fi',
     'pl', 'cz', 'sk', 'hu', 'ro', 'bg', 'hr', 'si', 'rs', 'gr', 'pt',
     'lt', 'lv', 'ee', 'is', 'mt', 'lu', 'cy', 'md',
-    'cn', 'hk', 'tw', 'jp', 'kr',
+    'hk', 'mo', 'tw', 'jp', 'kr',
     'sg', 'my', 'id', 'ph', 'th', 'vn',
     'in', 'pk', 'bd', 'lk', 'np',
     'ru', 'ua', 'by', 'kz', 'uz', 'az', 'am', 'ge', 'kg', 'tj', 'tm',
@@ -71,7 +74,7 @@ GPLAY_COUNTRIES = {
     'hr': 'hr', 'si': 'sl', 'rs': 'sr', 'gr': 'el',
     'pt': 'pt', 'br': 'pt',
     'lt': 'lt', 'lv': 'lv', 'ee': 'et',
-    'hk': 'zh-HK', 'tw': 'zh-TW', 'sg': 'en',
+    'hk': 'zh-HK', 'mo': 'zh-HK', 'tw': 'zh-TW', 'sg': 'en',
     'jp': 'ja', 'kr': 'ko',
     'my': 'ms', 'id': 'id', 'ph': 'en', 'th': 'th', 'vn': 'vi',
     'in': 'en', 'pk': 'en', 'bd': 'bn', 'lk': 'si', 'np': 'ne',
@@ -506,12 +509,16 @@ def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
     jobs, skipped = [], 0
     if platform in (None, 'apple'):
         for cc in APPLE_COUNTRIES:
+            if cc in EXCLUDED_COUNTRIES:
+                continue
             if _should_skip('apple', cc, state, full_scan):
                 skipped += 1
             else:
                 jobs.append(('apple', cc, None))
     if platform in (None, 'google_play'):
         for cc, lg in GPLAY_COUNTRIES.items():
+            if cc in EXCLUDED_COUNTRIES:
+                continue
             if _should_skip('google_play', cc, state, full_scan):
                 skipped += 1
             else:
