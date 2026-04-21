@@ -1765,11 +1765,12 @@ _REDDIT_SUBREDDITS = [
     'LeagueOfLegends', 'VtubersAdv', 'VCJ',
 ]
 
-_REDDIT_UA = 'Mozilla/5.0 (Duflat Social Listening) python-requests'
+_REDDIT_UA = 'web:duflat-social-listening:v1.0 (by /u/duflat_bot)'
 
 
 def _fetch_reddit_json(kind, q):
     """kind='search' → reddit.com/search.json?q=q; kind='sub' → r/q/new.json."""
+    import time
     from urllib.parse import quote_plus
     if kind == 'search':
         url = f'https://www.reddit.com/search.json?q={quote_plus(q)}&sort=new&t=year&limit=50'
@@ -1789,6 +1790,7 @@ def _fetch_reddit_json(kind, q):
         print(f'[reddit] {kind}={q} json_err={e} body={resp.text[:200]}', flush=True)
         return []
     print(f'[reddit] {kind}={q} ok children={len(children)}', flush=True)
+    time.sleep(0.3)
     return children
 
 
