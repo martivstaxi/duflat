@@ -1765,6 +1765,12 @@ _REDDIT_SUBREDDITS = [
     'LeagueOfLegends', 'VtubersAdv', 'VCJ',
 ]
 
+_REDDIT_SEARCH_QUERIES = [
+    'bilibili', 'bilibili gaming', 'bilibili app',
+    'bilibili hoyoverse', 'genshin bilibili', 'hololive bilibili',
+    'bilibili world', 'bilibili vtuber', 'BLG bilibili',
+]
+
 _REDDIT_UA = 'web:duflat-social-listening:v1.0 (by /u/duflat_bot)'
 
 
@@ -1850,12 +1856,15 @@ def discover_reddit():
                 all_items.append(item)
 
     # Global search queries
-    for q in ['bilibili', 'bilibili gaming', 'bilibili app']:
+    for q in _REDDIT_SEARCH_QUERIES:
         if time.time() - fetch_start > fetch_budget:
             break
         children = _fetch_reddit_json('search', q)
         for c in children:
             d = c.get('data', {})
+            blob = (d.get('title', '') + ' ' + (d.get('selftext', '') or '')).lower()
+            if 'bilibili' not in blob and 'b站' not in blob and '哔哩' not in blob and '嗶哩' not in blob:
+                continue
             item = _reddit_post_to_item(d)
             if item and item['url'] not in seen:
                 seen.add(item['url'])
@@ -2087,7 +2096,11 @@ def discover_hackernews():
 # BLUESKY — public AT Protocol search API (no auth)
 # ─────────────────────────────────────────────
 
-_BLUESKY_QUERIES = ['bilibili', 'bilibili gaming', 'anisora', 'b站', '哔哩哔哩']
+_BLUESKY_QUERIES = [
+    'bilibili', 'bilibili gaming', 'anisora', 'b站', '哔哩哔哩',
+    'bilibili hoyoverse', 'genshin bilibili', 'hololive bilibili',
+    'bilibili world', 'bilibili vtuber', 'bilibili anime',
+]
 _BLUESKY_UA = 'duflat-social-listening/1.0'
 
 
