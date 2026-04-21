@@ -528,12 +528,17 @@ def save_mentions(mentions):
     Each mention passes _validate_and_repair() before saving:
       - Language label auto-corrected if wrong
       - Irrelevant, duplicate-content, future-dated, too-short mentions rejected
+    Then a final Haiku gate (_layer4_final_gate) verifies publication year,
+    Bilibili relevance, scope, and non-financial angle before DB write.
     """
     saved = 0
     skipped = 0
     repaired = 0
+    gate_rejected = 0
+    candidates = []
     alert_queue = []
 
+    # ── Pass 1: heuristic scope + validate + repair ────────────────────
     for m in mentions:
         original = m.get('content_original', '').strip()
         if not original:
@@ -568,6 +573,16 @@ def save_mentions(mentions):
         if any(i.startswith('lang_repair') for i in issues):
             repaired += 1
 
+        candidates.append(m)
+
+    # ── Pass 2: L4 FINAL GATE (Haiku) — last line of defence ───────────
+    pre_gate_count = len(candidates)
+    approved = _layer4_final_gate(candidates)
+    gate_rejected = pre_gate_count - len(approved)
+    skipped += gate_rejected
+
+    # ── Pass 3: upsert approved mentions ───────────────────────────────
+    for m in approved:
         original = m.get('content_original', '').strip()
         c_hash = hash_content(original)
 
@@ -604,7 +619,7 @@ def save_mentions(mentions):
         _send_telegram_alerts(alert_queue)
         _send_email_alerts(alert_queue)
 
-    return {'saved': saved, 'skipped': skipped, 'repaired': repaired}
+    return {'saved': saved, 'skipped': skipped, 'repaired': repaired, 'gate_rejected': gate_rejected}
 
 
 # ─────────────────────────────────────────────
@@ -1118,6 +1133,89 @@ Mentions:
     for m in mentions:
         m.setdefault('sentiment', 'neutral')
         m.setdefault('source_type', 'news_minor')
+
+
+def _layer4_final_gate(mentions):
+    """
+    LAYER 4 — FINAL GATE before DB write.
+
+    Catches false positives slipping through the 2026-regex date filter: pages
+    that mention 2026 somewhere in the body but were actually published in 2025
+    or earlier. Also a last safety net for Bilibili-relevance, scope (non-
+    Mainland / non-Simplified), and purely-financial content that slipped past
+    earlier layers.
+
+    Input: list of mentions that already passed _validate_and_repair.
+    Output: same list filtered to approved ones only. Rejections are logged.
+    """
+    if not mentions:
+        return []
+
+    entries = []
+    for i, m in enumerate(mentions):
+        entries.append({
+            'idx': i,
+            'url': (m.get('url') or '')[:200],
+            'content_date': m.get('content_date') or '',
+            'language': m.get('language', ''),
+            'country': m.get('country', ''),
+            'content_english': (m.get('content_english') or '')[:500],
+            'content_original': (m.get('content_original') or '')[:500],
+        })
+
+    approved_indices = set()
+    for batch in _chunks(entries, 12):
+        prompt = f"""You are the FINAL GATE before publishing social listening mentions to a live website. Be strict — reject anything that does not clearly meet ALL of these criteria.
+
+For EACH item answer "approve" or "reject". Reject if ANY of the following is true:
+
+1. PUBLICATION YEAR ≠ 2026
+   - The project publishes ONLY content genuinely published in 2026.
+   - Beware false positives: many 2025 articles mention "2026" in the body (upcoming events, forecasts, winter-2026 anime lineup, roadmap year, related article sidebar, cached modification date). Those must be REJECTED if the item itself was published before 2026.
+   - Use the text and URL to judge the likely publication date. The URL sometimes encodes a date like /2025/09/... — if you see an earlier-year path, REJECT.
+   - If the item clearly reads like a 2025-or-older article (historical framing, events from 2024/2025 described in past tense as the subject, retrospectives about prior years), REJECT.
+   - If the content describes something that would be published in 2026 and reads like fresh 2026 news/discussion, approve.
+   - When genuinely uncertain about the year, REJECT.
+
+2. NOT ABOUT BILIBILI
+   - The text must be genuinely about Bilibili the Chinese video platform (bilibili.com, B站, 哔哩哔哩, 嗶哩嗶哩). If Bilibili is only a tangential keyword, a sidebar link, or a disambiguation, REJECT.
+
+3. OUT OF SCOPE (Mainland China / Simplified Chinese)
+   - If the source is a Mainland China outlet or the content language is Simplified Chinese (Mandarin / zh-CN), REJECT. Traditional Chinese (TW/HK) is fine.
+
+4. PURE FINANCIAL
+   - Pure stock/earnings/analyst/IPO/dividend coverage with no product/creator/policy/user angle → REJECT. Mixed content where the non-financial angle is extractable is fine (those should already have been rewritten upstream).
+
+Return ONLY a JSON array: [{{"idx":0,"verdict":"approve"}}, {{"idx":1,"verdict":"reject","reason":"year_2025"}}, ...]
+
+Reason codes (short): year_not_2026, not_bilibili, scope_mainland, pure_financial, uncertain.
+
+Items:
+{json.dumps(batch, ensure_ascii=False)}"""
+
+        verdicts = _haiku_call(prompt, max_tokens=1024)
+        if not verdicts:
+            # Fail-closed: if Haiku call fails, don't auto-approve the batch.
+            # But don't reject silently either — log and approve to avoid losing data on transient errors.
+            print(f'[L4 gate] haiku call failed, fail-open for batch of {len(batch)}', flush=True)
+            for e in batch:
+                approved_indices.add(e['idx'])
+            continue
+
+        for v in verdicts:
+            idx = v.get('idx')
+            if idx is None or not isinstance(idx, int) or idx >= len(mentions):
+                continue
+            verdict = str(v.get('verdict', '')).strip().lower()
+            if verdict == 'approve':
+                approved_indices.add(idx)
+            else:
+                reason = v.get('reason', 'unspecified')
+                url = mentions[idx].get('url', '')
+                cdate = mentions[idx].get('content_date', '')
+                print(f'[L4 gate] REJECT idx={idx} reason={reason} date={cdate} url={url}', flush=True)
+
+    return [mentions[i] for i in range(len(mentions)) if i in approved_indices]
 
 
 def _analyze_with_haiku(items):
