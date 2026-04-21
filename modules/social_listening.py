@@ -577,7 +577,7 @@ def save_mentions(mentions):
 
     # ── Pass 2: L4 FINAL GATE (Haiku) — last line of defence ───────────
     pre_gate_count = len(candidates)
-    approved = _layer4_final_gate(candidates)
+    approved, gate_rejections = _layer4_final_gate(candidates)
     gate_rejected = pre_gate_count - len(approved)
     skipped += gate_rejected
 
@@ -619,7 +619,13 @@ def save_mentions(mentions):
         _send_telegram_alerts(alert_queue)
         _send_email_alerts(alert_queue)
 
-    return {'saved': saved, 'skipped': skipped, 'repaired': repaired, 'gate_rejected': gate_rejected}
+    return {
+        'saved': saved,
+        'skipped': skipped,
+        'repaired': repaired,
+        'gate_rejected': gate_rejected,
+        'gate_rejections': gate_rejections,
+    }
 
 
 # ─────────────────────────────────────────────
@@ -1146,10 +1152,11 @@ def _layer4_final_gate(mentions):
     earlier layers.
 
     Input: list of mentions that already passed _validate_and_repair.
-    Output: same list filtered to approved ones only. Rejections are logged.
+    Output: (approved_list, rejected_details) where rejected_details is a list
+    of {url, content_date, reason} entries for logging / API return.
     """
     if not mentions:
-        return []
+        return [], []
 
     entries = []
     for i, m in enumerate(mentions):
@@ -1164,6 +1171,7 @@ def _layer4_final_gate(mentions):
         })
 
     approved_indices = set()
+    rejected_details = []
     for batch in _chunks(entries, 12):
         prompt = f"""You are the FINAL GATE before publishing social listening mentions to a live website. Be strict — reject anything that does not clearly meet ALL of these criteria.
 
@@ -1214,8 +1222,14 @@ Items:
                 url = mentions[idx].get('url', '')
                 cdate = mentions[idx].get('content_date', '')
                 print(f'[L4 gate] REJECT idx={idx} reason={reason} date={cdate} url={url}', flush=True)
+                rejected_details.append({
+                    'url': url,
+                    'content_date': cdate,
+                    'reason': reason,
+                })
 
-    return [mentions[i] for i in range(len(mentions)) if i in approved_indices]
+    approved = [mentions[i] for i in range(len(mentions)) if i in approved_indices]
+    return approved, rejected_details
 
 
 def _analyze_with_haiku(items):
@@ -1283,6 +1297,8 @@ def scan_urls(urls):
         'with_2026': len(items_2026),
         'saved': result.get('saved', 0),
         'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
     }
 
 
@@ -1902,6 +1918,8 @@ def discover_reddit():
         'new': len(items_new),
         'saved': result.get('saved', 0),
         'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
     }
 
 
@@ -2055,6 +2073,8 @@ def discover_hackernews():
         'new': len(items_new),
         'saved': result.get('saved', 0),
         'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
     }
 
 
