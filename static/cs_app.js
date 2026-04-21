@@ -125,7 +125,9 @@ async function load() {
         const params = new URLSearchParams();
         if (els.platform.value) params.set('platform', els.platform.value);
         if (els.rating.value)   params.set('rating',   els.rating.value);
-        if (els.days.value)     params.set('days',     els.days.value);
+        const dv = els.days.value;
+        if (dv.startsWith('y'))      params.set('year', dv.slice(1));
+        else if (dv.startsWith('d')) params.set('days', dv.slice(1));
         if (els.country.value)  params.set('country',  els.country.value.trim().toLowerCase());
         if (els.search.value)   params.set('search',   els.search.value.trim());
         params.set('limit', '200');
@@ -178,6 +180,18 @@ function debouncedReload() {
     clearTimeout(_searchTimer);
     _searchTimer = setTimeout(load, 300);
 }
+
+// Keep the year option in sync with the current year (2026 → 2027 rollover).
+(function updateYearOption() {
+    const y = new Date().getFullYear();
+    for (const opt of els.days.options) {
+        if (opt.value.startsWith('y')) {
+            opt.value = 'y' + y;
+            opt.textContent = String(y);
+            break;
+        }
+    }
+})();
 
 els.refresh.addEventListener('click', load);
 els.poll.addEventListener('click', triggerPoll);

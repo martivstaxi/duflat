@@ -582,7 +582,7 @@ def _poll_one(platform, country, lang):
 # ─────────────────────────────────────────────
 
 def get_reviews(platform=None, country=None, rating=None,
-                days=None, limit=200, offset=0, search=None):
+                days=None, year=None, limit=200, offset=0, search=None):
     q = _db().table('cs_reviews').select('*')
     if platform:
         q = q.eq('platform', platform)
@@ -593,7 +593,14 @@ def get_reviews(platform=None, country=None, rating=None,
             q = q.eq('rating', int(rating))
         except Exception:
             pass
-    if days:
+    if year:
+        try:
+            y = int(year)
+            q = q.gte('review_date', f'{y}-01-01T00:00:00+00:00') \
+                 .lt('review_date',  f'{y + 1}-01-01T00:00:00+00:00')
+        except Exception:
+            pass
+    elif days:
         try:
             cutoff = (datetime.now(timezone.utc) - timedelta(days=int(days))).isoformat()
             q = q.gte('review_date', cutoff)
@@ -610,11 +617,19 @@ def get_reviews(platform=None, country=None, rating=None,
         return []
 
 
-def get_stats(days=1):
-    """Aggregate counts for the last N days."""
+def get_stats(days=1, year=None):
+    """Aggregate counts for the given window.
+    If year is given, use Jan 1..Dec 31 of that year and ignore days."""
     try:
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=int(days))).isoformat()
-        res = _db().table('cs_reviews').select('platform,country,rating,review_date').gte('review_date', cutoff).limit(10000).execute()
+        q = _db().table('cs_reviews').select('platform,country,rating,review_date')
+        if year:
+            y = int(year)
+            q = q.gte('review_date', f'{y}-01-01T00:00:00+00:00') \
+                 .lt('review_date',  f'{y + 1}-01-01T00:00:00+00:00')
+        elif days:
+            cutoff = (datetime.now(timezone.utc) - timedelta(days=int(days))).isoformat()
+            q = q.gte('review_date', cutoff)
+        res = q.limit(10000).execute()
         rows = res.data or []
     except Exception:
         return {'total': 0, 'by_platform': {}, 'by_rating': {}, 'by_country': {}}

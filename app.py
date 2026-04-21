@@ -472,6 +472,7 @@ def cs_reviews_list():
     country = request.args.get('country') or None
     rating = request.args.get('rating') or None
     days = request.args.get('days') or None
+    year = request.args.get('year') or None
     search = request.args.get('search') or None
     try:
         limit = min(int(request.args.get('limit', 100)), 500)
@@ -483,9 +484,14 @@ def cs_reviews_list():
         offset = 0
     rows = cs_reviews.get_reviews(
         platform=platform, country=country, rating=rating,
-        days=days, limit=limit, offset=offset, search=search,
+        days=days, year=year, limit=limit, offset=offset, search=search,
     )
-    stats = cs_reviews.get_stats(days=int(days) if days else 1)
+    if year:
+        stats = cs_reviews.get_stats(year=year)
+    elif days:
+        stats = cs_reviews.get_stats(days=int(days))
+    else:
+        stats = cs_reviews.get_stats(days=1)
     last = cs_reviews.get_last_poll()
     return jsonify({
         'reviews': rows,
