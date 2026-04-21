@@ -12,6 +12,7 @@ Routes:
 """
 
 import os
+import threading
 import yt_dlp
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -494,19 +495,61 @@ def cs_reviews_list():
     })
 
 
+# Single in-flight poll guard so overlapping triggers (e.g. cron retries)
+# don't stack duplicate work.
+_cs_poll_state = {'active': False, 'last_result': None}
+
+
+def _cs_poll_background(platform):
+    try:
+        _cs_poll_state['last_result'] = cs_reviews.poll_all(platform=platform)
+    except Exception as e:
+        _cs_poll_state['last_result'] = {'error': str(e)}
+        print(f'[cs_poll] background error: {e}')
+    finally:
+        _cs_poll_state['active'] = False
+
+
 @app.route('/cs/poll', methods=['POST'])
 def cs_poll():
-    """Trigger a poll. Body: {"platform": "apple"|"google_play"|null}.
-    Runs synchronously; expect ~30–90s depending on platform coverage."""
+    """Trigger a poll.
+
+    Body:
+        {"platform": "apple"|"google_play"|null}  which platform(s)
+        {"wait": true}                             block until finished (for UI)
+
+    Default is fire-and-forget: returns 202 in <1s and runs in a
+    background thread. Cron services (30s timeouts) should use the
+    default. The frontend button sets wait=true to get stats inline."""
     body = request.get_json(silent=True) or {}
     platform = body.get('platform')
+    wait = bool(body.get('wait'))
     if platform not in (None, 'apple', 'google_play'):
         return jsonify({'error': 'platform must be apple, google_play, or null'}), 400
-    try:
-        stats = cs_reviews.poll_all(platform=platform)
-        return jsonify(stats)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+
+    if wait:
+        try:
+            stats = cs_reviews.poll_all(platform=platform)
+            return jsonify(stats)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    if _cs_poll_state['active']:
+        return jsonify({'status': 'already_running'}), 202
+
+    _cs_poll_state['active'] = True
+    t = threading.Thread(target=_cs_poll_background, args=(platform,), daemon=True)
+    t.start()
+    return jsonify({'status': 'started', 'platform': platform or 'both'}), 202
+
+
+@app.route('/cs/poll-status', methods=['GET'])
+def cs_poll_status():
+    """Lightweight check of the background poller."""
+    return jsonify({
+        'active': _cs_poll_state['active'],
+        'last_result': _cs_poll_state['last_result'],
+    })
 
 
 @app.route('/cs/debug-fetch', methods=['GET'])
