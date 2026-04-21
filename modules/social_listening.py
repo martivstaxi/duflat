@@ -2083,6 +2083,155 @@ def discover_hackernews():
     }
 
 
+# ─────────────────────────────────────────────
+# BLUESKY — public AT Protocol search API (no auth)
+# ─────────────────────────────────────────────
+
+_BLUESKY_QUERIES = ['bilibili', 'bilibili gaming', 'anisora', 'b站', '哔哩哔哩']
+_BLUESKY_UA = 'duflat-social-listening/1.0'
+
+
+def _fetch_bluesky_posts(query, limit=100):
+    """Fetch public posts matching query via Bluesky AppView. No auth."""
+    import time
+    from urllib.parse import quote_plus
+    url = (
+        'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts'
+        f'?q={quote_plus(query)}&limit={limit}&sort=latest'
+    )
+    try:
+        resp = requests.get(url, headers={'User-Agent': _BLUESKY_UA}, timeout=6)
+    except Exception as e:
+        print(f'[bsky] q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[bsky] q={query} status={resp.status_code} body={resp.text[:200]}', flush=True)
+        return []
+    try:
+        posts = resp.json().get('posts', []) or []
+    except Exception as e:
+        print(f'[bsky] q={query} json_err={e} body={resp.text[:200]}', flush=True)
+        return []
+    print(f'[bsky] q={query} ok posts={len(posts)}', flush=True)
+    time.sleep(0.3)
+    return posts
+
+
+def _bluesky_post_to_item(p):
+    """Convert a Bluesky post dict to pipeline item (2026+ only)."""
+    uri = p.get('uri', '') or ''
+    author = p.get('author', {}) or {}
+    handle = author.get('handle', '')
+    record = p.get('record', {}) or {}
+    text = (record.get('text') or '').strip()
+    created_at = record.get('createdAt', '') or p.get('indexedAt', '')
+    if not uri or not handle or not text or not created_at:
+        return None
+    # at://did:plc:xxx/app.bsky.feed.post/<rkey>
+    rkey = uri.rsplit('/', 1)[-1]
+    if not rkey:
+        return None
+    post_url = f'https://bsky.app/profile/{handle}/post/{rkey}'
+    try:
+        dt = datetime.strptime(created_at[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    return {
+        'url': post_url,
+        'url_hash': hash_url(post_url),
+        'platform': 'bsky.app',
+        'text': f'[@{handle}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_bluesky():
+    """Fetch Bilibili-related Bluesky posts via public search, analyze, save."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for q in _BLUESKY_QUERIES:
+        if time.time() - fetch_start > 30:
+            break
+        posts = _fetch_bluesky_posts(q, limit=100)
+        for p in posts:
+            item = _bluesky_post_to_item(p)
+            if not item or item['url'] in seen:
+                continue
+            blob = item['text'].lower()
+            if 'bilibili' not in blob and 'b站' not in blob and '哔哩' not in blob and '嗶哩' not in blob:
+                continue
+            seen.add(item['url'])
+            all_items.append(item)
+
+    print(f'[bsky] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'bluesky', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[bsky] check_urls error: {e}', flush=True)
+        return {'platform': 'bluesky', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[bsky] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'bluesky', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'bsky.app',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[bsky] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[bsky] haiku error: {e}', flush=True)
+        return {'platform': 'bluesky', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[bsky] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[bsky] save error: {e}', flush=True)
+        return {'platform': 'bluesky', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'bluesky',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0

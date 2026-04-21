@@ -292,6 +292,13 @@ def social_discover_hn():
     return jsonify(discover_hackernews())
 
 
+@app.route('/social/discover-bluesky', methods=['POST'])
+def social_discover_bluesky():
+    """Fetch Bilibili-related Bluesky posts via public AT Protocol search."""
+    from modules.social_listening import discover_bluesky
+    return jsonify(discover_bluesky())
+
+
 @app.route('/social/debug-reddit', methods=['GET'])
 def social_debug_reddit():
     """Debug: fetch one reddit URL from the Railway worker, return raw info."""
