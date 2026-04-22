@@ -17,6 +17,7 @@ Public entry points:
 
 import hashlib
 import json
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -331,6 +332,96 @@ def _parse_gplay_review(rv, country, app_id):
 
 
 # ─────────────────────────────────────────────
+# HAIKU ENRICHMENT — language detect + English summary
+# ─────────────────────────────────────────────
+
+# Languages Haiku may label reviews with. Free-form label; anything outside
+# this set is stored verbatim (so new locales don't break the pipeline).
+_HAIKU_LANG_OPTIONS = (
+    '"English", "Spanish", "Portuguese", "French", "German", "Italian", '
+    '"Dutch", "Polish", "Czech", "Slovak", "Hungarian", "Romanian", '
+    '"Greek", "Swedish", "Norwegian", "Danish", "Finnish", '
+    '"Japanese", "Korean", "Traditional Chinese", "Simplified Chinese", '
+    '"Arabic", "Turkish", "Russian", "Ukrainian", "Hebrew", '
+    '"Indonesian", "Malay", "Thai", "Vietnamese", "Hindi", "Bengali", '
+    '"Tagalog", "Other"'
+)
+
+
+def _enrich_with_haiku(reviews, batch_size=15):
+    """Populate `language` and `content_english` in place.
+
+    Best-effort: if the Anthropic SDK / key is missing or a call fails,
+    leaves the affected rows untouched. Skips rows that already have both
+    fields populated so backfill runs are idempotent."""
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return
+    try:
+        import anthropic
+    except ImportError:
+        return
+
+    todo = []
+    for i, r in enumerate(reviews):
+        content = (r.get('content') or '').strip()
+        if not content:
+            continue
+        if r.get('language') and r.get('content_english'):
+            continue
+        todo.append((i, content))
+    if not todo:
+        return
+
+    client = anthropic.Anthropic(api_key=api_key)
+    for start in range(0, len(todo), batch_size):
+        slab = todo[start:start + batch_size]
+        entries = [
+            {'idx': local_i, 'text': content[:1500]}
+            for local_i, (_, content) in enumerate(slab)
+        ]
+        prompt = (
+            "You process user reviews of the BiliBili app. For each review, "
+            "detect its language and write a SHORT English summary that captures "
+            "the essence (complaint, praise, bug report, feature request, etc).\n\n"
+            "For EACH item return:\n"
+            f"- language: one of {_HAIKU_LANG_OPTIONS}.\n"
+            "- content_english: ONE plain-English sentence, <=25 words, preserving the "
+            "reviewer's tone. If the review itself is already English you may keep it "
+            "as-is when already short, otherwise tighten it. Never invent facts.\n\n"
+            'Return ONLY a JSON array: [{"idx":0,"language":"...","content_english":"..."}, ...]\n\n'
+            "Reviews:\n"
+            f"{json.dumps(entries, ensure_ascii=False)}"
+        )
+        try:
+            resp = client.messages.create(
+                model='claude-haiku-4-5-20251001',
+                max_tokens=2048,
+                messages=[{'role': 'user', 'content': prompt}],
+            )
+            text = resp.content[0].text.strip()
+            if '```' in text:
+                text = text.split('```')[1]
+                if text.startswith('json'):
+                    text = text[4:]
+            results = json.loads(text)
+        except Exception:
+            continue
+
+        for v in results:
+            local_i = v.get('idx')
+            if not isinstance(local_i, int) or local_i >= len(slab):
+                continue
+            review_idx, _ = slab[local_i]
+            lang = (v.get('language') or '').strip()
+            english = (v.get('content_english') or '').strip()
+            if lang:
+                reviews[review_idx]['language'] = lang[:64]
+            if english:
+                reviews[review_idx]['content_english'] = english[:1000]
+
+
+# ─────────────────────────────────────────────
 # SAVE
 # ─────────────────────────────────────────────
 
@@ -377,6 +468,10 @@ def save_reviews(reviews):
     to_insert = [r for r in unique if r['review_hash'] not in existing_set]
     if not to_insert:
         return {'saved': 0, 'skipped': len(unique)}
+
+    # Haiku: detect language + produce English summary before the insert so
+    # the UI has them on first render. Best-effort; failures don't block save.
+    _enrich_with_haiku(to_insert)
 
     saved = 0
     # Batch insert (100 at a time) — fall back to single-row on failure
@@ -693,3 +788,38 @@ def get_available_dates(year=None, days=None):
         if d:
             seen.add(d)
     return sorted(seen, reverse=True)
+
+
+def backfill_translations(limit=200):
+    """Populate `language` and `content_english` for legacy rows that lack them.
+    Returns {'scanned': N, 'enriched': M}. Safe to call repeatedly."""
+    try:
+        res = (_db().table('cs_reviews')
+               .select('id,content,language,content_english')
+               .or_('content_english.is.null,content_english.eq.')
+               .not_.eq('content', '')
+               .limit(int(limit))
+               .execute())
+        rows = res.data or []
+    except Exception:
+        return {'scanned': 0, 'enriched': 0}
+    if not rows:
+        return {'scanned': 0, 'enriched': 0}
+
+    _enrich_with_haiku(rows)
+
+    enriched = 0
+    for r in rows:
+        lang = r.get('language') or ''
+        english = r.get('content_english') or ''
+        if not (lang or english):
+            continue
+        try:
+            _db().table('cs_reviews').update({
+                'language': lang,
+                'content_english': english,
+            }).eq('id', r['id']).execute()
+            enriched += 1
+        except Exception:
+            pass
+    return {'scanned': len(rows), 'enriched': enriched}

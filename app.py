@@ -613,6 +613,19 @@ def cs_poll_status():
     })
 
 
+@app.route('/cs/backfill-translations', methods=['POST'])
+def cs_backfill_translations():
+    """One-shot backfill: fill `language` + `content_english` for legacy rows.
+    Safe to call multiple times — rows already enriched are skipped."""
+    body = request.get_json(silent=True) or {}
+    try:
+        limit = int(body.get('limit', 200))
+    except Exception:
+        limit = 200
+    result = cs_reviews.backfill_translations(limit=limit)
+    return jsonify(result)
+
+
 @app.route('/cs/debug-fetch', methods=['GET'])
 def cs_debug_fetch():
     """Debug: fetch one country from one platform, return raw result

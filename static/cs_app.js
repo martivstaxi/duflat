@@ -426,22 +426,43 @@ function renderCard(r) {
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         <span class="num">${rating}</span>
     </div>`;
-    const title = r.title ? `<div class="card-title">${escapeHtml(r.title)}</div>` : '';
     const platform = r.platform || '';
 
-    const detailParts = [];
-    if (r.author) detailParts.push(`<span class="author">${escapeHtml(r.author)}</span>`);
-    if (r.app_version) detailParts.push(`<span class="version">v${escapeHtml(r.app_version)}</span>`);
+    // Card body: English summary when we have it, else the raw review.
+    const english = (r.content_english || '').trim();
+    const original = (r.content || '').trim();
+    const body = english || original;
+    const title = r.title ? `<div class="card-title">${escapeHtml(r.title)}</div>` : '';
+
+    // Details panel: original comment (only if distinct from what's on the card)
+    // + author / version / relative date.
+    const lang = (r.language || '').trim();
+    const showOriginal = original && english && original !== english;
+    const metaParts = [];
+    if (r.author) metaParts.push(`<span class="author">${escapeHtml(r.author)}</span>`);
+    if (r.app_version) metaParts.push(`<span class="version">v${escapeHtml(r.app_version)}</span>`);
     if (r.review_date) {
-        const rel = escapeHtml(relTime(r.review_date));
-        const full = escapeHtml(r.review_date);
-        detailParts.push(`<span class="date" title="${full}">${rel}</span>`);
+        metaParts.push(`<span class="date" title="${escapeHtml(r.review_date)}">${escapeHtml(relTime(r.review_date))}</span>`);
     }
-    const detailsPanel = detailParts.length
-        ? `<div class="card-details" hidden>${detailParts.join('<span class="dot">·</span>')}</div>`
+
+    let detailsInner = '';
+    if (showOriginal) {
+        const langSuffix = lang ? ` (${escapeHtml(lang)})` : '';
+        detailsInner += `<div class="original-label">Original${langSuffix}</div>
+            <div class="original-content">${escapeHtml(original)}</div>`;
+    }
+    if (metaParts.length) {
+        detailsInner += `<div class="detail-meta">${metaParts.join('<span class="dot">·</span>')}</div>`;
+    }
+    const hasDetails = detailsInner.length > 0;
+
+    // Button label = detected language (preferred) or "Details" fallback.
+    const btnLabel = lang || 'Details';
+    const detailsBtn = hasDetails
+        ? `<button class="details-btn" data-label="${escapeHtml(btnLabel)}" onclick="toggleDetails(this)" aria-expanded="false">${escapeHtml(btnLabel)}</button>`
         : '';
-    const detailsBtn = detailParts.length
-        ? `<button class="details-btn" onclick="toggleDetails(this)" aria-expanded="false">Details</button>`
+    const detailsPanel = hasDetails
+        ? `<div class="card-details" hidden>${detailsInner}</div>`
         : '';
 
     return `<div class="review-card">
@@ -452,7 +473,7 @@ function renderCard(r) {
             ${detailsBtn}
         </div>
         ${title}
-        <div class="card-content">${escapeHtml(r.content || '')}</div>
+        <div class="card-content">${escapeHtml(body)}</div>
         ${detailsPanel}
     </div>`;
 }
@@ -467,7 +488,8 @@ function toggleDetails(btn) {
     else panel.removeAttribute('hidden');
     btn.classList.toggle('open', !wasOpen);
     btn.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
-    btn.textContent = wasOpen ? 'Details' : 'Close';
+    const label = btn.dataset.label || 'Details';
+    btn.textContent = wasOpen ? label : 'Close';
 }
 
 function renderArchive() {

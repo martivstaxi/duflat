@@ -313,15 +313,37 @@ header .sub {
     white-space: pre-wrap; word-break: break-word;
 }
 .card-details {
-    margin-top: 14px; padding-top: 12px;
-    border-top: 1px solid var(--hairline);
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    font-size: .72rem; color: var(--tertiary);
+    margin-top: 14px; padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    animation: csFadeIn .2s var(--ease-out);
 }
+.card-details[hidden] { display: none; }
+.card-details .original-label {
+    font-size: .6rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--tertiary); margin-bottom: 6px;
+}
+.card-details .original-content {
+    font-size: .88rem; line-height: 1.6; color: var(--text-secondary);
+    white-space: pre-wrap; word-break: break-word;
+    margin-bottom: 12px;
+}
+.card-details .detail-meta {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: .7rem; color: var(--tertiary);
+    padding-top: 10px; border-top: 1px solid var(--hairline);
+}
+.card-details .detail-meta:first-child { border-top: none; padding-top: 0; }
 .card-details .dot { opacity: .4; }
 .card-details .author { color: var(--text-secondary); font-weight: 500; word-break: break-word; }
 .card-details .version { color: var(--tertiary); font-variant-numeric: tabular-nums; }
 .card-details .date { color: var(--tertiary); font-variant-numeric: tabular-nums; }
+
+@keyframes csFadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ── Archive (date navigator at bottom) ── */
 .archive-section {
