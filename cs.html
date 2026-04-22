@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat — User Comments</title>
+    <title id="pageTitle">Duflat — User Comments</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/cs_style.css?v=14">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/cs_style.css?v=15">
 </head>
 <body>
+    <div class="lang-toggle" id="langToggle"></div>
+
     <div class="container">
         <header>
-            <h1>User Comments</h1>
+            <h1 id="siteTitle">User Comments</h1>
             <p class="sub" id="subLine">BiliBili · App Store & Play</p>
         </header>
 
@@ -25,7 +27,7 @@
         </div>
 
         <div class="archive-section" id="archiveSection" style="display:none">
-            <h2>Browse by date</h2>
+            <h2 id="archiveTitle">Browse by date</h2>
             <div class="archive-dates" id="archiveDates"></div>
         </div>
 
@@ -36,10 +38,10 @@
                 <polyline points="23 4 23 10 17 10"/>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
             </svg>
-            <span>Scan now</span>
+            <span id="scanNowLabel">Scan now</span>
         </button>
     </div>
 
-    <script src="/static/cs_app.js?v=20"></script>
+    <script src="/static/cs_app.js?v=21"></script>
 </body>
 </html>

@@ -10,8 +10,178 @@ const CACHE_TTL = 5 * 60 * 1000;
 const DATES_PER_PAGE = 4;
 const DEFAULT_RECENT_DAYS = 5;  // initial view window; user can drill deeper via archive/calendar
 const AUTO_POLL_THRESHOLD_MS = 3 * 60 * 60 * 1000;  // page load → bg-tara if last poll > 3h
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAY_SHORT = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+// ─────────────────────────────────────────────
+// I18N — English + Simplified Chinese UI
+// Card body/title: uiLang='zh' && content_chinese available → Chinese, else English.
+// Original content (in the Details panel) is NEVER translated.
+// ─────────────────────────────────────────────
+const I18N = {
+    en: {
+        siteTitle: 'User Comments',
+        pageTitle: 'Duflat — User Comments',
+        subTemplate: (app) => `${app} · App Store & Play`,
+        loading: 'Loading comments...',
+        loadError: (msg) => `Load error: ${msg}`,
+        tryAgain: 'try again',
+        noMatch: 'No comments match the filters.',
+        noDate: 'No date',
+        all: 'All',
+        allCountries: 'All countries',
+        platform: 'Platform',
+        country: 'Country',
+        date: 'Date',
+        lastNDays: (n) => `Last ${n} days`,
+        selectMonth: 'Select month',
+        archiveTitle: 'Browse by date',
+        lastN: 'Last',
+        days: 'days',
+        olderTitle: 'Older',
+        newerTitle: 'Newer',
+        original: 'Original',
+        detailsFallback: 'Details',
+        close: 'Close',
+        scanNow: 'Scan now',
+        scanTooltip: 'Scan for new comments (~1-2 min)',
+        scanConfirm: 'Scan all countries for new comments? May take 1-2 minutes.',
+        scanning: 'Scanning for fresh comments in background…',
+        scanCompletePrefix: 'Scan complete · ',
+        scanNewComments: (n) => `${n} new comments`,
+        scanCountries: (n, skipped) => `${n} countries${skipped ? ` (${skipped} skipped)` : ''}`,
+        scanFull: 'full scan',
+        scanSeconds: (s) => `${s}s`,
+        scanError: (msg) => `Scan error: ${msg}`,
+        months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
+        relTime: (d) => {
+            if (d < 60) return d + 's ago';
+            if (d < 3600) return Math.floor(d / 60) + 'm ago';
+            if (d < 86400) return Math.floor(d / 3600) + 'h ago';
+            return Math.floor(d / 86400) + 'd ago';
+        },
+        dateLocale: 'en-US',
+        langs: {},
+    },
+    zh: {
+        siteTitle: '用户评论',
+        pageTitle: 'Duflat — 用户评论',
+        subTemplate: (app) => `${app} · App Store 与 Google Play`,
+        loading: '正在加载评论...',
+        loadError: (msg) => `加载失败：${msg}`,
+        tryAgain: '重试',
+        noMatch: '没有符合筛选条件的评论。',
+        noDate: '无日期',
+        all: '全部',
+        allCountries: '全部国家',
+        platform: '平台',
+        country: '国家',
+        date: '日期',
+        lastNDays: (n) => `最近 ${n} 天`,
+        selectMonth: '选择月份',
+        archiveTitle: '按日期浏览',
+        lastN: '最近',
+        days: '天',
+        olderTitle: '较旧',
+        newerTitle: '较新',
+        original: '原文',
+        detailsFallback: '详情',
+        close: '关闭',
+        scanNow: '立即扫描',
+        scanTooltip: '扫描新评论（约 1-2 分钟）',
+        scanConfirm: '扫描所有国家的新评论？可能需要 1-2 分钟。',
+        scanning: '正在后台扫描最新评论…',
+        scanCompletePrefix: '扫描完成 · ',
+        scanNewComments: (n) => `${n} 条新评论`,
+        scanCountries: (n, skipped) => `${n} 个国家${skipped ? `（跳过 ${skipped}）` : ''}`,
+        scanFull: '完整扫描',
+        scanSeconds: (s) => `${s}秒`,
+        scanError: (msg) => `扫描失败：${msg}`,
+        months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+        dayShort: ['日','一','二','三','四','五','六'],
+        relTime: (d) => {
+            if (d < 60) return d + ' 秒前';
+            if (d < 3600) return Math.floor(d / 60) + ' 分钟前';
+            if (d < 86400) return Math.floor(d / 3600) + ' 小时前';
+            return Math.floor(d / 86400) + ' 天前';
+        },
+        dateLocale: 'zh-CN',
+        langs: {
+            English: '英语', Spanish: '西班牙语', Portuguese: '葡萄牙语',
+            French: '法语', German: '德语', Italian: '意大利语',
+            Dutch: '荷兰语', Polish: '波兰语', Czech: '捷克语',
+            Slovak: '斯洛伐克语', Hungarian: '匈牙利语', Romanian: '罗马尼亚语',
+            Greek: '希腊语', Swedish: '瑞典语', Norwegian: '挪威语',
+            Danish: '丹麦语', Finnish: '芬兰语',
+            Japanese: '日语', Korean: '韩语',
+            'Traditional Chinese': '繁体中文', 'Simplified Chinese': '简体中文',
+            Chinese: '中文',
+            Arabic: '阿拉伯语', Turkish: '土耳其语', Russian: '俄语',
+            Ukrainian: '乌克兰语', Hebrew: '希伯来语',
+            Indonesian: '印尼语', Malay: '马来语', Thai: '泰语',
+            Vietnamese: '越南语', Hindi: '印地语', Bengali: '孟加拉语',
+            Tagalog: '他加禄语', Other: '其他', Unknown: '未知',
+        },
+    },
+};
+
+function detectInitialLang() {
+    try {
+        const saved = localStorage.getItem('cs_ui_lang');
+        if (saved === 'zh' || saved === 'en') return saved;
+    } catch (e) {}
+    const nav = ((navigator.language || navigator.userLanguage || 'en') + '').toLowerCase();
+    return nav.startsWith('zh') ? 'zh' : 'en';
+}
+
+let uiLang = detectInitialLang();
+document.documentElement.lang = (uiLang === 'zh' ? 'zh-CN' : 'en');
+
+function T(k, ...args) {
+    const src = I18N[uiLang] && I18N[uiLang][k] !== undefined ? I18N[uiLang][k] : I18N.en[k];
+    if (typeof src === 'function') return src(...args);
+    return src === undefined ? k : src;
+}
+
+function TL(lang) {
+    if (!lang) return '';
+    if (uiLang === 'zh') return I18N.zh.langs[lang] || lang;
+    return lang;
+}
+
+function setUILang(l) {
+    if (l !== 'en' && l !== 'zh') return;
+    uiLang = l;
+    try { localStorage.setItem('cs_ui_lang', l); } catch (e) {}
+    document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+    applyStaticLabels();
+    renderLangToggle();
+    renderAll();
+}
+
+function applyStaticLabels() {
+    document.title = T('pageTitle');
+    const titleEl = document.getElementById('siteTitle');
+    if (titleEl) titleEl.textContent = T('siteTitle');
+    const archTitle = document.getElementById('archiveTitle');
+    if (archTitle) archTitle.textContent = T('archiveTitle');
+    const scanLabel = document.getElementById('scanNowLabel');
+    if (scanLabel) scanLabel.textContent = T('scanNow');
+    const pollBtn = document.getElementById('btnPoll');
+    if (pollBtn) pollBtn.title = T('scanTooltip');
+    const loadingText = document.getElementById('loadingText');
+    if (loadingText) loadingText.textContent = T('loading');
+    if (els && els.subLine && appInfo && appInfo.name) {
+        els.subLine.textContent = T('subTemplate', appInfo.name);
+    }
+}
+
+function renderLangToggle() {
+    const el = document.getElementById('langToggle');
+    if (!el) return;
+    el.innerHTML =
+        `<button class="lang-btn ${uiLang==='en'?'active':''}" onclick="setUILang('en')">EN</button>` +
+        `<button class="lang-btn ${uiLang==='zh'?'active':''}" onclick="setUILang('zh')">中文</button>`;
+}
 
 let allReviews = [];
 let allDates = [];
@@ -57,17 +227,14 @@ function relTime(iso) {
     const t = new Date(iso).getTime();
     if (isNaN(t)) return '';
     const d = Math.floor((Date.now() - t) / 1000);
-    if (d < 60)     return d + 's ago';
-    if (d < 3600)   return Math.floor(d / 60)   + 'm ago';
-    if (d < 86400)  return Math.floor(d / 3600) + 'h ago';
-    if (d < 2592000) return Math.floor(d / 86400) + 'd ago';
+    if (d < 2592000) return T('relTime', d);
     return new Date(iso).toISOString().slice(0, 10);
 }
 
 function fmtDateLong(d) {
-    if (!d || d === 'Unknown') return 'No date';
+    if (!d || d === 'Unknown') return T('noDate');
     const dt = new Date(d + 'T00:00:00');
-    return dt.toLocaleDateString('en-US', {
+    return dt.toLocaleDateString(T('dateLocale'), {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     });
 }
@@ -84,7 +251,7 @@ function applyData(data) {
     lastPollMeta = data.last_poll || null;
     appInfo = data.app || null;
     if (appInfo && appInfo.name) {
-        els.subLine.textContent = `${appInfo.name} · App Store & Play`;
+        els.subLine.textContent = T('subTemplate', appInfo.name);
     }
     renderAll();
 }
@@ -114,7 +281,7 @@ async function loadReviews(opts = {}) {
         applyData(data);
     } catch (e) {
         if (!allReviews.length) {
-            els.content.innerHTML = `<div class="empty">Load error: ${escapeHtml(e.message)} · <a href="#" onclick="loadReviews();return false">try again</a></div>`;
+            els.content.innerHTML = `<div class="empty">${escapeHtml(T('loadError', e.message))} · <a href="#" onclick="loadReviews();return false">${escapeHtml(T('tryAgain'))}</a></div>`;
         }
     }
 
@@ -185,7 +352,7 @@ async function waitForPollDone(maxMs = 180000, intervalMs = 8000) {
 }
 
 function showAutoPollIndicator() {
-    els.footer.textContent = 'Scanning for fresh comments in background…';
+    els.footer.textContent = T('scanning');
 }
 
 function hideAutoPollIndicator() {
@@ -247,7 +414,7 @@ function renderRatingBtns() {
         if (counts[n] !== undefined) counts[n]++;
     });
 
-    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">All <span class="count">${fullYearBase.length}</span></button>`;
+    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">${escapeHtml(T('all'))} <span class="count">${fullYearBase.length}</span></button>`;
     [5, 4, 3, 2, 1].forEach(n => {
         const active = currentRating === n ? 'active' : '';
         html += `<button class="rating-btn ${active}" onclick="setRating(${n})">
@@ -294,18 +461,18 @@ function renderFilterDropdown() {
 
     let html = `<div class="filter-section">
 
-        <div class="filter-section-title">Platform</div>
+        <div class="filter-section-title">${escapeHtml(T('platform'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">All<span class="opt-count">${allReviews.length}</span></button>
+            <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">${escapeHtml(T('all'))}<span class="opt-count">${allReviews.length}</span></button>
             <button class="filter-option ${currentPlatform==='apple'?'active':''}" onclick="setPlatform('apple')">Apple<span class="opt-count">${apple}</span></button>
             <button class="filter-option ${currentPlatform==='google_play'?'active':''}" onclick="setPlatform('google_play')">Google<span class="opt-count">${gplay}</span></button>
         </div>
     </div>`;
 
     html += `<div class="filter-section">
-        <div class="filter-section-title">Country</div>
+        <div class="filter-section-title">${escapeHtml(T('country'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">All countries<span class="opt-count">${allReviews.length}</span></button>`;
+            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">${escapeHtml(T('allCountries'))}<span class="opt-count">${allReviews.length}</span></button>`;
     countryKeys.forEach(c => {
         html += `<button class="filter-option ${currentCountry===c?'active':''}" onclick="setCountry('${escapeHtml(c)}')">${escapeHtml(c.toUpperCase())}<span class="opt-count">${countryCounts[c]}</span></button>`;
     });
@@ -315,11 +482,13 @@ function renderFilterDropdown() {
     const dateSet = new Set(allDates);
     const defaultActive = !currentDateFilter && filterMonth === null && !showMonths;
     const recentCount = allReviews.filter(r => isWithinRecent(dateOf(r))).length;
+    const months = T('months');
+    const dayShort = T('dayShort');
     html += `<div class="filter-section">
-        <div class="filter-section-title">Date</div>
+        <div class="filter-section-title">${escapeHtml(T('date'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">Last ${DEFAULT_RECENT_DAYS} days<span class="opt-count">${recentCount}</span></button>
-            <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Select month</button>`;
+            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">${escapeHtml(T('lastNDays', DEFAULT_RECENT_DAYS))}<span class="opt-count">${recentCount}</span></button>
+            <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">${escapeHtml(T('selectMonth'))}</button>`;
 
     if (showMonths && filterMonth === null) {
         const monthCounts = {};
@@ -334,7 +503,7 @@ function renderFilterDropdown() {
             const cnt = monthCounts[mo] || 0;
             const disabled = mo > currentMonth || cnt === 0;
             const cls = disabled ? 'filter-option disabled' : 'filter-option';
-            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(MONTHS[mo])}<span class="opt-count">${cnt}</span></button>`;
+            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(months[mo])}<span class="opt-count">${cnt}</span></button>`;
         }
         html += `</div>`;
     } else if (filterMonth !== null) {
@@ -346,11 +515,11 @@ function renderFilterDropdown() {
         html += `</div>
         <div class="cal-header">
             <button onclick="filterCalPrev(event)" ${filterMonth===0?'disabled':''}>&#8249;</button>
-            <span class="cal-title">${escapeHtml(MONTHS[mo])} ${year}</span>
+            <span class="cal-title">${escapeHtml(months[mo])} ${year}</span>
             <button onclick="filterCalNext(event)" ${filterMonth>=currentMonth?'disabled':''}>&#8250;</button>
         </div>
         <div class="cal-grid">`;
-        DAY_SHORT.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
+        dayShort.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
         for (let i = 0; i < firstDay; i++) html += `<div></div>`;
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `${year}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -390,7 +559,7 @@ function renderActiveChips() {
     }
     if (currentDateFilter) {
         const dt = new Date(currentDateFilter + 'T00:00:00');
-        const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const label = dt.toLocaleDateString(T('dateLocale'), { month: 'short', day: 'numeric' });
         html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     els.activeChips.innerHTML = html;
@@ -399,7 +568,7 @@ function renderActiveChips() {
 function renderReviews() {
     const filtered = getFiltered();
     if (!filtered.length) {
-        els.content.innerHTML = `<div class="empty">No comments match the filters.</div>`;
+        els.content.innerHTML = `<div class="empty">${escapeHtml(T('noMatch'))}</div>`;
         return;
     }
 
@@ -428,20 +597,25 @@ function renderCard(r) {
     </div>`;
     const platform = r.platform || '';
 
-    // Card title + body: English versions when we have them, else fall back to raw.
+    // Card title + body: pick the display language based on uiLang.
+    // zh mode → content_chinese / title_chinese when present, else english, else raw.
+    // en mode → content_english / title_english when present, else raw.
     const titleEn = (r.title_english || '').trim();
+    const titleZh = (r.title_chinese || '').trim();
     const titleOri = (r.title || '').trim();
-    const cardTitle = titleEn || titleOri;
     const contentEn = (r.content_english || '').trim();
+    const contentZh = (r.content_chinese || '').trim();
     const contentOri = (r.content || '').trim();
-    const body = contentEn || contentOri;
+
+    const cardTitle = (uiLang === 'zh' && titleZh) ? titleZh : (titleEn || titleOri);
+    const body = (uiLang === 'zh' && contentZh) ? contentZh : (contentEn || contentOri);
     const title = cardTitle ? `<div class="card-title">${escapeHtml(cardTitle)}</div>` : '';
 
     // Details panel: original title + original body (only if they differ from
     // what's on the card) + author / version / relative date.
     const lang = (r.language || '').trim();
-    const showOriTitle = titleOri && titleEn && titleOri !== titleEn;
-    const showOriContent = contentOri && contentEn && contentOri !== contentEn;
+    const showOriTitle = titleOri && titleOri !== cardTitle;
+    const showOriContent = contentOri && contentOri !== body;
     const metaParts = [];
     if (r.author) metaParts.push(`<span class="author">${escapeHtml(r.author)}</span>`);
     if (r.app_version) metaParts.push(`<span class="version">v${escapeHtml(r.app_version)}</span>`);
@@ -451,8 +625,9 @@ function renderCard(r) {
 
     let detailsInner = '';
     if (showOriTitle || showOriContent) {
-        const langSuffix = lang ? ` (${escapeHtml(lang)})` : '';
-        detailsInner += `<div class="original-label">Original${langSuffix}</div>`;
+        const langName = TL(lang);
+        const langSuffix = langName ? ` (${escapeHtml(langName)})` : '';
+        detailsInner += `<div class="original-label">${escapeHtml(T('original'))}${langSuffix}</div>`;
         if (showOriTitle) {
             detailsInner += `<div class="original-title">${escapeHtml(titleOri)}</div>`;
         }
@@ -465,8 +640,8 @@ function renderCard(r) {
     }
     const hasDetails = detailsInner.length > 0;
 
-    // Button label = detected language (preferred) or "Details" fallback.
-    const btnLabel = lang || 'Details';
+    // Button label = detected language (localized) or "Details"/"详情" fallback.
+    const btnLabel = TL(lang) || T('detailsFallback');
     const detailsBtn = hasDetails
         ? `<button class="details-btn" data-label="${escapeHtml(btnLabel)}" onclick="toggleDetails(this)" aria-expanded="false">${escapeHtml(btnLabel)}</button>`
         : '';
@@ -497,8 +672,8 @@ function toggleDetails(btn) {
     else panel.removeAttribute('hidden');
     btn.classList.toggle('open', !wasOpen);
     btn.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
-    const label = btn.dataset.label || 'Details';
-    btn.textContent = wasOpen ? label : 'Close';
+    const label = btn.dataset.label || T('detailsFallback');
+    btn.textContent = wasOpen ? label : T('close');
 }
 
 function renderArchive() {
@@ -517,19 +692,19 @@ function renderArchive() {
     const nextSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
 
     let html = '';
-    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Newer">${prevSvg}</button>`;
+    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="${escapeHtml(T('newerTitle'))}">${prevSvg}</button>`;
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-        <span class="day">Last ${DEFAULT_RECENT_DAYS}</span><span class="month">days</span>
+        <span class="day">${escapeHtml(T('lastN'))} ${DEFAULT_RECENT_DAYS}</span><span class="month">${escapeHtml(T('days'))}</span>
     </button>`;
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
         const day = dt.getDate();
-        const month = dt.toLocaleDateString('en-US', { month: 'short' });
+        const month = dt.toLocaleDateString(T('dateLocale'), { month: 'short' });
         html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
             <span class="day">${day}</span><span class="month">${escapeHtml(month)}</span>
         </button>`;
     });
-    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Older">${nextSvg}</button>`;
+    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="${escapeHtml(T('olderTitle'))}">${nextSvg}</button>`;
     els.archiveDates.innerHTML = html;
 }
 
@@ -646,7 +821,7 @@ document.addEventListener('click', e => {
 
 // ── Poll ───────────────────────────────────
 async function triggerPoll() {
-    if (!confirm('Scan all countries for new comments? May take 1-2 minutes.')) return;
+    if (!confirm(T('scanConfirm'))) return;
     els.pollBtn.disabled = true;
     els.pollBtn.classList.add('is-loading');
     try {
@@ -657,19 +832,18 @@ async function triggerPoll() {
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        const parts = [`${data.total_new || 0} new comments`];
+        const parts = [T('scanNewComments', data.total_new || 0)];
         if (data.countries_scanned != null) {
-            const skip = data.countries_skipped ? ` (${data.countries_skipped} skipped)` : '';
-            parts.push(`${data.countries_scanned} countries${skip}`);
+            parts.push(T('scanCountries', data.countries_scanned, data.countries_skipped || 0));
         }
-        if (data.full_scan) parts.push('full scan');
-        parts.push(`${data.duration_sec || 0}s`);
-        els.footer.textContent = 'Scan complete · ' + parts.join(' · ');
+        if (data.full_scan) parts.push(T('scanFull'));
+        parts.push(T('scanSeconds', data.duration_sec || 0));
+        els.footer.textContent = T('scanCompletePrefix') + parts.join(' · ');
         // Invalidate cache so the fresh data is shown
         try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
         await loadReviews();
     } catch (e) {
-        els.footer.textContent = 'Scan error: ' + e.message;
+        els.footer.textContent = T('scanError', e.message);
     } finally {
         els.pollBtn.disabled = false;
         els.pollBtn.classList.remove('is-loading');
@@ -678,4 +852,6 @@ async function triggerPoll() {
 
 els.pollBtn.addEventListener('click', triggerPoll);
 
+applyStaticLabels();
+renderLangToggle();
 loadReviews();
