@@ -230,7 +230,7 @@ header .sub {
 
 /* ── Date dividers ────────────────────── */
 .date-divider { display: flex; align-items: center; gap: 18px; margin: 36px 0 20px; }
-.date-divider:first-child { margin-top: 0; }
+.date-divider:first-child { margin-top: 20px; }
 .date-divider .line { flex: 1; height: 1px; background: var(--border-subtle); }
 .date-divider .label {
     font-size: .68rem; font-weight: 600; color: var(--tertiary);
@@ -255,19 +255,25 @@ header .sub {
 }
 
 .rating-marker {
-    position: absolute; left: -32px; top: 20px;
-    width: 22px; height: 22px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: inherit; font-size: .6rem; font-weight: 700;
-    color: #fff; flex-shrink: 0;
+    position: absolute; left: -34px; top: 16px;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--neutral);
+    flex-shrink: 0;
     transition: transform .2s var(--ease);
-    font-variant-numeric: tabular-nums;
 }
-.rating-marker.r1 { background: var(--negative); box-shadow: 0 1px 3px rgba(181,74,53,.22); }
-.rating-marker.r2 { background: #c86a48; }
-.rating-marker.r3 { background: var(--neutral); }
-.rating-marker.r4 { background: #6fa670; }
-.rating-marker.r5 { background: var(--positive); box-shadow: 0 1px 3px rgba(61,138,94,.22); }
+.rating-marker svg {
+    width: 100%; height: 100%; display: block;
+    filter: drop-shadow(0 1px 2px rgba(176,131,34,.28));
+}
+.rating-marker .num {
+    position: absolute;
+    font-family: inherit; font-size: .66rem; font-weight: 700;
+    color: #fff; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+    transform: translateY(1px);  /* nudge into the visual center of the star */
+}
 .review-card:hover .rating-marker { transform: scale(1.08); }
 
 .card-top {
@@ -400,11 +406,12 @@ header .sub {
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .reviews { padding: 0 0 16px 30px; gap: 10px; }
+    .reviews { padding: 0 0 16px 32px; gap: 10px; }
     .rating-marker {
-        left: -26px; top: 18px;
-        width: 20px; height: 20px; font-size: .56rem;
+        left: -30px; top: 14px;
+        width: 22px; height: 22px;
     }
+    .rating-marker .num { font-size: .6rem; }
     .review-card { padding: 16px 16px; border-radius: 16px; }
     .card-content { font-size: .88rem; line-height: 1.55; }
     .card-title { font-size: .94rem; }

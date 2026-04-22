@@ -433,7 +433,10 @@ function renderReviews() {
 
 function renderCard(r) {
     const rating = Math.max(1, Math.min(5, parseInt(r.rating) || 1));
-    const marker = `<div class="rating-marker r${rating}" title="${rating} yildiz">${rating}</div>`;
+    const marker = `<div class="rating-marker" title="${rating} yildiz">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span class="num">${rating}</span>
+    </div>`;
     const title = r.title ? `<div class="card-title">${escapeHtml(r.title)}</div>` : '';
     const author = r.author ? `<span class="author">${escapeHtml(r.author)}</span>` : '';
     const version = r.app_version ? `<span class="version">v${escapeHtml(r.app_version)}</span>` : '';
