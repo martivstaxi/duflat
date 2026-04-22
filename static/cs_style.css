@@ -282,12 +282,26 @@ header .sub {
     background: var(--hairline); padding: 3px 7px; border-radius: 5px;
     font-variant-numeric: tabular-nums;
 }
-.card-top .dot { opacity: .4; }
-.card-top .author { color: var(--text-secondary); font-weight: 500; }
-.card-top .version { color: var(--tertiary); }
-.card-top .date {
-    color: var(--tertiary); margin-left: auto;
-    font-variant-numeric: tabular-nums;
+.details-btn {
+    margin-left: auto;
+    padding: 4px 10px;
+    font-family: inherit; font-size: .66rem; font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px; line-height: 1;
+    cursor: pointer;
+    transition: color .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+}
+.details-btn:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: var(--hairline);
+}
+.details-btn.open {
+    color: var(--accent);
+    border-color: var(--accent-tint);
+    background: var(--accent-soft);
 }
 .card-title {
     font-weight: 600; font-size: 1rem; margin-bottom: 6px;
@@ -298,6 +312,16 @@ header .sub {
     color: var(--text); letter-spacing: -.005em;
     white-space: pre-wrap; word-break: break-word;
 }
+.card-details {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: .72rem; color: var(--tertiary);
+}
+.card-details .dot { opacity: .4; }
+.card-details .author { color: var(--text-secondary); font-weight: 500; word-break: break-word; }
+.card-details .version { color: var(--tertiary); font-variant-numeric: tabular-nums; }
+.card-details .date { color: var(--tertiary); font-variant-numeric: tabular-nums; }
 
 /* ── Archive (date navigator at bottom) ── */
 .archive-section {

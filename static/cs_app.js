@@ -427,21 +427,47 @@ function renderCard(r) {
         <span class="num">${rating}</span>
     </div>`;
     const title = r.title ? `<div class="card-title">${escapeHtml(r.title)}</div>` : '';
-    const author = r.author ? `<span class="author">${escapeHtml(r.author)}</span>` : '';
-    const version = r.app_version ? `<span class="version">v${escapeHtml(r.app_version)}</span>` : '';
     const platform = r.platform || '';
+
+    const detailParts = [];
+    if (r.author) detailParts.push(`<span class="author">${escapeHtml(r.author)}</span>`);
+    if (r.app_version) detailParts.push(`<span class="version">v${escapeHtml(r.app_version)}</span>`);
+    if (r.review_date) {
+        const rel = escapeHtml(relTime(r.review_date));
+        const full = escapeHtml(r.review_date);
+        detailParts.push(`<span class="date" title="${full}">${rel}</span>`);
+    }
+    const detailsPanel = detailParts.length
+        ? `<div class="card-details" hidden>${detailParts.join('<span class="dot">·</span>')}</div>`
+        : '';
+    const detailsBtn = detailParts.length
+        ? `<button class="details-btn" onclick="toggleDetails(this)" aria-expanded="false">Details</button>`
+        : '';
+
     return `<div class="review-card">
         <div class="card-top">
             ${marker}
             <span class="platform-badge ${platform}">${escapeHtml(platformLabel(platform))}</span>
             <span class="country-tag">${escapeHtml((r.country || '').toUpperCase())}</span>
-            ${author}
-            ${version ? `<span class="dot">·</span>${version}` : ''}
-            <span class="date" title="${escapeHtml(r.review_date || '')}">${escapeHtml(relTime(r.review_date))}</span>
+            ${detailsBtn}
         </div>
         ${title}
         <div class="card-content">${escapeHtml(r.content || '')}</div>
+        ${detailsPanel}
     </div>`;
+}
+
+function toggleDetails(btn) {
+    const card = btn.closest('.review-card');
+    if (!card) return;
+    const panel = card.querySelector('.card-details');
+    if (!panel) return;
+    const wasOpen = !panel.hasAttribute('hidden');
+    if (wasOpen) panel.setAttribute('hidden', '');
+    else panel.removeAttribute('hidden');
+    btn.classList.toggle('open', !wasOpen);
+    btn.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
+    btn.textContent = wasOpen ? 'Details' : 'Close';
 }
 
 function renderArchive() {
