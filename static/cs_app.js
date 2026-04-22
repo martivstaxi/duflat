@@ -206,10 +206,10 @@ function isWithinRecent(dateStr) {
 function matchesDate(r) {
     const d = dateOf(r);
     if (currentDateFilter) return d === currentDateFilter;
-    // Picking a platform or country implicitly widens the date view to the
-    // full year — otherwise narrow countries look empty against the 5-day
-    // default even when they have reviews.
-    if (currentPlatform !== 'all' || currentCountry !== 'all') return true;
+    // Picking any non-date filter (rating/platform/country) implicitly widens
+    // the date view to the full year — otherwise narrow slices look empty
+    // against the 5-day default even when they have reviews.
+    if (currentRating !== 'all' || currentPlatform !== 'all' || currentCountry !== 'all') return true;
     return isWithinRecent(d);
 }
 
