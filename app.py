@@ -311,6 +311,24 @@ def social_discover_bluesky():
     return jsonify(discover_bluesky())
 
 
+@app.route('/social/discover-all', methods=['POST', 'GET'])
+def social_discover_all():
+    """Cron endpoint: run Bluesky + Reddit discover sequentially. Every 6h."""
+    from modules.social_listening import discover_reddit, discover_bluesky
+    results = {}
+    for name, fn in [('bluesky', discover_bluesky), ('reddit', discover_reddit)]:
+        try:
+            r = fn() or {}
+            results[name] = {
+                'saved': r.get('saved', 0),
+                'fetched': r.get('fetched', 0),
+                'gate_rejected': len(r.get('gate_rejections', []) or []),
+            }
+        except Exception as e:
+            results[name] = {'error': str(e)[:200]}
+    return jsonify(results)
+
+
 @app.route('/social/debug-reddit', methods=['GET'])
 def social_debug_reddit():
     """Debug: fetch one reddit URL from the Railway worker, return raw info."""
