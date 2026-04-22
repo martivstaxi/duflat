@@ -794,15 +794,31 @@ def backfill_translations(limit=200):
     """Populate `language` and `content_english` for legacy rows that lack them.
     Returns {'scanned': N, 'enriched': M}. Safe to call repeatedly."""
     try:
+        limit = int(limit)
+    except Exception:
+        limit = 200
+    # Pull a wider slice than `limit` so Python-side filtering has room to
+    # yield `limit` enrichment candidates. Cheap for the current row count.
+    try:
         res = (_db().table('cs_reviews')
                .select('id,content,language,content_english')
-               .or_('content_english.is.null,content_english.eq.')
-               .not_.eq('content', '')
-               .limit(int(limit))
+               .order('id', desc=True)
+               .limit(max(limit * 4, 400))
                .execute())
-        rows = res.data or []
-    except Exception:
-        return {'scanned': 0, 'enriched': 0}
+        all_rows = res.data or []
+    except Exception as e:
+        return {'scanned': 0, 'enriched': 0, 'error': f'select: {e}'}
+
+    rows = []
+    for r in all_rows:
+        if not (r.get('content') or '').strip():
+            continue
+        if (r.get('content_english') or '').strip():
+            continue
+        rows.append(r)
+        if len(rows) >= limit:
+            break
+
     if not rows:
         return {'scanned': 0, 'enriched': 0}
 

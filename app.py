@@ -622,7 +622,10 @@ def cs_backfill_translations():
         limit = int(body.get('limit', 200))
     except Exception:
         limit = 200
-    result = cs_reviews.backfill_translations(limit=limit)
+    try:
+        result = cs_reviews.backfill_translations(limit=limit)
+    except Exception as e:
+        return jsonify({'error': f'{type(e).__name__}: {e}'}), 500
     return jsonify(result)
 
 
