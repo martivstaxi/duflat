@@ -354,7 +354,6 @@ header .sub {
 /* ── Footer info (last poll etc.) ────── */
 .footer-info {
     margin-top: 40px; padding: 18px 0;
-    border-top: 1px solid var(--border-subtle);
     text-align: center; font-size: .72rem;
     color: var(--tertiary);
     font-variant-numeric: tabular-nums;

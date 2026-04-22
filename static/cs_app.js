@@ -551,19 +551,9 @@ function filterPickDate(dateStr) {
 }
 
 function renderFooter() {
-    if (!lastPollMeta) {
-        els.footer.textContent = 'No scan performed yet.';
-        return;
-    }
-    const t = lastPollMeta.finished_at || lastPollMeta.started_at;
-    const parts = ['Last scan: ' + (t ? relTime(t) : '—')];
-    if (lastPollMeta.reviews_new != null) parts.push(`${lastPollMeta.reviews_new} new comments`);
-    if (lastPollMeta.countries_scanned != null) {
-        const skip = lastPollMeta.countries_skipped ? ` (${lastPollMeta.countries_skipped} skipped)` : '';
-        parts.push(`${lastPollMeta.countries_scanned} countries${skip}`);
-    }
-    if (lastPollMeta.full_scan) parts.push('full scan');
-    els.footer.textContent = parts.join(' · ');
+    // Steady-state footer is intentionally blank; only transient states
+    // (background scan indicator, manual poll completion/error) populate it.
+    els.footer.textContent = '';
 }
 
 // ── State setters ──────────────────────────
