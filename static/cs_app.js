@@ -84,7 +84,7 @@ function applyData(data) {
     lastPollMeta = data.last_poll || null;
     appInfo = data.app || null;
     if (appInfo && appInfo.name) {
-        els.subLine.textContent = `${appInfo.name} · Apple App Store & Google Play`;
+        els.subLine.textContent = `${appInfo.name} · App Store & Play`;
     }
     renderAll();
 }
