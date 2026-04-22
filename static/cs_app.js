@@ -73,7 +73,7 @@ function fmtDateLong(d) {
 }
 
 function platformLabel(p) {
-    return p === 'apple' ? 'Apple' : (p === 'google_play' ? 'Google Play' : p || '');
+    return p === 'apple' ? 'Apple' : (p === 'google_play' ? 'Google' : p || '');
 }
 
 function applyData(data) {
@@ -298,7 +298,7 @@ function renderFilterDropdown() {
         <div class="filter-options">
             <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">Tumu<span class="opt-count">${allReviews.length}</span></button>
             <button class="filter-option ${currentPlatform==='apple'?'active':''}" onclick="setPlatform('apple')">Apple<span class="opt-count">${apple}</span></button>
-            <button class="filter-option ${currentPlatform==='google_play'?'active':''}" onclick="setPlatform('google_play')">Google Play<span class="opt-count">${gplay}</span></button>
+            <button class="filter-option ${currentPlatform==='google_play'?'active':''}" onclick="setPlatform('google_play')">Google<span class="opt-count">${gplay}</span></button>
         </div>
     </div>`;
 

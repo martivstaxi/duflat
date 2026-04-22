@@ -275,12 +275,10 @@ header .sub {
     font-size: .72rem; color: var(--tertiary);
 }
 .platform-badge {
-    font-size: .62rem; font-weight: 600;
+    font-size: .68rem; font-weight: 600;
     padding: 3px 8px; border-radius: 5px; line-height: 1;
-    letter-spacing: .04em; text-transform: uppercase;
+    background: #eeeade; color: #4a4034;
 }
-.platform-badge.apple { background: #eeeade; color: #4a4034; }
-.platform-badge.google_play { background: #e1ecdf; color: #2d5a3f; }
 .country-tag {
     font-size: .62rem; font-weight: 600; letter-spacing: .06em;
     text-transform: uppercase; color: var(--text-secondary);
