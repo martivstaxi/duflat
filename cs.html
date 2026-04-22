@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duflat — CS Reviews</title>
+    <title>Duflat — User Comments</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>CS Reviews</h1>
+            <h1>User Comments</h1>
             <p class="sub" id="subLine">BiliBili · App Store & Play</p>
         </header>
 
@@ -21,25 +21,25 @@
         <div class="active-chips" id="activeChips"></div>
 
         <div id="content">
-            <div class="loading"><div class="spinner"></div><span id="loadingText">Yorumlar yukleniyor...</span></div>
+            <div class="loading"><div class="spinner"></div><span id="loadingText">Loading comments...</span></div>
         </div>
 
         <div class="archive-section" id="archiveSection" style="display:none">
-            <h2>Tarihe gore incele</h2>
+            <h2>Browse by date</h2>
             <div class="archive-dates" id="archiveDates"></div>
         </div>
 
         <div class="footer-info" id="footerInfo"></div>
 
-        <button id="btnPoll" class="poll-fab" title="Yeni yorumlari tara (~1-2 dk)">
+        <button id="btnPoll" class="poll-fab" title="Scan for new comments (~1-2 min)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
                 <polyline points="23 4 23 10 17 10"/>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
             </svg>
-            <span>Simdi tara</span>
+            <span>Scan now</span>
         </button>
     </div>
 
-    <script src="/static/cs_app.js?v=14"></script>
+    <script src="/static/cs_app.js?v=15"></script>
 </body>
 </html>

@@ -10,8 +10,8 @@ const CACHE_TTL = 5 * 60 * 1000;
 const DATES_PER_PAGE = 4;
 const DEFAULT_RECENT_DAYS = 5;  // initial view window; user can drill deeper via archive/calendar
 const AUTO_POLL_THRESHOLD_MS = 3 * 60 * 60 * 1000;  // page load → bg-tara if last poll > 3h
-const MONTHS_TR = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
-const DAY_SHORT_TR = ['Pz','Pt','Sa','Ca','Pe','Cu','Ct'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_SHORT = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
 let allReviews = [];
 let allDates = [];
@@ -57,17 +57,17 @@ function relTime(iso) {
     const t = new Date(iso).getTime();
     if (isNaN(t)) return '';
     const d = Math.floor((Date.now() - t) / 1000);
-    if (d < 60)     return d + ' sn once';
-    if (d < 3600)   return Math.floor(d / 60)   + ' dk once';
-    if (d < 86400)  return Math.floor(d / 3600) + ' sa once';
-    if (d < 2592000) return Math.floor(d / 86400) + ' gun once';
+    if (d < 60)     return d + 's ago';
+    if (d < 3600)   return Math.floor(d / 60)   + 'm ago';
+    if (d < 86400)  return Math.floor(d / 3600) + 'h ago';
+    if (d < 2592000) return Math.floor(d / 86400) + 'd ago';
     return new Date(iso).toISOString().slice(0, 10);
 }
 
 function fmtDateLong(d) {
-    if (!d || d === 'Unknown') return 'Tarih yok';
+    if (!d || d === 'Unknown') return 'No date';
     const dt = new Date(d + 'T00:00:00');
-    return dt.toLocaleDateString('tr-TR', {
+    return dt.toLocaleDateString('en-US', {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     });
 }
@@ -114,7 +114,7 @@ async function loadReviews(opts = {}) {
         applyData(data);
     } catch (e) {
         if (!allReviews.length) {
-            els.content.innerHTML = `<div class="empty">Yukleme hatasi: ${escapeHtml(e.message)} · <a href="#" onclick="loadReviews();return false">tekrar dene</a></div>`;
+            els.content.innerHTML = `<div class="empty">Load error: ${escapeHtml(e.message)} · <a href="#" onclick="loadReviews();return false">try again</a></div>`;
         }
     }
 
@@ -185,7 +185,7 @@ async function waitForPollDone(maxMs = 180000, intervalMs = 8000) {
 }
 
 function showAutoPollIndicator() {
-    els.footer.textContent = 'Arka planda guncel yorumlar taraniyor…';
+    els.footer.textContent = 'Scanning for fresh comments in background…';
 }
 
 function hideAutoPollIndicator() {
@@ -247,7 +247,7 @@ function renderRatingBtns() {
         if (counts[n] !== undefined) counts[n]++;
     });
 
-    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${fullYearBase.length}</span></button>`;
+    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">All <span class="count">${fullYearBase.length}</span></button>`;
     [5, 4, 3, 2, 1].forEach(n => {
         const active = currentRating === n ? 'active' : '';
         html += `<button class="rating-btn ${active}" onclick="setRating(${n})">
@@ -296,16 +296,16 @@ function renderFilterDropdown() {
 
         <div class="filter-section-title">Platform</div>
         <div class="filter-options">
-            <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">Tumu<span class="opt-count">${allReviews.length}</span></button>
+            <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">All<span class="opt-count">${allReviews.length}</span></button>
             <button class="filter-option ${currentPlatform==='apple'?'active':''}" onclick="setPlatform('apple')">Apple<span class="opt-count">${apple}</span></button>
             <button class="filter-option ${currentPlatform==='google_play'?'active':''}" onclick="setPlatform('google_play')">Google<span class="opt-count">${gplay}</span></button>
         </div>
     </div>`;
 
     html += `<div class="filter-section">
-        <div class="filter-section-title">Ulke</div>
+        <div class="filter-section-title">Country</div>
         <div class="filter-options">
-            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">Tum ulkeler<span class="opt-count">${allReviews.length}</span></button>`;
+            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">All countries<span class="opt-count">${allReviews.length}</span></button>`;
     countryKeys.forEach(c => {
         html += `<button class="filter-option ${currentCountry===c?'active':''}" onclick="setCountry('${escapeHtml(c)}')">${escapeHtml(c.toUpperCase())}<span class="opt-count">${countryCounts[c]}</span></button>`;
     });
@@ -316,10 +316,10 @@ function renderFilterDropdown() {
     const defaultActive = !currentDateFilter && filterMonth === null && !showMonths;
     const recentCount = allReviews.filter(r => isWithinRecent(dateOf(r))).length;
     html += `<div class="filter-section">
-        <div class="filter-section-title">Tarih</div>
+        <div class="filter-section-title">Date</div>
         <div class="filter-options">
-            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">Son ${DEFAULT_RECENT_DAYS} gun<span class="opt-count">${recentCount}</span></button>
-            <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Ay sec</button>`;
+            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">Last ${DEFAULT_RECENT_DAYS} days<span class="opt-count">${recentCount}</span></button>
+            <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">Select month</button>`;
 
     if (showMonths && filterMonth === null) {
         const monthCounts = {};
@@ -334,7 +334,7 @@ function renderFilterDropdown() {
             const cnt = monthCounts[mo] || 0;
             const disabled = mo > currentMonth || cnt === 0;
             const cls = disabled ? 'filter-option disabled' : 'filter-option';
-            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(MONTHS_TR[mo])}<span class="opt-count">${cnt}</span></button>`;
+            html += `<button class="${cls}" onclick="filterSelectMonth(event,${mo})" style="padding-left:36px">${escapeHtml(MONTHS[mo])}<span class="opt-count">${cnt}</span></button>`;
         }
         html += `</div>`;
     } else if (filterMonth !== null) {
@@ -346,11 +346,11 @@ function renderFilterDropdown() {
         html += `</div>
         <div class="cal-header">
             <button onclick="filterCalPrev(event)" ${filterMonth===0?'disabled':''}>&#8249;</button>
-            <span class="cal-title">${escapeHtml(MONTHS_TR[mo])} ${year}</span>
+            <span class="cal-title">${escapeHtml(MONTHS[mo])} ${year}</span>
             <button onclick="filterCalNext(event)" ${filterMonth>=currentMonth?'disabled':''}>&#8250;</button>
         </div>
         <div class="cal-grid">`;
-        DAY_SHORT_TR.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
+        DAY_SHORT.forEach(d => { html += `<div class="cal-day-name">${escapeHtml(d)}</div>`; });
         for (let i = 0; i < firstDay; i++) html += `<div></div>`;
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `${year}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -390,7 +390,7 @@ function renderActiveChips() {
     }
     if (currentDateFilter) {
         const dt = new Date(currentDateFilter + 'T00:00:00');
-        const label = dt.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
+        const label = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
     }
     els.activeChips.innerHTML = html;
@@ -399,7 +399,7 @@ function renderActiveChips() {
 function renderReviews() {
     const filtered = getFiltered();
     if (!filtered.length) {
-        els.content.innerHTML = `<div class="empty">Kriterlere uyan yorum yok.</div>`;
+        els.content.innerHTML = `<div class="empty">No comments match the filters.</div>`;
         return;
     }
 
@@ -422,7 +422,7 @@ function renderReviews() {
 
 function renderCard(r) {
     const rating = Math.max(1, Math.min(5, parseInt(r.rating) || 1));
-    const marker = `<div class="rating-marker" title="${rating} yildiz">
+    const marker = `<div class="rating-marker" title="${rating} star${rating===1?'':'s'}">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         <span class="num">${rating}</span>
     </div>`;
@@ -460,19 +460,19 @@ function renderArchive() {
     const nextSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
 
     let html = '';
-    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Yeni">${prevSvg}</button>`;
+    html += `<button class="archive-nav ${hasPrev ? '' : 'disabled'}" onclick="archivePrev()" title="Newer">${prevSvg}</button>`;
     html += `<button class="archive-date-btn ${!currentDateFilter?'active':''}" onclick="selectDate(null)">
-        <span class="day">Son ${DEFAULT_RECENT_DAYS}</span><span class="month">gun</span>
+        <span class="day">Last ${DEFAULT_RECENT_DAYS}</span><span class="month">days</span>
     </button>`;
     pageDates.forEach(d => {
         const dt = new Date(d + 'T00:00:00');
         const day = dt.getDate();
-        const month = dt.toLocaleDateString('tr-TR', { month: 'short' });
+        const month = dt.toLocaleDateString('en-US', { month: 'short' });
         html += `<button class="archive-date-btn ${currentDateFilter===d?'active':''}" onclick="selectDate('${d}')">
             <span class="day">${day}</span><span class="month">${escapeHtml(month)}</span>
         </button>`;
     });
-    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Eski">${nextSvg}</button>`;
+    html += `<button class="archive-nav ${hasNext ? '' : 'disabled'}" onclick="archiveNext()" title="Older">${nextSvg}</button>`;
     els.archiveDates.innerHTML = html;
 }
 
@@ -552,17 +552,17 @@ function filterPickDate(dateStr) {
 
 function renderFooter() {
     if (!lastPollMeta) {
-        els.footer.textContent = 'Henuz tarama yapilmadi.';
+        els.footer.textContent = 'No scan performed yet.';
         return;
     }
     const t = lastPollMeta.finished_at || lastPollMeta.started_at;
-    const parts = ['Son tarama: ' + (t ? relTime(t) : '—')];
-    if (lastPollMeta.reviews_new != null) parts.push(`${lastPollMeta.reviews_new} yeni yorum`);
+    const parts = ['Last scan: ' + (t ? relTime(t) : '—')];
+    if (lastPollMeta.reviews_new != null) parts.push(`${lastPollMeta.reviews_new} new comments`);
     if (lastPollMeta.countries_scanned != null) {
-        const skip = lastPollMeta.countries_skipped ? ` (${lastPollMeta.countries_skipped} pas)` : '';
-        parts.push(`${lastPollMeta.countries_scanned} ulke${skip}`);
+        const skip = lastPollMeta.countries_skipped ? ` (${lastPollMeta.countries_skipped} skipped)` : '';
+        parts.push(`${lastPollMeta.countries_scanned} countries${skip}`);
     }
-    if (lastPollMeta.full_scan) parts.push('tam tarama');
+    if (lastPollMeta.full_scan) parts.push('full scan');
     els.footer.textContent = parts.join(' · ');
 }
 
@@ -599,7 +599,7 @@ document.addEventListener('click', e => {
 
 // ── Poll ───────────────────────────────────
 async function triggerPoll() {
-    if (!confirm('Tum ulkelerden yeni yorumlari tara? 1-2 dakika surebilir.')) return;
+    if (!confirm('Scan all countries for new comments? May take 1-2 minutes.')) return;
     els.pollBtn.disabled = true;
     els.pollBtn.classList.add('is-loading');
     try {
@@ -610,19 +610,19 @@ async function triggerPoll() {
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        const parts = [`${data.total_new || 0} yeni yorum`];
+        const parts = [`${data.total_new || 0} new comments`];
         if (data.countries_scanned != null) {
-            const skip = data.countries_skipped ? ` (${data.countries_skipped} pas)` : '';
-            parts.push(`${data.countries_scanned} ulke${skip}`);
+            const skip = data.countries_skipped ? ` (${data.countries_skipped} skipped)` : '';
+            parts.push(`${data.countries_scanned} countries${skip}`);
         }
-        if (data.full_scan) parts.push('tam tarama');
+        if (data.full_scan) parts.push('full scan');
         parts.push(`${data.duration_sec || 0}s`);
-        els.footer.textContent = 'Tarama bitti · ' + parts.join(' · ');
+        els.footer.textContent = 'Scan complete · ' + parts.join(' · ');
         // Invalidate cache so the fresh data is shown
         try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
         await loadReviews();
     } catch (e) {
-        els.footer.textContent = 'Tarama hatasi: ' + e.message;
+        els.footer.textContent = 'Scan error: ' + e.message;
     } finally {
         els.pollBtn.disabled = false;
         els.pollBtn.classList.remove('is-loading');
