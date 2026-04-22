@@ -431,8 +431,8 @@ function renderCard(r) {
     const version = r.app_version ? `<span class="version">v${escapeHtml(r.app_version)}</span>` : '';
     const platform = r.platform || '';
     return `<div class="review-card">
-        ${marker}
         <div class="card-top">
+            ${marker}
             <span class="platform-badge ${platform}">${escapeHtml(platformLabel(platform))}</span>
             <span class="country-tag">${escapeHtml((r.country || '').toUpperCase())}</span>
             ${author}

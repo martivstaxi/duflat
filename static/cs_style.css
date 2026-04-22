@@ -232,7 +232,7 @@ header .sub {
 }
 
 /* ── Review cards ─────────────────────── */
-.reviews { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 38px; }
+.reviews { display: flex; flex-direction: column; gap: 12px; padding: 0 0 16px 0; }
 .review-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
@@ -248,26 +248,23 @@ header .sub {
 }
 
 .rating-marker {
-    position: absolute; left: -34px; top: 16px;
-    width: 26px; height: 26px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--neutral);
+    position: relative;
+    width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #e0b134;
     flex-shrink: 0;
-    transition: transform .2s var(--ease);
 }
 .rating-marker svg {
     width: 100%; height: 100%; display: block;
-    filter: drop-shadow(0 1px 2px rgba(176,131,34,.28));
 }
 .rating-marker .num {
     position: absolute;
-    font-family: inherit; font-size: .66rem; font-weight: 700;
+    font-family: inherit; font-size: .6rem; font-weight: 700;
     color: #fff; line-height: 1;
     font-variant-numeric: tabular-nums;
     pointer-events: none;
-    transform: translateY(1px);  /* nudge into the visual center of the star */
+    transform: translateY(1px);
 }
-.review-card:hover .rating-marker { transform: scale(1.08); }
 
 .card-top {
     display: flex; align-items: center; gap: 8px;
@@ -396,12 +393,9 @@ header .sub {
         padding: 16px; max-height: 60vh; overflow-y: auto;
     }
 
-    .reviews { padding: 0 0 16px 32px; gap: 10px; }
-    .rating-marker {
-        left: -30px; top: 14px;
-        width: 22px; height: 22px;
-    }
-    .rating-marker .num { font-size: .6rem; }
+    .reviews { padding: 0 0 16px 0; gap: 10px; }
+    .rating-marker { width: 20px; height: 20px; }
+    .rating-marker .num { font-size: .56rem; }
     .review-card { padding: 16px 16px; border-radius: 16px; }
     .card-content { font-size: .88rem; line-height: 1.55; }
     .card-title { font-size: .94rem; }
