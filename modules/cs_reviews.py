@@ -349,11 +349,11 @@ _HAIKU_LANG_OPTIONS = (
 
 
 def _enrich_with_haiku(reviews, batch_size=15):
-    """Populate `language` and `content_english` in place.
+    """Populate `language`, `content_english`, and `title_english` in place.
 
     Best-effort: if the Anthropic SDK / key is missing or a call fails,
-    leaves the affected rows untouched. Skips rows that already have both
-    fields populated so backfill runs are idempotent."""
+    leaves the affected rows untouched. Skips rows whose relevant fields
+    are already populated so backfill runs are idempotent."""
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
         return
@@ -365,31 +365,43 @@ def _enrich_with_haiku(reviews, batch_size=15):
     todo = []
     for i, r in enumerate(reviews):
         content = (r.get('content') or '').strip()
-        if not content:
+        title = (r.get('title') or '').strip()
+        if not (content or title):
             continue
-        if r.get('language') and r.get('content_english'):
+        needs_lang = not (r.get('language') or '').strip()
+        needs_content = bool(content) and not (r.get('content_english') or '').strip()
+        needs_title = bool(title) and not (r.get('title_english') or '').strip()
+        if not (needs_lang or needs_content or needs_title):
             continue
-        todo.append((i, content))
+        todo.append((i, title, content))
     if not todo:
         return
 
     client = anthropic.Anthropic(api_key=api_key)
     for start in range(0, len(todo), batch_size):
         slab = todo[start:start + batch_size]
-        entries = [
-            {'idx': local_i, 'text': content[:1500]}
-            for local_i, (_, content) in enumerate(slab)
-        ]
+        entries = []
+        for local_i, (_, title, content) in enumerate(slab):
+            e = {'idx': local_i}
+            if title:
+                e['title'] = title[:200]
+            if content:
+                e['text'] = content[:1500]
+            entries.append(e)
         prompt = (
             "You process user reviews of the BiliBili app. For each review, "
-            "detect its language and write a SHORT English summary that captures "
-            "the essence (complaint, praise, bug report, feature request, etc).\n\n"
+            "detect its language and produce short English versions of its "
+            "title and body that preserve the reviewer's tone (praise, complaint, "
+            "bug report, feature request, etc).\n\n"
             "For EACH item return:\n"
             f"- language: one of {_HAIKU_LANG_OPTIONS}.\n"
-            "- content_english: ONE plain-English sentence, <=25 words, preserving the "
-            "reviewer's tone. If the review itself is already English you may keep it "
-            "as-is when already short, otherwise tighten it. Never invent facts.\n\n"
-            'Return ONLY a JSON array: [{"idx":0,"language":"...","content_english":"..."}, ...]\n\n'
+            "- content_english: ONE plain-English sentence, <=25 words. If the review "
+            "is already English you may keep it as-is when short, otherwise tighten it. "
+            "Never invent facts. Empty string if the item has no `text`.\n"
+            "- title_english: ONE short English title, <=10 words. Keep it punchy and "
+            "faithful to the original headline. Empty string if the item has no `title`.\n\n"
+            'Return ONLY a JSON array: '
+            '[{"idx":0,"language":"...","content_english":"...","title_english":"..."}, ...]\n\n'
             "Reviews:\n"
             f"{json.dumps(entries, ensure_ascii=False)}"
         )
@@ -412,13 +424,16 @@ def _enrich_with_haiku(reviews, batch_size=15):
             local_i = v.get('idx')
             if not isinstance(local_i, int) or local_i >= len(slab):
                 continue
-            review_idx, _ = slab[local_i]
+            review_idx, _, _ = slab[local_i]
             lang = (v.get('language') or '').strip()
             english = (v.get('content_english') or '').strip()
+            title_en = (v.get('title_english') or '').strip()
             if lang:
                 reviews[review_idx]['language'] = lang[:64]
             if english:
                 reviews[review_idx]['content_english'] = english[:1000]
+            if title_en:
+                reviews[review_idx]['title_english'] = title_en[:256]
 
 
 # ─────────────────────────────────────────────
@@ -801,7 +816,7 @@ def backfill_translations(limit=200):
     # yield `limit` enrichment candidates. Cheap for the current row count.
     try:
         res = (_db().table('cs_reviews')
-               .select('id,content,language,content_english')
+               .select('id,title,content,language,content_english,title_english')
                .order('id', desc=True)
                .limit(max(limit * 4, 400))
                .execute())
@@ -811,9 +826,14 @@ def backfill_translations(limit=200):
 
     rows = []
     for r in all_rows:
-        if not (r.get('content') or '').strip():
+        title = (r.get('title') or '').strip()
+        content = (r.get('content') or '').strip()
+        if not (title or content):
             continue
-        if (r.get('content_english') or '').strip():
+        needs_content = bool(content) and not (r.get('content_english') or '').strip()
+        needs_title = bool(title) and not (r.get('title_english') or '').strip()
+        needs_lang = not (r.get('language') or '').strip()
+        if not (needs_content or needs_title or needs_lang):
             continue
         rows.append(r)
         if len(rows) >= limit:
@@ -828,12 +848,14 @@ def backfill_translations(limit=200):
     for r in rows:
         lang = r.get('language') or ''
         english = r.get('content_english') or ''
-        if not (lang or english):
+        title_en = r.get('title_english') or ''
+        if not (lang or english or title_en):
             continue
         try:
             _db().table('cs_reviews').update({
                 'language': lang,
                 'content_english': english,
+                'title_english': title_en,
             }).eq('id', r['id']).execute()
             enriched += 1
         except Exception:

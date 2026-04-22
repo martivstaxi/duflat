@@ -428,16 +428,20 @@ function renderCard(r) {
     </div>`;
     const platform = r.platform || '';
 
-    // Card body: English summary when we have it, else the raw review.
-    const english = (r.content_english || '').trim();
-    const original = (r.content || '').trim();
-    const body = english || original;
-    const title = r.title ? `<div class="card-title">${escapeHtml(r.title)}</div>` : '';
+    // Card title + body: English versions when we have them, else fall back to raw.
+    const titleEn = (r.title_english || '').trim();
+    const titleOri = (r.title || '').trim();
+    const cardTitle = titleEn || titleOri;
+    const contentEn = (r.content_english || '').trim();
+    const contentOri = (r.content || '').trim();
+    const body = contentEn || contentOri;
+    const title = cardTitle ? `<div class="card-title">${escapeHtml(cardTitle)}</div>` : '';
 
-    // Details panel: original comment (only if distinct from what's on the card)
-    // + author / version / relative date.
+    // Details panel: original title + original body (only if they differ from
+    // what's on the card) + author / version / relative date.
     const lang = (r.language || '').trim();
-    const showOriginal = original && english && original !== english;
+    const showOriTitle = titleOri && titleEn && titleOri !== titleEn;
+    const showOriContent = contentOri && contentEn && contentOri !== contentEn;
     const metaParts = [];
     if (r.author) metaParts.push(`<span class="author">${escapeHtml(r.author)}</span>`);
     if (r.app_version) metaParts.push(`<span class="version">v${escapeHtml(r.app_version)}</span>`);
@@ -446,10 +450,15 @@ function renderCard(r) {
     }
 
     let detailsInner = '';
-    if (showOriginal) {
+    if (showOriTitle || showOriContent) {
         const langSuffix = lang ? ` (${escapeHtml(lang)})` : '';
-        detailsInner += `<div class="original-label">Original${langSuffix}</div>
-            <div class="original-content">${escapeHtml(original)}</div>`;
+        detailsInner += `<div class="original-label">Original${langSuffix}</div>`;
+        if (showOriTitle) {
+            detailsInner += `<div class="original-title">${escapeHtml(titleOri)}</div>`;
+        }
+        if (showOriContent) {
+            detailsInner += `<div class="original-content">${escapeHtml(contentOri)}</div>`;
+        }
     }
     if (metaParts.length) {
         detailsInner += `<div class="detail-meta">${metaParts.join('<span class="dot">·</span>')}</div>`;

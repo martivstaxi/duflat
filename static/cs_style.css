@@ -324,11 +324,16 @@ header .sub {
     font-size: .6rem; font-weight: 600; text-transform: uppercase;
     letter-spacing: .08em; color: var(--tertiary); margin-bottom: 6px;
 }
+.card-details .original-title {
+    font-size: .94rem; font-weight: 600; color: var(--text);
+    word-break: break-word; margin-bottom: 4px;
+}
 .card-details .original-content {
     font-size: .88rem; line-height: 1.6; color: var(--text-secondary);
     white-space: pre-wrap; word-break: break-word;
     margin-bottom: 12px;
 }
+.card-details .original-title + .original-content { margin-top: 2px; }
 .card-details .detail-meta {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     font-size: .7rem; color: var(--tertiary);
