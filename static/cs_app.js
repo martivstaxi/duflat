@@ -247,7 +247,6 @@ function renderRatingBtns() {
         const n = parseInt(r.rating) || 0;
         if (counts[n] !== undefined) counts[n]++;
     });
-    const klass = {1:'r-bad', 2:'r-bad', 3:'r-mid', 4:'r-good', 5:'r-good'};
 
     // "Tumu" always shows the full-year total (respecting platform/country
     // filters only). The individual rating chips still reflect the visible
@@ -261,7 +260,7 @@ function renderRatingBtns() {
     let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${tumuTotal}</span></button>`;
     [5, 4, 3, 2, 1].forEach(n => {
         const active = currentRating === n ? 'active' : '';
-        html += `<button class="rating-btn ${klass[n]} ${active}" onclick="setRating(${n})">
+        html += `<button class="rating-btn ${active}" onclick="setRating(${n})">
             <span class="stars">${starStr(n)}</span>
             <span class="count">${counts[n]}</span>
         </button>`;

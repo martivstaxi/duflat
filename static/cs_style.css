@@ -83,13 +83,6 @@ header .sub {
 .rating-btn.active {
     background: var(--accent); color: #fff; border-color: var(--accent);
 }
-.rating-btn.active .stars { color: #fff; }
-.rating-btn.r-bad    .stars { color: var(--negative); }
-.rating-btn.r-mid    .stars { color: var(--neutral); }
-.rating-btn.r-good   .stars { color: var(--positive); }
-.rating-btn.active.r-bad  { background: var(--negative); border-color: var(--negative); }
-.rating-btn.active.r-mid  { background: var(--neutral);  border-color: var(--neutral); }
-.rating-btn.active.r-good { background: var(--positive); border-color: var(--positive); }
 
 .filter-toggle {
     display: flex; align-items: center; justify-content: center;
