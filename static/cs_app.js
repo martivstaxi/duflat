@@ -222,14 +222,6 @@ function getFiltered() {
     });
 }
 
-function getRatingBase() {
-    return allReviews.filter(r => {
-        if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
-        if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
-        return matchesDate(r);
-    });
-}
-
 // ── Renderers ──────────────────────────────
 function renderAll() {
     renderRatingBtns();
@@ -241,23 +233,21 @@ function renderAll() {
 }
 
 function renderRatingBtns() {
-    const base = getRatingBase();
+    // All rating chip counts reflect the full-year total, scoped only by
+    // platform/country. The date window is intentionally ignored so users
+    // see true rating breakdowns regardless of which days are visible.
+    const fullYearBase = allReviews.filter(r => {
+        if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
+        if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
+        return true;
+    });
     const counts = {1:0, 2:0, 3:0, 4:0, 5:0};
-    base.forEach(r => {
+    fullYearBase.forEach(r => {
         const n = parseInt(r.rating) || 0;
         if (counts[n] !== undefined) counts[n]++;
     });
 
-    // "Tumu" always shows the full-year total (respecting platform/country
-    // filters only). The individual rating chips still reflect the visible
-    // window so their sum matches the rendered review list.
-    const tumuTotal = allReviews.filter(r => {
-        if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
-        if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
-        return true;
-    }).length;
-
-    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${tumuTotal}</span></button>`;
+    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${fullYearBase.length}</span></button>`;
     [5, 4, 3, 2, 1].forEach(n => {
         const active = currentRating === n ? 'active' : '';
         html += `<button class="rating-btn ${active}" onclick="setRating(${n})">
