@@ -311,22 +311,27 @@ def social_discover_bluesky():
     return jsonify(discover_bluesky())
 
 
+_DISCOVER_ALL_LOCK = __import__('threading').Lock()
+
 @app.route('/social/discover-all', methods=['POST', 'GET'])
 def social_discover_all():
-    """Cron endpoint: run Bluesky + Reddit discover sequentially. Every 6h."""
+    """Cron endpoint: fire-and-forget Bluesky + Reddit discover in background thread."""
+    import threading
     from modules.social_listening import discover_reddit, discover_bluesky
-    results = {}
-    for name, fn in [('bluesky', discover_bluesky), ('reddit', discover_reddit)]:
+
+    def run_all():
+        if not _DISCOVER_ALL_LOCK.acquire(blocking=False):
+            return
         try:
-            r = fn() or {}
-            results[name] = {
-                'saved': r.get('saved', 0),
-                'fetched': r.get('fetched', 0),
-                'gate_rejected': len(r.get('gate_rejections', []) or []),
-            }
-        except Exception as e:
-            results[name] = {'error': str(e)[:200]}
-    return jsonify(results)
+            try: discover_bluesky()
+            except Exception: pass
+            try: discover_reddit()
+            except Exception: pass
+        finally:
+            _DISCOVER_ALL_LOCK.release()
+
+    threading.Thread(target=run_all, daemon=True).start()
+    return jsonify({"status": "started", "sources": ["bluesky", "reddit"]})
 
 
 @app.route('/social/debug-reddit', methods=['GET'])
