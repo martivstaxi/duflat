@@ -9,6 +9,7 @@ const CACHE_TTL = 5 * 60 * 1000;
 
 const DATES_PER_PAGE = 4;
 const DEFAULT_RECENT_DAYS = 5;  // initial view window; user can drill deeper via archive/calendar
+const AUTO_POLL_THRESHOLD_MS = 3 * 60 * 60 * 1000;  // page load → bg-tara if last poll > 3h
 const MONTHS_TR = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
 const DAY_SHORT_TR = ['Pz','Pt','Sa','Ca','Pe','Cu','Ct'];
 
@@ -26,6 +27,7 @@ let archivePage = 0;               // bottom navigator page
 let filterMonth = null;            // 0..11 when a month is being browsed in dropdown
 let showMonths = false;            // month-list visible inside dropdown
 let filterOpen = false;
+let autoPolling = false;           // background auto-poll in-flight guard
 
 const els = {
     ratingBtns: document.getElementById('ratingBtns'),
@@ -87,7 +89,7 @@ function applyData(data) {
     renderAll();
 }
 
-async function loadReviews() {
+async function loadReviews(opts = {}) {
     // Warm from cache first for instant paint
     try {
         const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
@@ -115,6 +117,79 @@ async function loadReviews() {
             els.content.innerHTML = `<div class="empty">Yukleme hatasi: ${escapeHtml(e.message)} · <a href="#" onclick="loadReviews();return false">tekrar dene</a></div>`;
         }
     }
+
+    if (!opts.skipAutoPoll) maybeAutoPoll();
+}
+
+// ── Background auto-poll on page load ──────
+// If the last poll is older than AUTO_POLL_THRESHOLD_MS (or already running),
+// fire a silent fire-and-forget poll, wait for it to finish, then reload.
+async function maybeAutoPoll() {
+    if (autoPolling) return;
+
+    let status = null;
+    try {
+        const r = await fetch(API + '/cs/poll-status');
+        if (r.ok) status = await r.json();
+    } catch (e) {}
+
+    if (status && status.active) {
+        autoPolling = true;
+        showAutoPollIndicator();
+        await waitForPollDone();
+        hideAutoPollIndicator();
+        try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
+        await loadReviews({skipAutoPoll: true});
+        autoPolling = false;
+        return;
+    }
+
+    if (!lastPollMeta) return;
+    const t = lastPollMeta.finished_at || lastPollMeta.started_at;
+    if (!t) return;
+    const age = Date.now() - new Date(t).getTime();
+    if (isNaN(age) || age < AUTO_POLL_THRESHOLD_MS) return;
+
+    autoPolling = true;
+    showAutoPollIndicator();
+    try {
+        const startRes = await fetch(API + '/cs/poll', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({}),
+        });
+        if (!startRes.ok) { hideAutoPollIndicator(); autoPolling = false; return; }
+        await waitForPollDone();
+    } finally {
+        hideAutoPollIndicator();
+    }
+    try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
+    await loadReviews({skipAutoPoll: true});
+    autoPolling = false;
+}
+
+async function waitForPollDone(maxMs = 180000, intervalMs = 8000) {
+    const started = Date.now();
+    // First tick is longer so we don't hammer the API instantly
+    await new Promise(r => setTimeout(r, 4000));
+    while (Date.now() - started < maxMs) {
+        try {
+            const r = await fetch(API + '/cs/poll-status');
+            if (r.ok) {
+                const st = await r.json();
+                if (!st.active) return;
+            }
+        } catch (e) {}
+        await new Promise(r => setTimeout(r, intervalMs));
+    }
+}
+
+function showAutoPollIndicator() {
+    els.footer.textContent = 'Arka planda guncel yorumlar taraniyor…';
+}
+
+function hideAutoPollIndicator() {
+    renderFooter();
 }
 
 // ── Filtering ──────────────────────────────
