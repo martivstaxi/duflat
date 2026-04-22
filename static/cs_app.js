@@ -206,6 +206,10 @@ function isWithinRecent(dateStr) {
 function matchesDate(r) {
     const d = dateOf(r);
     if (currentDateFilter) return d === currentDateFilter;
+    // Picking a platform or country implicitly widens the date view to the
+    // full year — otherwise narrow countries look empty against the 5-day
+    // default even when they have reviews.
+    if (currentPlatform !== 'all' || currentCountry !== 'all') return true;
     return isWithinRecent(d);
 }
 
@@ -245,7 +249,16 @@ function renderRatingBtns() {
     });
     const klass = {1:'r-bad', 2:'r-bad', 3:'r-mid', 4:'r-good', 5:'r-good'};
 
-    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${base.length}</span></button>`;
+    // "Tumu" always shows the full-year total (respecting platform/country
+    // filters only). The individual rating chips still reflect the visible
+    // window so their sum matches the rendered review list.
+    const tumuTotal = allReviews.filter(r => {
+        if (currentPlatform !== 'all' && r.platform !== currentPlatform) return false;
+        if (currentCountry !== 'all' && (r.country || '').toLowerCase() !== currentCountry) return false;
+        return true;
+    }).length;
+
+    let html = `<button class="rating-btn ${currentRating==='all'?'active':''}" onclick="setRating('all')">Tumu <span class="count">${tumuTotal}</span></button>`;
     [5, 4, 3, 2, 1].forEach(n => {
         const active = currentRating === n ? 'active' : '';
         html += `<button class="rating-btn ${klass[n]} ${active}" onclick="setRating(${n})">
