@@ -61,6 +61,36 @@ const I18N = {
         },
         dateLocale: 'en-US',
         langs: {},
+        countries: {
+            us: 'United States', gb: 'United Kingdom', ca: 'Canada', au: 'Australia',
+            nz: 'New Zealand', ie: 'Ireland',
+            de: 'Germany', fr: 'France', it: 'Italy', es: 'Spain', nl: 'Netherlands',
+            be: 'Belgium', ch: 'Switzerland', at: 'Austria',
+            se: 'Sweden', no: 'Norway', dk: 'Denmark', fi: 'Finland',
+            pl: 'Poland', cz: 'Czechia', sk: 'Slovakia', hu: 'Hungary',
+            ro: 'Romania', bg: 'Bulgaria', hr: 'Croatia', si: 'Slovenia',
+            rs: 'Serbia', gr: 'Greece', pt: 'Portugal',
+            lt: 'Lithuania', lv: 'Latvia', ee: 'Estonia', is: 'Iceland',
+            mt: 'Malta', lu: 'Luxembourg', cy: 'Cyprus', md: 'Moldova',
+            hk: 'Hong Kong', mo: 'Macau', tw: 'Taiwan', jp: 'Japan', kr: 'South Korea',
+            sg: 'Singapore', my: 'Malaysia', id: 'Indonesia', ph: 'Philippines',
+            th: 'Thailand', vn: 'Vietnam',
+            in: 'India', pk: 'Pakistan', bd: 'Bangladesh', lk: 'Sri Lanka', np: 'Nepal',
+            ru: 'Russia', ua: 'Ukraine', by: 'Belarus', kz: 'Kazakhstan',
+            uz: 'Uzbekistan', az: 'Azerbaijan', am: 'Armenia', ge: 'Georgia',
+            kg: 'Kyrgyzstan', tj: 'Tajikistan', tm: 'Turkmenistan',
+            tr: 'Turkey', il: 'Israel', sa: 'Saudi Arabia', ae: 'UAE',
+            qa: 'Qatar', kw: 'Kuwait', bh: 'Bahrain', om: 'Oman',
+            jo: 'Jordan', lb: 'Lebanon', eg: 'Egypt',
+            za: 'South Africa', ng: 'Nigeria', ke: 'Kenya', gh: 'Ghana',
+            tz: 'Tanzania', ug: 'Uganda', zw: 'Zimbabwe', ci: "Côte d'Ivoire",
+            sn: 'Senegal', cm: 'Cameroon', dz: 'Algeria', ma: 'Morocco', tn: 'Tunisia',
+            br: 'Brazil', mx: 'Mexico', ar: 'Argentina', cl: 'Chile', co: 'Colombia',
+            pe: 'Peru', uy: 'Uruguay', py: 'Paraguay', bo: 'Bolivia',
+            ve: 'Venezuela', ec: 'Ecuador',
+            cr: 'Costa Rica', pa: 'Panama', gt: 'Guatemala', sv: 'El Salvador',
+            hn: 'Honduras', ni: 'Nicaragua', do: 'Dominican Republic',
+        },
     },
     zh: {
         siteTitle: '用户评论',
@@ -121,6 +151,36 @@ const I18N = {
             Vietnamese: '越南语', Hindi: '印地语', Bengali: '孟加拉语',
             Tagalog: '他加禄语', Other: '其他', Unknown: '未知',
         },
+        countries: {
+            us: '美国', gb: '英国', ca: '加拿大', au: '澳大利亚',
+            nz: '新西兰', ie: '爱尔兰',
+            de: '德国', fr: '法国', it: '意大利', es: '西班牙', nl: '荷兰',
+            be: '比利时', ch: '瑞士', at: '奥地利',
+            se: '瑞典', no: '挪威', dk: '丹麦', fi: '芬兰',
+            pl: '波兰', cz: '捷克', sk: '斯洛伐克', hu: '匈牙利',
+            ro: '罗马尼亚', bg: '保加利亚', hr: '克罗地亚', si: '斯洛文尼亚',
+            rs: '塞尔维亚', gr: '希腊', pt: '葡萄牙',
+            lt: '立陶宛', lv: '拉脱维亚', ee: '爱沙尼亚', is: '冰岛',
+            mt: '马耳他', lu: '卢森堡', cy: '塞浦路斯', md: '摩尔多瓦',
+            hk: '香港', mo: '澳门', tw: '台湾', jp: '日本', kr: '韩国',
+            sg: '新加坡', my: '马来西亚', id: '印度尼西亚', ph: '菲律宾',
+            th: '泰国', vn: '越南',
+            in: '印度', pk: '巴基斯坦', bd: '孟加拉国', lk: '斯里兰卡', np: '尼泊尔',
+            ru: '俄罗斯', ua: '乌克兰', by: '白俄罗斯', kz: '哈萨克斯坦',
+            uz: '乌兹别克斯坦', az: '阿塞拜疆', am: '亚美尼亚', ge: '格鲁吉亚',
+            kg: '吉尔吉斯斯坦', tj: '塔吉克斯坦', tm: '土库曼斯坦',
+            tr: '土耳其', il: '以色列', sa: '沙特阿拉伯', ae: '阿联酋',
+            qa: '卡塔尔', kw: '科威特', bh: '巴林', om: '阿曼',
+            jo: '约旦', lb: '黎巴嫩', eg: '埃及',
+            za: '南非', ng: '尼日利亚', ke: '肯尼亚', gh: '加纳',
+            tz: '坦桑尼亚', ug: '乌干达', zw: '津巴布韦', ci: '科特迪瓦',
+            sn: '塞内加尔', cm: '喀麦隆', dz: '阿尔及利亚', ma: '摩洛哥', tn: '突尼斯',
+            br: '巴西', mx: '墨西哥', ar: '阿根廷', cl: '智利', co: '哥伦比亚',
+            pe: '秘鲁', uy: '乌拉圭', py: '巴拉圭', bo: '玻利维亚',
+            ve: '委内瑞拉', ec: '厄瓜多尔',
+            cr: '哥斯达黎加', pa: '巴拿马', gt: '危地马拉', sv: '萨尔瓦多',
+            hn: '洪都拉斯', ni: '尼加拉瓜', do: '多米尼加共和国',
+        },
     },
 };
 
@@ -146,6 +206,12 @@ function TL(lang) {
     if (!lang) return '';
     if (uiLang === 'zh') return I18N.zh.langs[lang] || lang;
     return lang;
+}
+
+function TC(code) {
+    if (!code) return '';
+    const dict = (I18N[uiLang] && I18N[uiLang].countries) || I18N.en.countries || {};
+    return dict[code] || I18N.en.countries[code] || code.toUpperCase();
 }
 
 function setUILang(l) {
@@ -472,9 +538,9 @@ function renderFilterDropdown() {
     html += `<div class="filter-section">
         <div class="filter-section-title">${escapeHtml(T('country'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')">${escapeHtml(T('allCountries'))}<span class="opt-count">${allReviews.length}</span></button>`;
+            <button class="filter-option ${currentCountry==='all'?'active':''}" onclick="setCountry('all')"><span class="opt-name">${escapeHtml(T('allCountries'))}</span><span class="opt-count">${allReviews.length}</span></button>`;
     countryKeys.forEach(c => {
-        html += `<button class="filter-option ${currentCountry===c?'active':''}" onclick="setCountry('${escapeHtml(c)}')">${escapeHtml(c.toUpperCase())}<span class="opt-count">${countryCounts[c]}</span></button>`;
+        html += `<button class="filter-option ${currentCountry===c?'active':''}" onclick="setCountry('${escapeHtml(c)}')"><span class="opt-code">${escapeHtml(c.toUpperCase())}</span><span class="opt-name">${escapeHtml(TC(c))}</span><span class="opt-count">${countryCounts[c]}</span></button>`;
     });
     html += `</div></div>`;
 

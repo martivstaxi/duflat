@@ -197,11 +197,27 @@ header .sub {
 }
 .filter-option:hover { background: var(--hairline); }
 .filter-option.active { background: var(--accent-tint); color: var(--accent); font-weight: 600; }
+.filter-option .opt-code {
+    font-size: .66rem; font-weight: 600;
+    color: var(--tertiary); letter-spacing: .05em;
+    font-variant-numeric: tabular-nums;
+    min-width: 24px;
+    padding: 2px 5px; border-radius: 4px;
+    background: var(--hairline);
+    text-align: center; line-height: 1.2;
+    flex-shrink: 0;
+}
+.filter-option .opt-name {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
+}
 .filter-option .opt-count {
     margin-left: auto; font-size: .7rem; color: var(--tertiary);
     font-weight: 500; font-variant-numeric: tabular-nums;
+    padding-left: 8px;
 }
 .filter-option.active .opt-count { color: var(--accent); opacity: .65; }
+.filter-option.active .opt-code { color: var(--accent); background: rgba(184,93,58,.14); }
 .filter-option.disabled { opacity: .3; pointer-events: none; }
 
 /* ── Calendar picker (inside filter dropdown) ─ */
