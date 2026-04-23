@@ -481,13 +481,12 @@ function renderFilterDropdown() {
     // ── Date section: default (son N gun) → month list → calendar
     const dateSet = new Set(allDates);
     const defaultActive = !currentDateFilter && filterMonth === null && !showMonths;
-    const recentCount = allReviews.filter(r => isWithinRecent(dateOf(r))).length;
     const months = T('months');
     const dayShort = T('dayShort');
     html += `<div class="filter-section">
         <div class="filter-section-title">${escapeHtml(T('date'))}</div>
         <div class="filter-options">
-            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">${escapeHtml(T('lastNDays', DEFAULT_RECENT_DAYS))}<span class="opt-count">${recentCount}</span></button>
+            <button class="filter-option ${defaultActive?'active':''}" onclick="filterSelectYear()">${escapeHtml(currentYear)}<span class="opt-count">${allReviews.length}</span></button>
             <button class="filter-option${showMonths && filterMonth===null?' active':''}" onclick="toggleMonths(event)" style="padding-left:20px">${escapeHtml(T('selectMonth'))}</button>`;
 
     if (showMonths && filterMonth === null) {
