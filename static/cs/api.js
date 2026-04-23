@@ -22,7 +22,7 @@ export async function loadReviews(opts = {}) {
 
     const params = new URLSearchParams();
     params.set('year', currentYear);
-    params.set('limit', '500');
+    params.set('limit', '5000');
 
     try {
         const res = await fetch(`${API}/cs/reviews?` + params.toString());

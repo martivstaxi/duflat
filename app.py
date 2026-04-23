@@ -498,7 +498,7 @@ def cs_reviews_list():
     year = request.args.get('year') or None
     search = request.args.get('search') or None
     try:
-        limit = min(int(request.args.get('limit', 100)), 500)
+        limit = min(int(request.args.get('limit', 100)), 5000)
     except Exception:
         limit = 100
     try:
@@ -509,19 +509,12 @@ def cs_reviews_list():
         platform=platform, country=country, rating=rating,
         days=days, year=year, limit=limit, offset=offset, search=search,
     )
-    if year:
-        stats = cs_reviews.get_stats(year=year)
-    elif days:
-        stats = cs_reviews.get_stats(days=int(days))
-    else:
-        stats = cs_reviews.get_stats(days=1)
     last = cs_reviews.get_last_poll()
     dates = cs_reviews.get_available_dates(
         year=year, days=int(days) if days else None,
     )
     return jsonify({
         'reviews': rows,
-        'stats': stats,
         'last_poll': last,
         'app': cs_reviews.APP_CONFIG,
         'available_dates': dates,

@@ -1,7 +1,6 @@
 // Runtime knobs. Change once here, affects every module.
 
 export const CACHE_KEY = 'cs_reviews_cache_v2';
-export const CACHE_TTL = 5 * 60 * 1000;
 
 export const DATES_PER_PAGE = 4;
 export const DEFAULT_RECENT_DAYS = 5;   // initial view window; archive/calendar drills deeper

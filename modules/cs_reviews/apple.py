@@ -61,6 +61,5 @@ def fetch_apple_reviews(country, page=1, timeout=10):
             'content': str(content)[:8000],
             'app_version': str(version)[:32],
             'review_date': _parse_iso(updated),
-            'raw': {},
         })
     return out

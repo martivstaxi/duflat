@@ -8,6 +8,12 @@ import os
 from .db import _db
 
 
+# Max backfill attempts per row. Emoji-only / one-word reviews can't be
+# enriched (Haiku returns empty), so we stop retrying after this many
+# passes to avoid burning tokens on them forever.
+MAX_HAIKU_ATTEMPTS = 2
+
+
 # Languages Haiku may label reviews with. Free-form label; anything outside
 # this set is stored verbatim (so new locales don't break the pipeline).
 _HAIKU_LANG_OPTIONS = (
@@ -127,7 +133,8 @@ def _enrich_with_haiku(reviews, batch_size=15):
 def backfill_translations(limit=200):
     """Populate language + English + Simplified Chinese fields for legacy rows
     that lack any of them. Returns {'scanned': N, 'enriched': M}. Safe to call
-    repeatedly — rows that already have every field are skipped."""
+    repeatedly — rows that already have every field, or have hit
+    MAX_HAIKU_ATTEMPTS without success, are skipped."""
     try:
         limit = int(limit)
     except Exception:
@@ -137,7 +144,7 @@ def backfill_translations(limit=200):
     try:
         res = (_db().table('cs_reviews')
                .select('id,title,content,language,content_english,title_english,'
-                       'content_chinese,title_chinese')
+                       'content_chinese,title_chinese,haiku_attempts')
                .order('id', desc=True)
                .limit(max(limit * 4, 400))
                .execute())
@@ -150,6 +157,8 @@ def backfill_translations(limit=200):
         title = (r.get('title') or '').strip()
         content = (r.get('content') or '').strip()
         if not (title or content):
+            continue
+        if (r.get('haiku_attempts') or 0) >= MAX_HAIKU_ATTEMPTS:
             continue
         needs_lang = not (r.get('language') or '').strip()
         needs_content_en = bool(content) and not (r.get('content_english') or '').strip()
@@ -170,22 +179,18 @@ def backfill_translations(limit=200):
 
     enriched = 0
     for r in rows:
-        lang = r.get('language') or ''
-        english = r.get('content_english') or ''
-        title_en = r.get('title_english') or ''
-        chinese = r.get('content_chinese') or ''
-        title_zh = r.get('title_chinese') or ''
-        if not (lang or english or title_en or chinese or title_zh):
-            continue
+        update = {'haiku_attempts': (r.get('haiku_attempts') or 0) + 1}
+        filled_any = False
+        for field in ('language', 'content_english', 'title_english',
+                      'content_chinese', 'title_chinese'):
+            val = (r.get(field) or '').strip()
+            if val:
+                update[field] = val
+                filled_any = True
         try:
-            _db().table('cs_reviews').update({
-                'language': lang,
-                'content_english': english,
-                'title_english': title_en,
-                'content_chinese': chinese,
-                'title_chinese': title_zh,
-            }).eq('id', r['id']).execute()
-            enriched += 1
+            _db().table('cs_reviews').update(update).eq('id', r['id']).execute()
+            if filled_any:
+                enriched += 1
         except Exception:
             pass
     return {'scanned': len(rows), 'enriched': enriched}

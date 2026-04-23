@@ -26,9 +26,8 @@ function renderSoon() {
 
 // ── Data writers (called by api.js after fetch)
 export function applyData(data) {
-    const rows = (data.reviews || []).slice();
-    rows.sort((a, b) => (b.review_date || '').localeCompare(a.review_date || ''));
-    allReviews = rows;
+    // Server returns rows already ordered review_date DESC — no re-sort needed.
+    allReviews = (data.reviews || []).slice();
     allDates = (data.available_dates || []).slice().sort((a, b) => b.localeCompare(a));
     lastPollMeta = data.last_poll || null;
     appInfo = data.app || null;

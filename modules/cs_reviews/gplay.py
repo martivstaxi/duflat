@@ -138,5 +138,4 @@ def _parse_gplay_review(rv, country, app_id):
         'content': str(content)[:8000],
         'app_version': str(version)[:32],
         'review_date': review_date,
-        'raw': {},
     }

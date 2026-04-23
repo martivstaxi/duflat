@@ -45,7 +45,6 @@ from .api import (
     get_available_dates,
     get_last_poll,
     get_reviews,
-    get_stats,
 )
 
 __all__ = [
@@ -55,5 +54,5 @@ __all__ = [
     'fetch_apple_reviews', 'fetch_gplay_reviews',
     'poll_all', 'save_reviews', 'backfill_translations',
     'get_country_state',
-    'get_available_dates', 'get_last_poll', 'get_reviews', 'get_stats',
+    'get_available_dates', 'get_last_poll', 'get_reviews',
 ]
