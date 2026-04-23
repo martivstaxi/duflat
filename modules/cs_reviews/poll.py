@@ -62,7 +62,7 @@ def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
     gathered = {'apple': [], 'google_play': []}
     counts = []  # (platform, country, review_count) for state update
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futs = {pool.submit(_poll_one, plat, cc, lg): (plat, cc)
+        futs = {pool.submit(_poll_one, plat, cc, lg, full_scan): (plat, cc)
                 for plat, cc, lg in jobs}
         for fut in as_completed(futs):
             plat, cc = futs[fut]
@@ -102,9 +102,11 @@ def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
     return stats
 
 
-def _poll_one(platform, country, lang):
+def _poll_one(platform, country, lang, full_scan=False):
     if platform == 'apple':
-        return fetch_apple_reviews(country)
+        # Normal poll: 2 pages for spike protection. full_scan: 5 pages for
+        # historical catch-up during the monthly discovery cycle.
+        return fetch_apple_reviews(country, max_pages=5 if full_scan else 2)
     if platform == 'google_play':
         return fetch_gplay_reviews(country, lang=lang or 'en')
     return []

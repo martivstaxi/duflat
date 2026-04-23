@@ -27,16 +27,7 @@ export const I18N = {
         original: 'Original',
         detailsFallback: 'Details',
         close: 'Close',
-        scanNow: 'Scan now',
-        scanTooltip: 'Scan for new comments (~1-2 min)',
-        scanConfirm: 'Scan all countries for new comments? May take 1-2 minutes.',
         scanning: 'Scanning for fresh comments in background…',
-        scanCompletePrefix: 'Scan complete · ',
-        scanNewComments: (n) => `${n} new comments`,
-        scanCountries: (n, skipped) => `${n} countries${skipped ? ` (${skipped} skipped)` : ''}`,
-        scanFull: 'full scan',
-        scanSeconds: (s) => `${s}s`,
-        scanError: (msg) => `Scan error: ${msg}`,
         months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
         relTime: (d) => {
@@ -102,16 +93,7 @@ export const I18N = {
         original: '原文',
         detailsFallback: '详情',
         close: '关闭',
-        scanNow: '立即扫描',
-        scanTooltip: '扫描新评论（约 1-2 分钟）',
-        scanConfirm: '扫描所有国家的新评论？可能需要 1-2 分钟。',
         scanning: '正在后台扫描最新评论…',
-        scanCompletePrefix: '扫描完成 · ',
-        scanNewComments: (n) => `${n} 条新评论`,
-        scanCountries: (n, skipped) => `${n} 个国家${skipped ? `（跳过 ${skipped}）` : ''}`,
-        scanFull: '完整扫描',
-        scanSeconds: (s) => `${s}秒`,
-        scanError: (msg) => `扫描失败：${msg}`,
         months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
         dayShort: ['日','一','二','三','四','五','六'],
         relTime: (d) => {
@@ -212,17 +194,13 @@ export function setUILang(l) {
 }
 
 // Swap innerText on the elements that live outside the render loop
-// (header, footer FAB span, page title, tooltips, loading text).
+// (header, page title, loading text).
 export function applyStaticLabels() {
     document.title = T('pageTitle');
     const titleEl = document.getElementById('siteTitle');
     if (titleEl) titleEl.textContent = T('siteTitle');
     const archTitle = document.getElementById('archiveTitle');
     if (archTitle) archTitle.textContent = T('archiveTitle');
-    const scanLabel = document.getElementById('scanNowLabel');
-    if (scanLabel) scanLabel.textContent = T('scanNow');
-    const pollBtn = document.getElementById('btnPoll');
-    if (pollBtn) pollBtn.title = T('scanTooltip');
     const loadingText = document.getElementById('loadingText');
     if (loadingText) loadingText.textContent = T('loading');
     // subLine depends on live state — handled by applyStaticLabelsWithApp()

@@ -510,14 +510,10 @@ def cs_reviews_list():
         days=days, year=year, limit=limit, offset=offset, search=search,
     )
     last = cs_reviews.get_last_poll()
-    dates = cs_reviews.get_available_dates(
-        year=year, days=int(days) if days else None,
-    )
     return jsonify({
         'reviews': rows,
         'last_poll': last,
         'app': cs_reviews.APP_CONFIG,
-        'available_dates': dates,
     })
 
 

@@ -448,25 +448,6 @@ header .sub {
 }
 .footer-info:empty { display: none; }
 
-/* ── Floating poll button ─────────────── */
-.poll-fab {
-    position: fixed; bottom: 22px; right: 22px; z-index: 150;
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 12px 18px; border-radius: 980px;
-    border: none; background: var(--accent); color: #fff;
-    font-family: inherit; font-size: .82rem; font-weight: 600;
-    cursor: pointer; box-shadow: 0 6px 22px rgba(184,93,58,.3);
-    transition: all .2s var(--ease);
-}
-.poll-fab:hover {
-    background: var(--accent-hover);
-    transform: translateY(-2px); box-shadow: 0 10px 28px rgba(184,93,58,.35);
-}
-.poll-fab:disabled {
-    opacity: .6; cursor: not-allowed; transform: none;
-}
-.poll-fab.is-loading svg { animation: spin 1s linear infinite; }
-
 /* ── Mobile ───────────────────────────── */
 @media (max-width: 600px) {
     .lang-toggle { top: 12px; right: 12px; padding: 3px; }
@@ -509,11 +490,4 @@ header .sub {
 
     .active-chips { gap: 5px; margin-bottom: 16px; }
     .chip { font-size: .68rem; padding: 4px 9px 4px 11px; }
-
-    .poll-fab {
-        bottom: 16px; right: 16px;
-        padding: 10px 14px; font-size: .76rem;
-    }
-    .poll-fab span { display: none; }
-    .poll-fab { padding: 12px; border-radius: 50%; }
 }

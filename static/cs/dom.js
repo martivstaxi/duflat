@@ -7,7 +7,6 @@ export const els = {
     activeChips:   document.getElementById('activeChips'),
     content:       document.getElementById('content'),
     footer:        document.getElementById('footerInfo'),
-    pollBtn:       document.getElementById('btnPoll'),
     subLine:       document.getElementById('subLine'),
     archive:       document.getElementById('archiveSection'),
     archiveDates:  document.getElementById('archiveDates'),

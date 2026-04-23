@@ -28,7 +28,14 @@ function renderSoon() {
 export function applyData(data) {
     // Server returns rows already ordered review_date DESC — no re-sort needed.
     allReviews = (data.reviews || []).slice();
-    allDates = (data.available_dates || []).slice().sort((a, b) => b.localeCompare(a));
+    // Distinct dates derived from the rows we already have — saves a
+    // separate /cs/reviews DB round-trip per page load.
+    const dateSet = new Set();
+    allReviews.forEach(r => {
+        const d = (r.review_date || '').slice(0, 10);
+        if (d) dateSet.add(d);
+    });
+    allDates = Array.from(dateSet).sort((a, b) => b.localeCompare(a));
     lastPollMeta = data.last_poll || null;
     appInfo = data.app || null;
     renderSoon();

@@ -4,6 +4,7 @@ Schema is undocumented; Google occasionally shifts field positions, so every
 lookup is defensive. Last verified working 2026-04-21."""
 
 import json
+import time
 from datetime import datetime, timezone
 from urllib.parse import quote
 
@@ -36,13 +37,23 @@ def fetch_gplay_reviews(country, lang='en', count=40, sort=2, timeout=15):
         'Referer': f'https://play.google.com/store/apps/details?id={app_id}&hl={lang}&gl={country}',
     }
     body = 'f.req=' + quote(f_req, safe='')
-    try:
-        r = requests.post(_GPLAY_URL, params=params, data=body,
-                          headers=headers, timeout=timeout)
-        if r.status_code != 200:
+    text = None
+    # One retry on 429/503 — a geo-sharded throttle shouldn't cost the country
+    # a 30-day exile via the consecutive-empty-poll logic.
+    for attempt in range(2):
+        try:
+            r = requests.post(_GPLAY_URL, params=params, data=body,
+                              headers=headers, timeout=timeout)
+        except Exception:
             return []
-        text = r.text
-    except Exception:
+        if r.status_code == 200:
+            text = r.text
+            break
+        if r.status_code in (429, 503) and attempt == 0:
+            time.sleep(2)
+            continue
+        return []
+    if text is None:
         return []
 
     # XSSI prefix: )]}'

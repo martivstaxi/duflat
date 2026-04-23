@@ -11,7 +11,7 @@ import {
     appInfo, setCountry, setFilterOpen, setPlatform, setRating,
 } from './state.js';
 import { els } from './dom.js';
-import { loadReviews, triggerPoll } from './api.js';
+import { loadReviews } from './api.js';
 
 import { renderLangToggle } from './render/lang-toggle.js';
 import { renderRatingBtns } from './render/rating-btns.js';
@@ -65,9 +65,6 @@ document.addEventListener('click', e => {
     anchor.classList.remove('open');
     setFilterOpen(false);
 });
-
-// Floating Scan button
-els.pollBtn.addEventListener('click', triggerPoll);
 
 // ── Boot ────────────────────────────────────
 applyStaticLabels();

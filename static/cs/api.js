@@ -2,7 +2,7 @@ import { API, AUTO_POLL_THRESHOLD_MS, CACHE_KEY } from './constants.js';
 import { T } from './i18n.js';
 import { escapeHtml } from './utils.js';
 import {
-    allReviews, appInfo, applyData, autoPolling, currentYear, lastPollMeta,
+    allReviews, applyData, autoPolling, currentYear, lastPollMeta,
     setAutoPolling,
 } from './state.js';
 import { els } from './dom.js';
@@ -112,34 +112,4 @@ function showAutoPollIndicator() {
 
 function hideAutoPollIndicator() {
     renderFooter();
-}
-
-// ── Manual poll (FAB button) ─────────────────
-export async function triggerPoll() {
-    if (!confirm(T('scanConfirm'))) return;
-    els.pollBtn.disabled = true;
-    els.pollBtn.classList.add('is-loading');
-    try {
-        const res = await fetch(API + '/cs/poll', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({wait: true}),
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        const parts = [T('scanNewComments', data.total_new || 0)];
-        if (data.countries_scanned != null) {
-            parts.push(T('scanCountries', data.countries_scanned, data.countries_skipped || 0));
-        }
-        if (data.full_scan) parts.push(T('scanFull'));
-        parts.push(T('scanSeconds', data.duration_sec || 0));
-        els.footer.textContent = T('scanCompletePrefix') + parts.join(' · ');
-        try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
-        await loadReviews();
-    } catch (e) {
-        els.footer.textContent = T('scanError', e.message);
-    } finally {
-        els.pollBtn.disabled = false;
-        els.pollBtn.classList.remove('is-loading');
-    }
 }

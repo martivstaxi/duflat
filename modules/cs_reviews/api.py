@@ -1,7 +1,7 @@
-"""Read-side queries powering the /cs/reviews route + stats panels.
+"""Read-side queries powering the /cs/reviews route.
 
-Everything here is a thin filter over the Supabase `cs_reviews` /
-`cs_poll_log` tables. No writes, no Haiku, no scraping."""
+Thin filters over the Supabase `cs_reviews` / `cs_poll_log` tables.
+No writes, no Haiku, no scraping."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -51,30 +51,3 @@ def get_last_poll():
         return rows[0] if rows else None
     except Exception:
         return None
-
-
-def get_available_dates(year=None, days=None):
-    """Distinct YYYY-MM-DD dates that have at least one review, within the
-    year/day window. Sorted most-recent first. Used by the archive navigator
-    and calendar picker."""
-    if year is None and days is None:
-        year = datetime.now(timezone.utc).year
-    try:
-        q = _db().table('cs_reviews').select('review_date')
-        if year:
-            y = int(year)
-            q = q.gte('review_date', f'{y}-01-01T00:00:00+00:00') \
-                 .lt('review_date',  f'{y + 1}-01-01T00:00:00+00:00')
-        elif days:
-            cutoff = (datetime.now(timezone.utc) - timedelta(days=int(days))).isoformat()
-            q = q.gte('review_date', cutoff)
-        res = q.limit(10000).execute()
-        rows = res.data or []
-    except Exception:
-        return []
-    seen = set()
-    for r in rows:
-        d = (r.get('review_date') or '')[:10]
-        if d:
-            seen.add(d)
-    return sorted(seen, reverse=True)
