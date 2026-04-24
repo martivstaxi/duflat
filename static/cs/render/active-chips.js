@@ -1,7 +1,7 @@
-import { escapeHtml, platformLabel, starStr } from '../utils.js?v=30';
-import { T } from '../i18n.js?v=30';
-import { currentCountry, currentDateFilter, currentPlatform, currentRating } from '../state.js?v=30';
-import { els } from '../dom.js?v=30';
+import { escapeHtml, platformLabel, starStr } from '../utils.js?v=31';
+import { T } from '../i18n.js?v=31';
+import { currentCountry, currentDateFilter, currentPlatform, currentRating } from '../state.js?v=31';
+import { els } from '../dom.js?v=31';
 
 export function renderActiveChips() {
     let html = '';
