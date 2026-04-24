@@ -450,16 +450,20 @@ def social_save():
 
 @app.route('/social/mentions', methods=['GET'])
 def social_mentions():
-    """Step 4: Frontend reads mentions. ?days=3 or ?date=2026-01-01"""
+    """Step 4: Frontend reads mentions. ?days=3 or ?date=2026-01-01, ?limit=5000"""
     specific_date = request.args.get('date', '').strip()
     days = request.args.get('days', '').strip()
+    try:
+        limit = min(int(request.args.get('limit', 5000)), 10000)
+    except Exception:
+        limit = 5000
 
     if specific_date:
-        data = get_mentions(specific_date=specific_date)
+        data = get_mentions(specific_date=specific_date, limit=limit)
     elif days:
-        data = get_mentions(days=int(days))
+        data = get_mentions(days=int(days), limit=limit)
     else:
-        data = get_mentions(days=3)
+        data = get_mentions(days=3, limit=limit)
 
     stats, dates = compute_stats_and_dates(data)
 

@@ -175,7 +175,7 @@ async function loadMentions() {
 
     // Fetch fresh data in background
     try {
-        const resp = await fetch(`${API}/social/mentions?days=365`);
+        const resp = await fetch(`${API}/social/mentions?days=365&limit=5000`);
         const data = await resp.json();
         localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
         _applyData(data);

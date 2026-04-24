@@ -768,7 +768,7 @@ def _send_wecom_alerts(mentions):
 # STEP 4: GET MENTIONS (for frontend)
 # ─────────────────────────────────────────────
 
-def get_mentions(days=None, specific_date=None, limit=100):
+def get_mentions(days=None, specific_date=None, limit=5000):
     """
     Fetch mentions for social.html display.
     - days=3  → last 3 days
