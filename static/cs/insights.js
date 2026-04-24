@@ -7,7 +7,7 @@
 
 import { API } from './constants.js';
 import { T, TC } from './i18n.js';
-import { escapeHtml } from './utils.js';
+import { escapeHtml, relTime } from './utils.js';
 
 let currentPeriod = '7d';
 let modalEl = null;
@@ -228,12 +228,17 @@ function renderInsights(d) {
       <div class="insights-offline">${escapeHtml(T('insightsOffline'))}</div>
     ` : '';
 
+    const generatedHtml = d.generated_at ? `
+      <div class="insights-generated">${escapeHtml(T('insightsGenerated', relTime(d.generated_at)))}</div>
+    ` : '';
+
     if ((cur.total || 0) === 0) {
         return `
           <div class="insights-empty-state">${escapeHtml(T('insightsNoData'))}</div>
           ${metricsHtml}
+          ${generatedHtml}
         `;
     }
 
-    return headlineHtml + metricsHtml + summaryHtml + issuesHtml + praiseHtml + anomalyHtml + offline;
+    return headlineHtml + metricsHtml + summaryHtml + issuesHtml + praiseHtml + anomalyHtml + offline + generatedHtml;
 }

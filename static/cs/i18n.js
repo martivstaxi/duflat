@@ -46,6 +46,7 @@ export const I18N = {
         praiseLabel: 'What users love',
         anomalyLabel: 'Worth noting',
         noIssues: 'No 1–2★ reviews in this period.',
+        insightsGenerated: (rel) => `Generated ${rel}`,
         months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
         relTime: (d) => {
@@ -130,6 +131,7 @@ export const I18N = {
         praiseLabel: '用户喜欢的地方',
         anomalyLabel: '值得关注',
         noIssues: '此期间没有 1–2 星评论。',
+        insightsGenerated: (rel) => `生成于 ${rel}`,
         months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
         dayShort: ['日','一','二','三','四','五','六'],
         relTime: (d) => {

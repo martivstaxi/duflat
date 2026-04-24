@@ -684,6 +684,13 @@ header .sub {
     border-radius: 10px; font-size: .74rem; text-align: center;
 }
 
+.insights-generated {
+    margin-top: 18px; text-align: center;
+    font-size: .68rem; color: var(--tertiary);
+    letter-spacing: .02em;
+    font-variant-numeric: tabular-nums;
+}
+
 body.insights-open { overflow: hidden; }
 
 @media (max-width: 600px) {

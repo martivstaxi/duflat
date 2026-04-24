@@ -7,23 +7,20 @@ address, what users praise, any anomaly.
 
 Bilingual: `lang='en'` or `'zh'` controls Haiku's output language.
 
-In-memory TTL cache so reloads inside the window don't burn tokens. The
-poll pipeline calls `invalidate_insights_cache()` after a successful
-scan so fresh data is visible next click."""
+Supabase-backed cache (`cs_insights_cache`) so reloads inside CACHE_TTL_SEC
+don't burn Haiku tokens — and so the cache survives Railway redeploys.
+The poll pipeline calls `invalidate_insights_cache()` after a successful
+scan (DELETE FROM cs_insights_cache) so fresh data is visible next click."""
 
 import json
 import os
-import threading
-import time
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from .db import _db
 
 
-CACHE_TTL_SEC = 60 * 60  # 1 hour
-_cache = {}
-_cache_lock = threading.Lock()
+CACHE_TTL_SEC = 12 * 60 * 60  # 12 hours
 
 
 def _periods(period):
@@ -175,21 +172,63 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         return {}
 
 
+def _cache_get(period, lang):
+    """Return cached payload if a fresh (period, lang) row exists in
+    cs_insights_cache. Returns None on miss, stale, or DB error."""
+    cutoff = datetime.now(timezone.utc) - timedelta(seconds=CACHE_TTL_SEC)
+    try:
+        res = (_db().table('cs_insights_cache')
+               .select('payload,generated_at')
+               .eq('period', period)
+               .eq('lang', lang)
+               .gte('generated_at', cutoff.isoformat())
+               .order('generated_at', desc=True)
+               .limit(1)
+               .execute())
+        rows = res.data or []
+        if not rows:
+            return None
+        payload = rows[0].get('payload')
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                return None
+        return payload
+    except Exception:
+        return None
+
+
+def _cache_put(period, lang, payload):
+    """Upsert the payload for (period, lang). Fail-soft — a DB error
+    just means the next call will regenerate."""
+    try:
+        (_db().table('cs_insights_cache')
+              .upsert({
+                  'period': period,
+                  'lang': lang,
+                  'generated_at': datetime.now(timezone.utc).isoformat(),
+                  'payload': payload,
+              }, on_conflict='period,lang')
+              .execute())
+    except Exception:
+        pass
+
+
 def generate_insights(period='7d', lang='en'):
-    """Return full insight payload. Cached per (period, lang) for
-    CACHE_TTL_SEC. Fail-soft: if Haiku fails, stats-only payload still
-    returned with `haiku_ok=false`."""
+    """Return full insight payload. Cached in Supabase
+    `cs_insights_cache` per (period, lang) for CACHE_TTL_SEC (12h).
+    Fail-soft: if Haiku fails, stats-only payload still returned with
+    `haiku_ok=false` — but we don't cache that so the next click retries."""
     if period not in ('7d', '30d', 'year'):
         period = '7d'
     if lang not in ('en', 'zh'):
         lang = 'en'
 
-    key = (period, lang)
-    now_ts = time.time()
-    with _cache_lock:
-        hit = _cache.get(key)
-        if hit and now_ts - hit[0] < CACHE_TTL_SEC:
-            return hit[1]
+    hit = _cache_get(period, lang)
+    if hit is not None:
+        hit['cache_hit'] = True
+        return hit
 
     cur_start, cur_end, prior_start, prior_end, label = _periods(period)
     cur_rows = _fetch_rows(cur_start, cur_end)
@@ -232,12 +271,21 @@ def generate_insights(period='7d', lang='en'):
         },
         'haiku_ok': bool(narrative),
         'generated_at': datetime.now(timezone.utc).isoformat(),
+        'cache_hit': False,
     }
-    with _cache_lock:
-        _cache[key] = (now_ts, out)
+    # Only cache successful Haiku runs — a failed narrative shouldn't be
+    # pinned for 12 hours when the next retry might succeed.
+    if out['haiku_ok']:
+        _cache_put(period, lang, out)
     return out
 
 
 def invalidate_insights_cache():
-    with _cache_lock:
-        _cache.clear()
+    """Clear every cached row (called after a poll brings new reviews).
+    Fail-soft."""
+    try:
+        # Supabase Python client requires a filter on delete; neq on a
+        # sentinel value effectively targets every row without matching.
+        _db().table('cs_insights_cache').delete().neq('id', 0).execute()
+    except Exception:
+        pass
