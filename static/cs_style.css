@@ -587,7 +587,14 @@ html[lang^="zh"] .insights-title { font-family: "Noto Sans SC", var(--font); let
     display: flex; align-items: center; justify-content: center; gap: 12px;
     padding: 72px 0; color: var(--muted); font-size: .92rem;
 }
-.insights-loading .spinner { width: 22px; height: 22px; border-width: 2.5px; }
+.insights-loading .spinner {
+    width: 22px; height: 22px;
+    border: 2.5px solid var(--border-subtle);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex: none;
+}
 .insights-error, .insights-empty-state {
     padding: 56px 8px; text-align: center;
     color: var(--muted); font-size: .95rem; line-height: 1.5;
