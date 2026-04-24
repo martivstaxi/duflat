@@ -22,6 +22,26 @@ from bs4 import BeautifulSoup
 from modules.constants import BROWSER_HEADERS
 
 # ─────────────────────────────────────────────
+# RATE-LIMIT COOLDOWN STATE (module-level)
+# ─────────────────────────────────────────────
+# When a 3rd-party API returns 429/403, subsequent calls in the same
+# gunicorn worker process are skipped for a cooldown window. Keeps us
+# from burning the rest of the budget on guaranteed failures and from
+# extending the ban.
+
+_rate_cooldown = {}  # host -> unix ts when cooldown expires
+
+def _cooling_down(host):
+    import time
+    return time.time() < _rate_cooldown.get(host, 0)
+
+def _enter_cooldown(host, seconds):
+    import time
+    _rate_cooldown[host] = time.time() + seconds
+    print(f'[cooldown] {host} for {seconds}s', flush=True)
+
+
+# ─────────────────────────────────────────────
 # SUPABASE CLIENT
 # ─────────────────────────────────────────────
 
@@ -482,17 +502,15 @@ Entries:
     try:
         client = anthropic.Anthropic(api_key=api_key)
         resp = client.messages.create(
-            model='claude-haiku-4-5-20251001',
+            model=_HAIKU_MODEL,
             max_tokens=2048,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        text = resp.content[0].text.strip()
-        if '```' in text:
-            text = text.split('```')[1]
-            if text.startswith('json'):
-                text = text[4:]
-        verdicts = json.loads(text)
-    except Exception:
+        verdicts = _extract_json(resp.content[0].text)
+        if verdicts is None:
+            return mentions  # parse failed → pass through
+    except Exception as e:
+        print(f'[validator] {type(e).__name__}', flush=True)
         return mentions  # if AI validator fails, pass through (don't block saves)
 
     # Apply verdicts
@@ -799,38 +817,78 @@ _TLD_LANG_HINTS = {
 }
 
 
+_HAIKU_MODEL = os.environ.get('ANTHROPIC_MODEL', 'claude-haiku-4-5-20251001')
+
+
+def _extract_json(text):
+    """Extract a JSON object/array from a Haiku response.
+
+    Handles: raw JSON, ```json fenced blocks, JSON embedded in prose,
+    truncated responses (last-brace repair). Returns parsed value or
+    None with a reason logged."""
+    text = (text or '').strip()
+    if not text:
+        return None
+    # 1. Raw parse (most common case)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    # 2. Strip markdown fence (```json ... ``` or ``` ... ```)
+    fence = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
+    if fence:
+        inner = fence.group(1).strip()
+        try:
+            return json.loads(inner)
+        except json.JSONDecodeError:
+            text = inner  # fall through to salvage
+    # 3. Salvage: locate outer [ ... ] or { ... } and trim
+    for open_c, close_c in (('[', ']'), ('{', '}')):
+        start = text.find(open_c)
+        end = text.rfind(close_c)
+        if start != -1 and end > start:
+            try:
+                return json.loads(text[start:end + 1])
+            except json.JSONDecodeError:
+                continue
+    # 4. Truncation repair: close the last complete array element
+    last_comma = text.rfind('},')
+    if last_comma > 0:
+        start = text.find('[')
+        if start != -1 and start < last_comma:
+            try:
+                return json.loads(text[start:last_comma + 1] + ']')
+            except Exception:
+                pass
+    print(f'[haiku_parse] failed, preview={text[:160]!r}', flush=True)
+    return None
+
+
 def _haiku_call(prompt, max_tokens=4096):
-    """Shared Haiku call wrapper used by all pipeline layers. Returns parsed JSON or None."""
+    """Shared Haiku call wrapper used by all pipeline layers. Returns parsed JSON or None.
+
+    Errors are logged (not silenced) so that L4 fail-closed + upstream
+    retries have something to act on."""
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
+        print('[haiku_call] ANTHROPIC_API_KEY not set', flush=True)
         return None
     try:
         import anthropic
     except ImportError:
+        print('[haiku_call] anthropic package missing', flush=True)
         return None
     try:
         client = anthropic.Anthropic(api_key=api_key)
         resp = client.messages.create(
-            model='claude-haiku-4-5-20251001',
+            model=_HAIKU_MODEL,
             max_tokens=max_tokens,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        text = resp.content[0].text.strip()
-        if '```' in text:
-            text = text.split('```')[1]
-            if text.startswith('json'):
-                text = text[4:]
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            last_brace = text.rfind('},')
-            if last_brace > 0:
-                try:
-                    return json.loads(text[:last_brace + 1] + ']')
-                except Exception:
-                    pass
-            return None
-    except Exception:
+        return _extract_json(resp.content[0].text)
+    except Exception as e:
+        # Log exception type only; never the message (may contain key / prompt)
+        print(f'[haiku_call] {type(e).__name__}', flush=True)
         return None
 
 
@@ -1820,6 +1878,8 @@ def _fetch_reddit_json(kind, q):
     """kind='search' → reddit.com/search.json?q=q; kind='sub' → r/q/new.json."""
     import time
     from urllib.parse import quote_plus
+    if _cooling_down('reddit.com'):
+        return []
     if kind == 'search':
         url = f'https://www.reddit.com/search.json?q={quote_plus(q)}&sort=new&t=year&limit=50'
     else:
@@ -1828,6 +1888,11 @@ def _fetch_reddit_json(kind, q):
         resp = requests.get(url, headers={'User-Agent': _REDDIT_UA}, timeout=6)
     except Exception as e:
         print(f'[reddit] {kind}={q} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        # Reddit limits unauthenticated traffic to ~60 req/10min.
+        _enter_cooldown('reddit.com', 600)
+        print(f'[reddit] {kind}={q} RATE_LIMITED status={resp.status_code}', flush=True)
         return []
     if resp.status_code != 200:
         print(f'[reddit] {kind}={q} status={resp.status_code} body={resp.text[:200]}', flush=True)
@@ -2150,6 +2215,8 @@ def _fetch_bluesky_posts(query, limit=100):
     """Fetch public posts matching query via Bluesky AppView. No auth."""
     import time
     from urllib.parse import quote_plus
+    if _cooling_down('bsky.app'):
+        return []
     url = (
         'https://api.bsky.app/xrpc/app.bsky.feed.searchPosts'
         f'?q={quote_plus(query)}&limit={limit}&sort=latest'
@@ -2158,6 +2225,10 @@ def _fetch_bluesky_posts(query, limit=100):
         resp = requests.get(url, headers={'User-Agent': _BLUESKY_UA}, timeout=6)
     except Exception as e:
         print(f'[bsky] q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown('bsky.app', 300)
+        print(f'[bsky] q={query} RATE_LIMITED status={resp.status_code}', flush=True)
         return []
     if resp.status_code != 200:
         print(f'[bsky] q={query} status={resp.status_code} body={resp.text[:200]}', flush=True)
