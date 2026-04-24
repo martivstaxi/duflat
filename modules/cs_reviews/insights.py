@@ -115,9 +115,16 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         return {}
 
     lang_instr = (
-        'Respond in natural English.' if lang == 'en'
-        else 'Respond in natural Simplified Chinese (简体中文). '
-             'Keep Latin product names (BiliBili, iOS, Android) unchanged.'
+        'Every string field in your JSON response (headline, summary, '
+        'top_issues[*].theme, top_praise[*].theme, anomaly) MUST be in '
+        'natural English.'
+        if lang == 'en'
+        else 'Every string field in your JSON response (headline, summary, '
+             'top_issues[*].theme, top_praise[*].theme, anomaly) MUST be in '
+             'natural Simplified Chinese (简体中文). Do NOT leave any field '
+             'in English. Keep Latin product names (BiliBili, iOS, Android) '
+             'and version numbers (8.91.0) unchanged, and keep country codes '
+             'inside example_countries as-is (lowercase ISO).'
     )
 
     payload = {
