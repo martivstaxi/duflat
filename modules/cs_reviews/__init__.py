@@ -13,6 +13,7 @@ Package layout (no business logic lives here — just re-exports so
     country_state.py   per-(platform, country) activity tracking
     poll.py            orchestrator (fan-out + save + log)
     api.py             read-side queries for Flask routes
+    insights.py        Haiku narrative over a review window
 """
 
 # Constants / config — consumed directly by app.py
@@ -46,6 +47,9 @@ from .api import (
     get_reviews,
 )
 
+# Insights (Haiku narrative over a window)
+from .insights import generate_insights, invalidate_insights_cache
+
 __all__ = [
     'APP_CONFIG', 'APPLE_COUNTRIES', 'DISCOVERY_DAYS', 'EXCLUDED_COUNTRIES',
     'GPLAY_COUNTRIES', 'INACTIVE_THRESHOLD',
@@ -54,4 +58,5 @@ __all__ = [
     'poll_all', 'save_reviews', 'backfill_translations',
     'get_country_state',
     'get_last_poll', 'get_reviews',
+    'generate_insights', 'invalidate_insights_cache',
 ]

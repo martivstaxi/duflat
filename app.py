@@ -602,6 +602,23 @@ def cs_poll_status():
     })
 
 
+@app.route('/cs/insights', methods=['GET'])
+def cs_insights():
+    """Haiku narrative + stats for a review window.
+
+    Params:
+        period=7d|30d|year   (default 7d)
+        lang=en|zh           (default en)
+    Results cached server-side for 1h; poll completion invalidates."""
+    period = (request.args.get('period') or '7d').strip().lower()
+    lang = (request.args.get('lang') or 'en').strip().lower()
+    try:
+        result = cs_reviews.generate_insights(period=period, lang=lang)
+    except Exception as e:
+        return jsonify({'error': f'{type(e).__name__}: {e}'}), 500
+    return jsonify(result)
+
+
 @app.route('/cs/backfill-translations', methods=['POST'])
 def cs_backfill_translations():
     """One-shot backfill: fill `language` + `content_english` for legacy rows.

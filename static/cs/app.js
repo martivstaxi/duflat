@@ -23,6 +23,7 @@ import { renderActiveChips } from './render/active-chips.js';
 import { renderReviews, toggleDetails } from './render/cards.js';
 import { renderArchive, archivePrev, archiveNext, selectDate } from './render/archive.js';
 import { renderFooter } from './render/footer.js';
+import { openInsights, closeInsights, setInsightsPeriod, onLangChange as onInsightsLangChange } from './insights.js';
 
 // ── Global orchestration ────────────────────
 // Fired by state setters, setUILang(), and applyData() via cs:render event.
@@ -38,6 +39,8 @@ function renderAll() {
     if (appInfo && appInfo.name && els.subLine) {
         els.subLine.textContent = T('subTemplate', appInfo.name);
     }
+    // If the insights modal is open, keep its language aligned.
+    onInsightsLangChange();
 }
 document.addEventListener('cs:render', renderAll);
 
@@ -53,6 +56,7 @@ Object.assign(window, {
     filterSelectMonth, filterCalPrev, filterCalNext, filterPickDate,
     toggleDetails, selectDate, archivePrev, archiveNext,
     loadReviews,
+    openInsights, closeInsights, setInsightsPeriod,
 });
 
 // Dismiss dropdown on outside click. Lives here because it needs the

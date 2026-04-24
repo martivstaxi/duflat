@@ -83,6 +83,15 @@ def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
 
     _update_country_state(counts)
 
+    # New rows → stale insight narratives. Blow the cache so the next
+    # Health Check click reflects the fresh data.
+    if stats['total_new'] > 0:
+        try:
+            from .insights import invalidate_insights_cache
+            invalidate_insights_cache()
+        except Exception:
+            pass
+
     if log:
         try:
             _db().table('cs_poll_log').insert({

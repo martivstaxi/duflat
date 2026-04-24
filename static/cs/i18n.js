@@ -28,6 +28,24 @@ export const I18N = {
         detailsFallback: 'Details',
         close: 'Close',
         scanning: 'Scanning for fresh comments in background…',
+        // Health Check modal
+        insightsTitle: 'Health Check',
+        insightsTooltip: 'Health Check',
+        period7d: 'Last 7 days',
+        period30d: 'Last 30 days',
+        periodYear: 'This year',
+        insightsLoading: 'Analyzing reviews…',
+        insightsError: 'Could not generate insights. Try again shortly.',
+        insightsOffline: 'AI narrative unavailable — showing raw stats only.',
+        insightsNoData: 'No reviews in this period yet.',
+        metricTotal: 'Reviews',
+        metricAvg: 'Avg rating',
+        metricLow: '1–2★',
+        summaryLabel: 'Overview',
+        issuesLabel: 'Priority issues',
+        praiseLabel: 'What users love',
+        anomalyLabel: 'Worth noting',
+        noIssues: 'No 1–2★ reviews in this period.',
         months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
         relTime: (d) => {
@@ -94,6 +112,24 @@ export const I18N = {
         detailsFallback: '详情',
         close: '关闭',
         scanning: '正在后台扫描最新评论…',
+        // 健康检查弹窗
+        insightsTitle: '健康检查',
+        insightsTooltip: '健康检查',
+        period7d: '最近 7 天',
+        period30d: '最近 30 天',
+        periodYear: '今年',
+        insightsLoading: '正在分析评论…',
+        insightsError: '无法生成分析，请稍后再试。',
+        insightsOffline: 'AI 总结暂不可用，仅显示原始统计。',
+        insightsNoData: '此期间暂无评论。',
+        metricTotal: '评论',
+        metricAvg: '平均评分',
+        metricLow: '1–2 星',
+        summaryLabel: '总览',
+        issuesLabel: '优先处理问题',
+        praiseLabel: '用户喜欢的地方',
+        anomalyLabel: '值得关注',
+        noIssues: '此期间没有 1–2 星评论。',
         months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
         dayShort: ['日','一','二','三','四','五','六'],
         relTime: (d) => {
@@ -203,5 +239,11 @@ export function applyStaticLabels() {
     if (archTitle) archTitle.textContent = T('archiveTitle');
     const loadingText = document.getElementById('loadingText');
     if (loadingText) loadingText.textContent = T('loading');
+    const fab = document.getElementById('insightsFab');
+    if (fab) {
+        const tip = T('insightsTooltip');
+        fab.setAttribute('aria-label', tip);
+        fab.setAttribute('title', tip);
+    }
     // subLine depends on live state — handled by applyStaticLabelsWithApp()
 }
