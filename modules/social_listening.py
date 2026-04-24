@@ -3090,14 +3090,12 @@ _YOUTUBE_TRANSCRIPT_LANGS = ('en', 'en-US', 'en-GB', 'ja', 'ko', 'es', 'pt')
 
 def _youtube_fetch_transcript(video_url):
     """Fetch auto-captions via youtube-transcript-api (pure-requests, no
-    yt-dlp). Returns raw transcript text or '' on any failure. yt-dlp
-    route hit consent/bot-detection on Railway; this library speaks
-    YouTube's timedtext endpoint directly with browser-like headers."""
+    yt-dlp). Returns (raw_text, error_label). error_label is '' on success,
+    otherwise a short diagnostic string."""
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
     except ImportError:
-        print('[yt-deep] youtube-transcript-api not installed', flush=True)
-        return ''
+        return '', 'import_error'
 
     # Extract video id from URL.
     vid = ''
@@ -3106,33 +3104,38 @@ def _youtube_fetch_transcript(video_url):
     elif 'youtu.be/' in video_url:
         vid = video_url.split('youtu.be/', 1)[1].split('?', 1)[0]
     if not vid:
-        return ''
+        return '', 'bad_url'
 
     try:
-        # list_transcripts surfaces both manual and auto tracks; we prefer
-        # the first that matches our language allow-list.
         tlist = YouTubeTranscriptApi.list_transcripts(vid)
-        picked = None
-        for lang in _YOUTUBE_TRANSCRIPT_LANGS:
-            try:
-                picked = tlist.find_transcript([lang])
-                break
-            except Exception:
-                continue
-        if picked is None:
-            # Fall back to whatever generated track exists.
-            try:
-                picked = tlist.find_generated_transcript(list(_YOUTUBE_TRANSCRIPT_LANGS))
-            except Exception:
-                return ''
-        if picked is None:
-            return ''
+    except Exception as e:
+        # Most common: YouTubeRequestFailed (bot detection on Railway IPs),
+        # TranscriptsDisabled, VideoUnavailable, IpBlocked
+        label = type(e).__name__
+        msg = str(e)[:160]
+        return '', f'{label}:{msg}'
+
+    picked = None
+    for lang in _YOUTUBE_TRANSCRIPT_LANGS:
+        try:
+            picked = tlist.find_transcript([lang])
+            break
+        except Exception:
+            continue
+    if picked is None:
+        try:
+            picked = tlist.find_generated_transcript(list(_YOUTUBE_TRANSCRIPT_LANGS))
+        except Exception as e:
+            return '', f'no_track:{type(e).__name__}'
+    if picked is None:
+        return '', 'no_matching_lang'
+    try:
         entries = picked.fetch()
     except Exception as e:
-        print(f'[yt-deep] transcript err vid={vid} {type(e).__name__}', flush=True)
-        return ''
+        return '', f'fetch_fail:{type(e).__name__}:{str(e)[:100]}'
 
-    return ' '.join(e.get('text', '') for e in entries).replace('\n', ' ').strip()
+    text = ' '.join(e.get('text', '') for e in entries).replace('\n', ' ').strip()
+    return text, ''
 
 
 def _extract_bilibili_snippet(transcript, window=300):
@@ -3241,16 +3244,19 @@ def discover_youtube_deep():
     t_attempted = 0
     t_got = 0
     t_with_bilibili = 0
+    t_errors = []  # first-few error labels for diagnostics
     for vid, meta in ranked:
         if time.time() - fetch_start > 60:
             print('[yt-deep] fetch budget hit', flush=True)
             break
         t_attempted += 1
         video_url = f'https://www.youtube.com/watch?v={vid}'
-        transcript = _youtube_fetch_transcript(video_url)
+        transcript, err = _youtube_fetch_transcript(video_url)
         if transcript:
             t_got += 1
         else:
+            if err and len(t_errors) < 3:
+                t_errors.append(err)
             continue
         snippet = _extract_bilibili_snippet(transcript)
         if snippet:
@@ -3286,7 +3292,9 @@ def discover_youtube_deep():
     debug['transcripts_attempted'] = t_attempted
     debug['transcripts_got'] = t_got
     debug['transcripts_with_bilibili'] = t_with_bilibili
-    print(f'[yt-deep] tx_attempted={t_attempted} tx_got={t_got} tx_with_bilibili={t_with_bilibili}', flush=True)
+    if t_errors:
+        debug['transcript_errors_sample'] = t_errors
+    print(f'[yt-deep] tx_attempted={t_attempted} tx_got={t_got} tx_with_bilibili={t_with_bilibili} errs={t_errors}', flush=True)
 
     if not all_items:
         return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
