@@ -397,7 +397,7 @@ function renderMentions() {
         return;
     }
 
-    const items = currentDateFilter ? filtered : filtered.slice(0, 10);
+    const items = currentDateFilter ? filtered : filtered.slice(0, 50);
 
     const grouped = {};
     items.forEach(m => {
