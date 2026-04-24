@@ -663,6 +663,9 @@ async function loadMentions() {
     try {
         const resp = await fetch(`${API}/social/mentions?days=365&limit=5000`);
         const data = await resp.json();
+        if (data && data.cap_hit) {
+            console.warn(`[social] result capped at ${data.limit} — older entries hidden; raise the limit on /social/mentions?limit=`);
+        }
         localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
         _applyData(data);
     } catch (e) {

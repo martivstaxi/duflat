@@ -527,11 +527,15 @@ def social_mentions():
         data = get_mentions(days=3, limit=limit)
 
     stats, dates = compute_stats_and_dates(data)
+    # Signal to UI if the cap was hit so it can show a warning.
+    cap_hit = len(data) >= limit
 
     return jsonify({
         'mentions': data,
         'stats': stats,
         'available_dates': dates,
+        'limit': limit,
+        'cap_hit': cap_hit,
     })
 
 
