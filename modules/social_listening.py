@@ -2299,13 +2299,27 @@ def delete_mentions(ids):
     return deleted
 
 
+_DOMAIN_RE = re.compile(r'^[a-z0-9][a-z0-9.-]{0,252}\.[a-z]{2,}$')
+
 def delete_mentions_by_domain(domain):
-    """Delete all mentions whose URL contains the given domain substring."""
-    try:
-        res = _db().table('social_mentions').delete().like('url', f'%{domain}%').execute()
-        return len(res.data or [])
-    except Exception:
+    """Delete mentions whose URL host exactly matches the given domain
+    (or its www. variant). Substring matching is intentionally disallowed
+    — passing 'com' used to wipe the entire DB."""
+    domain = (domain or '').strip().lower().lstrip('.')
+    if not domain or not _DOMAIN_RE.match(domain):
         return 0
+    deleted = 0
+    prefixes = (
+        f'http://{domain}/', f'https://{domain}/',
+        f'http://www.{domain}/', f'https://www.{domain}/',
+    )
+    for prefix in prefixes:
+        try:
+            res = _db().table('social_mentions').delete().like('url', f'{prefix}%').execute()
+            deleted += len(res.data or [])
+        except Exception as e:
+            print(f'[delete_by_domain] prefix={prefix} error: {e}', flush=True)
+    return deleted
 
 
 def translate_missing_chinese():

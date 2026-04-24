@@ -33,6 +33,30 @@ app = Flask(__name__, static_folder='.')
 CORS(app)
 
 # ─────────────────────────────────────────────
+# ADMIN / CRON AUTH
+# ─────────────────────────────────────────────
+# ADMIN_KEY guards destructive or cost-heavy admin endpoints (cleanup,
+# reclassify, translate, debug-haiku, test-alert).
+# CRON_KEY guards discover + scan endpoints that hit 3rd-party APIs.
+# If a key env var is unset the corresponding guard no-ops (so existing
+# cron triggers keep working until the key is set on Railway + cron-job.org).
+
+def _require_key(env_name, header_name):
+    expected = os.environ.get(env_name, '').strip()
+    if not expected:
+        return None
+    got = (request.headers.get(header_name, '') or request.args.get('key', '')).strip()
+    if got != expected:
+        return jsonify({'error': 'unauthorized'}), 401
+    return None
+
+def _require_admin():
+    return _require_key('ADMIN_KEY', 'X-Admin-Key')
+
+def _require_cron():
+    return _require_key('CRON_KEY', 'X-Cron-Key')
+
+# ─────────────────────────────────────────────
 # SUPABASE INIT
 # ─────────────────────────────────────────────
 _supa_url = os.environ.get('SUPABASE_URL', '')
@@ -60,6 +84,8 @@ def ping():
 
 @app.route('/social/test-alert')
 def test_alert():
+    auth = _require_admin()
+    if auth: return auth
     from modules.social_listening import (
         _send_telegram_alerts,
         _send_email_alerts,
@@ -273,6 +299,8 @@ def social_test_page():
 @app.route('/social/scan', methods=['POST'])
 def social_scan():
     """All-in-one: dedup + download + Haiku analysis + save. Just send URLs."""
+    auth = _require_cron()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     urls = body.get('urls', [])
     if not urls:
@@ -284,6 +312,8 @@ def social_scan():
 @app.route('/social/discover', methods=['POST'])
 def social_discover():
     """Auto-discover Bilibili mentions across 8 languages via DDG search."""
+    auth = _require_cron()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     languages = body.get('languages')  # optional: filter specific languages
     result = auto_discover(languages)
@@ -293,6 +323,8 @@ def social_discover():
 @app.route('/social/discover-reddit', methods=['POST'])
 def social_discover_reddit():
     """Fetch Bilibili-related Reddit posts via JSON API."""
+    auth = _require_cron()
+    if auth: return auth
     from modules.social_listening import discover_reddit
     return jsonify(discover_reddit())
 
@@ -300,6 +332,8 @@ def social_discover_reddit():
 @app.route('/social/discover-hn', methods=['POST'])
 def social_discover_hn():
     """Fetch Bilibili-related Hacker News stories + comments via Algolia API."""
+    auth = _require_cron()
+    if auth: return auth
     from modules.social_listening import discover_hackernews
     return jsonify(discover_hackernews())
 
@@ -307,6 +341,8 @@ def social_discover_hn():
 @app.route('/social/discover-bluesky', methods=['POST'])
 def social_discover_bluesky():
     """Fetch Bilibili-related Bluesky posts via public AT Protocol search."""
+    auth = _require_cron()
+    if auth: return auth
     from modules.social_listening import discover_bluesky
     return jsonify(discover_bluesky())
 
@@ -326,6 +362,8 @@ def _discover_all_background():
 @app.route('/social/discover-all', methods=['POST', 'GET'])
 def social_discover_all():
     """Cron endpoint: fire-and-forget Bluesky + Reddit in background thread. Always 2xx."""
+    auth = _require_cron()
+    if auth: return auth
     import threading
     if _discover_all_state['active']:
         return jsonify({'status': 'already_running'}), 202
@@ -359,6 +397,8 @@ def social_debug_reddit():
 @app.route('/social/cleanup', methods=['POST'])
 def social_cleanup():
     """Admin: delete mentions by ID and/or update content text."""
+    auth = _require_admin()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     result = {}
     ids_to_delete = body.get('delete', [])
@@ -380,6 +420,8 @@ def social_cleanup():
 @app.route('/social/reclassify', methods=['POST'])
 def social_reclassify():
     """Admin: re-run L3 classification on every existing mention with the current rules."""
+    auth = _require_admin()
+    if auth: return auth
     from modules.social_listening import reclassify_all_mentions
     return jsonify(reclassify_all_mentions())
 
@@ -387,6 +429,8 @@ def social_reclassify():
 @app.route('/social/translate-missing', methods=['POST'])
 def social_translate_missing():
     """Admin: backfill content_chinese (Simplified) for mentions still lacking it."""
+    auth = _require_admin()
+    if auth: return auth
     from modules.social_listening import translate_missing_chinese
     return jsonify(translate_missing_chinese())
 
@@ -394,6 +438,8 @@ def social_translate_missing():
 @app.route('/social/debug-haiku', methods=['POST'])
 def social_debug_haiku():
     """Debug: process URLs through pipeline and return raw Haiku output (no save)."""
+    auth = _require_admin()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     urls = body.get('urls', [])
     if not urls:
@@ -414,6 +460,8 @@ def social_debug_haiku():
 @app.route('/social/check-urls', methods=['POST'])
 def social_check_urls():
     """Step 1: Receive URLs from AI, return only new unique ones."""
+    auth = _require_cron()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     urls = body.get('urls', [])
     if not urls:
@@ -429,6 +477,8 @@ def social_check_urls():
 @app.route('/social/process', methods=['POST'])
 def social_process():
     """Step 2: Download URLs, filter by 2026 date, return content for AI."""
+    auth = _require_cron()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     items = body.get('urls', [])
     if not items:
@@ -440,6 +490,8 @@ def social_process():
 @app.route('/social/save', methods=['POST'])
 def social_save():
     """Step 3: Save AI-analyzed mentions to database."""
+    auth = _require_cron()
+    if auth: return auth
     body = request.get_json(silent=True) or {}
     mentions = body.get('mentions', [])
     if not mentions:
