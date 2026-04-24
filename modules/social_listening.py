@@ -2329,9 +2329,10 @@ def translate_missing_chinese():
     Returns {'total': N, 'translated': M, 'skipped': K}.
     """
     try:
+        # Explicit limit: PostgREST silently truncates at 1000 otherwise.
         res = _db().table('social_mentions').select(
             'id, content_english, content_chinese'
-        ).execute()
+        ).limit(50000).execute()
         rows = res.data or []
     except Exception as e:
         return {'error': f'fetch_failed: {e}'}
@@ -2403,9 +2404,10 @@ def reclassify_all_mentions():
     Returns {'total': N, 'updated': M, 'before': {...}, 'after': {...}}.
     """
     try:
+        # Explicit limit: PostgREST silently truncates at 1000 otherwise.
         res = _db().table('social_mentions').select(
             'id, platform, content_english, content_original, sentiment, sensitivity, source_type'
-        ).execute()
+        ).limit(50000).execute()
         rows = res.data or []
     except Exception as e:
         return {'error': f'fetch_failed: {e}'}
