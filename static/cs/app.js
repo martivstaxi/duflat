@@ -6,24 +6,24 @@
 //
 // No business logic lives here — each concern is in its own module.
 
-import { applyStaticLabels, setUILang, T } from './i18n.js';
+import { applyStaticLabels, setUILang, T } from './i18n.js?v=29';
 import {
     appInfo, setCountry, setFilterOpen, setPlatform, setRating,
-} from './state.js';
-import { els } from './dom.js';
-import { loadReviews } from './api.js';
+} from './state.js?v=29';
+import { els } from './dom.js?v=29';
+import { loadReviews } from './api.js?v=29';
 
-import { renderLangToggle } from './render/lang-toggle.js';
-import { renderRatingBtns } from './render/rating-btns.js';
+import { renderLangToggle } from './render/lang-toggle.js?v=29';
+import { renderRatingBtns } from './render/rating-btns.js?v=29';
 import {
     renderFilterDropdown, toggleFilterPanel, filterSelectYear, toggleMonths,
     filterSelectMonth, filterCalPrev, filterCalNext, filterPickDate,
-} from './render/filter-dropdown.js';
-import { renderActiveChips } from './render/active-chips.js';
-import { renderReviews, toggleDetails } from './render/cards.js';
-import { renderArchive, archivePrev, archiveNext, selectDate } from './render/archive.js';
-import { renderFooter } from './render/footer.js';
-import { openInsights, closeInsights, setInsightsPeriod, onLangChange as onInsightsLangChange } from './insights.js';
+} from './render/filter-dropdown.js?v=29';
+import { renderActiveChips } from './render/active-chips.js?v=29';
+import { renderReviews, toggleDetails } from './render/cards.js?v=29';
+import { renderArchive, archivePrev, archiveNext, selectDate } from './render/archive.js?v=29';
+import { renderFooter } from './render/footer.js?v=29';
+import { openInsights, closeInsights, setInsightsPeriod, onLangChange as onInsightsLangChange } from './insights.js?v=29';
 
 // ── Global orchestration ────────────────────
 // Fired by state setters, setUILang(), and applyData() via cs:render event.

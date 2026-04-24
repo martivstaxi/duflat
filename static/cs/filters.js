@@ -1,7 +1,7 @@
-import { DEFAULT_RECENT_DAYS } from './constants.js';
+import { DEFAULT_RECENT_DAYS } from './constants.js?v=29';
 import {
     allReviews, currentCountry, currentDateFilter, currentPlatform, currentRating,
-} from './state.js';
+} from './state.js?v=29';
 
 export function dateOf(r) { return (r.review_date || '').slice(0, 10); }
 
