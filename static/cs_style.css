@@ -627,8 +627,9 @@ html[lang^="zh"] .insights-headline { font-family: "Noto Sans SC", var(--font); 
     border-radius: 6px; font-variant-numeric: tabular-nums;
     letter-spacing: 0;
 }
-.delta.up   { background: rgba(181,74,53,.1); color: var(--negative); }
-.delta.down { background: rgba(61,138,94,.1); color: var(--positive); }
+.delta.good    { background: rgba(61,138,94,.1);  color: var(--positive); }
+.delta.bad     { background: rgba(181,74,53,.1);  color: var(--negative); }
+.delta.neutral { background: var(--hairline);     color: var(--muted); }
 
 /* Sections: clear hierarchy, generous vertical rhythm */
 .insights-section { margin-top: 28px; }

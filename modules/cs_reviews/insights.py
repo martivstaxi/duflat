@@ -22,6 +22,11 @@ from .db import _db
 
 CACHE_TTL_SEC = 12 * 60 * 60  # 12 hours
 
+# Bump whenever the Haiku prompt or payload shape changes — existing cached
+# rows become invisible (filtered out on read) so the next click regenerates
+# against the new prompt instead of returning 12h of stale jargon.
+PROMPT_VERSION = 2
+
 
 def _periods(period):
     """Return (current_start, current_end, prior_start, prior_end, label)
@@ -112,16 +117,23 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         return {}
 
     lang_instr = (
-        'Every string field in your JSON response (headline, summary, '
-        'top_issues[*].theme, top_praise[*].theme, anomaly) MUST be in '
-        'natural English.'
+        'Write every string field (headline, summary, top_issues[*].theme, '
+        'top_praise[*].theme, anomaly) in natural everyday English that a '
+        'non-technical teammate would understand instantly.'
         if lang == 'en'
-        else 'Every string field in your JSON response (headline, summary, '
-             'top_issues[*].theme, top_praise[*].theme, anomaly) MUST be in '
-             'natural Simplified Chinese (简体中文). Do NOT leave any field '
-             'in English. Keep Latin product names (BiliBili, iOS, Android) '
-             'and version numbers (8.91.0) unchanged, and keep country codes '
-             'inside example_countries as-is (lowercase ISO).'
+        else 'Write every string field (headline, summary, '
+             'top_issues[*].theme, top_praise[*].theme, anomaly) in natural '
+             'everyday Simplified Chinese (简体中文) that a non-technical '
+             'colleague understands instantly. Do NOT leave any field in '
+             'English. Keep Latin product names (BiliBili, iOS, Android) '
+             'and version numbers (8.91.0) unchanged; keep country codes '
+             'inside example_countries as lowercase ISO (us, jp).'
+    )
+
+    banned_words = (
+        "'recovery', 'persist', 'persistent', 'concentration', 'regression', "
+        "'mask', 'masks', 'masking', 'friction', 'elevated', 'notable', "
+        "'baseline', 'cohort'"
     )
 
     payload = {
@@ -132,25 +144,38 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         'praise_samples': praise_samples[:30],
     }
     prompt = (
-        "You are a CS analyst for the BiliBili app. Input: aggregate review "
-        "stats for a period and the prior comparable period, plus samples of "
-        "1-2-star complaints and 5-star praise (already summarized in English).\n\n"
-        f"{lang_instr} Keep every field tight — no filler, no hedging. Don't "
-        "restate raw numbers the UI already shows; surface what matters.\n\n"
+        "You are a CS analyst for the BiliBili app writing a quick status "
+        "for a teammate. Input: aggregate review stats for this period and "
+        "the prior comparable period, plus samples of 1-2-star complaints "
+        "and 5-star praise (already summarized in English).\n\n"
+        f"{lang_instr}\n\n"
+        "STYLE RULES (critical — the previous version sounded like a "
+        "consulting deck, which was rejected):\n"
+        "- Short plain sentences. Write like you're texting a coworker.\n"
+        f"- AVOID business / consultant jargon: {banned_words}. Use ordinary "
+        "verbs instead (e.g. 'still happening' not 'persistent', 'went up' "
+        "not 'recovered').\n"
+        "- Never restate numbers the UI already shows (total, average, "
+        "1–2★ count). Explain WHAT users are saying, not the stats.\n"
+        "- No hedging ('may', 'might', 'could suggest'). State it directly.\n\n"
         "Return ONLY JSON, no prose outside:\n"
         "{\n"
-        '  "headline": "One-line takeaway, max 12 words.",\n'
-        '  "summary": "2-3 sentence overview; mention the biggest change vs prior period.",\n'
+        '  "headline": "One plain sentence, max 12 words, no jargon. Examples: '
+        "'Ratings are up but users still hit login bugs.' / "
+        "'5-star praise is climbing, but 8.91.0 keeps crashing.'\",\n"
+        '  "summary": "2-3 plain sentences. What users are actually '
+        'complaining about and what they like. No stat recaps.",\n'
         '  "top_issues": [{"theme":"...", "count":<int>, "example_countries":["us","jp"], "severity":"high|medium|low"}],\n'
         '  "top_praise": [{"theme":"...", "count":<int>}],\n'
-        '  "anomaly": "One outlier worth flagging (country spike, version regression). Empty string if none."\n'
+        '  "anomaly": "One plain sentence flagging an outlier (a specific '
+        'country or version that got much worse). Empty string if none."\n'
         "}\n\n"
-        "Rules:\n"
+        "Field rules:\n"
         "- top_issues: up to 3, ordered by urgency. `count` = approx sample count.\n"
         "- top_praise: up to 2.\n"
         "- If low_rating_samples is empty, top_issues must be [].\n"
-        '- Themes must be concrete ("login crashes after update to 8.91") '
-        'not vague ("bugs"). Cite features, versions, or countries when present.\n'
+        '- Themes: concrete and concrete ("login crashes after updating to '
+        '8.91.0" not "bugs"). Cite features, versions, or countries when visible.\n'
         "- Never invent stats not in the input.\n\n"
         "Data:\n"
         f"{json.dumps(payload, ensure_ascii=False)}"
@@ -174,7 +199,8 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
 
 def _cache_get(period, lang):
     """Return cached payload if a fresh (period, lang) row exists in
-    cs_insights_cache. Returns None on miss, stale, or DB error."""
+    cs_insights_cache AND its prompt_version matches the current one.
+    Returns None on miss, stale, version-mismatch, or DB error."""
     cutoff = datetime.now(timezone.utc) - timedelta(seconds=CACHE_TTL_SEC)
     try:
         res = (_db().table('cs_insights_cache')
@@ -194,6 +220,10 @@ def _cache_get(period, lang):
                 payload = json.loads(payload)
             except Exception:
                 return None
+        if not isinstance(payload, dict):
+            return None
+        if payload.get('prompt_version') != PROMPT_VERSION:
+            return None
         return payload
     except Exception:
         return None
@@ -272,6 +302,7 @@ def generate_insights(period='7d', lang='en'):
         'haiku_ok': bool(narrative),
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'cache_hit': False,
+        'prompt_version': PROMPT_VERSION,
     }
     # Only cache successful Haiku runs — a failed narrative shouldn't be
     # pinned for 12 hours when the next retry might succeed.

@@ -1,4 +1,4 @@
-import { els } from '../dom.js?v=29';
+import { els } from '../dom.js?v=30';
 
 export function renderFooter() {
     // Steady-state footer is intentionally blank; only transient states

@@ -5,9 +5,9 @@
 // Lazy DOM: the overlay is built on first open, reused thereafter.
 // Language follows the UI toggle — tabs re-fetch when switched.
 
-import { API } from './constants.js?v=29';
-import { T, TC } from './i18n.js?v=29';
-import { escapeHtml, relTime } from './utils.js?v=29';
+import { API } from './constants.js?v=30';
+import { T, TC } from './i18n.js?v=30';
+import { escapeHtml, relTime } from './utils.js?v=30';
 
 let currentPeriod = '7d';
 let modalEl = null;
@@ -130,21 +130,25 @@ function renderInsights(d) {
     const prior = d.prior || {};
     const nar = d.narrative || {};
 
-    const intDelta = (c, p) => {
-        if (p == null || c == null) return '';
-        const diff = c - p;
+    // Polarity: 'higher_better' (rating) → +delta is green, -delta is red.
+    // 'lower_better' (1-2★ count) → -delta is green, +delta is red.
+    // 'neutral' (total volume) → muted.
+    const fmtDelta = (diff, polarity, render) => {
         if (!diff) return '';
+        let tone = 'neutral';
+        if (polarity === 'higher_better') tone = diff > 0 ? 'good' : 'bad';
+        else if (polarity === 'lower_better') tone = diff > 0 ? 'bad' : 'good';
         const sign = diff > 0 ? '+' : '';
-        const dir = diff > 0 ? 'up' : 'down';
-        return ` <span class="delta ${dir}">${sign}${diff}</span>`;
+        return ` <span class="delta ${tone}">${sign}${render(diff)}</span>`;
+    };
+    const intDelta = (c, p, polarity = 'neutral') => {
+        if (p == null || c == null) return '';
+        return fmtDelta(c - p, polarity, v => v);
     };
     const ratingDeltaHtml = (() => {
         if (cur.avg_rating == null || prior.avg_rating == null) return '';
         const diff = +(cur.avg_rating - prior.avg_rating).toFixed(2);
-        if (!diff) return '';
-        const sign = diff > 0 ? '+' : '';
-        const dir = diff > 0 ? 'up' : 'down';
-        return ` <span class="delta ${dir}">${sign}${diff.toFixed(2)}</span>`;
+        return fmtDelta(diff, 'higher_better', v => v.toFixed(2));
     })();
 
     const low = (cur.rating_dist?.['1'] || 0) + (cur.rating_dist?.['2'] || 0);
@@ -158,7 +162,7 @@ function renderInsights(d) {
       <div class="insights-metrics">
         <div class="metric">
           <div class="metric-label">${escapeHtml(T('metricTotal'))}</div>
-          <div class="metric-value">${cur.total || 0}${intDelta(cur.total, prior.total)}</div>
+          <div class="metric-value">${cur.total || 0}${intDelta(cur.total, prior.total, 'neutral')}</div>
         </div>
         <div class="metric">
           <div class="metric-label">${escapeHtml(T('metricAvg'))}</div>
@@ -166,7 +170,7 @@ function renderInsights(d) {
         </div>
         <div class="metric">
           <div class="metric-label">${escapeHtml(T('metricLow'))}</div>
-          <div class="metric-value">${low}${intDelta(low, priorLow)}</div>
+          <div class="metric-value">${low}${intDelta(low, priorLow, 'lower_better')}</div>
         </div>
       </div>
     `;
