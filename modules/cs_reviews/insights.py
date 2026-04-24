@@ -14,6 +14,7 @@ scan (DELETE FROM cs_insights_cache) so fresh data is visible next click."""
 
 import json
 import os
+import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
@@ -24,8 +25,15 @@ CACHE_TTL_SEC = 12 * 60 * 60  # 12 hours
 
 # Bump whenever the Haiku prompt or payload shape changes — existing cached
 # rows become invisible (filtered out on read) so the next click regenerates
-# against the new prompt instead of returning 12h of stale jargon.
-PROMPT_VERSION = 2
+# against the new prompt instead of returning 12h of stale output.
+# v3 (2026-04-24): ZH prompt was producing Korean; added explicit script ban
+# + post-generation validator.
+PROMPT_VERSION = 3
+
+# Script regexes for post-generation language validation
+_RE_CJK_HAN = re.compile(r'[一-鿿㐀-䶿]')  # Han ideographs
+_RE_HANGUL = re.compile(r'[가-힯ᄀ-ᇿ㄰-㆏]')  # Korean
+_RE_KANA = re.compile(r'[぀-ゟ゠-ヿ]')  # Hiragana + Katakana
 
 
 def _periods(period):
@@ -121,13 +129,21 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         'top_praise[*].theme, anomaly) in natural everyday English that a '
         'non-technical teammate would understand instantly.'
         if lang == 'en'
-        else 'Write every string field (headline, summary, '
-             'top_issues[*].theme, top_praise[*].theme, anomaly) in natural '
-             'everyday Simplified Chinese (简体中文) that a non-technical '
-             'colleague understands instantly. Do NOT leave any field in '
-             'English. Keep Latin product names (BiliBili, iOS, Android) '
-             'and version numbers (8.91.0) unchanged; keep country codes '
-             'inside example_countries as lowercase ISO (us, jp).'
+        else '**CRITICAL LANGUAGE REQUIREMENT** — Write every string field '
+             '(headline, summary, top_issues[*].theme, top_praise[*].theme, '
+             'anomaly) in **Simplified Chinese (简体中文)** ONLY. The target '
+             'audience is Chinese-speaking CS staff in China.\n\n'
+             'FORBIDDEN in narrative fields:\n'
+             '- Korean (한국어 / 韩文 hangul): do NOT use. The correct script is 中文.\n'
+             '- Japanese hiragana (ひらがな) or katakana (カタカナ): do NOT use.\n'
+             '- Traditional Chinese characters when a Simplified one exists.\n'
+             '- English words or phrases in the narrative text.\n\n'
+             'ALLOWED unchanged: Latin product names (BiliBili, iOS, Android, '
+             'Google Play), version numbers (8.91.0), and lowercase ISO '
+             'country codes inside example_countries (us, jp, hk).\n\n'
+             'Sanity check: headline & summary must be dominantly 汉字 with '
+             'Chinese punctuation (，。：). If the output contains 한글 or '
+             'ひらがな, you are using the wrong language.'
     )
 
     banned_words = (
@@ -180,21 +196,82 @@ def _haiku_narrative(period_label, cur_stats, prior_stats,
         "Data:\n"
         f"{json.dumps(payload, ensure_ascii=False)}"
     )
-    try:
-        client = anthropic.Anthropic(api_key=api_key)
-        resp = client.messages.create(
-            model='claude-haiku-4-5-20251001',
-            max_tokens=2048,
-            messages=[{'role': 'user', 'content': prompt}],
+    client = anthropic.Anthropic(api_key=api_key)
+
+    def _call(extra_reminder=''):
+        messages = [{'role': 'user', 'content': prompt + extra_reminder}]
+        try:
+            resp = client.messages.create(
+                model='claude-haiku-4-5-20251001',
+                max_tokens=2048,
+                messages=messages,
+            )
+            text = resp.content[0].text.strip()
+            if '```' in text:
+                text = text.split('```')[1]
+                if text.startswith('json'):
+                    text = text[4:]
+            return json.loads(text)
+        except Exception:
+            return {}
+
+    narrative = _call()
+    if narrative and not _narrative_matches_lang(narrative, lang):
+        # Haiku produced the wrong script (e.g. Korean for lang=zh). Retry
+        # once with a harsher reminder appended to the prompt.
+        narrative = _call(
+            '\n\nREMINDER: Your previous response used the wrong script. '
+            + ('You MUST respond in Simplified Chinese (简体中文) only — '
+               'no Korean 한글, no Japanese かな. Try again.'
+               if lang == 'zh' else
+               'You MUST respond in plain English only. Try again.')
         )
-        text = resp.content[0].text.strip()
-        if '```' in text:
-            text = text.split('```')[1]
-            if text.startswith('json'):
-                text = text[4:]
-        return json.loads(text)
-    except Exception:
-        return {}
+        if narrative and not _narrative_matches_lang(narrative, lang):
+            return {}  # second attempt also wrong → fail-soft
+    return narrative
+
+
+def _narrative_text(narrative):
+    """Concatenate all narrative string fields for language inspection."""
+    if not isinstance(narrative, dict):
+        return ''
+    parts = [
+        narrative.get('headline') or '',
+        narrative.get('summary') or '',
+        narrative.get('anomaly') or '',
+    ]
+    for i in (narrative.get('top_issues') or []):
+        if isinstance(i, dict):
+            parts.append(i.get('theme') or '')
+    for p in (narrative.get('top_praise') or []):
+        if isinstance(p, dict):
+            parts.append(p.get('theme') or '')
+    return ' '.join(parts)
+
+
+def _narrative_matches_lang(narrative, lang):
+    """Return True if the narrative's script matches the requested language.
+
+    zh: must contain Han ideographs AND must NOT contain Korean Hangul or
+        Japanese kana (Haiku occasionally drifts to Korean).
+    en: must be mostly ASCII — >70% of characters should be in the
+        basic Latin range.
+    """
+    text = _narrative_text(narrative)
+    if not text.strip():
+        return False
+    if lang == 'zh':
+        if not _RE_CJK_HAN.search(text):
+            return False
+        if _RE_HANGUL.search(text) or _RE_KANA.search(text):
+            return False
+        return True
+    # English
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return False
+    ascii_ratio = sum(1 for c in letters if ord(c) < 128) / len(letters)
+    return ascii_ratio > 0.7
 
 
 def _cache_get(period, lang):
