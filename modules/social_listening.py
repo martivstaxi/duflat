@@ -3089,60 +3089,50 @@ _YOUTUBE_TRANSCRIPT_LANGS = ('en', 'en-US', 'en-GB', 'ja', 'ko', 'es', 'pt')
 
 
 def _youtube_fetch_transcript(video_url):
-    """Extract auto-captions for a video via yt-dlp and return raw transcript
-    text. Returns '' if no captions available or fetch fails."""
+    """Fetch auto-captions via youtube-transcript-api (pure-requests, no
+    yt-dlp). Returns raw transcript text or '' on any failure. yt-dlp
+    route hit consent/bot-detection on Railway; this library speaks
+    YouTube's timedtext endpoint directly with browser-like headers."""
     try:
-        import yt_dlp
+        from youtube_transcript_api import YouTubeTranscriptApi
     except ImportError:
-        print('[yt-deep] yt_dlp not installed', flush=True)
+        print('[yt-deep] youtube-transcript-api not installed', flush=True)
         return ''
 
-    ydl_opts = {
-        'quiet': True,
-        'no_warnings': True,
-        'skip_download': True,
-        'socket_timeout': 10,
-    }
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-    except Exception as e:
-        print(f'[yt-deep] extract_info err={type(e).__name__}', flush=True)
-        return ''
-
-    tracks = info.get('automatic_captions') or info.get('subtitles') or {}
-    if not tracks:
-        return ''
-
-    # Prefer English, fall back to any supported language we can read.
-    chosen_url = None
-    for lang in _YOUTUBE_TRANSCRIPT_LANGS:
-        if lang in tracks:
-            for entry in tracks[lang]:
-                if entry.get('ext') == 'json3' and entry.get('url'):
-                    chosen_url = entry['url']
-                    break
-        if chosen_url:
-            break
-
-    if not chosen_url:
+    # Extract video id from URL.
+    vid = ''
+    if 'watch?v=' in video_url:
+        vid = video_url.split('watch?v=', 1)[1].split('&', 1)[0]
+    elif 'youtu.be/' in video_url:
+        vid = video_url.split('youtu.be/', 1)[1].split('?', 1)[0]
+    if not vid:
         return ''
 
     try:
-        resp = requests.get(chosen_url, timeout=8)
-        if resp.status_code != 200:
+        # list_transcripts surfaces both manual and auto tracks; we prefer
+        # the first that matches our language allow-list.
+        tlist = YouTubeTranscriptApi.list_transcripts(vid)
+        picked = None
+        for lang in _YOUTUBE_TRANSCRIPT_LANGS:
+            try:
+                picked = tlist.find_transcript([lang])
+                break
+            except Exception:
+                continue
+        if picked is None:
+            # Fall back to whatever generated track exists.
+            try:
+                picked = tlist.find_generated_transcript(list(_YOUTUBE_TRANSCRIPT_LANGS))
+            except Exception:
+                return ''
+        if picked is None:
             return ''
-        data = resp.json()
-    except Exception:
+        entries = picked.fetch()
+    except Exception as e:
+        print(f'[yt-deep] transcript err vid={vid} {type(e).__name__}', flush=True)
         return ''
 
-    chunks = []
-    for event in data.get('events', []) or []:
-        for seg in event.get('segs', []) or []:
-            utf8 = seg.get('utf8')
-            if utf8:
-                chunks.append(utf8)
-    return ' '.join(chunks).replace('\n', ' ').strip()
+    return ' '.join(e.get('text', '') for e in entries).replace('\n', ' ').strip()
 
 
 def _extract_bilibili_snippet(transcript, window=300):
