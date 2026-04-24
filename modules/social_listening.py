@@ -2441,11 +2441,27 @@ def discover_bluesky():
 # follow-up (yt-dlp cost doesn't fit the 120s gunicorn budget).
 
 _YOUTUBE_SEARCH_QUERIES = [
+    # Core English — broad coverage
     'bilibili', 'bilibili app', 'bilibili china',
     'bilibili review', 'bilibili explained',
     'bilibili gaming', 'bilibili anime', 'bilibili vtuber',
     'bilibili world', 'bilibili creator',
+    # Topical English — ecosystem, news, controversy
+    'bilibili 2026', 'bilibili drama', 'bilibili news',
+    'bilibili ai', 'BLG bilibili', 'hoyoverse bilibili',
+    # Japanese — ビリビリ is the katakana transliteration used
+    # heavily on JP YouTube for Bilibili coverage
+    'ビリビリ動画', 'bilibili 日本',
+    # Korean — 비리비리 is the hangul form
+    '비리비리', 'bilibili 한국',
+    # Spanish / Portuguese — growing LATAM audience
+    'bilibili español', 'bilibili brasil',
 ]
+
+# Cap on pages fetched per query via YouTube pageToken. Each page = 100
+# quota units, so 2 pages × 22 queries × 4 runs/day = ~17.6k units/day
+# on its own. Keep default to 1 unless a quota increase lands.
+_YOUTUBE_PAGES_PER_QUERY = int(os.environ.get('YOUTUBE_PAGES_PER_QUERY', '1'))
 
 # Known Bilibili-owned channels (handles, lowercase, no @). Anything
 # matching these, or with channel title exactly "Bilibili", is skipped.
@@ -2459,41 +2475,53 @@ _YOUTUBE_BILIBILI_HANDLE_BLACKLIST = {
 _YOUTUBE_MIN_SUBSCRIBERS = int(os.environ.get('YOUTUBE_MIN_SUBSCRIBERS', '5000'))
 
 
-def _youtube_search(query, published_after_iso):
-    """Search YouTube for recent videos matching query. Returns list of snippets."""
+def _youtube_search(query, published_after_iso, max_pages=None):
+    """Search YouTube for recent videos matching query. Returns list of snippets
+    across up to max_pages (default _YOUTUBE_PAGES_PER_QUERY). Each page is
+    100 quota units."""
     api_key = os.environ.get('YOUTUBE_API_KEY', '')
     if not api_key:
         print('[youtube] YOUTUBE_API_KEY not set', flush=True)
         return []
     if _cooling_down('youtube.com'):
         return []
+    if max_pages is None:
+        max_pages = _YOUTUBE_PAGES_PER_QUERY
     from urllib.parse import quote_plus
-    url = (
-        'https://www.googleapis.com/youtube/v3/search'
-        f'?part=snippet&type=video&q={quote_plus(query)}'
-        f'&publishedAfter={quote_plus(published_after_iso)}'
-        f'&order=date&maxResults=50&key={api_key}'
-    )
-    try:
-        resp = requests.get(url, timeout=8)
-    except Exception as e:
-        print(f'[youtube] q={query} request_exception={e}', flush=True)
-        return []
-    if resp.status_code == 403:
-        # Quota exceeded or key revoked — back off the rest of the run.
-        _enter_cooldown('youtube.com', 3600)
-        print(f'[youtube] q={query} QUOTA/AUTH status=403 body={resp.text[:200]}', flush=True)
-        return []
-    if resp.status_code != 200:
-        print(f'[youtube] q={query} status={resp.status_code} body={resp.text[:200]}', flush=True)
-        return []
-    try:
-        items = resp.json().get('items', []) or []
-    except Exception as e:
-        print(f'[youtube] q={query} json_err={e}', flush=True)
-        return []
-    print(f'[youtube] q={query} videos={len(items)}', flush=True)
-    return items
+    out = []
+    page_token = None
+    for _ in range(max(1, max_pages)):
+        url = (
+            'https://www.googleapis.com/youtube/v3/search'
+            f'?part=snippet&type=video&q={quote_plus(query)}'
+            f'&publishedAfter={quote_plus(published_after_iso)}'
+            f'&order=date&maxResults=50&key={api_key}'
+        )
+        if page_token:
+            url += f'&pageToken={page_token}'
+        try:
+            resp = requests.get(url, timeout=8)
+        except Exception as e:
+            print(f'[youtube] q={query} request_exception={e}', flush=True)
+            break
+        if resp.status_code == 403:
+            _enter_cooldown('youtube.com', 3600)
+            print(f'[youtube] q={query} QUOTA/AUTH status=403 body={resp.text[:200]}', flush=True)
+            break
+        if resp.status_code != 200:
+            print(f'[youtube] q={query} status={resp.status_code} body={resp.text[:200]}', flush=True)
+            break
+        try:
+            data = resp.json()
+        except Exception as e:
+            print(f'[youtube] q={query} json_err={e}', flush=True)
+            break
+        out.extend(data.get('items', []) or [])
+        page_token = data.get('nextPageToken')
+        if not page_token:
+            break
+    print(f'[youtube] q={query} videos={len(out)}', flush=True)
+    return out
 
 
 def _youtube_hydrate_channels(channel_ids):
@@ -2603,13 +2631,16 @@ def discover_youtube():
         return {'platform': 'youtube', 'error': 'YOUTUBE_API_KEY not set'}
 
     fetch_start = time.time()
-    # 90-day window — the date filter on the API side reduces pagination
-    # needs, L4 gate re-verifies 2026 in any case.
-    published_after = (datetime.utcnow() - timedelta(days=90)).isoformat() + 'Z'
+    # Fixed to 2026-01-01 — project only ingests 2026 content, API-side
+    # date filter is stricter than a 90-day sliding window and saves
+    # quota by pruning pre-2026 results server-side.
+    published_after = '2026-01-01T00:00:00Z'
 
     raw_entries = []
     for q in _YOUTUBE_SEARCH_QUERIES:
-        if time.time() - fetch_start > 25:
+        # 40s fetch budget — expanded for the 20+ query pool. Still
+        # well inside the 120s gunicorn limit with Haiku + save to follow.
+        if time.time() - fetch_start > 40:
             break
         entries = _youtube_search(q, published_after)
         raw_entries.extend(entries)
@@ -2692,6 +2723,598 @@ def discover_youtube():
 
     return {
         'platform': 'youtube',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
+# YOUTUBE COMMENTS — viewer reactions on Bilibili-related videos
+# ─────────────────────────────────────────────
+# Harvests top-level comments from high-view Bilibili-related videos.
+# commentThreads.list = 1 unit per 100 comments → much cheaper than search.
+# Videos with subscriber floor bypassed here: a small-channel video with
+# 50K views is still a rich comment source. We pick by viewCount instead.
+
+_YOUTUBE_COMMENT_QUERIES = [
+    'bilibili',
+    'bilibili china',
+    'bilibili explained',
+    'bilibili vs tiktok',
+    'bilibili app',
+]
+
+_YOUTUBE_COMMENT_MIN_VIEWS = int(os.environ.get('YOUTUBE_COMMENT_MIN_VIEWS', '5000'))
+_YOUTUBE_COMMENT_VIDEOS_PER_RUN = int(os.environ.get('YOUTUBE_COMMENT_VIDEOS_PER_RUN', '20'))
+_YOUTUBE_COMMENT_MIN_LEN = 30  # drop "lol" / emoji noise
+
+
+def _youtube_search_popular(query, published_after_iso):
+    """Search YouTube ordered by relevance (not date) to surface popular videos
+    worth mining for comments. Returns snippet entries."""
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return []
+    if _cooling_down('youtube.com'):
+        return []
+    from urllib.parse import quote_plus
+    url = (
+        'https://www.googleapis.com/youtube/v3/search'
+        f'?part=snippet&type=video&q={quote_plus(query)}'
+        f'&publishedAfter={quote_plus(published_after_iso)}'
+        f'&order=relevance&maxResults=50&key={api_key}'
+    )
+    try:
+        resp = requests.get(url, timeout=8)
+    except Exception as e:
+        print(f'[yt-comments] search q={query} err={e}', flush=True)
+        return []
+    if resp.status_code == 403:
+        _enter_cooldown('youtube.com', 3600)
+        print(f'[yt-comments] QUOTA/AUTH q={query} body={resp.text[:200]}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[yt-comments] search q={query} status={resp.status_code}', flush=True)
+        return []
+    try:
+        items = resp.json().get('items', []) or []
+    except Exception:
+        return []
+    print(f'[yt-comments] q={query} videos={len(items)}', flush=True)
+    return items
+
+
+def _youtube_hydrate_videos(video_ids):
+    """Fetch viewCount + commentCount + snippet for video ids. Returns dict
+    id→{views, comments, title, channel_title, channel_id, published}."""
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key or not video_ids:
+        return {}
+    out = {}
+    ids = list(set(video_ids))
+    for i in range(0, len(ids), 50):
+        batch = ids[i:i + 50]
+        url = (
+            'https://www.googleapis.com/youtube/v3/videos'
+            f'?part=statistics,snippet&id={",".join(batch)}&key={api_key}'
+        )
+        try:
+            resp = requests.get(url, timeout=8)
+            if resp.status_code != 200:
+                continue
+            for v in resp.json().get('items', []) or []:
+                vid = v.get('id')
+                if not vid:
+                    continue
+                stats = v.get('statistics') or {}
+                snip = v.get('snippet') or {}
+                try:
+                    views = int(stats.get('viewCount', 0) or 0)
+                except Exception:
+                    views = 0
+                try:
+                    comments = int(stats.get('commentCount', 0) or 0)
+                except Exception:
+                    comments = 0
+                out[vid] = {
+                    'views': views,
+                    'comments': comments,
+                    'title': snip.get('title', ''),
+                    'channel_title': snip.get('channelTitle', ''),
+                    'channel_id': snip.get('channelId', ''),
+                    'published': snip.get('publishedAt', ''),
+                }
+        except Exception as e:
+            print(f'[yt-comments] hydrate err={e}', flush=True)
+            continue
+    return out
+
+
+def _youtube_fetch_comment_threads(video_id, max_pages=1):
+    """Fetch top-level comments for a video. Returns list of comment snippet dicts."""
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return []
+    if _cooling_down('youtube.com'):
+        return []
+    out = []
+    page_token = None
+    for _ in range(max_pages):
+        url = (
+            'https://www.googleapis.com/youtube/v3/commentThreads'
+            f'?part=snippet&videoId={video_id}&maxResults=100'
+            f'&textFormat=plainText&order=relevance&key={api_key}'
+        )
+        if page_token:
+            url += f'&pageToken={page_token}'
+        try:
+            resp = requests.get(url, timeout=8)
+        except Exception:
+            break
+        if resp.status_code == 403:
+            # Common: comments disabled on video. Don't cooldown — it's
+            # per-video, not a quota issue. 403 quota hit is also possible
+            # but distinguishable by error body.
+            body = resp.text[:200].lower()
+            if 'quota' in body or 'daily limit' in body:
+                _enter_cooldown('youtube.com', 3600)
+            break
+        if resp.status_code != 200:
+            break
+        try:
+            data = resp.json()
+        except Exception:
+            break
+        for th in data.get('items', []) or []:
+            top = ((th.get('snippet') or {}).get('topLevelComment') or {}).get('snippet') or {}
+            if top:
+                out.append(top)
+        page_token = data.get('nextPageToken')
+        if not page_token:
+            break
+    return out
+
+
+def _youtube_comment_to_item(comment, video_id, video_meta):
+    """Convert a comment snippet + video metadata to a pipeline item."""
+    text_original = (comment.get('textOriginal') or '').strip()
+    if not text_original or len(text_original) < _YOUTUBE_COMMENT_MIN_LEN:
+        return None
+
+    published = comment.get('publishedAt') or ''
+    if not published:
+        return None
+    try:
+        dt = datetime.strptime(published[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+
+    comment_id = comment.get('id') or ''
+    # The comment's own publicly-stable id is exposed as the top-level
+    # comment's id field; fall back to authorChannelId if unavailable.
+    author = (comment.get('authorDisplayName') or '').strip()
+    if not author:
+        return None
+
+    video_title = video_meta.get('title', '') if video_meta else ''
+    channel_title = video_meta.get('channel_title', '') if video_meta else ''
+
+    if not comment_id:
+        # YouTube embeds the id on the parent threadId; without it the
+        # anchor link won't open the comment but the video link still
+        # works. Derive a fallback so url_hash stays unique.
+        comment_id = hashlib.sha256(
+            (text_original + published).encode()
+        ).hexdigest()[:16]
+
+    url = f'https://www.youtube.com/watch?v={video_id}&lc={comment_id}'
+    text = (
+        f'[YouTube comment on "{video_title}" by {channel_title}]\n'
+        f'Author: {author}\n\n{text_original}'
+    )
+    return {
+        'url': url,
+        'url_hash': hash_url(url),
+        'platform': 'youtube.com',
+        'text': text[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_youtube_comments():
+    """Harvest viewer comments on high-view Bilibili-related YouTube videos.
+    Comments-per-run capped by _YOUTUBE_COMMENT_VIDEOS_PER_RUN, then 25-item
+    Haiku cap applies downstream."""
+    import time
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return {'platform': 'youtube_comments', 'error': 'YOUTUBE_API_KEY not set'}
+
+    fetch_start = time.time()
+    # 2026 window, same as video discover — API filters by upload date, not
+    # comment date, but 2026 videos yield ~100% 2026 comments anyway; the
+    # comment-level date check below + L4 gate catch stragglers.
+    published_after = '2026-01-01T00:00:00Z'
+
+    # Step 1 — gather candidate videos via relevance-ordered search.
+    raw_entries = []
+    for q in _YOUTUBE_COMMENT_QUERIES:
+        if time.time() - fetch_start > 15:
+            break
+        raw_entries.extend(_youtube_search_popular(q, published_after))
+
+    # Dedup video ids and keep first snippet for each.
+    seen_vids = {}
+    for e in raw_entries:
+        vid = (e.get('id') or {}).get('videoId')
+        if vid and vid not in seen_vids:
+            seen_vids[vid] = e
+    if not seen_vids:
+        print('[yt-comments] no candidate videos', flush=True)
+        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Step 2 — hydrate videos for viewCount, pick top N by views.
+    video_meta = _youtube_hydrate_videos(list(seen_vids.keys()))
+    ranked = sorted(
+        video_meta.items(),
+        key=lambda kv: kv[1].get('views', 0),
+        reverse=True,
+    )
+    ranked = [
+        (vid, meta) for vid, meta in ranked
+        if meta.get('views', 0) >= _YOUTUBE_COMMENT_MIN_VIEWS
+        and meta.get('comments', 0) > 0
+    ][:_YOUTUBE_COMMENT_VIDEOS_PER_RUN]
+
+    if not ranked:
+        print('[yt-comments] no videos met view floor', flush=True)
+        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    print(f'[yt-comments] mining {len(ranked)} videos', flush=True)
+
+    # Step 3 — fetch comment threads and build items.
+    all_items = []
+    for vid, meta in ranked:
+        if time.time() - fetch_start > 45:
+            break
+        comments = _youtube_fetch_comment_threads(vid, max_pages=1)
+        for c in comments:
+            item = _youtube_comment_to_item(c, vid, meta)
+            if not item:
+                continue
+            blob = item['text'].lower()
+            if ('bilibili' not in blob and 'b站' not in blob
+                    and '哔哩' not in blob and '嗶哩' not in blob
+                    and 'ビリビリ' not in item['text']):
+                continue
+            all_items.append(item)
+
+    print(f'[yt-comments] candidates after filter={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Step 4 — dedup against DB.
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[yt-comments] check_urls err={e}', flush=True)
+        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[yt-comments] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'youtube.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    # Step 5 — Haiku pipeline + save.
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[yt-comments] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[yt-comments] haiku err={e}', flush=True)
+        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[yt-comments] validator err={e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[yt-comments] save err={e}', flush=True)
+        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'youtube_comments',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
+# YOUTUBE DEEP (TRANSCRIPT) — catch verbal-only Bilibili mentions
+# ─────────────────────────────────────────────
+# Topical videos whose title/description don't say "bilibili" can still
+# discuss it verbally (China tech roundups, VTuber news, esports recaps).
+# We pull auto-generated captions via yt-dlp, grep for Bilibili mentions,
+# and feed a ±300-char snippet around each mention into the pipeline.
+#
+# Sequential only (memory rule 6: yt-dlp parallel forbidden). 120s gunicorn
+# limit → cap at 8 videos/run, 50s fetch budget.
+
+_YOUTUBE_DEEP_QUERIES = [
+    # Topical queries likely to co-mention Bilibili without saying it
+    # in the title — ecosystem / tech / creator news coverage.
+    'china tech news 2026',
+    'china streaming platform',
+    'asia content creator 2026',
+    'hoyoverse news 2026',
+    'vtuber news 2026',
+    'chinese gaming industry',
+    'esports china 2026',
+]
+_YOUTUBE_DEEP_VIDEOS_PER_RUN = int(os.environ.get('YOUTUBE_DEEP_VIDEOS_PER_RUN', '8'))
+_YOUTUBE_DEEP_MIN_VIEWS = int(os.environ.get('YOUTUBE_DEEP_MIN_VIEWS', '3000'))
+_YOUTUBE_TRANSCRIPT_LANGS = ('en', 'en-US', 'en-GB', 'ja', 'ko', 'es', 'pt')
+
+
+def _youtube_fetch_transcript(video_url):
+    """Extract auto-captions for a video via yt-dlp and return raw transcript
+    text. Returns '' if no captions available or fetch fails."""
+    try:
+        import yt_dlp
+    except ImportError:
+        print('[yt-deep] yt_dlp not installed', flush=True)
+        return ''
+
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'skip_download': True,
+        'socket_timeout': 10,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=False)
+    except Exception as e:
+        print(f'[yt-deep] extract_info err={type(e).__name__}', flush=True)
+        return ''
+
+    tracks = info.get('automatic_captions') or info.get('subtitles') or {}
+    if not tracks:
+        return ''
+
+    # Prefer English, fall back to any supported language we can read.
+    chosen_url = None
+    for lang in _YOUTUBE_TRANSCRIPT_LANGS:
+        if lang in tracks:
+            for entry in tracks[lang]:
+                if entry.get('ext') == 'json3' and entry.get('url'):
+                    chosen_url = entry['url']
+                    break
+        if chosen_url:
+            break
+
+    if not chosen_url:
+        return ''
+
+    try:
+        resp = requests.get(chosen_url, timeout=8)
+        if resp.status_code != 200:
+            return ''
+        data = resp.json()
+    except Exception:
+        return ''
+
+    chunks = []
+    for event in data.get('events', []) or []:
+        for seg in event.get('segs', []) or []:
+            utf8 = seg.get('utf8')
+            if utf8:
+                chunks.append(utf8)
+    return ' '.join(chunks).replace('\n', ' ').strip()
+
+
+def _extract_bilibili_snippet(transcript, window=300):
+    """Return a ±window-char snippet around the first Bilibili mention in the
+    transcript, or '' if no mention. Case-insensitive match on common aliases."""
+    if not transcript:
+        return ''
+    needles = ('bilibili', 'b站', '哔哩', '嗶哩', 'ビリビリ', '비리비리')
+    low = transcript.lower()
+    for needle in needles:
+        idx = low.find(needle.lower())
+        if idx != -1:
+            start = max(0, idx - window)
+            end = min(len(transcript), idx + len(needle) + window)
+            return transcript[start:end].strip()
+    return ''
+
+
+def discover_youtube_deep():
+    """Transcript-aware YouTube discovery. Picks topical videos and extracts
+    a Bilibili-mention snippet from auto-generated captions. Yields mentions
+    for videos where Bilibili appears only in the spoken audio."""
+    import time
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return {'platform': 'youtube_deep', 'error': 'YOUTUBE_API_KEY not set'}
+
+    fetch_start = time.time()
+    published_after = '2026-01-01T00:00:00Z'
+
+    # Step 1 — topical search, relevance order.
+    raw_entries = []
+    for q in _YOUTUBE_DEEP_QUERIES:
+        if time.time() - fetch_start > 10:
+            break
+        raw_entries.extend(_youtube_search_popular(q, published_after))
+
+    # Dedup by video id.
+    seen_vids = {}
+    for e in raw_entries:
+        vid = (e.get('id') or {}).get('videoId')
+        if vid and vid not in seen_vids:
+            seen_vids[vid] = e
+    if not seen_vids:
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Step 2 — filter out videos whose title/description already mention
+    # Bilibili (those go through the regular discover_youtube path).
+    non_obvious = {}
+    for vid, entry in seen_vids.items():
+        snip = entry.get('snippet') or {}
+        blob = f"{snip.get('title', '')} {snip.get('description', '')}".lower()
+        if 'bilibili' in blob or 'b站' in blob or '哔哩' in blob or '嗶哩' in blob:
+            continue
+        non_obvious[vid] = entry
+
+    if not non_obvious:
+        print('[yt-deep] every candidate already mentions bilibili in title/desc', flush=True)
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Step 3 — hydrate viewCount, pick top-viewed.
+    video_meta = _youtube_hydrate_videos(list(non_obvious.keys()))
+    ranked = sorted(
+        video_meta.items(),
+        key=lambda kv: kv[1].get('views', 0),
+        reverse=True,
+    )
+    ranked = [
+        (vid, meta) for vid, meta in ranked
+        if meta.get('views', 0) >= _YOUTUBE_DEEP_MIN_VIEWS
+    ][:_YOUTUBE_DEEP_VIDEOS_PER_RUN]
+
+    if not ranked:
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    # Dedup against DB early — avoids re-fetching transcripts for already-known urls.
+    candidate_urls = [f'https://www.youtube.com/watch?v={vid}' for vid, _ in ranked]
+    try:
+        new_urls_set = {d['url'] for d in check_urls(candidate_urls)}
+    except Exception as e:
+        print(f'[yt-deep] dedup err={e}', flush=True)
+        return {'platform': 'youtube_deep', 'error': f'dedup: {e}'}
+
+    ranked = [(vid, meta) for vid, meta in ranked
+              if f'https://www.youtube.com/watch?v={vid}' in new_urls_set]
+
+    if not ranked:
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    print(f'[yt-deep] processing {len(ranked)} videos sequentially', flush=True)
+
+    # Step 4 — sequential transcript fetch + snippet extract.
+    all_items = []
+    for vid, meta in ranked:
+        if time.time() - fetch_start > 60:
+            print('[yt-deep] fetch budget hit', flush=True)
+            break
+        video_url = f'https://www.youtube.com/watch?v={vid}'
+        transcript = _youtube_fetch_transcript(video_url)
+        if not transcript:
+            continue
+        snippet = _extract_bilibili_snippet(transcript)
+        if not snippet:
+            continue
+        # Parse publish date for content_date.
+        pub = meta.get('published', '')
+        try:
+            dt = datetime.strptime(pub[:10], '%Y-%m-%d')
+        except Exception:
+            continue
+        if dt.year < 2026:
+            continue
+
+        title = meta.get('title', '')
+        channel_title = meta.get('channel_title', '')
+        views = meta.get('views', 0)
+
+        text = (
+            f'[YouTube video transcript — "{title}" by {channel_title} · {views:,} views]\n\n'
+            f'Transcript snippet (±300 chars around Bilibili mention):\n{snippet}'
+        )
+        all_items.append({
+            'url': video_url,
+            'url_hash': hash_url(video_url),
+            'platform': 'youtube.com',
+            'text': text[:5000],
+            'content_date': dt.strftime('%Y-%m-%d'),
+            'dates_found': [dt.strftime('%Y-%m-%d')],
+        })
+
+    if not all_items:
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    print(f'[yt-deep] candidates with transcript bilibili={len(all_items)}', flush=True)
+
+    items_new = all_items[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'youtube.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+    except Exception as e:
+        print(f'[yt-deep] haiku err={e}', flush=True)
+        return {'platform': 'youtube_deep', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[yt-deep] validator err={e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[yt-deep] save err={e}', flush=True)
+        return {'platform': 'youtube_deep', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'youtube_deep',
         'fetched': len(all_items),
         'new': len(items_new),
         'saved': result.get('saved', 0),
