@@ -356,21 +356,47 @@ def social_discover_lemmy():
     return jsonify(discover_lemmy())
 
 
+@app.route('/social/discover-mastodon', methods=['POST'])
+def social_discover_mastodon():
+    """Fetch Bilibili-related Mastodon posts from public tag timelines."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_mastodon
+    return jsonify(discover_mastodon())
+
+
+@app.route('/social/discover-lihkg', methods=['POST'])
+def social_discover_lihkg():
+    """Fetch Bilibili-related LIHKG threads (HK Traditional Chinese forum)."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_lihkg
+    return jsonify(discover_lihkg())
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
     try:
-        from modules.social_listening import discover_reddit, discover_bluesky
-        try: discover_bluesky()
-        except Exception: pass
-        try: discover_reddit()
-        except Exception: pass
+        from modules.social_listening import (
+            discover_reddit, discover_bluesky,
+            discover_lemmy, discover_mastodon, discover_lihkg,
+        )
+        # Order: highest-ROI first; later sources are drained even if
+        # earlier ones yielded plenty, because each has an independent
+        # candidate pool and running them all keeps diversity balanced.
+        for fn in (discover_bluesky, discover_reddit,
+                   discover_lihkg, discover_lemmy, discover_mastodon):
+            try:
+                fn()
+            except Exception as e:
+                print(f'[discover-all] {fn.__name__} error: {e}', flush=True)
     finally:
         _discover_all_state['active'] = False
 
 @app.route('/social/discover-all', methods=['POST', 'GET'])
 def social_discover_all():
-    """Cron endpoint: fire-and-forget Bluesky + Reddit in background thread. Always 2xx."""
+    """Cron endpoint: fire-and-forget discover chain in background thread. Always 2xx."""
     auth = _require_cron()
     if auth: return auth
     import threading
@@ -378,7 +404,10 @@ def social_discover_all():
         return jsonify({'status': 'already_running'}), 202
     _discover_all_state['active'] = True
     threading.Thread(target=_discover_all_background, daemon=True).start()
-    return jsonify({'status': 'started', 'sources': ['bluesky', 'reddit']}), 202
+    return jsonify({
+        'status': 'started',
+        'sources': ['bluesky', 'reddit', 'lihkg', 'lemmy', 'mastodon'],
+    }), 202
 
 
 @app.route('/social/debug-reddit', methods=['GET'])

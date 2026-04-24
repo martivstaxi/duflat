@@ -2432,6 +2432,338 @@ def discover_bluesky():
 
 
 # ─────────────────────────────────────────────
+# MASTODON — federated microblog, public hashtag timelines, no auth
+# ─────────────────────────────────────────────
+# /api/v2/search needs auth on most instances; /api/v1/timelines/tag/{tag}
+# is public on all standard Mastodon deployments.
+
+_MASTODON_INSTANCES = [
+    'mastodon.social', 'mastodon.online', 'fosstodon.org',
+    'hachyderm.io', 'mstdn.social', 'mstdn.jp',
+]
+_MASTODON_TAGS = [
+    'bilibili', 'bilibilivideo', 'vtuber', 'anime',
+    'hoyoverse', 'genshinimpact',
+]
+_MASTODON_UA = 'duflat-social-listening/1.0'
+
+
+def _fetch_mastodon_tag(instance, tag):
+    """Fetch the public timeline for a tag on a Mastodon instance."""
+    import time
+    from urllib.parse import quote_plus
+    if _cooling_down(instance):
+        return []
+    url = f'https://{instance}/api/v1/timelines/tag/{quote_plus(tag)}?limit=40'
+    try:
+        resp = requests.get(url, headers={'User-Agent': _MASTODON_UA}, timeout=6)
+    except Exception as e:
+        print(f'[mastodon] {instance} tag={tag} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown(instance, 300)
+        print(f'[mastodon] {instance} tag={tag} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[mastodon] {instance} tag={tag} status={resp.status_code}', flush=True)
+        return []
+    try:
+        statuses = resp.json() or []
+    except Exception as e:
+        print(f'[mastodon] {instance} tag={tag} json_err={e}', flush=True)
+        return []
+    print(f'[mastodon] {instance} tag={tag} statuses={len(statuses)}', flush=True)
+    time.sleep(0.3)
+    return statuses
+
+
+def _mastodon_status_to_item(s):
+    """Convert a Mastodon status dict to pipeline item (2026+ only)."""
+    url = s.get('url') or s.get('uri') or ''
+    if not url:
+        return None
+    created_at = s.get('created_at') or ''
+    if not created_at:
+        return None
+    try:
+        dt = datetime.strptime(created_at[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    account = s.get('account') or {}
+    handle = account.get('acct') or account.get('username') or ''
+    content_html = s.get('content') or ''
+    try:
+        text = BeautifulSoup(content_html, 'html.parser').get_text(' ', strip=True)
+    except Exception:
+        text = re.sub(r'<[^>]+>', ' ', content_html)
+    text = text.strip()
+    if not text:
+        return None
+    return {
+        'url': url,
+        'url_hash': hash_url(url),
+        'platform': 'mastodon',
+        'text': f'[@{handle}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_mastodon():
+    """Fetch Bilibili-related Mastodon posts across instances, analyze, save."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for instance in _MASTODON_INSTANCES:
+        for tag in _MASTODON_TAGS:
+            if time.time() - fetch_start > 35:
+                break
+            statuses = _fetch_mastodon_tag(instance, tag)
+            for s in statuses:
+                item = _mastodon_status_to_item(s)
+                if not item or item['url'] in seen:
+                    continue
+                blob = item['text'].lower()
+                if ('bilibili' not in blob and 'b站' not in blob
+                        and '哔哩' not in blob and '嗶哩' not in blob):
+                    continue
+                seen.add(item['url'])
+                all_items.append(item)
+
+    print(f'[mastodon] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'mastodon', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[mastodon] check_urls error: {e}', flush=True)
+        return {'platform': 'mastodon', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[mastodon] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'mastodon', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': urlparse(it['url']).netloc or 'mastodon',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[mastodon] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[mastodon] haiku error: {e}', flush=True)
+        return {'platform': 'mastodon', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[mastodon] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[mastodon] save error: {e}', flush=True)
+        return {'platform': 'mastodon', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'mastodon',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
+# LIHKG — Hong Kong Traditional Chinese forum, JSON API, no auth
+# ─────────────────────────────────────────────
+
+_LIHKG_QUERIES = [
+    'bilibili', 'B站', '嗶哩嗶哩', '哔哩哔哩',
+    'bilibili 動畫', 'bilibili 遊戲',
+]
+_LIHKG_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+
+
+def _fetch_lihkg_threads(query):
+    """Search LIHKG threads by keyword via their public JSON API."""
+    import time
+    from urllib.parse import quote_plus
+    if _cooling_down('lihkg.com'):
+        return []
+    url = (
+        'https://lihkg.com/api_v2/thread/search'
+        f'?q={quote_plus(query)}&page=1&count=30&sort=desc_reply_time&type=thread'
+    )
+    headers = {
+        'User-Agent': _LIHKG_UA,
+        'Referer': 'https://lihkg.com/',
+        'Accept': 'application/json',
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=6)
+    except Exception as e:
+        print(f'[lihkg] q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown('lihkg.com', 600)
+        print(f'[lihkg] q={query} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[lihkg] q={query} status={resp.status_code}', flush=True)
+        return []
+    try:
+        data = resp.json() or {}
+        threads = (data.get('response') or {}).get('items') or []
+    except Exception as e:
+        print(f'[lihkg] q={query} json_err={e}', flush=True)
+        return []
+    print(f'[lihkg] q={query} threads={len(threads)}', flush=True)
+    time.sleep(0.4)
+    return threads
+
+
+def _lihkg_thread_to_item(t):
+    """Convert LIHKG thread dict to pipeline item (2026+ only)."""
+    thread_id = t.get('thread_id') or t.get('post_id')
+    title = (t.get('title') or '').strip()
+    if not thread_id or not title:
+        return None
+    # LIHKG timestamps are unix seconds. Prefer create_time, fallback to last_reply_time.
+    ts = t.get('create_time') or t.get('last_reply_time')
+    if not ts:
+        return None
+    try:
+        dt = datetime.utcfromtimestamp(int(ts))
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    user = (t.get('user') or {}).get('nickname') or ''
+    category = (t.get('category') or {}).get('name') or ''
+    post_url = f'https://lihkg.com/thread/{thread_id}/page/1'
+    text = title
+    if category:
+        text = f'[{category}] {text}'
+    return {
+        'url': post_url,
+        'url_hash': hash_url(post_url),
+        'platform': 'lihkg.com',
+        'text': f'[@{user}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_lihkg():
+    """Fetch Bilibili-related LIHKG threads, analyze, save."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for q in _LIHKG_QUERIES:
+        if time.time() - fetch_start > 30:
+            break
+        threads = _fetch_lihkg_threads(q)
+        for t in threads:
+            item = _lihkg_thread_to_item(t)
+            if not item or item['url'] in seen:
+                continue
+            blob = item['text'].lower()
+            if ('bilibili' not in blob and 'b站' not in blob
+                    and '哔哩' not in blob and '嗶哩' not in blob):
+                continue
+            seen.add(item['url'])
+            all_items.append(item)
+
+    print(f'[lihkg] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'lihkg', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[lihkg] check_urls error: {e}', flush=True)
+        return {'platform': 'lihkg', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[lihkg] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'lihkg', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'lihkg.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[lihkg] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[lihkg] haiku error: {e}', flush=True)
+        return {'platform': 'lihkg', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[lihkg] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[lihkg] save error: {e}', flush=True)
+        return {'platform': 'lihkg', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'lihkg',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
 # LEMMY — federated Reddit alternative, public search API, no auth
 # ─────────────────────────────────────────────
 
