@@ -403,6 +403,28 @@ def social_discover_youtube_deep():
     return jsonify(discover_youtube_deep())
 
 
+@app.route('/social/debug-transcript', methods=['GET'])
+def social_debug_transcript():
+    """Zero-quota diagnostic — runs _youtube_fetch_transcript on a single
+    video id and returns (text_length, error_label). Lets us verify the
+    youtube-transcript-api path works on Railway IPs without touching the
+    YouTube Data API quota. Usage: /social/debug-transcript?vid=XXXXX"""
+    auth = _require_admin()
+    if auth: return auth
+    vid = request.args.get('vid', '').strip()
+    if not vid:
+        return jsonify({'error': 'vid query param required'}), 400
+    from modules.social_listening import _youtube_fetch_transcript
+    url = f'https://www.youtube.com/watch?v={vid}'
+    text, err = _youtube_fetch_transcript(url)
+    return jsonify({
+        'vid': vid,
+        'text_length': len(text),
+        'first_200': text[:200],
+        'error': err,
+    })
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
