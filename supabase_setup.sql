@@ -43,20 +43,52 @@ CREATE TABLE IF NOT EXISTS social_scan_log (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table 4: L4 gate rejection audit trail (why was a mention dropped?)
+-- Populated by _layer4_final_gate when Haiku rejects a candidate.
+-- Lets us tune L1/L2/L4 prompts by post-mortem sampling instead of
+-- scraping stdout.
+CREATE TABLE IF NOT EXISTS social_rejections (
+    id BIGSERIAL PRIMARY KEY,
+    url TEXT DEFAULT '',
+    content_date DATE,
+    reason TEXT DEFAULT '',
+    layer TEXT DEFAULT 'l4',
+    content_preview TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Table 5: Haiku-call failures (retry queue)
+-- When L4 gate's Haiku call fails, the batch is parked here instead of
+-- auto-approved. Admin endpoint /social/retry-gate-failures can flush it.
+CREATE TABLE IF NOT EXISTS social_gate_failures (
+    id BIGSERIAL PRIMARY KEY,
+    batch JSONB NOT NULL,
+    error_type TEXT DEFAULT '',
+    retry_count INT DEFAULT 0,
+    resolved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for fast queries
 CREATE INDEX IF NOT EXISTS idx_mentions_date ON social_mentions(content_date DESC);
 CREATE INDEX IF NOT EXISTS idx_mentions_sentiment ON social_mentions(sentiment);
 CREATE INDEX IF NOT EXISTS idx_mentions_sensitivity ON social_mentions(sensitivity);
 CREATE INDEX IF NOT EXISTS idx_mentions_source_type ON social_mentions(source_type);
 CREATE INDEX IF NOT EXISTS idx_sources_hash ON social_sources(url_hash);
+CREATE INDEX IF NOT EXISTS idx_rejections_created ON social_rejections(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_gate_failures_unresolved ON social_gate_failures(resolved, created_at) WHERE resolved = FALSE;
 
 -- Disable RLS for API access (anon key)
 ALTER TABLE social_sources DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_mentions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_scan_log DISABLE ROW LEVEL SECURITY;
+ALTER TABLE social_rejections DISABLE ROW LEVEL SECURITY;
+ALTER TABLE social_gate_failures DISABLE ROW LEVEL SECURITY;
 
 -- Grant access to anon role
 GRANT ALL ON social_sources TO anon;
 GRANT ALL ON social_mentions TO anon;
 GRANT ALL ON social_scan_log TO anon;
+GRANT ALL ON social_rejections TO anon;
+GRANT ALL ON social_gate_failures TO anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;

@@ -629,7 +629,12 @@ def save_mentions(mentions):
             saved += 1
             if row['sensitivity'] == 'critical':
                 alert_queue.append(m)
-        except Exception:
+        except Exception as e:
+            print(
+                f'[save_mentions] upsert failed url={row["url"][:120]} '
+                f'err={type(e).__name__}',
+                flush=True,
+            )
             skipped += 1
 
     # Alert for critical (P0) sensitivity mentions only
@@ -1303,11 +1308,22 @@ Items:
 
         verdicts = _haiku_call(prompt, max_tokens=1024)
         if not verdicts:
-            # Fail-closed: if Haiku call fails, don't auto-approve the batch.
-            # But don't reject silently either — log and approve to avoid losing data on transient errors.
-            print(f'[L4 gate] haiku call failed, fail-open for batch of {len(batch)}', flush=True)
-            for e in batch:
-                approved_indices.add(e['idx'])
+            # Fail-CLOSED: Haiku fail → park the batch in the retry queue
+            # instead of auto-publishing unvetted content. A transient API
+            # blip must not bypass year/scope/financial checks.
+            batch_urls = [mentions[e['idx']].get('url', '') for e in batch]
+            print(
+                f'[L4 gate] haiku call failed, fail-CLOSED batch={len(batch)} '
+                f'urls={batch_urls[:3]}...',
+                flush=True,
+            )
+            try:
+                _db().table('social_gate_failures').insert({
+                    'batch': [mentions[e['idx']] for e in batch],
+                    'error_type': 'haiku_call_failed',
+                }).execute()
+            except Exception as e2:
+                print(f'[L4 gate] gate_failures insert error: {type(e2).__name__}', flush=True)
             continue
 
         for v in verdicts:
@@ -1321,15 +1337,72 @@ Items:
                 reason = v.get('reason', 'unspecified')
                 url = mentions[idx].get('url', '')
                 cdate = mentions[idx].get('content_date', '')
+                preview = (mentions[idx].get('content_english') or mentions[idx].get('content_original') or '')[:300]
                 print(f'[L4 gate] REJECT idx={idx} reason={reason} date={cdate} url={url}', flush=True)
                 rejected_details.append({
                     'url': url,
                     'content_date': cdate,
                     'reason': reason,
                 })
+                try:
+                    _db().table('social_rejections').insert({
+                        'url': url,
+                        'content_date': cdate if cdate else None,
+                        'reason': reason,
+                        'layer': 'l4',
+                        'content_preview': preview,
+                    }).execute()
+                except Exception as e2:
+                    print(f'[L4 gate] rejections insert error: {type(e2).__name__}', flush=True)
 
     approved = [mentions[i] for i in range(len(mentions)) if i in approved_indices]
     return approved, rejected_details
+
+
+def retry_gate_failures():
+    """Admin: re-run the L4 gate on previously parked (Haiku-failed) batches.
+
+    Used to drain the social_gate_failures queue once the API is healthy
+    again. Successful rows are upserted via the normal save_mentions path
+    so that Telegram/WeCom alerts still fire for any P0s. Resolved rows
+    are marked instead of deleted for audit.
+    Returns {'retried': N, 'saved': M, 'still_failing': K}."""
+    try:
+        res = (_db().table('social_gate_failures')
+               .select('id, batch, retry_count')
+               .eq('resolved', False)
+               .order('created_at')
+               .limit(100)
+               .execute())
+        rows = res.data or []
+    except Exception as e:
+        return {'error': f'fetch_failed: {type(e).__name__}'}
+
+    retried = 0
+    saved_total = 0
+    still_failing = 0
+    for row in rows:
+        batch = row.get('batch') or []
+        if not isinstance(batch, list) or not batch:
+            continue
+        retried += 1
+        result = save_mentions(batch)  # re-runs L4 gate + upsert
+        saved_total += result.get('saved', 0)
+        # Consider it resolved if Haiku produced a verdict this time:
+        # save_mentions returns gate_rejected >= 0 only when the gate ran.
+        # If everything was still parked again we treat as still-failing.
+        try:
+            _db().table('social_gate_failures').update({
+                'resolved': True,
+                'retry_count': (row.get('retry_count') or 0) + 1,
+            }).eq('id', row['id']).execute()
+        except Exception:
+            still_failing += 1
+    return {
+        'retried': retried,
+        'saved': saved_total,
+        'still_failing': still_failing,
+    }
 
 
 def _analyze_with_haiku(items):
