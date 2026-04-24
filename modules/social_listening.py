@@ -2431,6 +2431,187 @@ def discover_bluesky():
     }
 
 
+# ─────────────────────────────────────────────
+# LEMMY — federated Reddit alternative, public search API, no auth
+# ─────────────────────────────────────────────
+
+# lemmy.ml deliberately excluded: Mainland-aligned content clusters there
+# (sino, genzedong etc.) and the project scope drops Mainland anyway.
+_LEMMY_INSTANCES = [
+    'lemmy.world', 'beehaw.org', 'lemm.ee',
+    'sh.itjust.works', 'programming.dev',
+]
+_LEMMY_QUERIES = [
+    'bilibili', 'bilibili gaming', 'bilibili world',
+    'bilibili vtuber', 'bilibili anime', 'BLG bilibili',
+    'genshin bilibili', 'hoyoverse bilibili',
+]
+_LEMMY_UA = 'duflat-social-listening/1.0'
+
+
+def _fetch_lemmy_posts(instance, query):
+    """Fetch posts matching query from a Lemmy instance via /api/v3/search."""
+    import time
+    from urllib.parse import quote_plus
+    host = instance
+    if _cooling_down(host):
+        return []
+    url = (
+        f'https://{instance}/api/v3/search'
+        f'?q={quote_plus(query)}&type_=Posts&sort=New&limit=40'
+    )
+    try:
+        resp = requests.get(url, headers={'User-Agent': _LEMMY_UA}, timeout=6)
+    except Exception as e:
+        print(f'[lemmy] {instance} q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown(host, 300)
+        print(f'[lemmy] {instance} q={query} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[lemmy] {instance} q={query} status={resp.status_code}', flush=True)
+        return []
+    try:
+        posts = resp.json().get('posts', []) or []
+    except Exception as e:
+        print(f'[lemmy] {instance} q={query} json_err={e}', flush=True)
+        return []
+    print(f'[lemmy] {instance} q={query} posts={len(posts)}', flush=True)
+    time.sleep(0.3)
+    return posts
+
+
+def _lemmy_post_to_item(entry):
+    """Convert a Lemmy search 'post' entry into a pipeline item.
+
+    entry shape: {"post": {...}, "community": {...}, "creator": {...}}"""
+    post = entry.get('post') or {}
+    creator = entry.get('creator') or {}
+    community = entry.get('community') or {}
+    ap_id = post.get('ap_id') or ''
+    if not ap_id:
+        return None
+    title = (post.get('name') or '').strip()
+    body = (post.get('body') or '').strip()
+    linked = (post.get('url') or '').strip()
+    published = post.get('published') or ''
+    if not published:
+        return None
+    try:
+        dt = datetime.strptime(published[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    handle = creator.get('name') or ''
+    community_name = community.get('name') or ''
+    parts = []
+    if title:
+        parts.append(title)
+    if body:
+        parts.append(body)
+    if linked and linked != ap_id:
+        parts.append(f'link: {linked}')
+    text = '\n'.join(parts).strip()
+    if not text:
+        return None
+    return {
+        'url': ap_id,
+        'url_hash': hash_url(ap_id),
+        'platform': 'lemmy',
+        'text': f'[@{handle} in !{community_name}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_lemmy():
+    """Fetch Bilibili-related Lemmy posts across multiple instances, analyze, save."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for instance in _LEMMY_INSTANCES:
+        for q in _LEMMY_QUERIES:
+            if time.time() - fetch_start > 35:
+                break
+            posts = _fetch_lemmy_posts(instance, q)
+            for p in posts:
+                item = _lemmy_post_to_item(p)
+                if not item or item['url'] in seen:
+                    continue
+                blob = item['text'].lower()
+                if ('bilibili' not in blob and 'b站' not in blob
+                        and '哔哩' not in blob and '嗶哩' not in blob):
+                    continue
+                seen.add(item['url'])
+                all_items.append(item)
+
+    print(f'[lemmy] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'lemmy', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[lemmy] check_urls error: {e}', flush=True)
+        return {'platform': 'lemmy', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[lemmy] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'lemmy', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': urlparse(it['url']).netloc or 'lemmy',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[lemmy] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[lemmy] haiku error: {e}', flush=True)
+        return {'platform': 'lemmy', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[lemmy] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[lemmy] save error: {e}', flush=True)
+        return {'platform': 'lemmy', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'lemmy',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0

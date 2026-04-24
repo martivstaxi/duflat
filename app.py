@@ -347,6 +347,15 @@ def social_discover_bluesky():
     return jsonify(discover_bluesky())
 
 
+@app.route('/social/discover-lemmy', methods=['POST'])
+def social_discover_lemmy():
+    """Fetch Bilibili-related Lemmy posts across federated instances."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_lemmy
+    return jsonify(discover_lemmy())
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
