@@ -3172,6 +3172,7 @@ def discover_youtube_deep():
 
     fetch_start = time.time()
     published_after = '2026-01-01T00:00:00Z'
+    debug = {}  # per-step counts, returned with any zero-result exit
 
     # Step 1 — topical search, relevance order.
     raw_entries = []
@@ -3180,14 +3181,17 @@ def discover_youtube_deep():
             break
         raw_entries.extend(_youtube_search_popular(q, published_after))
 
+    debug['raw_search_results'] = len(raw_entries)
+
     # Dedup by video id.
     seen_vids = {}
     for e in raw_entries:
         vid = (e.get('id') or {}).get('videoId')
         if vid and vid not in seen_vids:
             seen_vids[vid] = e
+    debug['unique_video_ids'] = len(seen_vids)
     if not seen_vids:
-        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
 
     # Step 2 — filter out videos whose title/description already mention
     # Bilibili (those go through the regular discover_youtube path).
@@ -3198,25 +3202,31 @@ def discover_youtube_deep():
         if 'bilibili' in blob or 'b站' in blob or '哔哩' in blob or '嗶哩' in blob:
             continue
         non_obvious[vid] = entry
+    debug['non_obvious_candidates'] = len(non_obvious)
+    print(f'[yt-deep] raw={len(raw_entries)} unique={len(seen_vids)} non_obvious={len(non_obvious)}', flush=True)
 
     if not non_obvious:
-        print('[yt-deep] every candidate already mentions bilibili in title/desc', flush=True)
-        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
 
     # Step 3 — hydrate viewCount, pick top-viewed.
     video_meta = _youtube_hydrate_videos(list(non_obvious.keys()))
-    ranked = sorted(
+    ranked_all = sorted(
         video_meta.items(),
         key=lambda kv: kv[1].get('views', 0),
         reverse=True,
     )
     ranked = [
-        (vid, meta) for vid, meta in ranked
+        (vid, meta) for vid, meta in ranked_all
         if meta.get('views', 0) >= _YOUTUBE_DEEP_MIN_VIEWS
     ][:_YOUTUBE_DEEP_VIDEOS_PER_RUN]
+    debug['above_view_floor'] = len(ranked)
+    print(f'[yt-deep] hydrated={len(video_meta)} above_view_floor={len(ranked)}', flush=True)
 
     if not ranked:
-        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        # Surface top views available so we can tune the floor.
+        top = ranked_all[:5]
+        debug['top_view_counts'] = [m.get('views', 0) for _, m in top]
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
 
     # Dedup against DB early — avoids re-fetching transcripts for already-known urls.
     candidate_urls = [f'https://www.youtube.com/watch?v={vid}' for vid, _ in ranked]
@@ -3224,28 +3234,38 @@ def discover_youtube_deep():
         new_urls_set = {d['url'] for d in check_urls(candidate_urls)}
     except Exception as e:
         print(f'[yt-deep] dedup err={e}', flush=True)
-        return {'platform': 'youtube_deep', 'error': f'dedup: {e}'}
+        return {'platform': 'youtube_deep', 'error': f'dedup: {e}', 'debug': debug}
 
     ranked = [(vid, meta) for vid, meta in ranked
               if f'https://www.youtube.com/watch?v={vid}' in new_urls_set]
+    debug['new_after_dedup'] = len(ranked)
+    print(f'[yt-deep] new_after_dedup={len(ranked)}', flush=True)
 
     if not ranked:
-        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
 
     print(f'[yt-deep] processing {len(ranked)} videos sequentially', flush=True)
 
     # Step 4 — sequential transcript fetch + snippet extract.
     all_items = []
+    t_attempted = 0
+    t_got = 0
+    t_with_bilibili = 0
     for vid, meta in ranked:
         if time.time() - fetch_start > 60:
             print('[yt-deep] fetch budget hit', flush=True)
             break
+        t_attempted += 1
         video_url = f'https://www.youtube.com/watch?v={vid}'
         transcript = _youtube_fetch_transcript(video_url)
-        if not transcript:
+        if transcript:
+            t_got += 1
+        else:
             continue
         snippet = _extract_bilibili_snippet(transcript)
-        if not snippet:
+        if snippet:
+            t_with_bilibili += 1
+        else:
             continue
         # Parse publish date for content_date.
         pub = meta.get('published', '')
@@ -3273,8 +3293,13 @@ def discover_youtube_deep():
             'dates_found': [dt.strftime('%Y-%m-%d')],
         })
 
+    debug['transcripts_attempted'] = t_attempted
+    debug['transcripts_got'] = t_got
+    debug['transcripts_with_bilibili'] = t_with_bilibili
+    print(f'[yt-deep] tx_attempted={t_attempted} tx_got={t_got} tx_with_bilibili={t_with_bilibili}', flush=True)
+
     if not all_items:
-        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'youtube_deep', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0, 'debug': debug}
 
     print(f'[yt-deep] candidates with transcript bilibili={len(all_items)}', flush=True)
 
