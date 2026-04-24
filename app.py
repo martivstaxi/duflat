@@ -374,6 +374,16 @@ def social_discover_lihkg():
     return jsonify(discover_lihkg())
 
 
+@app.route('/social/discover-youtube', methods=['POST'])
+def social_discover_youtube():
+    """Fetch Bilibili-related YouTube videos from real creators
+    (skips Bilibili-owned channels + sub-threshold creators)."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_youtube
+    return jsonify(discover_youtube())
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
@@ -381,11 +391,12 @@ def _discover_all_background():
         from modules.social_listening import (
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
+            discover_youtube,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
-        for fn in (discover_bluesky, discover_reddit,
+        for fn in (discover_bluesky, discover_reddit, discover_youtube,
                    discover_lihkg, discover_lemmy, discover_mastodon):
             try:
                 fn()
@@ -406,7 +417,7 @@ def social_discover_all():
     threading.Thread(target=_discover_all_background, daemon=True).start()
     return jsonify({
         'status': 'started',
-        'sources': ['bluesky', 'reddit', 'lihkg', 'lemmy', 'mastodon'],
+        'sources': ['bluesky', 'reddit', 'youtube', 'lihkg', 'lemmy', 'mastodon'],
     }), 202
 
 

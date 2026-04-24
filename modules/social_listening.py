@@ -2432,6 +2432,276 @@ def discover_bluesky():
 
 
 # ─────────────────────────────────────────────
+# YOUTUBE — creator commentary via Data API v3 Search
+# ─────────────────────────────────────────────
+# Surfaces videos where real YouTubers talk about Bilibili. Skips
+# Bilibili's own official channels (handle blacklist) and anything
+# below a subscriber floor (default 5k). Title + description +
+# channel_title is fed to Haiku — transcript ingestion is a planned
+# follow-up (yt-dlp cost doesn't fit the 120s gunicorn budget).
+
+_YOUTUBE_SEARCH_QUERIES = [
+    'bilibili', 'bilibili app', 'bilibili china',
+    'bilibili review', 'bilibili explained',
+    'bilibili gaming', 'bilibili anime', 'bilibili vtuber',
+    'bilibili world', 'bilibili creator',
+]
+
+# Known Bilibili-owned channels (handles, lowercase, no @). Anything
+# matching these, or with channel title exactly "Bilibili", is skipped.
+_YOUTUBE_BILIBILI_HANDLE_BLACKLIST = {
+    'bilibili', 'bilibili_global', 'bilibili_anime', 'bilibili_en',
+    'bilibiliesports', 'bilibiligame', 'bilibili_gaming',
+    'bilibiliworld', 'bilibilichn', 'bilibilimusic', 'bilibili_movie',
+    'bilibiliindonesia', 'bilibilithailand', 'bilibilimalaysia',
+}
+
+_YOUTUBE_MIN_SUBSCRIBERS = int(os.environ.get('YOUTUBE_MIN_SUBSCRIBERS', '5000'))
+
+
+def _youtube_search(query, published_after_iso):
+    """Search YouTube for recent videos matching query. Returns list of snippets."""
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        print('[youtube] YOUTUBE_API_KEY not set', flush=True)
+        return []
+    if _cooling_down('youtube.com'):
+        return []
+    from urllib.parse import quote_plus
+    url = (
+        'https://www.googleapis.com/youtube/v3/search'
+        f'?part=snippet&type=video&q={quote_plus(query)}'
+        f'&publishedAfter={quote_plus(published_after_iso)}'
+        f'&order=date&maxResults=50&key={api_key}'
+    )
+    try:
+        resp = requests.get(url, timeout=8)
+    except Exception as e:
+        print(f'[youtube] q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code == 403:
+        # Quota exceeded or key revoked — back off the rest of the run.
+        _enter_cooldown('youtube.com', 3600)
+        print(f'[youtube] q={query} QUOTA/AUTH status=403 body={resp.text[:200]}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[youtube] q={query} status={resp.status_code} body={resp.text[:200]}', flush=True)
+        return []
+    try:
+        items = resp.json().get('items', []) or []
+    except Exception as e:
+        print(f'[youtube] q={query} json_err={e}', flush=True)
+        return []
+    print(f'[youtube] q={query} videos={len(items)}', flush=True)
+    return items
+
+
+def _youtube_hydrate_channels(channel_ids):
+    """Fetch subscriberCount for each channel id. Returns dict id→subs."""
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key or not channel_ids:
+        return {}
+    out = {}
+    # API accepts up to 50 ids per call.
+    ids = list(set(channel_ids))
+    for i in range(0, len(ids), 50):
+        batch = ids[i:i + 50]
+        url = (
+            'https://www.googleapis.com/youtube/v3/channels'
+            f'?part=statistics,snippet&id={",".join(batch)}&key={api_key}'
+        )
+        try:
+            resp = requests.get(url, timeout=8)
+            if resp.status_code != 200:
+                continue
+            for ch in resp.json().get('items', []) or []:
+                cid = ch.get('id')
+                if not cid:
+                    continue
+                stats = ch.get('statistics') or {}
+                snip = ch.get('snippet') or {}
+                try:
+                    subs = int(stats.get('subscriberCount', 0) or 0)
+                except Exception:
+                    subs = 0
+                out[cid] = {
+                    'subs': subs,
+                    'handle': (snip.get('customUrl') or '').lower().lstrip('@'),
+                    'title': snip.get('title') or '',
+                }
+        except Exception as e:
+            print(f'[youtube] channels hydrate error: {e}', flush=True)
+            continue
+    return out
+
+
+def _is_bilibili_owned_channel(channel_title, handle):
+    """True if this channel is operated by Bilibili itself."""
+    t = (channel_title or '').strip().lower()
+    h = (handle or '').strip().lower().lstrip('@')
+    if h in _YOUTUBE_BILIBILI_HANDLE_BLACKLIST:
+        return True
+    # Channel title exactly 'bilibili' or starts with 'bilibili ' (e.g. "Bilibili Global")
+    if t == 'bilibili':
+        return True
+    if t.startswith('bilibili ') or t.startswith('bilibili_'):
+        return True
+    return False
+
+
+def _youtube_video_to_item(snippet_entry, channel_meta):
+    """Convert a YouTube search result + channel meta to a pipeline item."""
+    vid = (snippet_entry.get('id') or {}).get('videoId')
+    snip = snippet_entry.get('snippet') or {}
+    if not vid or not snip:
+        return None
+    published = snip.get('publishedAt') or ''
+    if not published:
+        return None
+    try:
+        dt = datetime.strptime(published[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+
+    channel_id = snip.get('channelId') or ''
+    channel_title = snip.get('channelTitle') or ''
+    meta = channel_meta.get(channel_id) or {}
+    handle = meta.get('handle', '')
+    subs = int(meta.get('subs') or 0)
+
+    if _is_bilibili_owned_channel(channel_title, handle):
+        return None
+    if subs < _YOUTUBE_MIN_SUBSCRIBERS:
+        return None
+
+    title = (snip.get('title') or '').strip()
+    description = (snip.get('description') or '').strip()
+    if not title:
+        return None
+
+    video_url = f'https://www.youtube.com/watch?v={vid}'
+    text = (
+        f'[{channel_title} · {subs:,} subs] {title}\n\n{description}'
+    )
+    return {
+        'url': video_url,
+        'url_hash': hash_url(video_url),
+        'platform': 'youtube.com',
+        'text': text[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_youtube():
+    """Fetch Bilibili-related YouTube videos from real creators (not Bilibili itself)."""
+    import time
+    api_key = os.environ.get('YOUTUBE_API_KEY', '')
+    if not api_key:
+        return {'platform': 'youtube', 'error': 'YOUTUBE_API_KEY not set'}
+
+    fetch_start = time.time()
+    # 90-day window — the date filter on the API side reduces pagination
+    # needs, L4 gate re-verifies 2026 in any case.
+    published_after = (datetime.utcnow() - timedelta(days=90)).isoformat() + 'Z'
+
+    raw_entries = []
+    for q in _YOUTUBE_SEARCH_QUERIES:
+        if time.time() - fetch_start > 25:
+            break
+        entries = _youtube_search(q, published_after)
+        raw_entries.extend(entries)
+
+    # Hydrate channel subscriber counts in one or two batched calls.
+    channel_ids = [
+        (e.get('snippet') or {}).get('channelId')
+        for e in raw_entries
+        if (e.get('snippet') or {}).get('channelId')
+    ]
+    channel_meta = _youtube_hydrate_channels(channel_ids)
+
+    all_items = []
+    seen = set()
+    for entry in raw_entries:
+        item = _youtube_video_to_item(entry, channel_meta)
+        if not item or item['url'] in seen:
+            continue
+        blob = item['text'].lower()
+        # 'bilibili' almost always appears in title or description for
+        # search results, but keep the gate for defensive parity with
+        # other platforms.
+        if ('bilibili' not in blob and 'b站' not in blob
+                and '哔哩' not in blob and '嗶哩' not in blob):
+            continue
+        seen.add(item['url'])
+        all_items.append(item)
+
+    print(f'[youtube] total candidates={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'youtube', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[youtube] check_urls error: {e}', flush=True)
+        return {'platform': 'youtube', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[youtube] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'youtube', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'youtube.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[youtube] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[youtube] haiku error: {e}', flush=True)
+        return {'platform': 'youtube', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[youtube] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[youtube] save error: {e}', flush=True)
+        return {'platform': 'youtube', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'youtube',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
 # MASTODON — federated microblog, public hashtag timelines, no auth
 # ─────────────────────────────────────────────
 # /api/v2/search needs auth on most instances; /api/v1/timelines/tag/{tag}
