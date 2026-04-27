@@ -47,6 +47,23 @@ export const I18N = {
         anomalyLabel: 'Heads up',
         noIssues: 'No 1–2★ reviews in this window.',
         insightsGenerated: (rel) => `Updated ${rel}`,
+        // CSV export modal
+        exportTooltip: 'Download CSV',
+        exportTitle: 'Download as CSV',
+        exportPeriod7d: 'Last 7 days',
+        exportPeriod30d: 'Last 30 days',
+        exportPeriodAll: 'All',
+        exportSummary: (n) => n === 1 ? '1 review ready' : `${n.toLocaleString('en-US')} reviews ready`,
+        exportDownload: 'Download',
+        csvDate: 'Date',
+        csvPlatform: 'Platform',
+        csvCountry: 'Country',
+        csvRating: 'Rating',
+        csvVersion: 'Version',
+        csvAuthor: 'Author',
+        csvLanguage: 'Language',
+        csvTitle: 'Title',
+        csvContent: 'Content',
         months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
         relTime: (d) => {
@@ -132,6 +149,23 @@ export const I18N = {
         anomalyLabel: '留意',
         noIssues: '此时段没有 1–2 星评论。',
         insightsGenerated: (rel) => `更新于 ${rel}`,
+        // CSV 导出弹窗
+        exportTooltip: '下载 CSV',
+        exportTitle: '导出为 CSV',
+        exportPeriod7d: '最近 7 天',
+        exportPeriod30d: '最近 30 天',
+        exportPeriodAll: '全部',
+        exportSummary: (n) => `${n.toLocaleString('zh-CN')} 条评论待导出`,
+        exportDownload: '下载',
+        csvDate: '日期',
+        csvPlatform: '平台',
+        csvCountry: '国家',
+        csvRating: '评分',
+        csvVersion: '版本',
+        csvAuthor: '作者',
+        csvLanguage: '语言',
+        csvTitle: '标题',
+        csvContent: '内容',
         months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
         dayShort: ['日','一','二','三','四','五','六'],
         relTime: (d) => {
@@ -246,6 +280,12 @@ export function applyStaticLabels() {
         const tip = T('insightsTooltip');
         fab.setAttribute('aria-label', tip);
         fab.setAttribute('title', tip);
+    }
+    const expFab = document.getElementById('exportFab');
+    if (expFab) {
+        const tip = T('exportTooltip');
+        expFab.setAttribute('aria-label', tip);
+        expFab.setAttribute('title', tip);
     }
     // subLine depends on live state — handled by applyStaticLabelsWithApp()
 }

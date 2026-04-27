@@ -1,11 +1,11 @@
-import { DATES_PER_PAGE, DEFAULT_RECENT_DAYS } from '../constants.js?v=32';
-import { escapeHtml } from '../utils.js?v=32';
-import { T } from '../i18n.js?v=32';
+import { DATES_PER_PAGE, DEFAULT_RECENT_DAYS } from '../constants.js?v=33';
+import { escapeHtml } from '../utils.js?v=33';
+import { T } from '../i18n.js?v=33';
 import {
     allDates, archivePage, currentDateFilter,
     setArchivePage, setCurrentDateFilter, setFilterMonth, setShowMonths,
-} from '../state.js?v=32';
-import { els } from '../dom.js?v=32';
+} from '../state.js?v=33';
+import { els } from '../dom.js?v=33';
 
 export function renderArchive() {
     if (!allDates.length) {

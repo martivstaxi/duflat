@@ -5,9 +5,9 @@
 // Lazy DOM: the overlay is built on first open, reused thereafter.
 // Language follows the UI toggle — tabs re-fetch when switched.
 
-import { API } from './constants.js?v=32';
-import { T, TC } from './i18n.js?v=32';
-import { escapeHtml, relTime } from './utils.js?v=32';
+import { API } from './constants.js?v=33';
+import { T, TC } from './i18n.js?v=33';
+import { escapeHtml, relTime } from './utils.js?v=33';
 
 let currentPeriod = '7d';
 let modalEl = null;

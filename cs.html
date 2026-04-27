@@ -7,10 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/cs_style.css?v=22">
+    <link rel="stylesheet" href="/static/cs_style.css?v=23">
 </head>
 <body>
     <div class="lang-toggle" id="langToggle"></div>
+
+    <button class="export-fab" id="exportFab" onclick="openExport()" aria-label="Download CSV" title="Download CSV">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v11"/>
+            <path d="M7 11l5 5 5-5"/>
+            <path d="M5 20h14"/>
+        </svg>
+    </button>
 
     <button class="insights-fab" id="insightsFab" onclick="openInsights()" aria-label="Health Check" title="Health Check">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
@@ -40,6 +48,6 @@
         <div class="footer-info" id="footerInfo"></div>
     </div>
 
-    <script type="module" src="/static/cs/app.js?v=32"></script>
+    <script type="module" src="/static/cs/app.js?v=33"></script>
 </body>
 </html>
