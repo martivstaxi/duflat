@@ -6,25 +6,25 @@
 //
 // No business logic lives here — each concern is in its own module.
 
-import { applyStaticLabels, setUILang, T } from './i18n.js?v=33';
+import { applyStaticLabels, setUILang, T } from './i18n.js?v=34';
 import {
     appInfo, setCountry, setFilterOpen, setPlatform, setRating,
-} from './state.js?v=33';
-import { els } from './dom.js?v=33';
-import { loadReviews } from './api.js?v=33';
+} from './state.js?v=34';
+import { els } from './dom.js?v=34';
+import { loadReviews } from './api.js?v=34';
 
-import { renderLangToggle } from './render/lang-toggle.js?v=33';
-import { renderRatingBtns } from './render/rating-btns.js?v=33';
+import { renderLangToggle } from './render/lang-toggle.js?v=34';
+import { renderRatingBtns } from './render/rating-btns.js?v=34';
 import {
     renderFilterDropdown, toggleFilterPanel, filterSelectYear, toggleMonths,
     filterSelectMonth, filterCalPrev, filterCalNext, filterPickDate,
-} from './render/filter-dropdown.js?v=33';
-import { renderActiveChips } from './render/active-chips.js?v=33';
-import { renderReviews, toggleDetails } from './render/cards.js?v=33';
-import { renderArchive, archivePrev, archiveNext, selectDate } from './render/archive.js?v=33';
-import { renderFooter } from './render/footer.js?v=33';
-import { openInsights, closeInsights, setInsightsPeriod, onLangChange as onInsightsLangChange } from './insights.js?v=33';
-import { openExport, closeExport, setExportPeriod, triggerExportDownload, onLangChange as onExportLangChange } from './export.js?v=33';
+} from './render/filter-dropdown.js?v=34';
+import { renderActiveChips } from './render/active-chips.js?v=34';
+import { renderReviews, toggleDetails } from './render/cards.js?v=34';
+import { renderArchive, archivePrev, archiveNext, selectDate } from './render/archive.js?v=34';
+import { renderFooter } from './render/footer.js?v=34';
+import { openInsights, closeInsights, setInsightsPeriod, onLangChange as onInsightsLangChange } from './insights.js?v=34';
+import { openExport, closeExport, setExportPeriod, triggerExportDownload, onLangChange as onExportLangChange } from './export.js?v=34';
 
 // ── Global orchestration ────────────────────
 // Fired by state setters, setUILang(), and applyData() via cs:render event.

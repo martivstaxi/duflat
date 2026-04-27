@@ -4,8 +4,8 @@
 // follows the UI toggle: zh → Chinese title/body + Chinese headers + Chinese
 // country names; en → English equivalents.
 
-import { T, TC, TL, uiLang } from './i18n.js?v=33';
-import { allReviews } from './state.js?v=33';
+import { T, TC, TL, uiLang } from './i18n.js?v=34';
+import { allReviews } from './state.js?v=34';
 
 let currentPeriod = '7d';
 let modalEl = null;
@@ -152,7 +152,7 @@ function csvCell(v) {
 function buildCsv(rows) {
     const headers = [
         T('csvDate'), T('csvPlatform'), T('csvCountry'), T('csvRating'),
-        T('csvVersion'), T('csvAuthor'), T('csvLanguage'),
+        T('csvVersion'), T('csvUsername'), T('csvLanguage'), T('csvOriginal'),
         T('csvTitle'), T('csvContent'),
     ];
     const lines = [headers.map(csvCell).join(',')];
@@ -165,6 +165,7 @@ function buildCsv(rows) {
             r.app_version || '',
             r.author || '',
             TL(r.language) || '',
+            r.content || '',
             pickTitle(r),
             pickContent(r),
         ];
