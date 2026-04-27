@@ -1,7 +1,7 @@
-import { escapeHtml, fmtDateLong, platformLabel, relTime } from '../utils.js?v=36';
-import { T, TL, uiLang } from '../i18n.js?v=36';
-import { getFiltered } from '../filters.js?v=36';
-import { els } from '../dom.js?v=36';
+import { escapeHtml, fmtDateLong, platformLabel, relTime } from '../utils.js?v=37';
+import { T, TL, uiLang } from '../i18n.js?v=37';
+import { getFiltered } from '../filters.js?v=37';
+import { els } from '../dom.js?v=37';
 
 export function renderReviews() {
     const filtered = getFiltered();
