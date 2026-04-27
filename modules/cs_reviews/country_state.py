@@ -55,20 +55,48 @@ def _should_skip(platform, country, state, full_scan):
 
 def _update_country_state(counts):
     """Upsert (platform, country, reviews_found) observations into state.
-    Keeps the consecutive-empty counter and promotes status accordingly."""
+    Keeps the consecutive-empty counter and promotes status accordingly.
+
+    Bulk-empty guard: if >=80% of a platform's polled countries came back
+    empty in this run (with at least 5 jobs), treat it as a transient
+    upstream outage rather than per-country inactivity — hold the empty
+    counter steady so one bad cron run can't flip the whole platform to
+    inactive together."""
     if not counts:
         return
     now_iso = datetime.now(timezone.utc).isoformat()
     prev_map = _load_country_state()
+
+    BULK_EMPTY_RATIO = 0.8
+    MIN_PLATFORM_JOBS = 5
+    plat_totals = {}
+    for plat, _cc, c in counts:
+        b = plat_totals.setdefault(plat, [0, 0])
+        b[0] += 1
+        if c == 0:
+            b[1] += 1
+    bulk_empty_platforms = {
+        plat for plat, (total, empty) in plat_totals.items()
+        if total >= MIN_PLATFORM_JOBS and empty / total >= BULK_EMPTY_RATIO
+    }
+    if bulk_empty_platforms:
+        print(f'[cs] bulk-empty guard tripped for: {sorted(bulk_empty_platforms)} '
+              f'(skipping inactive promotion this run)')
+
     rows = []
     for platform, country, count in counts:
         prev = prev_map.get((platform, country), {})
         prev_empty = prev.get('consecutive_empty_count') or 0
         prev_active_at = prev.get('last_active_at')
+        prev_status = prev.get('status') or 'unknown'
         if count > 0:
             status = 'active'
             empty = 0
             last_active = now_iso
+        elif platform in bulk_empty_platforms:
+            status = prev_status
+            empty = prev_empty
+            last_active = prev_active_at
         else:
             empty = prev_empty + 1
             status = 'inactive' if empty >= INACTIVE_THRESHOLD else 'unknown'
