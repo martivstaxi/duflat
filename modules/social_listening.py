@@ -2989,10 +2989,28 @@ def discover_youtube_deep():
             break
         t_attempted += 1
         video_url = f'https://www.youtube.com/watch?v={vid}'
+        video_url_hash = hash_url(video_url)
+        # Mark this video as checked BEFORE inspecting the transcript so it
+        # never re-enters the candidate pool — even if the transcript is
+        # unavailable or doesn't mention Bilibili. has_2026_content is set
+        # only when we actually find a Bilibili mention.
         transcript, err = _youtube_fetch_transcript(video_url)
+        has_bilibili_in_transcript = False
         if transcript:
             t_got += 1
-        else:
+            if _extract_bilibili_snippet(transcript):
+                has_bilibili_in_transcript = True
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': video_url_hash,
+                'url': video_url,
+                'domain': 'youtube.com',
+                'has_2026_content': has_bilibili_in_transcript,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+        if not transcript:
             if err and len(t_errors) < 3:
                 t_errors.append(err)
             continue
@@ -3040,18 +3058,6 @@ def discover_youtube_deep():
     print(f'[yt-deep] candidates with transcript bilibili={len(all_items)}', flush=True)
 
     items_new = all_items[:25]
-
-    for it in items_new:
-        try:
-            _db().table('social_sources').upsert({
-                'url_hash': it['url_hash'],
-                'url': it['url'],
-                'domain': 'youtube.com',
-                'has_2026_content': True,
-                'checked_at': datetime.utcnow().isoformat(),
-            }, on_conflict='url_hash').execute()
-        except Exception:
-            pass
 
     try:
         mentions = _analyze_with_haiku(items_new)
