@@ -384,38 +384,6 @@ def social_discover_youtube():
     return jsonify(discover_youtube())
 
 
-@app.route('/social/discover-youtube-deep', methods=['POST'])
-def social_discover_youtube_deep():
-    """Transcript-aware YouTube discovery — catches Bilibili mentions that
-    appear only in the spoken audio of topical videos."""
-    auth = _require_cron()
-    if auth: return auth
-    from modules.social_listening import discover_youtube_deep
-    return jsonify(discover_youtube_deep())
-
-
-@app.route('/social/debug-transcript', methods=['GET'])
-def social_debug_transcript():
-    """Zero-quota diagnostic — runs _youtube_fetch_transcript on a single
-    video id and returns (text_length, error_label). Lets us verify the
-    youtube-transcript-api path works on Railway IPs without touching the
-    YouTube Data API quota. Usage: /social/debug-transcript?vid=XXXXX"""
-    auth = _require_admin()
-    if auth: return auth
-    vid = request.args.get('vid', '').strip()
-    if not vid:
-        return jsonify({'error': 'vid query param required'}), 400
-    from modules.social_listening import _youtube_fetch_transcript
-    url = f'https://www.youtube.com/watch?v={vid}'
-    text, err = _youtube_fetch_transcript(url)
-    return jsonify({
-        'vid': vid,
-        'text_length': len(text),
-        'first_200': text[:200],
-        'error': err,
-    })
-
-
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
@@ -423,16 +391,13 @@ def _discover_all_background():
         from modules.social_listening import (
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
-            discover_youtube, discover_youtube_deep,
+            discover_youtube,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
-        # discover_youtube_deep runs last — it's the slowest (sequential
-        # transcript fetches) and lowest volume.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
-                   discover_lihkg, discover_lemmy, discover_mastodon,
-                   discover_youtube_deep):
+                   discover_lihkg, discover_lemmy, discover_mastodon):
             try:
                 fn()
             except Exception as e:
