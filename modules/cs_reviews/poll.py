@@ -92,6 +92,15 @@ def poll_all(platform=None, max_workers=10, log=True, full_scan=None):
         except Exception:
             pass
 
+    # Save-time Haiku occasionally returns only `language` and leaves the
+    # English/Chinese translations blank (very short content, proper nouns).
+    # Sweep up the gaps so the UI never shows raw-only rows after a cron run.
+    try:
+        from .haiku import backfill_translations
+        backfill_translations(limit=30)
+    except Exception:
+        pass
+
     if log:
         try:
             _db().table('cs_poll_log').insert({
