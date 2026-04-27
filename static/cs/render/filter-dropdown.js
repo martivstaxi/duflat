@@ -1,12 +1,12 @@
-import { escapeHtml } from '../utils.js?v=34';
-import { T, TC } from '../i18n.js?v=34';
+import { escapeHtml } from '../utils.js?v=35';
+import { T, TC } from '../i18n.js?v=35';
 import {
     allDates, allReviews, currentCountry, currentDateFilter, currentPlatform, currentYear,
     filterMonth, filterOpen, showMonths,
     setCurrentDateFilter, setFilterMonth, setFilterOpen, setShowMonths,
-} from '../state.js?v=34';
-import { dateOf } from '../filters.js?v=34';
-import { els } from '../dom.js?v=34';
+} from '../state.js?v=35';
+import { dateOf } from '../filters.js?v=35';
+import { els } from '../dom.js?v=35';
 
 // Central dropdown view — filters.
 // Contents: Platform section, Country section (with code + localized name),

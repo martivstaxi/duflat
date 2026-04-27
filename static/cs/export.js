@@ -4,8 +4,8 @@
 // follows the UI toggle: zh → Chinese title/body + Chinese headers + Chinese
 // country names; en → English equivalents.
 
-import { T, TC, TL, uiLang } from './i18n.js?v=34';
-import { allReviews } from './state.js?v=34';
+import { T, TC, TL, uiLang } from './i18n.js?v=35';
+import { allReviews } from './state.js?v=35';
 
 let currentPeriod = '7d';
 let modalEl = null;
@@ -142,10 +142,13 @@ function isoDate(s) {
 
 function csvCell(v) {
     if (v == null) return '';
-    let s = String(v);
+    // Collapse line breaks so each review reads as one row in Sheets/Excel.
+    // Multi-paragraph reviews otherwise render as multiline cells, which the
+    // user finds awkward to scan side-by-side with single-line ones.
+    let s = String(v).replace(/[\r\n]+/g, ' ').replace(/[ \t]{2,}/g, ' ').trim();
     // Excel/Numbers treat leading =,+,-,@ as formulas — neutralize.
     if (/^[=+\-@]/.test(s)) s = "'" + s;
-    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    if (/[",]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
     return s;
 }
 

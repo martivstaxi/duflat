@@ -1,12 +1,12 @@
-import { API, AUTO_POLL_THRESHOLD_MS, CACHE_KEY } from './constants.js?v=34';
-import { T } from './i18n.js?v=34';
-import { escapeHtml } from './utils.js?v=34';
+import { API, AUTO_POLL_THRESHOLD_MS, CACHE_KEY } from './constants.js?v=35';
+import { T } from './i18n.js?v=35';
+import { escapeHtml } from './utils.js?v=35';
 import {
     allReviews, applyData, autoPolling, currentYear, lastPollMeta,
     setAutoPolling,
-} from './state.js?v=34';
-import { els } from './dom.js?v=34';
-import { renderFooter } from './render/footer.js?v=34';
+} from './state.js?v=35';
+import { els } from './dom.js?v=35';
+import { renderFooter } from './render/footer.js?v=35';
 
 if (API) fetch(API + '/ping').catch(() => {});
 

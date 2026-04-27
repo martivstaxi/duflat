@@ -1,7 +1,7 @@
-import { escapeHtml, starStr } from '../utils.js?v=34';
-import { T } from '../i18n.js?v=34';
-import { allReviews, currentCountry, currentDateFilter, currentPlatform, currentRating } from '../state.js?v=34';
-import { els } from '../dom.js?v=34';
+import { escapeHtml, starStr } from '../utils.js?v=35';
+import { T } from '../i18n.js?v=35';
+import { allReviews, currentCountry, currentDateFilter, currentPlatform, currentRating } from '../state.js?v=35';
+import { els } from '../dom.js?v=35';
 
 export function renderRatingBtns() {
     // All rating chip counts reflect the full-year total, scoped only by

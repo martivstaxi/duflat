@@ -1,4 +1,4 @@
-import { T } from './i18n.js?v=34';
+import { T } from './i18n.js?v=35';
 
 export function escapeHtml(s) {
     return String(s ?? '')
