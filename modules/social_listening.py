@@ -2733,29 +2733,13 @@ def discover_youtube():
 
 
 # ─────────────────────────────────────────────
-# YOUTUBE COMMENTS — viewer reactions on Bilibili-related videos
+# YOUTUBE SEARCH HELPERS — shared by discover_youtube_deep
 # ─────────────────────────────────────────────
-# Harvests top-level comments from high-view Bilibili-related videos.
-# commentThreads.list = 1 unit per 100 comments → much cheaper than search.
-# Videos with subscriber floor bypassed here: a small-channel video with
-# 50K views is still a rich comment source. We pick by viewCount instead.
-
-_YOUTUBE_COMMENT_QUERIES = [
-    'bilibili',
-    'bilibili china',
-    'bilibili explained',
-    'bilibili vs tiktok',
-    'bilibili app',
-]
-
-_YOUTUBE_COMMENT_MIN_VIEWS = int(os.environ.get('YOUTUBE_COMMENT_MIN_VIEWS', '5000'))
-_YOUTUBE_COMMENT_VIDEOS_PER_RUN = int(os.environ.get('YOUTUBE_COMMENT_VIDEOS_PER_RUN', '20'))
-_YOUTUBE_COMMENT_MIN_LEN = 30  # drop "lol" / emoji noise
 
 
 def _youtube_search_popular(query, published_after_iso):
-    """Search YouTube ordered by relevance (not date) to surface popular videos
-    worth mining for comments. Returns snippet entries."""
+    """Search YouTube ordered by relevance (not date) to surface popular videos.
+    Returns snippet entries."""
     api_key = os.environ.get('YOUTUBE_API_KEY', '')
     if not api_key:
         return []
@@ -2771,20 +2755,20 @@ def _youtube_search_popular(query, published_after_iso):
     try:
         resp = requests.get(url, timeout=8)
     except Exception as e:
-        print(f'[yt-comments] search q={query} err={e}', flush=True)
+        print(f'[yt-search] search q={query} err={e}', flush=True)
         return []
     if resp.status_code == 403:
         _enter_cooldown('youtube.com', 3600)
-        print(f'[yt-comments] QUOTA/AUTH q={query} body={resp.text[:200]}', flush=True)
+        print(f'[yt-search] QUOTA/AUTH q={query} body={resp.text[:200]}', flush=True)
         return []
     if resp.status_code != 200:
-        print(f'[yt-comments] search q={query} status={resp.status_code}', flush=True)
+        print(f'[yt-search] search q={query} status={resp.status_code}', flush=True)
         return []
     try:
         items = resp.json().get('items', []) or []
     except Exception:
         return []
-    print(f'[yt-comments] q={query} videos={len(items)}', flush=True)
+    print(f'[yt-search] q={query} videos={len(items)}', flush=True)
     return items
 
 
@@ -2829,236 +2813,9 @@ def _youtube_hydrate_videos(video_ids):
                     'published': snip.get('publishedAt', ''),
                 }
         except Exception as e:
-            print(f'[yt-comments] hydrate err={e}', flush=True)
+            print(f'[yt-search] hydrate err={e}', flush=True)
             continue
     return out
-
-
-def _youtube_fetch_comment_threads(video_id, max_pages=1):
-    """Fetch top-level comments for a video. Returns list of comment snippet dicts."""
-    api_key = os.environ.get('YOUTUBE_API_KEY', '')
-    if not api_key:
-        return []
-    if _cooling_down('youtube.com'):
-        return []
-    out = []
-    page_token = None
-    for _ in range(max_pages):
-        url = (
-            'https://www.googleapis.com/youtube/v3/commentThreads'
-            f'?part=snippet&videoId={video_id}&maxResults=100'
-            f'&textFormat=plainText&order=relevance&key={api_key}'
-        )
-        if page_token:
-            url += f'&pageToken={page_token}'
-        try:
-            resp = requests.get(url, timeout=8)
-        except Exception:
-            break
-        if resp.status_code == 403:
-            # Common: comments disabled on video. Don't cooldown — it's
-            # per-video, not a quota issue. 403 quota hit is also possible
-            # but distinguishable by error body.
-            body = resp.text[:200].lower()
-            if 'quota' in body or 'daily limit' in body:
-                _enter_cooldown('youtube.com', 3600)
-            break
-        if resp.status_code != 200:
-            break
-        try:
-            data = resp.json()
-        except Exception:
-            break
-        for th in data.get('items', []) or []:
-            top = ((th.get('snippet') or {}).get('topLevelComment') or {}).get('snippet') or {}
-            if top:
-                out.append(top)
-        page_token = data.get('nextPageToken')
-        if not page_token:
-            break
-    return out
-
-
-def _youtube_comment_to_item(comment, video_id, video_meta):
-    """Convert a comment snippet + video metadata to a pipeline item."""
-    text_original = (comment.get('textOriginal') or '').strip()
-    if not text_original or len(text_original) < _YOUTUBE_COMMENT_MIN_LEN:
-        return None
-
-    published = comment.get('publishedAt') or ''
-    if not published:
-        return None
-    try:
-        dt = datetime.strptime(published[:10], '%Y-%m-%d')
-    except Exception:
-        return None
-    if dt.year < 2026:
-        return None
-
-    comment_id = comment.get('id') or ''
-    # The comment's own publicly-stable id is exposed as the top-level
-    # comment's id field; fall back to authorChannelId if unavailable.
-    author = (comment.get('authorDisplayName') or '').strip()
-    if not author:
-        return None
-
-    video_title = video_meta.get('title', '') if video_meta else ''
-    channel_title = video_meta.get('channel_title', '') if video_meta else ''
-
-    if not comment_id:
-        # YouTube embeds the id on the parent threadId; without it the
-        # anchor link won't open the comment but the video link still
-        # works. Derive a fallback so url_hash stays unique.
-        comment_id = hashlib.sha256(
-            (text_original + published).encode()
-        ).hexdigest()[:16]
-
-    url = f'https://www.youtube.com/watch?v={video_id}&lc={comment_id}'
-    text = (
-        f'[YouTube comment on "{video_title}" by {channel_title}]\n'
-        f'Author: {author}\n\n{text_original}'
-    )
-    return {
-        'url': url,
-        'url_hash': hash_url(url),
-        'platform': 'youtube.com',
-        'text': text[:5000],
-        'content_date': dt.strftime('%Y-%m-%d'),
-        'dates_found': [dt.strftime('%Y-%m-%d')],
-    }
-
-
-def discover_youtube_comments():
-    """Harvest viewer comments on high-view Bilibili-related YouTube videos.
-    Comments-per-run capped by _YOUTUBE_COMMENT_VIDEOS_PER_RUN, then 25-item
-    Haiku cap applies downstream."""
-    import time
-    api_key = os.environ.get('YOUTUBE_API_KEY', '')
-    if not api_key:
-        return {'platform': 'youtube_comments', 'error': 'YOUTUBE_API_KEY not set'}
-
-    fetch_start = time.time()
-    # 2026 window, same as video discover — API filters by upload date, not
-    # comment date, but 2026 videos yield ~100% 2026 comments anyway; the
-    # comment-level date check below + L4 gate catch stragglers.
-    published_after = '2026-01-01T00:00:00Z'
-
-    # Step 1 — gather candidate videos via relevance-ordered search.
-    raw_entries = []
-    for q in _YOUTUBE_COMMENT_QUERIES:
-        if time.time() - fetch_start > 15:
-            break
-        raw_entries.extend(_youtube_search_popular(q, published_after))
-
-    # Dedup video ids and keep first snippet for each.
-    seen_vids = {}
-    for e in raw_entries:
-        vid = (e.get('id') or {}).get('videoId')
-        if vid and vid not in seen_vids:
-            seen_vids[vid] = e
-    if not seen_vids:
-        print('[yt-comments] no candidate videos', flush=True)
-        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
-
-    # Step 2 — hydrate videos for viewCount, pick top N by views.
-    video_meta = _youtube_hydrate_videos(list(seen_vids.keys()))
-    ranked = sorted(
-        video_meta.items(),
-        key=lambda kv: kv[1].get('views', 0),
-        reverse=True,
-    )
-    ranked = [
-        (vid, meta) for vid, meta in ranked
-        if meta.get('views', 0) >= _YOUTUBE_COMMENT_MIN_VIEWS
-        and meta.get('comments', 0) > 0
-    ][:_YOUTUBE_COMMENT_VIDEOS_PER_RUN]
-
-    if not ranked:
-        print('[yt-comments] no videos met view floor', flush=True)
-        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
-
-    print(f'[yt-comments] mining {len(ranked)} videos', flush=True)
-
-    # Step 3 — fetch comment threads and build items.
-    all_items = []
-    for vid, meta in ranked:
-        if time.time() - fetch_start > 45:
-            break
-        comments = _youtube_fetch_comment_threads(vid, max_pages=1)
-        for c in comments:
-            item = _youtube_comment_to_item(c, vid, meta)
-            if not item:
-                continue
-            blob = item['text'].lower()
-            if ('bilibili' not in blob and 'b站' not in blob
-                    and '哔哩' not in blob and '嗶哩' not in blob
-                    and 'ビリビリ' not in item['text']):
-                continue
-            all_items.append(item)
-
-    print(f'[yt-comments] candidates after filter={len(all_items)}', flush=True)
-    if not all_items:
-        return {'platform': 'youtube_comments', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
-
-    # Step 4 — dedup against DB.
-    try:
-        urls = [it['url'] for it in all_items]
-        new_urls_set = {d['url'] for d in check_urls(urls)}
-        items_new = [it for it in all_items if it['url'] in new_urls_set]
-    except Exception as e:
-        print(f'[yt-comments] check_urls err={e}', flush=True)
-        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'error': f'dedup: {e}'}
-
-    print(f'[yt-comments] new after dedup={len(items_new)}', flush=True)
-    if not items_new:
-        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
-
-    items_new = items_new[:25]
-
-    for it in items_new:
-        try:
-            _db().table('social_sources').upsert({
-                'url_hash': it['url_hash'],
-                'url': it['url'],
-                'domain': 'youtube.com',
-                'has_2026_content': True,
-                'checked_at': datetime.utcnow().isoformat(),
-            }, on_conflict='url_hash').execute()
-        except Exception:
-            pass
-
-    # Step 5 — Haiku pipeline + save.
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[yt-comments] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[yt-comments] haiku err={e}', flush=True)
-        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[yt-comments] validator err={e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[yt-comments] save err={e}', flush=True)
-        return {'platform': 'youtube_comments', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
-    return {
-        'platform': 'youtube_comments',
-        'fetched': len(all_items),
-        'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
-    }
 
 
 # ─────────────────────────────────────────────
@@ -3097,7 +2854,6 @@ def _youtube_fetch_transcript(video_url):
     except ImportError:
         return '', 'import_error'
 
-    # Extract video id from URL.
     vid = ''
     if 'watch?v=' in video_url:
         vid = video_url.split('watch?v=', 1)[1].split('&', 1)[0]
@@ -3107,34 +2863,16 @@ def _youtube_fetch_transcript(video_url):
         return '', 'bad_url'
 
     try:
-        tlist = YouTubeTranscriptApi.list_transcripts(vid)
+        api = YouTubeTranscriptApi()
+        fetched = api.fetch(vid, languages=list(_YOUTUBE_TRANSCRIPT_LANGS))
     except Exception as e:
-        # Most common: YouTubeRequestFailed (bot detection on Railway IPs),
-        # TranscriptsDisabled, VideoUnavailable, IpBlocked
+        # Most common: TranscriptsDisabled, VideoUnavailable, NoTranscriptFound,
+        # IpBlocked / YouTubeRequestFailed (bot detection on Railway IPs).
         label = type(e).__name__
         msg = str(e)[:160]
         return '', f'{label}:{msg}'
 
-    picked = None
-    for lang in _YOUTUBE_TRANSCRIPT_LANGS:
-        try:
-            picked = tlist.find_transcript([lang])
-            break
-        except Exception:
-            continue
-    if picked is None:
-        try:
-            picked = tlist.find_generated_transcript(list(_YOUTUBE_TRANSCRIPT_LANGS))
-        except Exception as e:
-            return '', f'no_track:{type(e).__name__}'
-    if picked is None:
-        return '', 'no_matching_lang'
-    try:
-        entries = picked.fetch()
-    except Exception as e:
-        return '', f'fetch_fail:{type(e).__name__}:{str(e)[:100]}'
-
-    text = ' '.join(e.get('text', '') for e in entries).replace('\n', ' ').strip()
+    text = ' '.join(s.text for s in fetched.snippets).replace('\n', ' ').strip()
     return text, ''
 
 

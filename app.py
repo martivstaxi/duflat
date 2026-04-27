@@ -384,15 +384,6 @@ def social_discover_youtube():
     return jsonify(discover_youtube())
 
 
-@app.route('/social/discover-youtube-comments', methods=['POST'])
-def social_discover_youtube_comments():
-    """Harvest viewer comments from high-view Bilibili-related YouTube videos."""
-    auth = _require_cron()
-    if auth: return auth
-    from modules.social_listening import discover_youtube_comments
-    return jsonify(discover_youtube_comments())
-
-
 @app.route('/social/discover-youtube-deep', methods=['POST'])
 def social_discover_youtube_deep():
     """Transcript-aware YouTube discovery — catches Bilibili mentions that
@@ -432,15 +423,14 @@ def _discover_all_background():
         from modules.social_listening import (
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
-            discover_youtube, discover_youtube_comments, discover_youtube_deep,
+            discover_youtube, discover_youtube_deep,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
         # discover_youtube_deep runs last — it's the slowest (sequential
-        # yt-dlp transcript fetches) and lowest volume.
+        # transcript fetches) and lowest volume.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
-                   discover_youtube_comments,
                    discover_lihkg, discover_lemmy, discover_mastodon,
                    discover_youtube_deep):
             try:
