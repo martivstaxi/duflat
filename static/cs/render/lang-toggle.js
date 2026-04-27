@@ -1,4 +1,4 @@
-import { uiLang } from '../i18n.js?v=35';
+import { uiLang } from '../i18n.js?v=36';
 
 export function renderLangToggle() {
     const el = document.getElementById('langToggle');

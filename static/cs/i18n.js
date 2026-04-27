@@ -62,9 +62,9 @@ export const I18N = {
         csvVersion: 'Version',
         csvUsername: 'Username',
         csvLanguage: 'Language',
-        csvOriginal: 'Original',
         csvTitle: 'Title',
-        csvContent: 'Content',
+        csvContent: 'Translated Content',
+        csvOriginal: 'Original Comment',
         months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
         dayShort: ['Su','Mo','Tu','We','Th','Fr','Sa'],
         relTime: (d) => {
@@ -165,9 +165,9 @@ export const I18N = {
         csvVersion: '版本',
         csvUsername: '用户名',
         csvLanguage: '语言',
-        csvOriginal: '原文',
         csvTitle: '标题',
-        csvContent: '内容',
+        csvContent: '翻译内容',
+        csvOriginal: '原始评论',
         months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
         dayShort: ['日','一','二','三','四','五','六'],
         relTime: (d) => {
