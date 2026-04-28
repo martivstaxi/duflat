@@ -2,303 +2,1037 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>100 Tools for Creator Managers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools — Creator Manager Stack</title>
 <style>
+  :root {
+    --bg: #fbfbfd;
+    --bg-elevated: #ffffff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --border: #d2d2d7;
+    --border-soft: #e8e8ed;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --tag-bg: #f5f5f7;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 20px;
-    background: #fafafa;
-    color: #222;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
   }
-  h1 {
-    text-align: center;
-    color: #1a1a1a;
-  }
-  .subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    font-size: 13px;
-  }
-  th {
-    background: #2c3e50;
-    color: white;
-    padding: 10px;
-    text-align: left;
+
+  /* ── Sticky top nav ─────────────────────────────── */
+  .topbar {
     position: sticky;
     top: 0;
+    z-index: 100;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(251, 251, 253, 0.8);
+    border-bottom: 1px solid var(--border-soft);
   }
-  td {
-    padding: 8px 10px;
-    border-bottom: 1px solid #eee;
-    vertical-align: top;
+  .topbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
   }
-  tr:nth-child(even) { background: #f9f9f9; }
-  tr:hover { background: #f0f7ff; }
-  .category {
-    background: #3498db !important;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
+  .brand {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .search-wrap {
+    flex: 1;
+    position: relative;
+    max-width: 480px;
+    margin-left: auto;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+  }
+  #search {
+    width: 100%;
+    padding: 11px 16px 11px 40px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--tag-bg);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    outline: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  #search:focus {
+    background: var(--bg-elevated);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+  }
+
+  /* ── Hero ──────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 96px 22px 64px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 18px;
+    background: linear-gradient(180deg, #1d1d1f 0%, #494951 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .lede {
+    font-size: clamp(19px, 2vw, 22px);
+    color: var(--text-secondary);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 1.4;
+    max-width: 680px;
+    margin: 0 auto 8px;
+  }
+  .hero .meta {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-top: 24px;
+  }
+  .hero .meta strong { color: var(--text-secondary); font-weight: 500; }
+
+  /* ── Category pills ────────────────────────────── */
+  .pills {
+    position: sticky;
+    top: 65px;
+    z-index: 90;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(251, 251, 253, 0.85);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 14px 0;
+  }
+  .pills-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 22px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pills-inner::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 980px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .pill:hover {
+    background: var(--text);
+    color: var(--bg-elevated);
+    border-color: var(--text);
+  }
+
+  /* ── Sections ──────────────────────────────────── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 22px 96px;
+  }
+  section.cat {
+    margin-bottom: 80px;
+    scroll-margin-top: 140px;
+  }
+  .cat-head {
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .cat-head h2 {
+    font-size: clamp(26px, 3.4vw, 36px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--text);
+  }
+  .cat-head .count {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  /* ── Cards grid ────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    position: relative;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.25s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 168px;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: var(--border);
+  }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .card-name {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .card-num {
     font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--tag-bg);
+    padding: 3px 9px;
+    border-radius: 980px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
   }
-  a { color: #2980b9; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .num { width: 40px; font-weight: bold; color: #666; }
-  .name { width: 140px; font-weight: 600; }
-  .site { width: 180px; font-size: 11px; word-break: break-all; }
-  .purpose { width: 160px; color: #555; }
+  .card-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .card-tag {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--tag-bg);
+    padding: 5px 10px;
+    border-radius: 6px;
+    letter-spacing: -0.005em;
+  }
+  .card-link {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .card:hover .card-link { color: var(--accent-hover); }
+  .card-link::after {
+    content: "→";
+    transition: transform 0.2s;
+  }
+  .card:hover .card-link::after {
+    transform: translateX(3px);
+  }
+
+  /* ── Starter stack callout ─────────────────────── */
+  .starter {
+    margin-top: 32px;
+    background: linear-gradient(135deg, #1d1d1f 0%, #2c2c2e 100%);
+    color: #f5f5f7;
+    border-radius: 24px;
+    padding: 56px 44px;
+    text-align: center;
+  }
+  .starter .eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .starter h3 {
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 22px;
+    color: #f5f5f7;
+  }
+  .starter-tools {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .starter-tools span {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 16px;
+    border-radius: 980px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #f5f5f7;
+  }
+
+  /* ── Empty state ───────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 80px 22px;
+    color: var(--text-tertiary);
+    font-size: 17px;
+    display: none;
+  }
+  .empty.show { display: block; }
+  section.cat.hidden { display: none; }
+
+  /* ── Mobile ────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .hero { padding: 56px 22px 32px; }
+    .topbar-inner { gap: 12px; }
+    .brand { font-size: 16px; }
+    .grid { grid-template-columns: 1fr; }
+    main { padding: 40px 16px 64px; }
+    .starter { padding: 40px 24px; border-radius: 20px; }
+  }
 </style>
 </head>
 <body>
 
-<h1>100 Essential Tools for a Creator Manager</h1>
-<p class="subtitle">Western / Global market focus (excluding Chinese platforms) — 2026 edition</p>
-
-<table>
-<thead>
-<tr>
-  <th class="num">#</th>
-  <th class="name">Tool</th>
-  <th class="site">Website</th>
-  <th>What it does (short summary)</th>
-  <th class="purpose">Used for</th>
-</tr>
-</thead>
-<tbody>
-
-<tr><td colspan="5" class="category">🔍 Creator Discovery & Channel Search (YouTube / TikTok / IG)</td></tr>
-
-<tr><td class="num">1</td><td class="name">Channel Crawler</td><td class="site"><a href="https://channelcrawler.com">channelcrawler.com</a></td><td>Filter YouTube channels by language, subscribers, topic, country, upload frequency.</td><td class="purpose">Finding niche YouTubers to invite</td></tr>
-
-<tr><td class="num">2</td><td class="name">vidIQ</td><td class="site"><a href="https://vidiq.com">vidiq.com</a></td><td>YouTube analytics, keyword research, channel audit and competitor tracking.</td><td class="purpose">Channel discovery & research</td></tr>
-
-<tr><td class="num">3</td><td class="name">Social Blade</td><td class="site"><a href="https://socialblade.com">socialblade.com</a></td><td>Tracks subscriber counts, earnings estimates and growth across YouTube, TikTok, Twitch.</td><td class="purpose">Channel stats & forecasting</td></tr>
-
-<tr><td class="num">4</td><td class="name">NoxInfluencer</td><td class="site"><a href="https://noxinfluencer.com">noxinfluencer.com</a></td><td>Global influencer database with creator rankings, rates and contact info.</td><td class="purpose">YouTuber database search</td></tr>
-
-<tr><td class="num">5</td><td class="name">Modash</td><td class="site"><a href="https://modash.io">modash.io</a></td><td>350M+ creators across IG, TikTok, YouTube; open-network, AI search, emails included.</td><td class="purpose">Mass creator discovery</td></tr>
-
-<tr><td class="num">6</td><td class="name">HypeAuditor</td><td class="site"><a href="https://hypeauditor.com">hypeauditor.com</a></td><td>Detects fake followers, audits audience quality, checks engagement authenticity.</td><td class="purpose">Vetting creators before deals</td></tr>
-
-<tr><td class="num">7</td><td class="name">Upfluence</td><td class="site"><a href="https://upfluence.com">upfluence.com</a></td><td>All-in-one: discover, outreach, manage and pay creators; 9M+ verified profiles.</td><td class="purpose">End-to-end creator management</td></tr>
-
-<tr><td class="num">8</td><td class="name">Heepsy</td><td class="site"><a href="https://heepsy.com">heepsy.com</a></td><td>11M+ influencers with niche filters, fake follower check and cost estimates.</td><td class="purpose">Micro-influencer discovery</td></tr>
-
-<tr><td class="num">9</td><td class="name">Favikon</td><td class="site"><a href="https://favikon.com">favikon.com</a></td><td>AI creator ranking across 9 platforms with intent-based search and scoring.</td><td class="purpose">Ranked creator lists</td></tr>
-
-<tr><td class="num">10</td><td class="name">Creator.co</td><td class="site"><a href="https://creator.co">creator.co</a></td><td>Creator marketplace connecting brands with 175M+ vetted influencers.</td><td class="purpose">Creator hiring marketplace</td></tr>
-
-<tr><td class="num">11</td><td class="name">Tubular Labs</td><td class="site"><a href="https://tubularlabs.com">tubularlabs.com</a></td><td>Enterprise-grade video intelligence across YouTube, TikTok, IG, Facebook.</td><td class="purpose">Deep video market analysis</td></tr>
-
-<tr><td class="num">12</td><td class="name">Klear</td><td class="site"><a href="https://klear.com">klear.com</a></td><td>Influencer discovery with audience insights and full campaign CRM.</td><td class="purpose">Creator relationship mgmt</td></tr>
-
-<tr><td class="num">13</td><td class="name">CreatorIQ</td><td class="site"><a href="https://creatoriq.com">creatoriq.com</a></td><td>Enterprise platform with AI discovery, fraud check and campaign workflows.</td><td class="purpose">Large-scale creator programs</td></tr>
-
-<tr><td class="num">14</td><td class="name">GRIN</td><td class="site"><a href="https://grin.co">grin.co</a></td><td>Creator management built for e-commerce brands; Shopify-friendly.</td><td class="purpose">DTC brand creator ops</td></tr>
-
-<tr><td class="num">15</td><td class="name">Traackr</td><td class="site"><a href="https://traackr.com">traackr.com</a></td><td>Influencer data platform focused on ROI, performance and cross-market comparison.</td><td class="purpose">Global campaign analytics</td></tr>
-
-<tr><td class="num">16</td><td class="name">Influencity</td><td class="site"><a href="https://influencity.com">influencity.com</a></td><td>200M+ profiles; discovery, management and payments in 143 currencies.</td><td class="purpose">Global creator payments</td></tr>
-
-<tr><td class="num">17</td><td class="name">Meltwater</td><td class="site"><a href="https://meltwater.com">meltwater.com</a></td><td>AI search over 30M+ creator profiles plus media monitoring.</td><td class="purpose">PR + influencer search</td></tr>
-
-<tr><td class="num">18</td><td class="name">IQFluence</td><td class="site"><a href="https://iqfluence.io">iqfluence.io</a></td><td>375M+ profiles with 16+ filters and AI semantic search.</td><td class="purpose">Precision creator search</td></tr>
-
-<tr><td class="num">19</td><td class="name">Aspire</td><td class="site"><a href="https://aspire.io">aspire.io</a></td><td>Creator marketplace and lifecycle management for growing brands.</td><td class="purpose">Creator recruitment</td></tr>
-
-<tr><td class="num">20</td><td class="name">Collabstr</td><td class="site"><a href="https://collabstr.com">collabstr.com</a></td><td>Hire vetted creators directly; fixed pricing, brief, pay — all in one place.</td><td class="purpose">Quick creator hiring</td></tr>
-
-<tr><td class="num">21</td><td class="name">Brandwatch Influence</td><td class="site"><a href="https://brandwatch.com">brandwatch.com</a></td><td>50M+ creators across YouTube/IG/TikTok with contracts and payments built-in.</td><td class="purpose">Data-driven campaigns</td></tr>
-
-<tr><td class="num">22</td><td class="name">SocialBook</td><td class="site"><a href="https://socialbook.io">socialbook.io</a></td><td>YouTube-focused creator database with emails and campaign tools.</td><td class="purpose">YouTuber outreach</td></tr>
-
-<tr><td class="num">23</td><td class="name">Famesters</td><td class="site"><a href="https://famesters.com">famesters.com</a></td><td>Influencer agency platform for end-to-end campaign execution.</td><td class="purpose">Managed campaigns</td></tr>
-
-<tr><td class="num">24</td><td class="name">InfluenceGrid</td><td class="site"><a href="https://influencegrid.com">influencegrid.com</a></td><td>Free TikTok/Instagram influencer search tool.</td><td class="purpose">Quick free lookups</td></tr>
-
-<tr><td colspan="5" class="category">📧 Email Finding & Cold Outreach</td></tr>
-
-<tr><td class="num">25</td><td class="name">Hunter.io</td><td class="site"><a href="https://hunter.io">hunter.io</a></td><td>Find verified email addresses by domain or person name.</td><td class="purpose">Getting creator emails</td></tr>
-
-<tr><td class="num">26</td><td class="name">Apollo.io</td><td class="site"><a href="https://apollo.io">apollo.io</a></td><td>Huge B2B contact database with outreach sequences and CRM.</td><td class="purpose">Contact discovery + outreach</td></tr>
-
-<tr><td class="num">27</td><td class="name">Snov.io</td><td class="site"><a href="https://snov.io">snov.io</a></td><td>Email finder, verifier, drip campaigns in one tool.</td><td class="purpose">Email outreach at scale</td></tr>
-
-<tr><td class="num">28</td><td class="name">Mailshake</td><td class="site"><a href="https://mailshake.com">mailshake.com</a></td><td>Simple cold email automation with A/B testing.</td><td class="purpose">Sales-style outreach</td></tr>
-
-<tr><td class="num">29</td><td class="name">Lemlist</td><td class="site"><a href="https://lemlist.com">lemlist.com</a></td><td>Personalized cold email with images/video and LinkedIn steps.</td><td class="purpose">Personalized outreach</td></tr>
-
-<tr><td class="num">30</td><td class="name">Instantly.ai</td><td class="site"><a href="https://instantly.ai">instantly.ai</a></td><td>Cold email with inbox warm-up and unlimited sending accounts.</td><td class="purpose">High-volume outreach</td></tr>
-
-<tr><td class="num">31</td><td class="name">Woodpecker</td><td class="site"><a href="https://woodpecker.co">woodpecker.co</a></td><td>Follow-up sequences with smart deliverability controls.</td><td class="purpose">Reliable follow-ups</td></tr>
-
-<tr><td class="num">32</td><td class="name">Smartlead</td><td class="site"><a href="https://smartlead.ai">smartlead.ai</a></td><td>AI-driven cold email with multi-inbox rotation.</td><td class="purpose">Scaled cold email</td></tr>
-
-<tr><td class="num">33</td><td class="name">Pitchbox</td><td class="site"><a href="https://pitchbox.com">pitchbox.com</a></td><td>Influencer and blogger outreach with verified contact data.</td><td class="purpose">Targeted pitch management</td></tr>
-
-<tr><td class="num">34</td><td class="name">NinjaOutreach</td><td class="site"><a href="https://ninjaoutreach.com">ninjaoutreach.com</a></td><td>Find influencers and manage outreach from one inbox.</td><td class="purpose">Outreach CRM</td></tr>
-
-<tr><td class="num">35</td><td class="name">Respona</td><td class="site"><a href="https://respona.com">respona.com</a></td><td>AI outreach platform combining search, email finder and pitching.</td><td class="purpose">PR-style pitching</td></tr>
-
-<tr><td class="num">36</td><td class="name">Reply.io</td><td class="site"><a href="https://reply.io">reply.io</a></td><td>Multi-channel sales engagement (email, LinkedIn, calls).</td><td class="purpose">Multi-channel outreach</td></tr>
-
-<tr><td colspan="5" class="category">🗂️ CRM, Pipeline & Database Management</td></tr>
-
-<tr><td class="num">37</td><td class="name">Notion</td><td class="site"><a href="https://notion.so">notion.so</a></td><td>Flexible docs + databases; perfect for building a custom creator CRM.</td><td class="purpose">Creator database + notes</td></tr>
-
-<tr><td class="num">38</td><td class="name">Airtable</td><td class="site"><a href="https://airtable.com">airtable.com</a></td><td>Spreadsheet-database hybrid with views, automations and forms.</td><td class="purpose">Visual creator pipeline</td></tr>
-
-<tr><td class="num">39</td><td class="name">HubSpot CRM</td><td class="site"><a href="https://hubspot.com">hubspot.com</a></td><td>Free full CRM with contact tracking, deals and email sync.</td><td class="purpose">Full-featured free CRM</td></tr>
-
-<tr><td class="num">40</td><td class="name">Pipedrive</td><td class="site"><a href="https://pipedrive.com">pipedrive.com</a></td><td>Visual sales pipeline with drag-and-drop deal stages.</td><td class="purpose">Deal pipeline tracking</td></tr>
-
-<tr><td class="num">41</td><td class="name">Monday.com</td><td class="site"><a href="https://monday.com">monday.com</a></td><td>Work OS for team collaboration, projects and CRM.</td><td class="purpose">Team collaboration</td></tr>
-
-<tr><td class="num">42</td><td class="name">ClickUp</td><td class="site"><a href="https://clickup.com">clickup.com</a></td><td>All-in-one work platform with tasks, docs, goals and chat.</td><td class="purpose">Unified workspace</td></tr>
-
-<tr><td class="num">43</td><td class="name">Asana</td><td class="site"><a href="https://asana.com">asana.com</a></td><td>Project and task management for campaigns and deliverables.</td><td class="purpose">Campaign workflows</td></tr>
-
-<tr><td class="num">44</td><td class="name">Trello</td><td class="site"><a href="https://trello.com">trello.com</a></td><td>Simple Kanban boards for tracking creator onboarding stages.</td><td class="purpose">Simple pipeline boards</td></tr>
-
-<tr><td class="num">45</td><td class="name">Salesforce</td><td class="site"><a href="https://salesforce.com">salesforce.com</a></td><td>Enterprise CRM with deep customization and reporting.</td><td class="purpose">Enterprise relationships</td></tr>
-
-<tr><td class="num">46</td><td class="name">Attio</td><td class="site"><a href="https://attio.com">attio.com</a></td><td>Modern, data-driven CRM that auto-enriches contacts.</td><td class="purpose">Modern relationship CRM</td></tr>
-
-<tr><td colspan="5" class="category">📞 Communication & Scheduling</td></tr>
-
-<tr><td class="num">47</td><td class="name">Calendly</td><td class="site"><a href="https://calendly.com">calendly.com</a></td><td>Share a link; creators book meetings based on your availability.</td><td class="purpose">Scheduling calls</td></tr>
-
-<tr><td class="num">48</td><td class="name">Cal.com</td><td class="site"><a href="https://cal.com">cal.com</a></td><td>Open-source scheduling alternative with more customization.</td><td class="purpose">Custom scheduling</td></tr>
-
-<tr><td class="num">49</td><td class="name">Zoom</td><td class="site"><a href="https://zoom.us">zoom.us</a></td><td>Reliable video meetings with recording and transcripts.</td><td class="purpose">Creator video calls</td></tr>
-
-<tr><td class="num">50</td><td class="name">Google Meet</td><td class="site"><a href="https://meet.google.com">meet.google.com</a></td><td>Built-in Google Workspace video calls, no install needed.</td><td class="purpose">Quick video calls</td></tr>
-
-<tr><td class="num">51</td><td class="name">Loom</td><td class="site"><a href="https://loom.com">loom.com</a></td><td>Record short video messages to pitch or explain briefs.</td><td class="purpose">Async video pitches</td></tr>
-
-<tr><td class="num">52</td><td class="name">Slack</td><td class="site"><a href="https://slack.com">slack.com</a></td><td>Team chat with channels; many creator communities live here.</td><td class="purpose">Team + community chat</td></tr>
-
-<tr><td class="num">53</td><td class="name">Discord</td><td class="site"><a href="https://discord.com">discord.com</a></td><td>Community platform where many gaming/tech creators hang out.</td><td class="purpose">Creator community access</td></tr>
-
-<tr><td class="num">54</td><td class="name">Telegram</td><td class="site"><a href="https://telegram.org">telegram.org</a></td><td>Messaging app widely used by international creators.</td><td class="purpose">Direct creator messaging</td></tr>
-
-<tr><td class="num">55</td><td class="name">WhatsApp Business</td><td class="site"><a href="https://business.whatsapp.com">business.whatsapp.com</a></td><td>Business messaging with templates and quick replies.</td><td class="purpose">Global direct chat</td></tr>
-
-<tr><td colspan="5" class="category">📊 Analytics, Trends & Competitive Intelligence</td></tr>
-
-<tr><td class="num">56</td><td class="name">SimilarWeb</td><td class="site"><a href="https://similarweb.com">similarweb.com</a></td><td>Traffic, audience and competitor benchmarking for any website.</td><td class="purpose">Audience research</td></tr>
-
-<tr><td class="num">57</td><td class="name">BuzzSumo</td><td class="site"><a href="https://buzzsumo.com">buzzsumo.com</a></td><td>Find top-performing content and creators by topic.</td><td class="purpose">Content & trend research</td></tr>
-
-<tr><td class="num">58</td><td class="name">Google Trends</td><td class="site"><a href="https://trends.google.com">trends.google.com</a></td><td>Free tool to see what topics are rising by region.</td><td class="purpose">Niche trend validation</td></tr>
-
-<tr><td class="num">59</td><td class="name">Rival IQ</td><td class="site"><a href="https://rivaliq.com">rivaliq.com</a></td><td>Competitive social analytics across major platforms.</td><td class="purpose">Competitor benchmarking</td></tr>
-
-<tr><td class="num">60</td><td class="name">Sprout Social</td><td class="site"><a href="https://sproutsocial.com">sproutsocial.com</a></td><td>Social media management plus listening and influencer CRM.</td><td class="purpose">Social management + listening</td></tr>
-
-<tr><td class="num">61</td><td class="name">Hootsuite</td><td class="site"><a href="https://hootsuite.com">hootsuite.com</a></td><td>Schedule posts and monitor multiple social accounts.</td><td class="purpose">Multi-platform posting</td></tr>
-
-<tr><td class="num">62</td><td class="name">Later</td><td class="site"><a href="https://later.com">later.com</a></td><td>Visual social scheduler with link-in-bio and analytics.</td><td class="purpose">IG/TikTok scheduling</td></tr>
-
-<tr><td class="num">63</td><td class="name">Exploding Topics</td><td class="site"><a href="https://explodingtopics.com">explodingtopics.com</a></td><td>Spot fast-growing topics before they go mainstream.</td><td class="purpose">Early trend detection</td></tr>
-
-<tr><td class="num">64</td><td class="name">Ahrefs</td><td class="site"><a href="https://ahrefs.com">ahrefs.com</a></td><td>SEO toolkit with content explorer and site analysis.</td><td class="purpose">Content + keyword research</td></tr>
-
-<tr><td class="num">65</td><td class="name">Semrush</td><td class="site"><a href="https://semrush.com">semrush.com</a></td><td>SEO and competitive research suite with influencer module.</td><td class="purpose">Market + SEO research</td></tr>
-
-<tr><td class="num">66</td><td class="name">Keyhole</td><td class="site"><a href="https://keyhole.co">keyhole.co</a></td><td>Real-time hashtag and campaign tracking across socials.</td><td class="purpose">Campaign tracking</td></tr>
-
-<tr><td colspan="5" class="category">🌐 Translation & Language</td></tr>
-
-<tr><td class="num">67</td><td class="name">DeepL</td><td class="site"><a href="https://deepl.com">deepl.com</a></td><td>Highest-quality AI translator, especially for EU languages.</td><td class="purpose">Professional translation</td></tr>
-
-<tr><td class="num">68</td><td class="name">Google Translate</td><td class="site"><a href="https://translate.google.com">translate.google.com</a></td><td>Free instant translation across 100+ languages.</td><td class="purpose">Quick translations</td></tr>
-
-<tr><td class="num">69</td><td class="name">Naver Papago</td><td class="site"><a href="https://papago.naver.com">papago.naver.com</a></td><td>Strong translator for Korean, Japanese and other Asian languages.</td><td class="purpose">Asian language support</td></tr>
-
-<tr><td class="num">70</td><td class="name">Grammarly</td><td class="site"><a href="https://grammarly.com">grammarly.com</a></td><td>Writing assistant that fixes grammar and tone in English.</td><td class="purpose">Polished English writing</td></tr>
-
-<tr><td class="num">71</td><td class="name">ChatGPT</td><td class="site"><a href="https://chatgpt.com">chatgpt.com</a></td><td>AI assistant for drafting emails, briefs and translation.</td><td class="purpose">AI writing + ideas</td></tr>
-
-<tr><td class="num">72</td><td class="name">Claude</td><td class="site"><a href="https://claude.ai">claude.ai</a></td><td>AI assistant for long-form writing, analysis and research.</td><td class="purpose">AI drafting + analysis</td></tr>
-
-<tr><td colspan="5" class="category">📝 Contracts, Signatures & Legal</td></tr>
-
-<tr><td class="num">73</td><td class="name">DocuSign</td><td class="site"><a href="https://docusign.com">docusign.com</a></td><td>Industry-standard e-signature for creator contracts.</td><td class="purpose">Legal e-signature</td></tr>
-
-<tr><td class="num">74</td><td class="name">PandaDoc</td><td class="site"><a href="https://pandadoc.com">pandadoc.com</a></td><td>Contract templates, e-sign and proposals with analytics.</td><td class="purpose">Contract templates</td></tr>
-
-<tr><td class="num">75</td><td class="name">HelloSign (Dropbox Sign)</td><td class="site"><a href="https://sign.dropbox.com">sign.dropbox.com</a></td><td>Simple, affordable e-signature integrated with Dropbox.</td><td class="purpose">Simple e-signature</td></tr>
-
-<tr><td class="num">76</td><td class="name">Ironclad</td><td class="site"><a href="https://ironcladapp.com">ironcladapp.com</a></td><td>Contract lifecycle management for larger teams.</td><td class="purpose">Contract workflow</td></tr>
-
-<tr><td colspan="5" class="category">💰 Payments & Creator Compensation</td></tr>
-
-<tr><td class="num">77</td><td class="name">Wise</td><td class="site"><a href="https://wise.com">wise.com</a></td><td>Low-fee international transfers with real exchange rates.</td><td class="purpose">Cross-border payments</td></tr>
-
-<tr><td class="num">78</td><td class="name">Payoneer</td><td class="site"><a href="https://payoneer.com">payoneer.com</a></td><td>Global payments popular with freelancers and creators worldwide.</td><td class="purpose">Global creator payouts</td></tr>
-
-<tr><td class="num">79</td><td class="name">Tipalti</td><td class="site"><a href="https://tipalti.com">tipalti.com</a></td><td>Mass payout automation with tax compliance.</td><td class="purpose">Bulk creator payouts</td></tr>
-
-<tr><td class="num">80</td><td class="name">PayPal</td><td class="site"><a href="https://paypal.com">paypal.com</a></td><td>Widely accepted global payment option.</td><td class="purpose">Simple global payments</td></tr>
-
-<tr><td class="num">81</td><td class="name">Stripe</td><td class="site"><a href="https://stripe.com">stripe.com</a></td><td>Payment processing and payouts via Stripe Connect.</td><td class="purpose">Programmable payouts</td></tr>
-
-<tr><td class="num">82</td><td class="name">Deel</td><td class="site"><a href="https://deel.com">deel.com</a></td><td>Contractor payments and compliance in 150+ countries.</td><td class="purpose">Contractor compliance</td></tr>
-
-<tr><td colspan="5" class="category">🎥 Content, Media & Asset Management</td></tr>
-
-<tr><td class="num">83</td><td class="name">Google Drive</td><td class="site"><a href="https://drive.google.com">drive.google.com</a></td><td>Cloud storage and sharing for briefs, decks and assets.</td><td class="purpose">File sharing</td></tr>
-
-<tr><td class="num">84</td><td class="name">Dropbox</td><td class="site"><a href="https://dropbox.com">dropbox.com</a></td><td>Reliable cloud storage with smart sync and file requests.</td><td class="purpose">Large file transfers</td></tr>
-
-<tr><td class="num">85</td><td class="name">Frame.io</td><td class="site"><a href="https://frame.io">frame.io</a></td><td>Video review with frame-accurate comments for creator content.</td><td class="purpose">Video review & approvals</td></tr>
-
-<tr><td class="num">86</td><td class="name">Canva</td><td class="site"><a href="https://canva.com">canva.com</a></td><td>Easy design tool for decks, briefs and social assets.</td><td class="purpose">Quick design work</td></tr>
-
-<tr><td class="num">87</td><td class="name">Figma</td><td class="site"><a href="https://figma.com">figma.com</a></td><td>Collaborative design and brief/asset boards.</td><td class="purpose">Collaborative design</td></tr>
-
-<tr><td class="num">88</td><td class="name">WeTransfer</td><td class="site"><a href="https://wetransfer.com">wetransfer.com</a></td><td>Send big files without accounts.</td><td class="purpose">Fast large transfers</td></tr>
-
-<tr><td colspan="5" class="category">📈 Link Tracking, Attribution & Performance</td></tr>
-
-<tr><td class="num">89</td><td class="name">Bitly</td><td class="site"><a href="https://bitly.com">bitly.com</a></td><td>Short branded links with click analytics.</td><td class="purpose">Link tracking</td></tr>
-
-<tr><td class="num">90</td><td class="name">UTM.io</td><td class="site"><a href="https://utm.io">utm.io</a></td><td>Create and manage UTM-tagged links at scale.</td><td class="purpose">Campaign attribution</td></tr>
-
-<tr><td class="num">91</td><td class="name">Google Analytics 4</td><td class="site"><a href="https://analytics.google.com">analytics.google.com</a></td><td>Free web analytics for tracking creator-driven traffic.</td><td class="purpose">Website attribution</td></tr>
-
-<tr><td class="num">92</td><td class="name">Impact.com</td><td class="site"><a href="https://impact.com">impact.com</a></td><td>Partnership platform for affiliates, creators and payouts.</td><td class="purpose">Affiliate tracking</td></tr>
-
-<tr><td class="num">93</td><td class="name">Refersion</td><td class="site"><a href="https://refersion.com">refersion.com</a></td><td>Affiliate and creator commission tracking for e-commerce.</td><td class="purpose">Commission tracking</td></tr>
-
-<tr><td colspan="5" class="category">🛠️ Productivity, Automation & Misc.</td></tr>
-
-<tr><td class="num">94</td><td class="name">Zapier</td><td class="site"><a href="https://zapier.com">zapier.com</a></td><td>Connects 7,000+ apps to automate workflows without code.</td><td class="purpose">Workflow automation</td></tr>
-
-<tr><td class="num">95</td><td class="name">Make</td><td class="site"><a href="https://make.com">make.com</a></td><td>Visual automation builder, more powerful than Zapier for complex flows.</td><td class="purpose">Advanced automation</td></tr>
-
-<tr><td class="num">96</td><td class="name">Clay</td><td class="site"><a href="https://clay.com">clay.com</a></td><td>Data enrichment + outreach in a spreadsheet-like interface.</td><td class="purpose">Enriched prospect lists</td></tr>
-
-<tr><td class="num">97</td><td class="name">Fireflies.ai</td><td class="site"><a href="https://fireflies.ai">fireflies.ai</a></td><td>AI meeting notes and summaries for calls.</td><td class="purpose">Call transcripts + notes</td></tr>
-
-<tr><td class="num">98</td><td class="name">LinkedIn Sales Navigator</td><td class="site"><a href="https://business.linkedin.com/sales-solutions">linkedin.com/sales-solutions</a></td><td>Advanced LinkedIn search for finding creators, agents and managers.</td><td class="purpose">B2B creator/agent search</td></tr>
-
-<tr><td class="num">99</td><td class="name">1Password</td><td class="site"><a href="https://1password.com">1password.com</a></td><td>Team password manager for shared platform logins.</td><td class="purpose">Secure logins</td></tr>
-
-<tr><td class="num">100</td><td class="name">Toggl Track</td><td class="site"><a href="https://toggl.com/track">toggl.com/track</a></td><td>Simple time tracking to see how many hours go per creator/campaign.</td><td class="purpose">Time tracking</td></tr>
-
-</tbody>
-</table>
-
-<p class="subtitle" style="margin-top:30px;">💡 Minimum starter stack: Modash + Hunter.io + Notion + Calendly + DocuSign + Wise + DeepL + Loom</p>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#top" class="brand">Creator Manager Tools</a>
+    <div class="search-wrap">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M11 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search 100 tools…" autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<div id="top" class="hero">
+  <h1>The Creator Manager's toolkit.</h1>
+  <p class="lede">100 tools that actually matter. Curated for the global market — discovery, outreach, payments, and everything in between.</p>
+  <p class="meta"><strong>2026 edition</strong> · Western & Global focus</p>
+</div>
+
+<nav class="pills">
+  <div class="pills-inner">
+    <a class="pill" href="#discovery">Discovery</a>
+    <a class="pill" href="#outreach">Outreach</a>
+    <a class="pill" href="#crm">CRM</a>
+    <a class="pill" href="#comms">Comms</a>
+    <a class="pill" href="#analytics">Analytics</a>
+    <a class="pill" href="#language">Language</a>
+    <a class="pill" href="#legal">Legal</a>
+    <a class="pill" href="#payments">Payments</a>
+    <a class="pill" href="#media">Media</a>
+    <a class="pill" href="#tracking">Tracking</a>
+    <a class="pill" href="#productivity">Productivity</a>
+  </div>
+</nav>
+
+<main>
+
+<section class="cat" id="discovery">
+  <div class="cat-head">
+    <h2>Creator Discovery & Channel Search</h2>
+    <span class="count">24 tools · YouTube · TikTok · Instagram</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://channelcrawler.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Channel Crawler</span><span class="card-num">01</span></div>
+      <p class="card-desc">Filter YouTube channels by language, subscribers, topic, country, upload frequency.</p>
+      <div class="card-foot"><span class="card-tag">Niche YouTubers</span><span class="card-link">channelcrawler.com</span></div>
+    </a>
+    <a class="card" href="https://vidiq.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">vidIQ</span><span class="card-num">02</span></div>
+      <p class="card-desc">YouTube analytics, keyword research, channel audit and competitor tracking.</p>
+      <div class="card-foot"><span class="card-tag">Channel research</span><span class="card-link">vidiq.com</span></div>
+    </a>
+    <a class="card" href="https://socialblade.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Social Blade</span><span class="card-num">03</span></div>
+      <p class="card-desc">Tracks subscriber counts, earnings estimates and growth across YouTube, TikTok, Twitch.</p>
+      <div class="card-foot"><span class="card-tag">Stats & forecasting</span><span class="card-link">socialblade.com</span></div>
+    </a>
+    <a class="card" href="https://noxinfluencer.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">NoxInfluencer</span><span class="card-num">04</span></div>
+      <p class="card-desc">Global influencer database with creator rankings, rates and contact info.</p>
+      <div class="card-foot"><span class="card-tag">YouTuber DB</span><span class="card-link">noxinfluencer.com</span></div>
+    </a>
+    <a class="card" href="https://modash.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Modash</span><span class="card-num">05</span></div>
+      <p class="card-desc">350M+ creators across IG, TikTok, YouTube; open-network, AI search, emails included.</p>
+      <div class="card-foot"><span class="card-tag">Mass discovery</span><span class="card-link">modash.io</span></div>
+    </a>
+    <a class="card" href="https://hypeauditor.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">HypeAuditor</span><span class="card-num">06</span></div>
+      <p class="card-desc">Detects fake followers, audits audience quality, checks engagement authenticity.</p>
+      <div class="card-foot"><span class="card-tag">Vetting creators</span><span class="card-link">hypeauditor.com</span></div>
+    </a>
+    <a class="card" href="https://upfluence.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Upfluence</span><span class="card-num">07</span></div>
+      <p class="card-desc">All-in-one: discover, outreach, manage and pay creators; 9M+ verified profiles.</p>
+      <div class="card-foot"><span class="card-tag">End-to-end mgmt</span><span class="card-link">upfluence.com</span></div>
+    </a>
+    <a class="card" href="https://heepsy.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Heepsy</span><span class="card-num">08</span></div>
+      <p class="card-desc">11M+ influencers with niche filters, fake follower check and cost estimates.</p>
+      <div class="card-foot"><span class="card-tag">Micro-influencers</span><span class="card-link">heepsy.com</span></div>
+    </a>
+    <a class="card" href="https://favikon.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Favikon</span><span class="card-num">09</span></div>
+      <p class="card-desc">AI creator ranking across 9 platforms with intent-based search and scoring.</p>
+      <div class="card-foot"><span class="card-tag">Ranked lists</span><span class="card-link">favikon.com</span></div>
+    </a>
+    <a class="card" href="https://creator.co" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Creator.co</span><span class="card-num">10</span></div>
+      <p class="card-desc">Creator marketplace connecting brands with 175M+ vetted influencers.</p>
+      <div class="card-foot"><span class="card-tag">Marketplace</span><span class="card-link">creator.co</span></div>
+    </a>
+    <a class="card" href="https://tubularlabs.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Tubular Labs</span><span class="card-num">11</span></div>
+      <p class="card-desc">Enterprise-grade video intelligence across YouTube, TikTok, IG, Facebook.</p>
+      <div class="card-foot"><span class="card-tag">Market analysis</span><span class="card-link">tubularlabs.com</span></div>
+    </a>
+    <a class="card" href="https://klear.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Klear</span><span class="card-num">12</span></div>
+      <p class="card-desc">Influencer discovery with audience insights and full campaign CRM.</p>
+      <div class="card-foot"><span class="card-tag">Relationship CRM</span><span class="card-link">klear.com</span></div>
+    </a>
+    <a class="card" href="https://creatoriq.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">CreatorIQ</span><span class="card-num">13</span></div>
+      <p class="card-desc">Enterprise platform with AI discovery, fraud check and campaign workflows.</p>
+      <div class="card-foot"><span class="card-tag">Large-scale ops</span><span class="card-link">creatoriq.com</span></div>
+    </a>
+    <a class="card" href="https://grin.co" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">GRIN</span><span class="card-num">14</span></div>
+      <p class="card-desc">Creator management built for e-commerce brands; Shopify-friendly.</p>
+      <div class="card-foot"><span class="card-tag">DTC creators</span><span class="card-link">grin.co</span></div>
+    </a>
+    <a class="card" href="https://traackr.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Traackr</span><span class="card-num">15</span></div>
+      <p class="card-desc">Influencer data platform focused on ROI, performance and cross-market comparison.</p>
+      <div class="card-foot"><span class="card-tag">Global analytics</span><span class="card-link">traackr.com</span></div>
+    </a>
+    <a class="card" href="https://influencity.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Influencity</span><span class="card-num">16</span></div>
+      <p class="card-desc">200M+ profiles; discovery, management and payments in 143 currencies.</p>
+      <div class="card-foot"><span class="card-tag">Global payments</span><span class="card-link">influencity.com</span></div>
+    </a>
+    <a class="card" href="https://meltwater.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Meltwater</span><span class="card-num">17</span></div>
+      <p class="card-desc">AI search over 30M+ creator profiles plus media monitoring.</p>
+      <div class="card-foot"><span class="card-tag">PR + influencer</span><span class="card-link">meltwater.com</span></div>
+    </a>
+    <a class="card" href="https://iqfluence.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">IQFluence</span><span class="card-num">18</span></div>
+      <p class="card-desc">375M+ profiles with 16+ filters and AI semantic search.</p>
+      <div class="card-foot"><span class="card-tag">Precision search</span><span class="card-link">iqfluence.io</span></div>
+    </a>
+    <a class="card" href="https://aspire.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Aspire</span><span class="card-num">19</span></div>
+      <p class="card-desc">Creator marketplace and lifecycle management for growing brands.</p>
+      <div class="card-foot"><span class="card-tag">Recruitment</span><span class="card-link">aspire.io</span></div>
+    </a>
+    <a class="card" href="https://collabstr.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Collabstr</span><span class="card-num">20</span></div>
+      <p class="card-desc">Hire vetted creators directly; fixed pricing, brief, pay — all in one place.</p>
+      <div class="card-foot"><span class="card-tag">Quick hiring</span><span class="card-link">collabstr.com</span></div>
+    </a>
+    <a class="card" href="https://brandwatch.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Brandwatch Influence</span><span class="card-num">21</span></div>
+      <p class="card-desc">50M+ creators across YouTube/IG/TikTok with contracts and payments built-in.</p>
+      <div class="card-foot"><span class="card-tag">Data-driven</span><span class="card-link">brandwatch.com</span></div>
+    </a>
+    <a class="card" href="https://socialbook.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">SocialBook</span><span class="card-num">22</span></div>
+      <p class="card-desc">YouTube-focused creator database with emails and campaign tools.</p>
+      <div class="card-foot"><span class="card-tag">YouTuber outreach</span><span class="card-link">socialbook.io</span></div>
+    </a>
+    <a class="card" href="https://famesters.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Famesters</span><span class="card-num">23</span></div>
+      <p class="card-desc">Influencer agency platform for end-to-end campaign execution.</p>
+      <div class="card-foot"><span class="card-tag">Managed campaigns</span><span class="card-link">famesters.com</span></div>
+    </a>
+    <a class="card" href="https://influencegrid.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">InfluenceGrid</span><span class="card-num">24</span></div>
+      <p class="card-desc">Free TikTok/Instagram influencer search tool.</p>
+      <div class="card-foot"><span class="card-tag">Free lookups</span><span class="card-link">influencegrid.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="outreach">
+  <div class="cat-head">
+    <h2>Email Finding & Cold Outreach</h2>
+    <span class="count">12 tools · Find emails · Send sequences</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://hunter.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Hunter.io</span><span class="card-num">25</span></div>
+      <p class="card-desc">Find verified email addresses by domain or person name.</p>
+      <div class="card-foot"><span class="card-tag">Creator emails</span><span class="card-link">hunter.io</span></div>
+    </a>
+    <a class="card" href="https://apollo.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Apollo.io</span><span class="card-num">26</span></div>
+      <p class="card-desc">Huge B2B contact database with outreach sequences and CRM.</p>
+      <div class="card-foot"><span class="card-tag">Contact + outreach</span><span class="card-link">apollo.io</span></div>
+    </a>
+    <a class="card" href="https://snov.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Snov.io</span><span class="card-num">27</span></div>
+      <p class="card-desc">Email finder, verifier, drip campaigns in one tool.</p>
+      <div class="card-foot"><span class="card-tag">Outreach at scale</span><span class="card-link">snov.io</span></div>
+    </a>
+    <a class="card" href="https://mailshake.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Mailshake</span><span class="card-num">28</span></div>
+      <p class="card-desc">Simple cold email automation with A/B testing.</p>
+      <div class="card-foot"><span class="card-tag">Sales outreach</span><span class="card-link">mailshake.com</span></div>
+    </a>
+    <a class="card" href="https://lemlist.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Lemlist</span><span class="card-num">29</span></div>
+      <p class="card-desc">Personalized cold email with images/video and LinkedIn steps.</p>
+      <div class="card-foot"><span class="card-tag">Personalization</span><span class="card-link">lemlist.com</span></div>
+    </a>
+    <a class="card" href="https://instantly.ai" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Instantly.ai</span><span class="card-num">30</span></div>
+      <p class="card-desc">Cold email with inbox warm-up and unlimited sending accounts.</p>
+      <div class="card-foot"><span class="card-tag">High volume</span><span class="card-link">instantly.ai</span></div>
+    </a>
+    <a class="card" href="https://woodpecker.co" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Woodpecker</span><span class="card-num">31</span></div>
+      <p class="card-desc">Follow-up sequences with smart deliverability controls.</p>
+      <div class="card-foot"><span class="card-tag">Reliable follow-ups</span><span class="card-link">woodpecker.co</span></div>
+    </a>
+    <a class="card" href="https://smartlead.ai" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Smartlead</span><span class="card-num">32</span></div>
+      <p class="card-desc">AI-driven cold email with multi-inbox rotation.</p>
+      <div class="card-foot"><span class="card-tag">Scaled email</span><span class="card-link">smartlead.ai</span></div>
+    </a>
+    <a class="card" href="https://pitchbox.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Pitchbox</span><span class="card-num">33</span></div>
+      <p class="card-desc">Influencer and blogger outreach with verified contact data.</p>
+      <div class="card-foot"><span class="card-tag">Targeted pitching</span><span class="card-link">pitchbox.com</span></div>
+    </a>
+    <a class="card" href="https://ninjaoutreach.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">NinjaOutreach</span><span class="card-num">34</span></div>
+      <p class="card-desc">Find influencers and manage outreach from one inbox.</p>
+      <div class="card-foot"><span class="card-tag">Outreach CRM</span><span class="card-link">ninjaoutreach.com</span></div>
+    </a>
+    <a class="card" href="https://respona.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Respona</span><span class="card-num">35</span></div>
+      <p class="card-desc">AI outreach platform combining search, email finder and pitching.</p>
+      <div class="card-foot"><span class="card-tag">PR pitching</span><span class="card-link">respona.com</span></div>
+    </a>
+    <a class="card" href="https://reply.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Reply.io</span><span class="card-num">36</span></div>
+      <p class="card-desc">Multi-channel sales engagement (email, LinkedIn, calls).</p>
+      <div class="card-foot"><span class="card-tag">Multi-channel</span><span class="card-link">reply.io</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="crm">
+  <div class="cat-head">
+    <h2>CRM, Pipeline & Database</h2>
+    <span class="count">10 tools · Track every relationship</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://notion.so" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Notion</span><span class="card-num">37</span></div>
+      <p class="card-desc">Flexible docs + databases; perfect for building a custom creator CRM.</p>
+      <div class="card-foot"><span class="card-tag">DB + notes</span><span class="card-link">notion.so</span></div>
+    </a>
+    <a class="card" href="https://airtable.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Airtable</span><span class="card-num">38</span></div>
+      <p class="card-desc">Spreadsheet-database hybrid with views, automations and forms.</p>
+      <div class="card-foot"><span class="card-tag">Visual pipeline</span><span class="card-link">airtable.com</span></div>
+    </a>
+    <a class="card" href="https://hubspot.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">HubSpot CRM</span><span class="card-num">39</span></div>
+      <p class="card-desc">Free full CRM with contact tracking, deals and email sync.</p>
+      <div class="card-foot"><span class="card-tag">Free CRM</span><span class="card-link">hubspot.com</span></div>
+    </a>
+    <a class="card" href="https://pipedrive.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Pipedrive</span><span class="card-num">40</span></div>
+      <p class="card-desc">Visual sales pipeline with drag-and-drop deal stages.</p>
+      <div class="card-foot"><span class="card-tag">Deal pipeline</span><span class="card-link">pipedrive.com</span></div>
+    </a>
+    <a class="card" href="https://monday.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Monday.com</span><span class="card-num">41</span></div>
+      <p class="card-desc">Work OS for team collaboration, projects and CRM.</p>
+      <div class="card-foot"><span class="card-tag">Team collab</span><span class="card-link">monday.com</span></div>
+    </a>
+    <a class="card" href="https://clickup.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">ClickUp</span><span class="card-num">42</span></div>
+      <p class="card-desc">All-in-one work platform with tasks, docs, goals and chat.</p>
+      <div class="card-foot"><span class="card-tag">Unified workspace</span><span class="card-link">clickup.com</span></div>
+    </a>
+    <a class="card" href="https://asana.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Asana</span><span class="card-num">43</span></div>
+      <p class="card-desc">Project and task management for campaigns and deliverables.</p>
+      <div class="card-foot"><span class="card-tag">Campaigns</span><span class="card-link">asana.com</span></div>
+    </a>
+    <a class="card" href="https://trello.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Trello</span><span class="card-num">44</span></div>
+      <p class="card-desc">Simple Kanban boards for tracking creator onboarding stages.</p>
+      <div class="card-foot"><span class="card-tag">Simple boards</span><span class="card-link">trello.com</span></div>
+    </a>
+    <a class="card" href="https://salesforce.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Salesforce</span><span class="card-num">45</span></div>
+      <p class="card-desc">Enterprise CRM with deep customization and reporting.</p>
+      <div class="card-foot"><span class="card-tag">Enterprise</span><span class="card-link">salesforce.com</span></div>
+    </a>
+    <a class="card" href="https://attio.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Attio</span><span class="card-num">46</span></div>
+      <p class="card-desc">Modern, data-driven CRM that auto-enriches contacts.</p>
+      <div class="card-foot"><span class="card-tag">Modern CRM</span><span class="card-link">attio.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="comms">
+  <div class="cat-head">
+    <h2>Communication & Scheduling</h2>
+    <span class="count">9 tools · Calls, chat, calendars</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://calendly.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Calendly</span><span class="card-num">47</span></div>
+      <p class="card-desc">Share a link; creators book meetings based on your availability.</p>
+      <div class="card-foot"><span class="card-tag">Scheduling</span><span class="card-link">calendly.com</span></div>
+    </a>
+    <a class="card" href="https://cal.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Cal.com</span><span class="card-num">48</span></div>
+      <p class="card-desc">Open-source scheduling alternative with more customization.</p>
+      <div class="card-foot"><span class="card-tag">Custom scheduling</span><span class="card-link">cal.com</span></div>
+    </a>
+    <a class="card" href="https://zoom.us" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Zoom</span><span class="card-num">49</span></div>
+      <p class="card-desc">Reliable video meetings with recording and transcripts.</p>
+      <div class="card-foot"><span class="card-tag">Video calls</span><span class="card-link">zoom.us</span></div>
+    </a>
+    <a class="card" href="https://meet.google.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Google Meet</span><span class="card-num">50</span></div>
+      <p class="card-desc">Built-in Google Workspace video calls, no install needed.</p>
+      <div class="card-foot"><span class="card-tag">Quick calls</span><span class="card-link">meet.google.com</span></div>
+    </a>
+    <a class="card" href="https://loom.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Loom</span><span class="card-num">51</span></div>
+      <p class="card-desc">Record short video messages to pitch or explain briefs.</p>
+      <div class="card-foot"><span class="card-tag">Async pitches</span><span class="card-link">loom.com</span></div>
+    </a>
+    <a class="card" href="https://slack.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Slack</span><span class="card-num">52</span></div>
+      <p class="card-desc">Team chat with channels; many creator communities live here.</p>
+      <div class="card-foot"><span class="card-tag">Team chat</span><span class="card-link">slack.com</span></div>
+    </a>
+    <a class="card" href="https://discord.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Discord</span><span class="card-num">53</span></div>
+      <p class="card-desc">Community platform where many gaming/tech creators hang out.</p>
+      <div class="card-foot"><span class="card-tag">Communities</span><span class="card-link">discord.com</span></div>
+    </a>
+    <a class="card" href="https://telegram.org" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Telegram</span><span class="card-num">54</span></div>
+      <p class="card-desc">Messaging app widely used by international creators.</p>
+      <div class="card-foot"><span class="card-tag">Direct messaging</span><span class="card-link">telegram.org</span></div>
+    </a>
+    <a class="card" href="https://business.whatsapp.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">WhatsApp Business</span><span class="card-num">55</span></div>
+      <p class="card-desc">Business messaging with templates and quick replies.</p>
+      <div class="card-foot"><span class="card-tag">Global chat</span><span class="card-link">business.whatsapp.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="analytics">
+  <div class="cat-head">
+    <h2>Analytics, Trends & Competitive Intel</h2>
+    <span class="count">11 tools · See what's working</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://similarweb.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">SimilarWeb</span><span class="card-num">56</span></div>
+      <p class="card-desc">Traffic, audience and competitor benchmarking for any website.</p>
+      <div class="card-foot"><span class="card-tag">Audience research</span><span class="card-link">similarweb.com</span></div>
+    </a>
+    <a class="card" href="https://buzzsumo.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">BuzzSumo</span><span class="card-num">57</span></div>
+      <p class="card-desc">Find top-performing content and creators by topic.</p>
+      <div class="card-foot"><span class="card-tag">Content trends</span><span class="card-link">buzzsumo.com</span></div>
+    </a>
+    <a class="card" href="https://trends.google.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Google Trends</span><span class="card-num">58</span></div>
+      <p class="card-desc">Free tool to see what topics are rising by region.</p>
+      <div class="card-foot"><span class="card-tag">Niche validation</span><span class="card-link">trends.google.com</span></div>
+    </a>
+    <a class="card" href="https://rivaliq.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Rival IQ</span><span class="card-num">59</span></div>
+      <p class="card-desc">Competitive social analytics across major platforms.</p>
+      <div class="card-foot"><span class="card-tag">Benchmarking</span><span class="card-link">rivaliq.com</span></div>
+    </a>
+    <a class="card" href="https://sproutsocial.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Sprout Social</span><span class="card-num">60</span></div>
+      <p class="card-desc">Social media management plus listening and influencer CRM.</p>
+      <div class="card-foot"><span class="card-tag">Social mgmt</span><span class="card-link">sproutsocial.com</span></div>
+    </a>
+    <a class="card" href="https://hootsuite.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Hootsuite</span><span class="card-num">61</span></div>
+      <p class="card-desc">Schedule posts and monitor multiple social accounts.</p>
+      <div class="card-foot"><span class="card-tag">Multi-platform</span><span class="card-link">hootsuite.com</span></div>
+    </a>
+    <a class="card" href="https://later.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Later</span><span class="card-num">62</span></div>
+      <p class="card-desc">Visual social scheduler with link-in-bio and analytics.</p>
+      <div class="card-foot"><span class="card-tag">IG/TikTok</span><span class="card-link">later.com</span></div>
+    </a>
+    <a class="card" href="https://explodingtopics.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Exploding Topics</span><span class="card-num">63</span></div>
+      <p class="card-desc">Spot fast-growing topics before they go mainstream.</p>
+      <div class="card-foot"><span class="card-tag">Early trends</span><span class="card-link">explodingtopics.com</span></div>
+    </a>
+    <a class="card" href="https://ahrefs.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Ahrefs</span><span class="card-num">64</span></div>
+      <p class="card-desc">SEO toolkit with content explorer and site analysis.</p>
+      <div class="card-foot"><span class="card-tag">SEO research</span><span class="card-link">ahrefs.com</span></div>
+    </a>
+    <a class="card" href="https://semrush.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Semrush</span><span class="card-num">65</span></div>
+      <p class="card-desc">SEO and competitive research suite with influencer module.</p>
+      <div class="card-foot"><span class="card-tag">Market research</span><span class="card-link">semrush.com</span></div>
+    </a>
+    <a class="card" href="https://keyhole.co" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Keyhole</span><span class="card-num">66</span></div>
+      <p class="card-desc">Real-time hashtag and campaign tracking across socials.</p>
+      <div class="card-foot"><span class="card-tag">Campaign tracking</span><span class="card-link">keyhole.co</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="language">
+  <div class="cat-head">
+    <h2>Translation & Language</h2>
+    <span class="count">6 tools · Speak every market</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://deepl.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">DeepL</span><span class="card-num">67</span></div>
+      <p class="card-desc">Highest-quality AI translator, especially for EU languages.</p>
+      <div class="card-foot"><span class="card-tag">Pro translation</span><span class="card-link">deepl.com</span></div>
+    </a>
+    <a class="card" href="https://translate.google.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Google Translate</span><span class="card-num">68</span></div>
+      <p class="card-desc">Free instant translation across 100+ languages.</p>
+      <div class="card-foot"><span class="card-tag">Quick translate</span><span class="card-link">translate.google.com</span></div>
+    </a>
+    <a class="card" href="https://papago.naver.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Naver Papago</span><span class="card-num">69</span></div>
+      <p class="card-desc">Strong translator for Korean, Japanese and other Asian languages.</p>
+      <div class="card-foot"><span class="card-tag">Asian languages</span><span class="card-link">papago.naver.com</span></div>
+    </a>
+    <a class="card" href="https://grammarly.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Grammarly</span><span class="card-num">70</span></div>
+      <p class="card-desc">Writing assistant that fixes grammar and tone in English.</p>
+      <div class="card-foot"><span class="card-tag">English polish</span><span class="card-link">grammarly.com</span></div>
+    </a>
+    <a class="card" href="https://chatgpt.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">ChatGPT</span><span class="card-num">71</span></div>
+      <p class="card-desc">AI assistant for drafting emails, briefs and translation.</p>
+      <div class="card-foot"><span class="card-tag">AI writing</span><span class="card-link">chatgpt.com</span></div>
+    </a>
+    <a class="card" href="https://claude.ai" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Claude</span><span class="card-num">72</span></div>
+      <p class="card-desc">AI assistant for long-form writing, analysis and research.</p>
+      <div class="card-foot"><span class="card-tag">AI analysis</span><span class="card-link">claude.ai</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="legal">
+  <div class="cat-head">
+    <h2>Contracts, Signatures & Legal</h2>
+    <span class="count">4 tools · Sign deals fast</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://docusign.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">DocuSign</span><span class="card-num">73</span></div>
+      <p class="card-desc">Industry-standard e-signature for creator contracts.</p>
+      <div class="card-foot"><span class="card-tag">E-signature</span><span class="card-link">docusign.com</span></div>
+    </a>
+    <a class="card" href="https://pandadoc.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">PandaDoc</span><span class="card-num">74</span></div>
+      <p class="card-desc">Contract templates, e-sign and proposals with analytics.</p>
+      <div class="card-foot"><span class="card-tag">Templates</span><span class="card-link">pandadoc.com</span></div>
+    </a>
+    <a class="card" href="https://sign.dropbox.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Dropbox Sign</span><span class="card-num">75</span></div>
+      <p class="card-desc">Simple, affordable e-signature integrated with Dropbox.</p>
+      <div class="card-foot"><span class="card-tag">Simple sign</span><span class="card-link">sign.dropbox.com</span></div>
+    </a>
+    <a class="card" href="https://ironcladapp.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Ironclad</span><span class="card-num">76</span></div>
+      <p class="card-desc">Contract lifecycle management for larger teams.</p>
+      <div class="card-foot"><span class="card-tag">Contract workflow</span><span class="card-link">ironcladapp.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="payments">
+  <div class="cat-head">
+    <h2>Payments & Compensation</h2>
+    <span class="count">6 tools · Pay creators globally</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://wise.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Wise</span><span class="card-num">77</span></div>
+      <p class="card-desc">Low-fee international transfers with real exchange rates.</p>
+      <div class="card-foot"><span class="card-tag">Cross-border</span><span class="card-link">wise.com</span></div>
+    </a>
+    <a class="card" href="https://payoneer.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Payoneer</span><span class="card-num">78</span></div>
+      <p class="card-desc">Global payments popular with freelancers and creators worldwide.</p>
+      <div class="card-foot"><span class="card-tag">Global payouts</span><span class="card-link">payoneer.com</span></div>
+    </a>
+    <a class="card" href="https://tipalti.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Tipalti</span><span class="card-num">79</span></div>
+      <p class="card-desc">Mass payout automation with tax compliance.</p>
+      <div class="card-foot"><span class="card-tag">Bulk payouts</span><span class="card-link">tipalti.com</span></div>
+    </a>
+    <a class="card" href="https://paypal.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">PayPal</span><span class="card-num">80</span></div>
+      <p class="card-desc">Widely accepted global payment option.</p>
+      <div class="card-foot"><span class="card-tag">Simple global</span><span class="card-link">paypal.com</span></div>
+    </a>
+    <a class="card" href="https://stripe.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Stripe</span><span class="card-num">81</span></div>
+      <p class="card-desc">Payment processing and payouts via Stripe Connect.</p>
+      <div class="card-foot"><span class="card-tag">Programmable</span><span class="card-link">stripe.com</span></div>
+    </a>
+    <a class="card" href="https://deel.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Deel</span><span class="card-num">82</span></div>
+      <p class="card-desc">Contractor payments and compliance in 150+ countries.</p>
+      <div class="card-foot"><span class="card-tag">Contractor compliance</span><span class="card-link">deel.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="media">
+  <div class="cat-head">
+    <h2>Content, Media & Asset Management</h2>
+    <span class="count">6 tools · Briefs, decks, files</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://drive.google.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Google Drive</span><span class="card-num">83</span></div>
+      <p class="card-desc">Cloud storage and sharing for briefs, decks and assets.</p>
+      <div class="card-foot"><span class="card-tag">File sharing</span><span class="card-link">drive.google.com</span></div>
+    </a>
+    <a class="card" href="https://dropbox.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Dropbox</span><span class="card-num">84</span></div>
+      <p class="card-desc">Reliable cloud storage with smart sync and file requests.</p>
+      <div class="card-foot"><span class="card-tag">Large transfers</span><span class="card-link">dropbox.com</span></div>
+    </a>
+    <a class="card" href="https://frame.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Frame.io</span><span class="card-num">85</span></div>
+      <p class="card-desc">Video review with frame-accurate comments for creator content.</p>
+      <div class="card-foot"><span class="card-tag">Video review</span><span class="card-link">frame.io</span></div>
+    </a>
+    <a class="card" href="https://canva.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Canva</span><span class="card-num">86</span></div>
+      <p class="card-desc">Easy design tool for decks, briefs and social assets.</p>
+      <div class="card-foot"><span class="card-tag">Quick design</span><span class="card-link">canva.com</span></div>
+    </a>
+    <a class="card" href="https://figma.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Figma</span><span class="card-num">87</span></div>
+      <p class="card-desc">Collaborative design and brief/asset boards.</p>
+      <div class="card-foot"><span class="card-tag">Collab design</span><span class="card-link">figma.com</span></div>
+    </a>
+    <a class="card" href="https://wetransfer.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">WeTransfer</span><span class="card-num">88</span></div>
+      <p class="card-desc">Send big files without accounts.</p>
+      <div class="card-foot"><span class="card-tag">Fast transfers</span><span class="card-link">wetransfer.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="tracking">
+  <div class="cat-head">
+    <h2>Link Tracking, Attribution & Performance</h2>
+    <span class="count">5 tools · Measure what creators drive</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://bitly.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Bitly</span><span class="card-num">89</span></div>
+      <p class="card-desc">Short branded links with click analytics.</p>
+      <div class="card-foot"><span class="card-tag">Link tracking</span><span class="card-link">bitly.com</span></div>
+    </a>
+    <a class="card" href="https://utm.io" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">UTM.io</span><span class="card-num">90</span></div>
+      <p class="card-desc">Create and manage UTM-tagged links at scale.</p>
+      <div class="card-foot"><span class="card-tag">Attribution</span><span class="card-link">utm.io</span></div>
+    </a>
+    <a class="card" href="https://analytics.google.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Google Analytics 4</span><span class="card-num">91</span></div>
+      <p class="card-desc">Free web analytics for tracking creator-driven traffic.</p>
+      <div class="card-foot"><span class="card-tag">Web attribution</span><span class="card-link">analytics.google.com</span></div>
+    </a>
+    <a class="card" href="https://impact.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Impact.com</span><span class="card-num">92</span></div>
+      <p class="card-desc">Partnership platform for affiliates, creators and payouts.</p>
+      <div class="card-foot"><span class="card-tag">Affiliate tracking</span><span class="card-link">impact.com</span></div>
+    </a>
+    <a class="card" href="https://refersion.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Refersion</span><span class="card-num">93</span></div>
+      <p class="card-desc">Affiliate and creator commission tracking for e-commerce.</p>
+      <div class="card-foot"><span class="card-tag">Commissions</span><span class="card-link">refersion.com</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="cat" id="productivity">
+  <div class="cat-head">
+    <h2>Productivity, Automation & Misc.</h2>
+    <span class="count">7 tools · The glue layer</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="https://zapier.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Zapier</span><span class="card-num">94</span></div>
+      <p class="card-desc">Connects 7,000+ apps to automate workflows without code.</p>
+      <div class="card-foot"><span class="card-tag">Automation</span><span class="card-link">zapier.com</span></div>
+    </a>
+    <a class="card" href="https://make.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Make</span><span class="card-num">95</span></div>
+      <p class="card-desc">Visual automation builder, more powerful than Zapier for complex flows.</p>
+      <div class="card-foot"><span class="card-tag">Advanced flows</span><span class="card-link">make.com</span></div>
+    </a>
+    <a class="card" href="https://clay.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Clay</span><span class="card-num">96</span></div>
+      <p class="card-desc">Data enrichment + outreach in a spreadsheet-like interface.</p>
+      <div class="card-foot"><span class="card-tag">Enriched lists</span><span class="card-link">clay.com</span></div>
+    </a>
+    <a class="card" href="https://fireflies.ai" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Fireflies.ai</span><span class="card-num">97</span></div>
+      <p class="card-desc">AI meeting notes and summaries for calls.</p>
+      <div class="card-foot"><span class="card-tag">Call transcripts</span><span class="card-link">fireflies.ai</span></div>
+    </a>
+    <a class="card" href="https://business.linkedin.com/sales-solutions" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">LinkedIn Sales Navigator</span><span class="card-num">98</span></div>
+      <p class="card-desc">Advanced LinkedIn search for finding creators, agents and managers.</p>
+      <div class="card-foot"><span class="card-tag">B2B search</span><span class="card-link">linkedin.com/sales</span></div>
+    </a>
+    <a class="card" href="https://1password.com" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">1Password</span><span class="card-num">99</span></div>
+      <p class="card-desc">Team password manager for shared platform logins.</p>
+      <div class="card-foot"><span class="card-tag">Secure logins</span><span class="card-link">1password.com</span></div>
+    </a>
+    <a class="card" href="https://toggl.com/track" target="_blank" rel="noopener">
+      <div class="card-head"><span class="card-name">Toggl Track</span><span class="card-num">100</span></div>
+      <p class="card-desc">Simple time tracking to see how many hours go per creator/campaign.</p>
+      <div class="card-foot"><span class="card-tag">Time tracking</span><span class="card-link">toggl.com/track</span></div>
+    </a>
+  </div>
+</section>
+
+<div class="empty" id="empty">No tools match your search.</div>
+
+<aside class="starter">
+  <div class="eyebrow">Minimum starter stack</div>
+  <h3>Eight tools to launch with.</h3>
+  <div class="starter-tools">
+    <span>Modash</span>
+    <span>Hunter.io</span>
+    <span>Notion</span>
+    <span>Calendly</span>
+    <span>DocuSign</span>
+    <span>Wise</span>
+    <span>DeepL</span>
+    <span>Loom</span>
+  </div>
+</aside>
+
+</main>
+
+<script>
+  const search = document.getElementById('search');
+  const cards = document.querySelectorAll('.card');
+  const sections = document.querySelectorAll('section.cat');
+  const empty = document.getElementById('empty');
+
+  search.addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    let anyVisible = false;
+
+    sections.forEach(section => {
+      const sectionCards = section.querySelectorAll('.card');
+      let sectionHasMatch = false;
+      sectionCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const match = !q || text.includes(q);
+        card.style.display = match ? '' : 'none';
+        if (match) { sectionHasMatch = true; anyVisible = true; }
+      });
+      section.classList.toggle('hidden', !sectionHasMatch);
+    });
+
+    empty.classList.toggle('show', !anyVisible);
+  });
+</script>
 
 </body>
 </html>
