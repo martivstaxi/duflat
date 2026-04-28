@@ -128,7 +128,7 @@
   /* ── Category pills ────────────────────────────── */
   .pills {
     position: sticky;
-    top: 65px;
+    top: 0;
     z-index: 90;
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -353,18 +353,6 @@
 </style>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="topbar-inner">
-    <a href="#top" class="brand">Creator Manager Tools</a>
-    <div class="search-wrap">
-      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M11 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <input id="search" type="search" placeholder="Search 100 tools…" autocomplete="off">
-    </div>
-  </div>
-</header>
 
 <div id="top" class="hero">
   <h1>The Creator Manager's toolkit.</h1>
@@ -989,8 +977,6 @@
   </div>
 </section>
 
-<div class="empty" id="empty">No tools match your search.</div>
-
 <aside class="starter">
   <div class="eyebrow">Minimum starter stack</div>
   <h3>Eight tools to launch with.</h3>
@@ -1008,31 +994,6 @@
 
 </main>
 
-<script>
-  const search = document.getElementById('search');
-  const cards = document.querySelectorAll('.card');
-  const sections = document.querySelectorAll('section.cat');
-  const empty = document.getElementById('empty');
-
-  search.addEventListener('input', (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    let anyVisible = false;
-
-    sections.forEach(section => {
-      const sectionCards = section.querySelectorAll('.card');
-      let sectionHasMatch = false;
-      sectionCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        const match = !q || text.includes(q);
-        card.style.display = match ? '' : 'none';
-        if (match) { sectionHasMatch = true; anyVisible = true; }
-      });
-      section.classList.toggle('hidden', !sectionHasMatch);
-    });
-
-    empty.classList.toggle('show', !anyVisible);
-  });
-</script>
 
 </body>
 </html>
