@@ -411,6 +411,27 @@ def social_discover_telegram():
     return jsonify(discover_telegram())
 
 
+@app.route('/social/debug-telegram-ddg', methods=['GET'])
+def social_debug_telegram_ddg():
+    """Debug: return raw DDG site:t.me results for a query, no fetch/save."""
+    q = request.args.get('q', 'bilibili')
+    timelimit = request.args.get('t')  # None / 'd' / 'w' / 'm' / 'y'
+    if timelimit == '':
+        timelimit = None
+    from modules.social_listening import _ddg_search
+    try:
+        urls = _ddg_search(f'site:t.me {q}', max_results=20,
+                           region='wt-wt', timelimit=timelimit)
+    except Exception as e:
+        return jsonify({'error': str(e), 'query': q}), 500
+    return jsonify({
+        'query': f'site:t.me {q}',
+        'timelimit': timelimit,
+        'count': len(urls or []),
+        'urls': urls or [],
+    })
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
