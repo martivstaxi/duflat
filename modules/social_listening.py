@@ -3677,8 +3677,13 @@ def discover_substack():
 # `site:t.me` operator (fallback mode, observed 2026-04-29). Always
 # query with `freshness=None` so site: is honoured.
 
-# Multi-alphabet "bilibili" variants for both Brave queries and blob
-# filter. Centralised so future sources can reuse via _blob_has_bili_variant.
+# Multi-alphabet "bilibili" variants. The full list is used by
+# `_blob_has_bili_variant` (cheap in-memory check on every post). The
+# subset `_BILI_BRAVE_QUERIES` is what actually goes to Brave Search —
+# fewer queries keeps us inside gunicorn 120s and Brave 1 RPS free
+# tier. The three chosen scripts (Latin, Simplified, Cyrillic) surface
+# the broadest channel pool empirically; other scripts can be added if
+# yield analysis later shows missed coverage.
 _BILI_ALPHA_VARIANTS = [
     'bilibili',
     'B站',
@@ -3691,6 +3696,7 @@ _BILI_ALPHA_VARIANTS = [
     'بيليبيلي',
     'บิลิบิลิ',
 ]
+_BILI_BRAVE_QUERIES = ['bilibili', '哔哩哔哩', 'Билибили']
 _TELEGRAM_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                 '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 _TELEGRAM_CHANNEL_RE = re.compile(r'^https?://t\.me/(?:s/)?([A-Za-z0-9_]+)(?:[/?#].*)?$')
@@ -3808,8 +3814,8 @@ def discover_telegram():
     channels_seen = set()
     channels_ordered = []  # preserve discovery order, source by source
 
-    for variant in _BILI_ALPHA_VARIANTS:
-        if time.time() - fetch_start > 25:
+    for variant in _BILI_BRAVE_QUERIES:
+        if time.time() - fetch_start > 15:
             break
         try:
             results = _brave_search(
