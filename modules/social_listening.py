@@ -3600,6 +3600,223 @@ def discover_substack():
     }
 
 
+# ─────────────────────────────────────────────
+# TELEGRAM — DDG site:t.me search across alphabet variants of "bilibili"
+# ─────────────────────────────────────────────
+#
+# Channel-poll on t.me/s/{channel} yields ~0% Bilibili mentions in any
+# China-watcher / anime / esports channel's recent post window (verified
+# 2026-04-29 across 40+ candidate channels). Telegram has no public
+# cross-channel search API. Pivot: let DDG do the search by indexing
+# t.me, then we fetch each matching post's preview HTML.
+#
+# Bilibili's name shows up in many alphabets — Latin (BiliBili), Han
+# (哔哩哔哩 / 嗶哩嗶哩), Cyrillic (Билибили), Hangul (비리비리),
+# Katakana (ビリビリ), Arabic (بيليبيلي), Thai (บิลิบิลิ). Each variant
+# is a separate DDG query so non-Latin posts surface.
+
+# Multi-alphabet "bilibili" variants for both DDG queries and blob filter.
+_BILI_ALPHA_VARIANTS = [
+    'bilibili',
+    'B站',
+    '哔哩哔哩',
+    '嗶哩嗶哩',
+    'Билибили',
+    '비리비리',
+    'ビリビリ',
+    'びりびり',
+    'بيليبيلي',
+    'บิลิบิลิ',
+]
+_TELEGRAM_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+_TELEGRAM_POST_RE = re.compile(r'^https?://t\.me/([A-Za-z0-9_]+)/(\d+)(?:[?#].*)?$')
+
+
+def _blob_has_bili_variant(text):
+    """True if the (lowercased-once) text contains any alphabet variant
+    of 'bilibili'. Used as the per-source blob pre-filter so non-Latin
+    mentions are not silently dropped."""
+    if not text:
+        return False
+    t = text.lower()
+    for v in _BILI_ALPHA_VARIANTS:
+        if v.lower() in t:
+            return True
+    return False
+
+
+def _fetch_telegram_post(channel, post_id):
+    """Fetch one t.me/{channel}/{post_id} post's embed-style preview.
+
+    Returns dict with text/author/datetime, or None on any failure."""
+    import time
+    if _cooling_down('t.me'):
+        return None
+    url = f'https://t.me/{channel}/{post_id}?embed=1&mode=tme'
+    try:
+        resp = requests.get(url, headers={'User-Agent': _TELEGRAM_UA}, timeout=8)
+    except Exception as e:
+        print(f'[telegram] {channel}/{post_id} request_exception={e}', flush=True)
+        return None
+    if resp.status_code in (429, 403):
+        _enter_cooldown('t.me', 600)
+        print(f'[telegram] {channel}/{post_id} RATE_LIMITED status={resp.status_code}', flush=True)
+        return None
+    if resp.status_code != 200:
+        return None
+    try:
+        soup = BeautifulSoup(resp.text, 'html.parser')
+    except Exception:
+        return None
+    text_el = soup.select_one('.tgme_widget_message_text')
+    if not text_el:
+        return None
+    text = text_el.get_text(' ', strip=True)
+    if not text:
+        return None
+    author_el = soup.select_one('.tgme_widget_message_owner_name') \
+        or soup.select_one('.tgme_widget_message_author_name')
+    author = author_el.get_text(strip=True) if author_el else channel
+    date_el = soup.select_one('.tgme_widget_message_date time')
+    iso_dt = ''
+    if date_el and date_el.has_attr('datetime'):
+        iso_dt = date_el['datetime'][:10]
+    time.sleep(0.3)
+    return {'text': text, 'author': author, 'iso_date': iso_dt}
+
+
+def discover_telegram():
+    """Discover Bilibili-related Telegram public posts via DDG site search.
+
+    For each alphabet variant of 'bilibili', query DDG with `site:t.me`
+    so DuckDuckGo's index does the cross-channel search Telegram does
+    not provide natively. Each result URL points to a specific post
+    (t.me/{channel}/{post_id}); we fetch the embed-style preview to get
+    clean post text + author + ISO date, blob-filter for any variant,
+    then run the shared Haiku pipeline."""
+    import time
+    fetch_start = time.time()
+    candidate_urls = []
+    seen = set()
+
+    for variant in _BILI_ALPHA_VARIANTS:
+        if time.time() - fetch_start > 30:
+            break
+        try:
+            results = _ddg_search(
+                f'site:t.me {variant}',
+                max_results=15,
+                region='wt-wt',
+                timelimit='m',
+            )
+        except Exception as e:
+            print(f'[telegram] ddg variant={variant!r} err={e}', flush=True)
+            continue
+        for url in results or []:
+            m = _TELEGRAM_POST_RE.match(url)
+            if not m:
+                continue
+            channel, post_id = m.group(1), m.group(2)
+            normalized = f'https://t.me/{channel}/{post_id}'
+            if normalized in seen:
+                continue
+            seen.add(normalized)
+            candidate_urls.append((channel, post_id, normalized))
+        print(f'[telegram] ddg variant={variant!r} candidates_so_far={len(candidate_urls)}', flush=True)
+
+    print(f'[telegram] DDG total unique post URLs={len(candidate_urls)}', flush=True)
+    if not candidate_urls:
+        return {'platform': 'telegram', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    candidate_urls = candidate_urls[:30]
+
+    all_items = []
+    for channel, post_id, url in candidate_urls:
+        if time.time() - fetch_start > 60:
+            break
+        post = _fetch_telegram_post(channel, post_id)
+        if not post:
+            continue
+        if not _blob_has_bili_variant(post['text']):
+            continue
+        iso = post['iso_date']
+        if iso and iso < '2026-01-01':
+            continue
+        if not iso:
+            iso = date.today().strftime('%Y-%m-%d')
+        all_items.append({
+            'url': url,
+            'url_hash': hash_url(url),
+            'platform': 'telegram',
+            'text': f'[@{post["author"]} on t.me/{channel}] {post["text"]}'[:5000],
+            'content_date': iso,
+            'dates_found': [iso],
+        })
+
+    print(f'[telegram] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'telegram', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[telegram] check_urls error: {e}', flush=True)
+        return {'platform': 'telegram', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[telegram] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'telegram', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 't.me',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[telegram] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[telegram] haiku error: {e}', flush=True)
+        return {'platform': 'telegram', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[telegram] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[telegram] save error: {e}', flush=True)
+        return {'platform': 'telegram', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'telegram',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0
