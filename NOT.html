@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOT — Holder Analyzer</title>
+<style>
+  :root {
+    --bg: #fbfbfd;
+    --bg-elevated: #ffffff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --border: #d2d2d7;
+    --border-soft: #e8e8ed;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --accent-soft: #e8f1fc;
+    --tag-bg: #f5f5f7;
+    --green: #34c759;
+    --red: #ff3b30;
+    --orange: #ff9500;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.04);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header.top h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+  }
+  header.top .sub {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  header.top .nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    margin-left: 16px;
+  }
+  header.top .nav a:hover { text-decoration: underline; }
+
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+  .card-pad { padding: 20px 24px; }
+  .card h2 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+  .card .hint {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin: 0 0 12px;
+  }
+
+  /* Drop zone */
+  .drop {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 40px 24px;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+    cursor: pointer;
+  }
+  .drop:hover, .drop.over {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .drop-title { font-size: 15px; font-weight: 500; }
+  .drop-sub { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; }
+  .drop input { display: none; }
+
+  /* Snapshot pills */
+  .snap-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .snap-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 12px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-size: 13px;
+  }
+  .snap-pill .pill-name { font-weight: 500; }
+  .snap-pill .pill-meta { color: var(--text-tertiary); font-size: 12px; }
+  .snap-pill button {
+    border: none; background: transparent; cursor: pointer;
+    color: var(--text-tertiary); font-size: 16px; line-height: 1;
+    padding: 2px 4px; border-radius: 4px;
+  }
+  .snap-pill button:hover { background: rgba(0,0,0,.06); color: var(--red); }
+
+  /* Stats grid */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    padding: 14px 16px;
+    background: var(--tag-bg);
+    border-radius: 10px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls input[type="text"], .controls input[type="number"], .controls select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-family: inherit;
+  }
+  .controls input[type="text"] { min-width: 280px; }
+  .controls input:focus, .controls select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,113,227,.15);
+  }
+  .btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { background: var(--tag-bg); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .label-inline {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text); }
+  thead th.sorted { color: var(--accent); }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    font-variant-numeric: tabular-nums;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--accent-soft); }
+  td.addr {
+    font-family: "SF Mono", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text);
+    word-break: break-all;
+    max-width: 360px;
+  }
+  td.num { text-align: right; white-space: nowrap; }
+  td.delta-pos { color: var(--green); }
+  td.delta-neg { color: var(--red); }
+  td.delta-zero { color: var(--text-tertiary); }
+  .rank { color: var(--text-tertiary); font-size: 12px; width: 40px; }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    margin-left: 6px;
+  }
+  .badge.new { background: #d4edda; color: #155724; }
+  .badge.gone { background: #f8d7da; color: #721c24; }
+
+  /* Distribution bars */
+  .dist {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .dist-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 80px 110px;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .dist-bar {
+    height: 8px;
+    background: var(--tag-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dist-bar > div {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  .dist-pct { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .dist-cnt { color: var(--text-tertiary); font-variant-numeric: tabular-nums; text-align: right; }
+
+  .empty {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 16px;
+  }
+  .tab {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 24px 16px 60px; }
+    header.top h1 { font-size: 26px; }
+    .dist-row { grid-template-columns: 130px 1fr 60px; }
+    .dist-row .dist-cnt { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>NOT — Holder Analyzer</h1>
+      <p class="sub">Upload one or more <code>NOT_*.csv</code> snapshots. Everything runs locally in your browser — no upload to server.</p>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/tools.html">Tools</a>
+    </nav>
+  </header>
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="card-pad">
+      <label for="fileInput" class="drop" id="dropZone">
+        <div class="drop-title">Drop CSV files here or click to browse</div>
+        <div class="drop-sub">Format: <code>address,balance_NOT</code> · Multiple files = snapshots over time</div>
+        <input id="fileInput" type="file" accept=".csv,text/csv" multiple>
+      </label>
+      <div class="snap-list" id="snapList"></div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="card">
+    <div class="empty">
+      No data loaded. Upload a CSV to begin.
+    </div>
+  </div>
+
+  <!-- Main panel (hidden until data) -->
+  <div id="mainPanel" style="display:none">
+
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-pad">
+        <h2>Settings</h2>
+        <div class="controls">
+          <span class="label-inline">Decimals:</span>
+          <input id="decimalsInput" type="number" min="0" max="18" value="9" style="width:70px">
+          <span class="label-inline">Active snapshot:</span>
+          <select id="activeSnap"></select>
+          <span class="label-inline">Compare to:</span>
+          <select id="compareSnap"><option value="">— none —</option></select>
+        </div>
+        <p class="hint" style="margin-top:10px">NOT on TON uses 9 decimals. Change if your data uses a different scale.</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <div class="card-pad">
+        <h2>Overview</h2>
+        <div class="stats" id="statsGrid"></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card">
+      <div class="card-pad">
+        <div class="tabs">
+          <div class="tab active" data-tab="holders">Holders</div>
+          <div class="tab" data-tab="dist">Distribution</div>
+          <div class="tab" data-tab="diff">Snapshot Diff</div>
+          <div class="tab" data-tab="search">Address Lookup</div>
+        </div>
+
+        <!-- Holders tab -->
+        <div class="tab-panel active" id="tab-holders">
+          <div class="toolbar">
+            <div class="controls">
+              <input id="holderSearch" type="text" placeholder="Filter by address contains…">
+              <span class="label-inline">Min balance:</span>
+              <input id="minBalance" type="number" min="0" step="any" value="0" style="width:120px">
+              <span class="label-inline">Show:</span>
+              <select id="pageSize">
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="5000">5000</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="exportBtn">Export filtered CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="holdersTable">
+              <thead>
+                <tr>
+                  <th class="rank">#</th>
+                  <th data-sort="addr">Address</th>
+                  <th data-sort="balance" class="num sorted">Balance NOT ▼</th>
+                  <th data-sort="pct" class="num">Share %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="holdersPagination"></div>
+        </div>
+
+        <!-- Distribution tab -->
+        <div class="tab-panel" id="tab-dist">
+          <p class="hint">Holder distribution by balance bucket (active snapshot).</p>
+          <div class="dist" id="distList"></div>
+        </div>
+
+        <!-- Diff tab -->
+        <div class="tab-panel" id="tab-diff">
+          <p class="hint" id="diffHint">Pick two snapshots in Settings to enable comparison.</p>
+          <div id="diffStats" class="stats" style="margin-bottom:16px"></div>
+          <div class="toolbar" id="diffControls" style="display:none">
+            <div class="controls">
+              <span class="label-inline">Show:</span>
+              <select id="diffFilter">
+                <option value="changed">Changed only</option>
+                <option value="up">Increased</option>
+                <option value="down">Decreased</option>
+                <option value="new">New holders</option>
+                <option value="gone">Exited holders</option>
+                <option value="all">All</option>
+              </select>
+              <span class="label-inline">Min |Δ|:</span>
+              <input id="diffMin" type="number" min="0" step="any" value="0" style="width:120px">
+            </div>
+          </div>
+          <div class="table-wrap" id="diffTableWrap" style="display:none">
+            <table id="diffTable">
+              <thead>
+                <tr>
+                  <th class="rank">#</th>
+                  <th data-sort="addr">Address</th>
+                  <th data-sort="prev" class="num">Before</th>
+                  <th data-sort="curr" class="num">After</th>
+                  <th data-sort="delta" class="num sorted">Δ NOT ▼</th>
+                  <th data-sort="pct" class="num">Δ %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="diffPagination"></div>
+        </div>
+
+        <!-- Search tab -->
+        <div class="tab-panel" id="tab-search">
+          <div class="controls">
+            <input id="lookupInput" type="text" placeholder="Paste full or partial address…">
+          </div>
+          <div id="lookupResult" style="margin-top:16px"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">All data stays in your browser. Refresh the page to clear.</p>
+</div>
+
+<script>
+/* ============================================================
+   NOT Holder Analyzer — fully client-side
+   Data model:
+     snapshots: [{ id, name, size, rows: number, map: Map<addr, BigInt balance>, total: BigInt }]
+   We store balances as BigInt of the raw integer in the CSV (no decimal scaling),
+   so we never lose precision for large sums. We only divide for display.
+   ============================================================ */
+
+const state = {
+  snapshots: [],         // ordered by upload
+  decimals: 9,
+  activeId: null,
+  compareId: null,
+  holderSort: { key: 'balance', dir: 'desc' },
+  diffSort:   { key: 'delta',   dir: 'desc' },
+  holderPage: 0,
+  diffPage:   0,
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+/* ---------- helpers ---------- */
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function fmtInt(n) { return Number(n).toLocaleString('en-US'); }
+function fmtBig(n) { return n.toLocaleString('en-US'); }
+
+// Convert raw BigInt balance to human Number (lossy for display).
+function toHuman(raw, dec = state.decimals) {
+  if (raw === 0n || raw === undefined) return 0;
+  if (dec === 0) return Number(raw);
+  const s = raw.toString();
+  if (s.length <= dec) {
+    return Number('0.' + s.padStart(dec, '0'));
+  }
+  const intPart = s.slice(0, -dec);
+  const fracPart = s.slice(-dec);
+  return Number(intPart + '.' + fracPart);
+}
+
+function fmtNot(raw, dec = state.decimals) {
+  const v = toHuman(raw, dec);
+  if (v === 0) return '0';
+  if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + 'K';
+  if (Math.abs(v) >= 1)   return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  return v.toLocaleString('en-US', { maximumFractionDigits: 6 });
+}
+
+function shortAddr(a) {
+  if (!a || a.length <= 16) return a;
+  return a.slice(0, 8) + '…' + a.slice(-6);
+}
+
+/* ---------- CSV parsing ---------- */
+// Stream-parse a File line by line. Format: address,balance_NOT
+// We tolerate header row and empty lines.
+async function parseCsv(file, onProgress) {
+  const map = new Map();
+  let total = 0n;
+  let rows = 0;
+  let buffer = '';
+  let firstLineSeen = false;
+
+  const reader = file.stream().getReader();
+  const decoder = new TextDecoder('utf-8');
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let nl;
+    while ((nl = buffer.indexOf('\n')) !== -1) {
+      const line = buffer.slice(0, nl).replace(/\r$/, '');
+      buffer = buffer.slice(nl + 1);
+      processLine(line);
+    }
+  }
+  // tail
+  if (buffer.length) {
+    processLine(buffer.replace(/\r$/, ''));
+  }
+
+  function processLine(line) {
+    if (!line) return;
+    if (!firstLineSeen) {
+      firstLineSeen = true;
+      // skip header if non-numeric second field
+      const parts = line.split(',');
+      if (parts.length >= 2 && !/^\d+$/.test(parts[1].trim())) return;
+    }
+    const comma = line.indexOf(',');
+    if (comma < 0) return;
+    const addr = line.slice(0, comma).trim();
+    const balStr = line.slice(comma + 1).trim();
+    if (!addr || !/^\d+$/.test(balStr)) return;
+    const bal = BigInt(balStr);
+    map.set(addr, bal);
+    total += bal;
+    rows++;
+    if (onProgress && rows % 5000 === 0) onProgress(rows);
+  }
+
+  return { map, total, rows };
+}
+
+/* ---------- snapshot management ---------- */
+async function addFiles(files) {
+  for (const file of files) {
+    if (!file.name.toLowerCase().endsWith('.csv')) continue;
+    const id = uid();
+    const pill = renderPendingPill(id, file.name);
+    try {
+      const { map, total, rows } = await parseCsv(file, (n) => {
+        pill.querySelector('.pill-meta').textContent = fmtInt(n) + ' rows…';
+      });
+      const snap = { id, name: file.name, size: file.size, map, total, rows };
+      state.snapshots.push(snap);
+      if (!state.activeId) state.activeId = id;
+      pill.remove();
+      renderSnapList();
+    } catch (e) {
+      pill.querySelector('.pill-meta').textContent = 'parse error';
+      console.error(e);
+    }
+  }
+  refreshSnapSelectors();
+  renderAll();
+}
+
+function removeSnap(id) {
+  state.snapshots = state.snapshots.filter(s => s.id !== id);
+  if (state.activeId === id) state.activeId = state.snapshots[0]?.id || null;
+  if (state.compareId === id) state.compareId = null;
+  renderSnapList();
+  refreshSnapSelectors();
+  renderAll();
+}
+
+/* ---------- rendering: snapshot list ---------- */
+function renderPendingPill(id, name) {
+  const list = $('#snapList');
+  const pill = document.createElement('span');
+  pill.className = 'snap-pill';
+  pill.dataset.id = id;
+  pill.innerHTML = `
+    <span class="pill-name">${escapeHtml(name)}</span>
+    <span class="pill-meta">parsing…</span>
+  `;
+  list.appendChild(pill);
+  return pill;
+}
+
+function renderSnapList() {
+  const list = $('#snapList');
+  list.innerHTML = '';
+  for (const s of state.snapshots) {
+    const pill = document.createElement('span');
+    pill.className = 'snap-pill';
+    pill.innerHTML = `
+      <span class="pill-name">${escapeHtml(s.name)}</span>
+      <span class="pill-meta">${fmtInt(s.rows)} holders · ${fmtNot(s.total)} NOT</span>
+      <button title="Remove" data-remove="${s.id}">×</button>
+    `;
+    list.appendChild(pill);
+  }
+  list.querySelectorAll('[data-remove]').forEach(b => {
+    b.addEventListener('click', () => removeSnap(b.dataset.remove));
+  });
+}
+
+function refreshSnapSelectors() {
+  const opts = state.snapshots.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  const active = $('#activeSnap');
+  active.innerHTML = opts || '<option value="">— none —</option>';
+  if (state.activeId) active.value = state.activeId;
+  const cmp = $('#compareSnap');
+  cmp.innerHTML = '<option value="">— none —</option>' + opts;
+  if (state.compareId) cmp.value = state.compareId;
+}
+
+/* ---------- main render ---------- */
+function renderAll() {
+  const has = state.snapshots.length > 0;
+  $('#emptyState').style.display = has ? 'none' : '';
+  $('#mainPanel').style.display = has ? '' : 'none';
+  if (!has) return;
+  renderStats();
+  renderHolders();
+  renderDistribution();
+  renderDiff();
+}
+
+/* ---------- stats ---------- */
+function activeSnap() { return state.snapshots.find(s => s.id === state.activeId); }
+function compareSnap() { return state.snapshots.find(s => s.id === state.compareId); }
+
+function renderStats() {
+  const s = activeSnap();
+  if (!s) return;
+  // top 10 / top 100 share
+  const sorted = [...s.map.values()].sort((a, b) => (b > a ? 1 : b < a ? -1 : 0));
+  const sumTop = (n) => sorted.slice(0, n).reduce((a, b) => a + b, 0n);
+  const top10 = sumTop(10);
+  const top100 = sumTop(100);
+  const pct = (part, whole) => whole === 0n ? 0 : Number(part * 10000n / whole) / 100;
+
+  const grid = $('#statsGrid');
+  grid.innerHTML = '';
+  grid.appendChild(stat('Snapshot', s.name, fmtInt(s.size) + ' bytes'));
+  grid.appendChild(stat('Holders', fmtInt(s.rows)));
+  grid.appendChild(stat('Total NOT', fmtNot(s.total)));
+  grid.appendChild(stat('Top 10 share', pct(top10, s.total).toFixed(2) + '%', fmtNot(top10) + ' NOT'));
+  grid.appendChild(stat('Top 100 share', pct(top100, s.total).toFixed(2) + '%', fmtNot(top100) + ' NOT'));
+  if (sorted.length) {
+    grid.appendChild(stat('Largest holder', fmtNot(sorted[0])));
+    const median = sorted[Math.floor(sorted.length / 2)];
+    grid.appendChild(stat('Median balance', fmtNot(median)));
+  }
+}
+
+function stat(label, value, sub) {
+  const el = document.createElement('div');
+  el.className = 'stat';
+  el.innerHTML = `
+    <div class="stat-label">${escapeHtml(label)}</div>
+    <div class="stat-value">${escapeHtml(String(value))}</div>
+    ${sub ? `<div class="stat-sub">${escapeHtml(sub)}</div>` : ''}
+  `;
+  return el;
+}
+
+/* ---------- holders table ---------- */
+function getHolderRows() {
+  const s = activeSnap();
+  if (!s) return [];
+  const filter = $('#holderSearch').value.trim().toLowerCase();
+  const minHuman = parseFloat($('#minBalance').value || '0');
+  const minRaw = humanToRaw(minHuman);
+
+  const rows = [];
+  for (const [addr, bal] of s.map.entries()) {
+    if (filter && !addr.toLowerCase().includes(filter)) continue;
+    if (bal < minRaw) continue;
+    rows.push({ addr, balance: bal });
+  }
+  // sort
+  const { key, dir } = state.holderSort;
+  const m = dir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    if (key === 'addr') return m * a.addr.localeCompare(b.addr);
+    if (key === 'pct')  return m * cmpBig(a.balance, b.balance);
+    return m * cmpBig(a.balance, b.balance);
+  });
+  return rows;
+}
+
+function humanToRaw(human) {
+  if (!human || isNaN(human)) return 0n;
+  const dec = state.decimals;
+  // safe-ish for typical inputs; for huge numbers, fallback to string mult
+  const s = human.toString();
+  if (s.includes('e') || s.includes('E')) {
+    return BigInt(Math.floor(human * Math.pow(10, dec)));
+  }
+  const [intP, fracP = ''] = s.split('.');
+  const frac = (fracP + '0'.repeat(dec)).slice(0, dec);
+  return BigInt(intP + frac);
+}
+
+function cmpBig(a, b) { return a > b ? 1 : a < b ? -1 : 0; }
+
+function renderHolders() {
+  const s = activeSnap();
+  if (!s) return;
+  const rows = getHolderRows();
+  const pageSize = parseInt($('#pageSize').value, 10);
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (state.holderPage >= totalPages) state.holderPage = 0;
+  const start = state.holderPage * pageSize;
+  const slice = rows.slice(start, start + pageSize);
+
+  const tbody = $('#holdersTable tbody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < slice.length; i++) {
+    const r = slice[i];
+    const pct = s.total === 0n ? 0 : Number(r.balance * 1000000n / s.total) / 10000;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="rank">${fmtInt(start + i + 1)}</td>
+      <td class="addr">${escapeHtml(r.addr)}</td>
+      <td class="num">${fmtNot(r.balance)}</td>
+      <td class="num">${pct.toFixed(4)}%</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  // header arrows
+  $$('#holdersTable thead th').forEach(th => {
+    const k = th.dataset.sort;
+    if (!k) return;
+    const isSorted = state.holderSort.key === k;
+    th.classList.toggle('sorted', isSorted);
+    const base = th.textContent.replace(/[ ▼▲]+$/, '');
+    th.textContent = base + (isSorted ? (state.holderSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
+  });
+  // pagination
+  const pag = $('#holdersPagination');
+  pag.innerHTML = `
+    <span>${fmtInt(rows.length)} rows · page ${state.holderPage + 1} / ${totalPages}</span>
+    <button class="btn" ${state.holderPage === 0 ? 'disabled' : ''} id="hPrev">Prev</button>
+    <button class="btn" ${state.holderPage >= totalPages - 1 ? 'disabled' : ''} id="hNext">Next</button>
+  `;
+  $('#hPrev')?.addEventListener('click', () => { state.holderPage--; renderHolders(); });
+  $('#hNext')?.addEventListener('click', () => { state.holderPage++; renderHolders(); });
+}
+
+/* ---------- distribution ---------- */
+const BUCKETS = [
+  { label: '< 1',           min: 0,         max: 1 },
+  { label: '1 – 10',        min: 1,         max: 10 },
+  { label: '10 – 100',      min: 10,        max: 100 },
+  { label: '100 – 1K',      min: 100,       max: 1_000 },
+  { label: '1K – 10K',      min: 1_000,     max: 10_000 },
+  { label: '10K – 100K',    min: 10_000,    max: 100_000 },
+  { label: '100K – 1M',     min: 100_000,   max: 1_000_000 },
+  { label: '1M – 10M',      min: 1_000_000, max: 10_000_000 },
+  { label: '10M – 100M',    min: 10_000_000, max: 100_000_000 },
+  { label: '≥ 100M',        min: 100_000_000, max: Infinity },
+];
+
+function renderDistribution() {
+  const s = activeSnap();
+  if (!s) return;
+  const counts = new Array(BUCKETS.length).fill(0);
+  const sums = new Array(BUCKETS.length).fill(0n);
+  for (const bal of s.map.values()) {
+    const h = toHuman(bal);
+    for (let i = 0; i < BUCKETS.length; i++) {
+      if (h >= BUCKETS[i].min && h < BUCKETS[i].max) {
+        counts[i]++;
+        sums[i] += bal;
+        break;
+      }
+    }
+  }
+  const maxC = Math.max(1, ...counts);
+  const list = $('#distList');
+  list.innerHTML = '';
+  for (let i = 0; i < BUCKETS.length; i++) {
+    const pct = (counts[i] / s.rows * 100);
+    const sharePct = s.total === 0n ? 0 : Number(sums[i] * 1000000n / s.total) / 10000;
+    const row = document.createElement('div');
+    row.className = 'dist-row';
+    row.innerHTML = `
+      <span>${BUCKETS[i].label}</span>
+      <div class="dist-bar"><div style="width:${(counts[i]/maxC*100).toFixed(2)}%"></div></div>
+      <span class="dist-pct">${pct.toFixed(2)}%</span>
+      <span class="dist-cnt">${fmtInt(counts[i])} · ${sharePct.toFixed(2)}% supply</span>
+    `;
+    list.appendChild(row);
+  }
+}
+
+/* ---------- diff ---------- */
+function renderDiff() {
+  const a = compareSnap();   // before
+  const b = activeSnap();    // after
+  if (!a || !b || a.id === b.id) {
+    $('#diffHint').style.display = '';
+    $('#diffStats').innerHTML = '';
+    $('#diffControls').style.display = 'none';
+    $('#diffTableWrap').style.display = 'none';
+    $('#diffPagination').innerHTML = '';
+    return;
+  }
+  $('#diffHint').style.display = 'none';
+  $('#diffControls').style.display = '';
+  $('#diffTableWrap').style.display = '';
+
+  // compute diffs
+  const all = new Set([...a.map.keys(), ...b.map.keys()]);
+  let increased = 0, decreased = 0, unchanged = 0, newH = 0, gone = 0;
+  let totalDeltaPos = 0n, totalDeltaNeg = 0n;
+  const diffs = [];
+  for (const addr of all) {
+    const prev = a.map.get(addr) ?? 0n;
+    const curr = b.map.get(addr) ?? 0n;
+    const delta = curr - prev;
+    let kind = 'unchanged';
+    if (prev === 0n && curr > 0n) { kind = 'new'; newH++; }
+    else if (curr === 0n && prev > 0n) { kind = 'gone'; gone++; }
+    else if (delta > 0n) { kind = 'up'; increased++; }
+    else if (delta < 0n) { kind = 'down'; decreased++; }
+    else { unchanged++; }
+    if (delta > 0n) totalDeltaPos += delta; else totalDeltaNeg += -delta;
+    diffs.push({ addr, prev, curr, delta, kind });
+  }
+
+  // stats
+  const dStats = $('#diffStats');
+  dStats.innerHTML = '';
+  dStats.appendChild(stat('From', a.name));
+  dStats.appendChild(stat('To', b.name));
+  dStats.appendChild(stat('Holder Δ', fmtInt(b.rows - a.rows), `${fmtInt(newH)} new · ${fmtInt(gone)} gone`));
+  dStats.appendChild(stat('Increased', fmtInt(increased), '+' + fmtNot(totalDeltaPos) + ' NOT'));
+  dStats.appendChild(stat('Decreased', fmtInt(decreased), '−' + fmtNot(totalDeltaNeg) + ' NOT'));
+  dStats.appendChild(stat('Unchanged', fmtInt(unchanged)));
+  dStats.appendChild(stat('Net supply Δ', fmtNot(b.total - a.total)));
+
+  // filter
+  const filterSel = $('#diffFilter').value;
+  const minDelta = humanToRaw(parseFloat($('#diffMin').value || '0'));
+  let rows = diffs;
+  if (filterSel === 'changed') rows = rows.filter(r => r.kind !== 'unchanged');
+  else if (filterSel === 'up')   rows = rows.filter(r => r.kind === 'up' || r.kind === 'new');
+  else if (filterSel === 'down') rows = rows.filter(r => r.kind === 'down' || r.kind === 'gone');
+  else if (filterSel === 'new')  rows = rows.filter(r => r.kind === 'new');
+  else if (filterSel === 'gone') rows = rows.filter(r => r.kind === 'gone');
+  if (minDelta > 0n) rows = rows.filter(r => (r.delta < 0n ? -r.delta : r.delta) >= minDelta);
+
+  // sort
+  const { key, dir } = state.diffSort;
+  const m = dir === 'asc' ? 1 : -1;
+  rows.sort((x, y) => {
+    if (key === 'addr')  return m * x.addr.localeCompare(y.addr);
+    if (key === 'prev')  return m * cmpBig(x.prev, y.prev);
+    if (key === 'curr')  return m * cmpBig(x.curr, y.curr);
+    if (key === 'delta') return m * cmpBig(x.delta, y.delta);
+    if (key === 'pct') {
+      const px = x.prev === 0n ? Infinity : Number(x.delta * 10000n / x.prev) / 100;
+      const py = y.prev === 0n ? Infinity : Number(y.delta * 10000n / y.prev) / 100;
+      return m * (px - py);
+    }
+    return 0;
+  });
+
+  // page
+  const pageSize = parseInt($('#pageSize').value, 10) || 100;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (state.diffPage >= totalPages) state.diffPage = 0;
+  const start = state.diffPage * pageSize;
+  const slice = rows.slice(start, start + pageSize);
+
+  const tbody = $('#diffTable tbody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < slice.length; i++) {
+    const r = slice[i];
+    const tr = document.createElement('tr');
+    const deltaClass = r.delta > 0n ? 'delta-pos' : r.delta < 0n ? 'delta-neg' : 'delta-zero';
+    const sign = r.delta > 0n ? '+' : '';
+    let pctText = '—';
+    if (r.prev > 0n) {
+      const p = Number(r.delta * 10000n / r.prev) / 100;
+      pctText = (p > 0 ? '+' : '') + p.toFixed(2) + '%';
+    } else if (r.curr > 0n) {
+      pctText = 'new';
+    }
+    let badge = '';
+    if (r.kind === 'new')  badge = '<span class="badge new">new</span>';
+    if (r.kind === 'gone') badge = '<span class="badge gone">exited</span>';
+    tr.innerHTML = `
+      <td class="rank">${fmtInt(start + i + 1)}</td>
+      <td class="addr">${escapeHtml(r.addr)}${badge}</td>
+      <td class="num">${fmtNot(r.prev)}</td>
+      <td class="num">${fmtNot(r.curr)}</td>
+      <td class="num ${deltaClass}">${sign}${fmtNot(r.delta)}</td>
+      <td class="num ${deltaClass}">${pctText}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // header arrows
+  $$('#diffTable thead th').forEach(th => {
+    const k = th.dataset.sort;
+    if (!k) return;
+    const isSorted = state.diffSort.key === k;
+    th.classList.toggle('sorted', isSorted);
+    const base = th.textContent.replace(/[ ▼▲]+$/, '');
+    th.textContent = base + (isSorted ? (state.diffSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
+  });
+
+  const pag = $('#diffPagination');
+  pag.innerHTML = `
+    <span>${fmtInt(rows.length)} rows · page ${state.diffPage + 1} / ${totalPages}</span>
+    <button class="btn" ${state.diffPage === 0 ? 'disabled' : ''} id="dPrev">Prev</button>
+    <button class="btn" ${state.diffPage >= totalPages - 1 ? 'disabled' : ''} id="dNext">Next</button>
+  `;
+  $('#dPrev')?.addEventListener('click', () => { state.diffPage--; renderDiff(); });
+  $('#dNext')?.addEventListener('click', () => { state.diffPage++; renderDiff(); });
+}
+
+/* ---------- lookup ---------- */
+function renderLookup() {
+  const q = $('#lookupInput').value.trim();
+  const out = $('#lookupResult');
+  if (!q) { out.innerHTML = ''; return; }
+  const results = [];
+  for (const s of state.snapshots) {
+    let matches = [];
+    if (s.map.has(q)) {
+      matches.push({ addr: q, bal: s.map.get(q) });
+    } else {
+      const ql = q.toLowerCase();
+      let n = 0;
+      for (const [addr, bal] of s.map.entries()) {
+        if (addr.toLowerCase().includes(ql)) {
+          matches.push({ addr, bal });
+          if (++n >= 20) break;
+        }
+      }
+    }
+    results.push({ snap: s, matches });
+  }
+  let html = '';
+  for (const { snap, matches } of results) {
+    html += `<h3 style="font-size:14px;margin:16px 0 6px">${escapeHtml(snap.name)}</h3>`;
+    if (!matches.length) {
+      html += `<p class="hint" style="margin:0">No match.</p>`;
+      continue;
+    }
+    html += '<div class="table-wrap"><table><thead><tr><th>Address</th><th class="num">Balance</th><th class="num">Share</th></tr></thead><tbody>';
+    for (const m of matches) {
+      const pct = snap.total === 0n ? 0 : Number(m.bal * 1000000n / snap.total) / 10000;
+      html += `<tr>
+        <td class="addr">${escapeHtml(m.addr)}</td>
+        <td class="num">${fmtNot(m.bal)}</td>
+        <td class="num">${pct.toFixed(4)}%</td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+  out.innerHTML = html;
+}
+
+/* ---------- export ---------- */
+function exportFiltered() {
+  const rows = getHolderRows();
+  const lines = ['address,balance_NOT,balance_human'];
+  for (const r of rows) {
+    lines.push(`${r.addr},${r.balance.toString()},${toHuman(r.balance)}`);
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'NOT_filtered_' + Date.now() + '.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ---------- util ---------- */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+/* ---------- wire up ---------- */
+const fileInput = $('#fileInput');
+const dropZone = $('#dropZone');
+fileInput.addEventListener('change', () => addFiles([...fileInput.files]));
+['dragenter','dragover'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('over'); })
+);
+['dragleave','drop'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('over'); })
+);
+dropZone.addEventListener('drop', e => {
+  if (e.dataTransfer?.files) addFiles([...e.dataTransfer.files]);
+});
+
+$('#decimalsInput').addEventListener('input', e => {
+  const v = parseInt(e.target.value, 10);
+  if (!isNaN(v) && v >= 0 && v <= 18) {
+    state.decimals = v;
+    renderAll();
+    renderLookup();
+  }
+});
+$('#activeSnap').addEventListener('change', e => { state.activeId = e.target.value; renderAll(); });
+$('#compareSnap').addEventListener('change', e => { state.compareId = e.target.value || null; renderDiff(); });
+
+$('#holderSearch').addEventListener('input', () => { state.holderPage = 0; renderHolders(); });
+$('#minBalance').addEventListener('input',   () => { state.holderPage = 0; renderHolders(); });
+$('#pageSize').addEventListener('change',    () => { state.holderPage = 0; state.diffPage = 0; renderHolders(); renderDiff(); });
+
+$$('#holdersTable thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (!k) return;
+    if (state.holderSort.key === k) state.holderSort.dir = state.holderSort.dir === 'asc' ? 'desc' : 'asc';
+    else state.holderSort = { key: k, dir: k === 'addr' ? 'asc' : 'desc' };
+    renderHolders();
+  });
+});
+$$('#diffTable thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (!k) return;
+    if (state.diffSort.key === k) state.diffSort.dir = state.diffSort.dir === 'asc' ? 'desc' : 'asc';
+    else state.diffSort = { key: k, dir: k === 'addr' ? 'asc' : 'desc' };
+    renderDiff();
+  });
+});
+
+$('#diffFilter').addEventListener('change', () => { state.diffPage = 0; renderDiff(); });
+$('#diffMin').addEventListener('input',     () => { state.diffPage = 0; renderDiff(); });
+
+$('#exportBtn').addEventListener('click', exportFiltered);
+$('#lookupInput').addEventListener('input', renderLookup);
+
+$$('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    $$('.tab').forEach(x => x.classList.remove('active'));
+    $$('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('#tab-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+</script>
+</body>
+</html>
