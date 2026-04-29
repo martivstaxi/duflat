@@ -413,24 +413,40 @@ def social_discover_telegram():
 
 @app.route('/social/debug-brave', methods=['GET'])
 def social_debug_brave():
-    """Debug: return raw Brave Search results for a query, no fetch/save.
-    ?q=... (required), ?fresh=pm/pw/pd/py/none (optional, default pm)."""
+    """Debug: hit Brave Search directly and return raw HTTP status + body."""
+    import requests as _rq
     q = request.args.get('q', 'bilibili')
     fresh = request.args.get('fresh', 'pm')
     if fresh in ('', 'none', 'all'):
         fresh = None
-    from modules.social_listening import _brave_search
+    api_key = (os.environ.get('BRAVE_API_KEY') or '').strip()
+    params = {'q': q, 'count': 20}
+    if fresh:
+        params['freshness'] = fresh
+    headers = {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': api_key,
+    }
     try:
-        urls = _brave_search(q, max_results=20, freshness=fresh)
+        r = _rq.get('https://api.search.brave.com/res/v1/web/search',
+                    params=params, headers=headers, timeout=10)
     except Exception as e:
-        return jsonify({'error': str(e), 'query': q,
-                        'error_type': type(e).__name__}), 500
+        return jsonify({'error': str(e), 'error_type': type(e).__name__}), 500
+    body_preview = r.text[:600]
+    try:
+        j = r.json()
+        web_count = len((j.get('web') or {}).get('results') or [])
+    except Exception:
+        web_count = -1
     return jsonify({
         'query': q,
         'freshness': fresh,
-        'count': len(urls),
-        'urls': urls[:20],
-        'has_api_key': bool((os.environ.get('BRAVE_API_KEY') or '').strip()),
+        'has_api_key': bool(api_key),
+        'api_key_len': len(api_key),
+        'status': r.status_code,
+        'web_results_count': web_count,
+        'body_preview': body_preview,
     })
 
 
