@@ -411,6 +411,21 @@ def social_discover_telegram():
     return jsonify(discover_telegram())
 
 
+@app.route('/social/debug-clear-tme-sources', methods=['POST'])
+def social_debug_clear_tme_sources():
+    """One-shot debug: wipe t.me entries from social_sources so the next
+    discover-telegram run can re-process those URLs end-to-end. Safe to
+    remove after Telegram launch is verified."""
+    from modules.social_listening import _db
+    deleted = 0
+    try:
+        res = _db().table('social_sources').delete().like('url', 'https://t.me/%').execute()
+        deleted = len(res.data or [])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    return jsonify({'deleted_sources': deleted})
+
+
 @app.route('/social/debug-brave', methods=['GET'])
 def social_debug_brave():
     """Debug: list URLs returned by Brave Search for a given query."""
