@@ -3921,6 +3921,252 @@ def discover_telegram():
     }
 
 
+# X (Twitter) public-content access path:
+#   1. Brave Search returns x.com / twitter.com URLs (`site:x.com {variant}`).
+#   2. We keep only `/{handle}/status/{id}` URLs (drop profiles, hashtags,
+#      search pages, /i/ etc).
+#   3. We blacklist Bilibili-owned handles so we don't index their own
+#      promo tweets.
+#   4. For each surviving URL we hit publish.twitter.com/oembed (public,
+#      auth-free) which still returns the tweet text, author name, and
+#      a "Month DD, YYYY" date inside the rendered HTML even after Musk
+#      removed bot/og scraping. Deleted/protected tweets return non-JSON
+#      and are dropped.
+_X_STATUS_RE = re.compile(
+    r'^https?://(?:x\.com|twitter\.com)/([A-Za-z0-9_]{1,15})/status/(\d+)'
+)
+_X_DATE_RE = re.compile(r'>([A-Z][a-z]+ \d{1,2}, \d{4})<')
+_X_OEMBED_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+# Handles that publish on behalf of Bilibili itself — promotional output
+# is out of scope for social listening, which targets community voices.
+_X_BILIBILI_OWNED = {
+    'bilibili_en', 'bilibilicomics', 'bilibilidottv', 'bilibiligame_jp',
+    'bilibiligames_id', 'bilibiligaming', 'bilibiliph', 'bilibilibr',
+    'bilibilith', 'bilibili7', 'bilibili0001', 'bilibiliweb', 'bilibilili',
+    'madeby_bilibili', 'bilibili_id', 'bilibili_global',
+}
+
+
+def _is_bilibili_owned_x_handle(handle):
+    """True if this X/Twitter handle is run by Bilibili."""
+    h = (handle or '').strip().lower().lstrip('@')
+    if h in _X_BILIBILI_OWNED:
+        return True
+    # Catches future variants like `bilibilixx`, `bilibili_en2`, etc.
+    if h.startswith('bilibili'):
+        return True
+    return False
+
+
+def _x_tweet_id_from_url(url):
+    """Return (handle, tweet_id) for x.com/twitter.com /status/ URLs,
+    else None. Profile, hashtag, search, /i/ pages all return None."""
+    m = _X_STATUS_RE.match(url or '')
+    if not m:
+        return None
+    return m.group(1), m.group(2)
+
+
+def _fetch_x_tweet_oembed(handle, tweet_id):
+    """Fetch tweet text + date via publish.twitter.com/oembed.
+    Returns a pipeline item dict, or None when the tweet is deleted /
+    protected / pre-2026 / Bilibili-owned."""
+    import time
+    if _cooling_down('publish.twitter.com'):
+        return None
+    canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
+    api = ('https://publish.twitter.com/oembed'
+           f'?url={canonical}&omit_script=1&hide_media=false&lang=en')
+    try:
+        resp = requests.get(api, headers={'User-Agent': _X_OEMBED_UA}, timeout=8)
+    except Exception as e:
+        print(f'[x] oembed {tweet_id} request_err={e}', flush=True)
+        return None
+    if resp.status_code in (429, 420):
+        _enter_cooldown('publish.twitter.com', 600)
+        print(f'[x] oembed RATE_LIMITED status={resp.status_code}', flush=True)
+        return None
+    if resp.status_code != 200:
+        # 404 covers deleted/protected/suspended tweets — silent skip.
+        return None
+    body = (resp.text or '').lstrip()
+    if not body.startswith('{'):
+        # publish.twitter.com sometimes returns an HTML error envelope
+        # for unavailable tweets despite a 200 status code.
+        return None
+    try:
+        j = resp.json()
+    except Exception:
+        return None
+    html = j.get('html') or ''
+    if not html:
+        return None
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+    except Exception:
+        return None
+    p = soup.select_one('blockquote.twitter-tweet p') or soup.select_one('p')
+    text = p.get_text(' ', strip=True) if p else ''
+    if not text:
+        return None
+    # Date: last <a> in the blockquote whose text matches "Month DD, YYYY".
+    iso_date = ''
+    for a in soup.find_all('a'):
+        s = a.get_text(strip=True)
+        try:
+            dt = datetime.strptime(s, '%B %d, %Y')
+            iso_date = dt.strftime('%Y-%m-%d')
+            break
+        except Exception:
+            continue
+    if not iso_date:
+        # Fallback to a regex sweep on the raw html in case bs4 lost the node.
+        m = _X_DATE_RE.search(html)
+        if m:
+            try:
+                iso_date = datetime.strptime(m.group(1), '%B %d, %Y').strftime('%Y-%m-%d')
+            except Exception:
+                pass
+    if iso_date and iso_date < '2026-01-01':
+        return None
+    if not iso_date:
+        iso_date = date.today().strftime('%Y-%m-%d')
+    author_name = (j.get('author_name') or handle).strip()
+    item = {
+        'url': canonical,
+        'url_hash': hash_url(canonical),
+        'platform': 'x',
+        'text': f'[@{handle} ({author_name}) on twitter] {text}'[:5000],
+        'content_date': iso_date,
+        'dates_found': [iso_date],
+    }
+    time.sleep(0.4)
+    return item
+
+
+def discover_x():
+    """Discover Bilibili-related X (Twitter) posts.
+
+    Brave Search → /status/ URLs only → handle blacklist → dedup against
+    social_sources → publish.twitter.com/oembed for tweet text → blob
+    filter → Haiku pipeline. publish.twitter.com is the only public path
+    that still surfaces tweet content after the 2023 API closure."""
+    import time
+    fetch_start = time.time()
+    seen_ids = set()
+    candidates = []  # list of (handle, tweet_id, canonical_url)
+
+    for variant in _BILI_BRAVE_QUERIES:
+        if time.time() - fetch_start > 15:
+            break
+        try:
+            results = _brave_search(
+                f'site:x.com {variant}',
+                max_results=20,
+                freshness=None,  # past-month freshness drops site: filter
+            )
+        except Exception as e:
+            print(f'[x] brave variant={variant!r} err={e}', flush=True)
+            continue
+        new_for_variant = 0
+        for url in results or []:
+            parsed = _x_tweet_id_from_url(url)
+            if not parsed:
+                continue
+            handle, tweet_id = parsed
+            if tweet_id in seen_ids:
+                continue
+            seen_ids.add(tweet_id)
+            if _is_bilibili_owned_x_handle(handle):
+                continue
+            canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
+            candidates.append((handle, tweet_id, canonical))
+            new_for_variant += 1
+        print(f'[x] brave variant={variant!r} new_tweets={new_for_variant} '
+              f'total_candidates={len(candidates)}', flush=True)
+
+    print(f'[x] Brave unique tweet candidates={len(candidates)}', flush=True)
+    if not candidates:
+        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [c[2] for c in candidates]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        candidates = [c for c in candidates if c[2] in new_urls_set]
+    except Exception as e:
+        print(f'[x] check_urls error: {e}', flush=True)
+        return {'platform': 'x', 'fetched': 0, 'error': f'dedup: {e}'}
+
+    print(f'[x] new after dedup={len(candidates)}', flush=True)
+    if not candidates:
+        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    candidates = candidates[:25]
+
+    items = []
+    for handle, tweet_id, canonical in candidates:
+        if time.time() - fetch_start > 70:
+            break
+        it = _fetch_x_tweet_oembed(handle, tweet_id)
+        if not it:
+            continue
+        if not _blob_has_bili_variant(it['text']):
+            continue
+        items.append(it)
+
+    print(f'[x] fetched bilibili-mention tweets={len(items)}', flush=True)
+    if not items:
+        return {'platform': 'x', 'fetched': 0, 'new': len(candidates),
+                'saved': 0, 'skipped': 0}
+
+    for it in items:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'twitter.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items)
+        print(f'[x] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[x] haiku error: {e}', flush=True)
+        return {'platform': 'x', 'fetched': len(items), 'new': len(candidates),
+                'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[x] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[x] save error: {e}', flush=True)
+        return {'platform': 'x', 'fetched': len(items), 'new': len(candidates),
+                'error': f'save: {e}'}
+
+    return {
+        'platform': 'x',
+        'fetched': len(items),
+        'new': len(candidates),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0

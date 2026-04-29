@@ -411,6 +411,15 @@ def social_discover_telegram():
     return jsonify(discover_telegram())
 
 
+@app.route('/social/discover-x', methods=['POST'])
+def social_discover_x():
+    """Fetch Bilibili-related X (Twitter) tweets via Brave + publish.twitter.com/oembed."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_x
+    return jsonify(discover_x())
+
+
 @app.route('/social/debug-brave', methods=['GET'])
 def social_debug_brave():
     """Debug: list URLs returned by Brave Search for a given query."""
@@ -458,14 +467,15 @@ def _discover_all_background():
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
             discover_youtube, discover_medium,
-            discover_substack, discover_telegram,
+            discover_substack, discover_telegram, discover_x,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
                    discover_lihkg, discover_lemmy, discover_mastodon,
-                   discover_medium, discover_substack, discover_telegram):
+                   discover_medium, discover_substack, discover_telegram,
+                   discover_x):
             try:
                 fn()
             except Exception as e:
