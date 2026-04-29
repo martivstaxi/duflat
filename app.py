@@ -413,20 +413,16 @@ def social_discover_telegram():
 
 @app.route('/social/debug-brave', methods=['GET'])
 def social_debug_brave():
-    """Debug: hit Brave Search directly and return raw HTTP status + body."""
+    """Debug: list URLs returned by Brave Search for a given query."""
     import requests as _rq
     q = request.args.get('q', 'bilibili')
     fresh = request.args.get('fresh', 'pm')
     if fresh in ('', 'none', 'all'):
         fresh = None
     api_key = (os.environ.get('BRAVE_API_KEY') or '').strip()
-    # Strip optional params to rule out plan-tier restrictions
-    minimal = request.args.get('min') == '1'
-    params = {'q': q}
-    if not minimal:
-        params['count'] = 20
-        if fresh:
-            params['freshness'] = fresh
+    params = {'q': q, 'count': 20}
+    if fresh:
+        params['freshness'] = fresh
     headers = {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip',
@@ -437,20 +433,20 @@ def social_debug_brave():
                     params=params, headers=headers, timeout=10)
     except Exception as e:
         return jsonify({'error': str(e), 'error_type': type(e).__name__}), 500
-    body_preview = r.text[:1500]
     try:
         j = r.json()
-        web_count = len((j.get('web') or {}).get('results') or [])
     except Exception:
-        web_count = -1
+        return jsonify({'status': r.status_code, 'parse_err': True,
+                        'body_preview': r.text[:600]}), 500
+    web = (j.get('web') or {}).get('results') or []
+    urls = [w.get('url') or '' for w in web]
     return jsonify({
         'query': q,
         'freshness': fresh,
-        'has_api_key': bool(api_key),
-        'api_key_len': len(api_key),
         'status': r.status_code,
-        'web_results_count': web_count,
-        'body_preview': body_preview,
+        'count': len(urls),
+        'urls': urls,
+        'tme_count': sum(1 for u in urls if 't.me' in u),
     })
 
 
