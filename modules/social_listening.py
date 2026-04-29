@@ -3245,6 +3245,525 @@ def discover_lemmy():
     }
 
 
+# ─────────────────────────────────────────────
+# MEDIUM — public tag RSS feeds, no auth
+# ─────────────────────────────────────────────
+
+_MEDIUM_TAGS = [
+    'bilibili', 'b-station', 'chinese-anime', 'china-streaming',
+    'vtuber', 'genshin-impact', 'china-tech', 'mihoyo',
+]
+_MEDIUM_UA = 'Mozilla/5.0 (compatible; duflat-social-listening/1.0)'
+
+_MEDIUM_NS = {
+    'dc': 'http://purl.org/dc/elements/1.1/',
+    'content': 'http://purl.org/rss/1.0/modules/content/',
+}
+
+
+def _fetch_medium_tag(tag):
+    """Fetch one Medium tag RSS feed. Returns list of <item> ElementTree nodes."""
+    import time
+    import xml.etree.ElementTree as ET
+    if _cooling_down('medium.com'):
+        return []
+    url = f'https://medium.com/feed/tag/{tag}'
+    try:
+        resp = requests.get(url, headers={'User-Agent': _MEDIUM_UA}, timeout=8)
+    except Exception as e:
+        print(f'[medium] tag={tag} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown('medium.com', 600)
+        print(f'[medium] tag={tag} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[medium] tag={tag} status={resp.status_code}', flush=True)
+        return []
+    try:
+        root = ET.fromstring(resp.content)
+        items = root.findall('.//item') or []
+    except Exception as e:
+        print(f'[medium] tag={tag} parse_err={e}', flush=True)
+        return []
+    print(f'[medium] tag={tag} items={len(items)}', flush=True)
+    time.sleep(0.4)
+    return items
+
+
+def _medium_item_to_pipeline(item):
+    """Convert a Medium RSS <item> ElementTree node into a pipeline item."""
+    title = (item.findtext('title') or '').strip()
+    link = (item.findtext('link') or '').strip()
+    pub_str = (item.findtext('pubDate') or '').strip()
+    if not link or not title or not pub_str:
+        return None
+    author = (item.findtext('dc:creator', namespaces=_MEDIUM_NS) or '').strip()
+    try:
+        # 'Wed, 01 Apr 2026 12:34:56 GMT'
+        dt = datetime.strptime(pub_str[:25], '%a, %d %b %Y %H:%M:%S')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    body_html = item.findtext('content:encoded', namespaces=_MEDIUM_NS) or ''
+    body_text = ''
+    if body_html:
+        try:
+            body_text = BeautifulSoup(body_html, 'html.parser').get_text(' ', strip=True)
+        except Exception:
+            pass
+    parts = [title]
+    if body_text:
+        parts.append(body_text[:2000])
+    text = '\n'.join(parts).strip()
+    return {
+        'url': link,
+        'url_hash': hash_url(link),
+        'platform': 'medium',
+        'text': f'[@{author}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_medium():
+    """Fetch Bilibili-related Medium posts via public tag RSS feeds."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for tag in _MEDIUM_TAGS:
+        if time.time() - fetch_start > 35:
+            break
+        items = _fetch_medium_tag(tag)
+        for el in items:
+            it = _medium_item_to_pipeline(el)
+            if not it or it['url'] in seen:
+                continue
+            blob = it['text'].lower()
+            if ('bilibili' not in blob and 'b站' not in blob
+                    and '哔哩' not in blob and '嗶哩' not in blob):
+                continue
+            seen.add(it['url'])
+            all_items.append(it)
+
+    print(f'[medium] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'medium', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[medium] check_urls error: {e}', flush=True)
+        return {'platform': 'medium', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[medium] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'medium', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': urlparse(it['url']).netloc or 'medium.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[medium] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[medium] haiku error: {e}', flush=True)
+        return {'platform': 'medium', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[medium] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[medium] save error: {e}', flush=True)
+        return {'platform': 'medium', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'medium',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
+# PTT — Taiwan BBS forum, HTML scrape (Traditional Chinese, in scope)
+# ─────────────────────────────────────────────
+
+# Boards chosen for highest Bilibili co-mention rate:
+# C_Chat = anime/vtuber, GameNS = console gaming,
+# AKB48 = JP idol (fans cross-post B-station clips),
+# C_BOO = TV/streaming. Gossiping/HatePolitics excluded as too noisy.
+_PTT_BOARDS = ['C_Chat', 'GameNS', 'AKB48', 'C_BOO']
+_PTT_QUERIES = ['bilibili', 'B站']
+_PTT_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+           '(KHTML, like Gecko) Chrome/120.0 Safari/537.36')
+
+
+def _fetch_ptt_search(board, query):
+    """Search one PTT board for a keyword. Returns list of row dicts.
+
+    PTT requires the over18=1 cookie on most boards; setting it
+    everywhere is safe and is the standard approach used by clients."""
+    import time
+    from urllib.parse import quote_plus
+    if _cooling_down('ptt.cc'):
+        return []
+    url = f'https://www.ptt.cc/bbs/{board}/search?q={quote_plus(query)}'
+    try:
+        resp = requests.get(
+            url,
+            headers={'User-Agent': _PTT_UA},
+            cookies={'over18': '1'},
+            timeout=8,
+        )
+    except Exception as e:
+        print(f'[ptt] {board} q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown('ptt.cc', 600)
+        print(f'[ptt] {board} q={query} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[ptt] {board} q={query} status={resp.status_code}', flush=True)
+        return []
+    try:
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        rows = soup.select('div.r-ent') or []
+    except Exception as e:
+        print(f'[ptt] {board} q={query} parse_err={e}', flush=True)
+        return []
+    items = []
+    for row in rows:
+        title_el = row.select_one('div.title a')
+        if not title_el:  # deleted post
+            continue
+        href = title_el.get('href', '')
+        if not href.startswith('/bbs/'):
+            continue
+        article_url = f'https://www.ptt.cc{href}'
+        title = title_el.get_text(strip=True)
+        author_el = row.select_one('div.meta div.author')
+        author = author_el.get_text(strip=True) if author_el else ''
+        items.append({
+            'url': article_url,
+            'title': title,
+            'author': author,
+            'board': board,
+        })
+    print(f'[ptt] {board} q={query} rows={len(items)}', flush=True)
+    time.sleep(0.4)
+    return items
+
+
+def _ptt_to_pipeline(entry):
+    """Convert a PTT row dict to a pipeline item.
+
+    PTT search results carry only month/day; we stamp content_date as
+    today since results are reverse-chronological and the L4 gate
+    re-verifies publication year."""
+    title = (entry.get('title') or '').strip()
+    if not title:
+        return None
+    today = date.today().strftime('%Y-%m-%d')
+    return {
+        'url': entry['url'],
+        'url_hash': hash_url(entry['url']),
+        'platform': 'ptt',
+        'text': f'[@{entry.get("author","")} on {entry.get("board","")}] {title}'[:5000],
+        'content_date': today,
+        'dates_found': [today],
+    }
+
+
+def discover_ptt():
+    """Fetch Bilibili-related PTT posts (Taiwan, Traditional Chinese)."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for board in _PTT_BOARDS:
+        for q in _PTT_QUERIES:
+            if time.time() - fetch_start > 35:
+                break
+            rows = _fetch_ptt_search(board, q)
+            for r in rows:
+                it = _ptt_to_pipeline(r)
+                if not it or it['url'] in seen:
+                    continue
+                blob = it['text'].lower()
+                if ('bilibili' not in blob and 'b站' not in blob
+                        and '哔哩' not in blob and '嗶哩' not in blob):
+                    continue
+                seen.add(it['url'])
+                all_items.append(it)
+
+    print(f'[ptt] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'ptt', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[ptt] check_urls error: {e}', flush=True)
+        return {'platform': 'ptt', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[ptt] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'ptt', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'ptt.cc',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[ptt] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[ptt] haiku error: {e}', flush=True)
+        return {'platform': 'ptt', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[ptt] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[ptt] save error: {e}', flush=True)
+        return {'platform': 'ptt', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'ptt',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
+# ─────────────────────────────────────────────
+# SUBSTACK — public post search (undocumented JSON endpoint)
+# ─────────────────────────────────────────────
+
+_SUBSTACK_QUERIES = [
+    'bilibili', 'bilibili gaming', 'bilibili anime', 'bilibili streaming',
+    'bilibili creator', 'bilibili AI', 'bilibili genshin', 'bilibili vtuber',
+]
+_SUBSTACK_UA = 'Mozilla/5.0 (compatible; duflat-social-listening/1.0)'
+
+
+def _fetch_substack_search(query):
+    """Search Substack for posts matching query via the public search API."""
+    import time
+    from urllib.parse import quote_plus
+    if _cooling_down('substack.com'):
+        return []
+    url = ('https://substack.com/api/v1/post/search'
+           f'?type=all_post&query={quote_plus(query)}')
+    try:
+        resp = requests.get(
+            url,
+            headers={'User-Agent': _SUBSTACK_UA, 'Accept': 'application/json'},
+            timeout=8,
+        )
+    except Exception as e:
+        print(f'[substack] q={query} request_exception={e}', flush=True)
+        return []
+    if resp.status_code in (429, 403):
+        _enter_cooldown('substack.com', 600)
+        print(f'[substack] q={query} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[substack] q={query} status={resp.status_code}', flush=True)
+        return []
+    try:
+        data = resp.json() or {}
+    except Exception as e:
+        print(f'[substack] q={query} json_err={e}', flush=True)
+        return []
+    # Endpoint returns either {results: [...]} or {posts: [...]} depending
+    # on which internal version is live. Accept both shapes.
+    posts = data.get('results') or data.get('posts') or []
+    if not isinstance(posts, list):
+        posts = []
+    print(f'[substack] q={query} posts={len(posts)}', flush=True)
+    time.sleep(0.4)
+    return posts
+
+
+def _substack_to_pipeline(post):
+    """Convert a Substack search result into a pipeline item."""
+    canonical = post.get('canonical_url') or post.get('url') or ''
+    if not canonical:
+        return None
+    title = (post.get('title') or '').strip()
+    subtitle = (post.get('subtitle') or '').strip()
+    body = (post.get('truncated_body_text') or post.get('body_text') or '').strip()
+    pub_str = (post.get('post_date') or post.get('publication_date')
+               or post.get('published_at') or '')
+    if not pub_str:
+        return None
+    try:
+        dt = datetime.strptime(pub_str[:10], '%Y-%m-%d')
+    except Exception:
+        return None
+    if dt.year < 2026:
+        return None
+    author = ''
+    bw = post.get('bylines') or []
+    if isinstance(bw, list) and bw:
+        first = bw[0] if isinstance(bw[0], dict) else {}
+        author = (first.get('name') or '').strip()
+    parts = [title]
+    if subtitle:
+        parts.append(subtitle)
+    if body:
+        parts.append(body[:2000])
+    text = '\n'.join(p for p in parts if p).strip()
+    if not text:
+        return None
+    return {
+        'url': canonical,
+        'url_hash': hash_url(canonical),
+        'platform': 'substack',
+        'text': f'[@{author}] {text}'[:5000],
+        'content_date': dt.strftime('%Y-%m-%d'),
+        'dates_found': [dt.strftime('%Y-%m-%d')],
+    }
+
+
+def discover_substack():
+    """Fetch Bilibili-related Substack posts via public search."""
+    import time
+    all_items = []
+    seen = set()
+    fetch_start = time.time()
+
+    for q in _SUBSTACK_QUERIES:
+        if time.time() - fetch_start > 35:
+            break
+        posts = _fetch_substack_search(q)
+        for p in posts:
+            it = _substack_to_pipeline(p)
+            if not it or it['url'] in seen:
+                continue
+            blob = it['text'].lower()
+            if ('bilibili' not in blob and 'b站' not in blob
+                    and '哔哩' not in blob and '嗶哩' not in blob):
+                continue
+            seen.add(it['url'])
+            all_items.append(it)
+
+    print(f'[substack] total fetched items={len(all_items)}', flush=True)
+    if not all_items:
+        return {'platform': 'substack', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+
+    try:
+        urls = [it['url'] for it in all_items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in all_items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[substack] check_urls error: {e}', flush=True)
+        return {'platform': 'substack', 'fetched': len(all_items), 'error': f'dedup: {e}'}
+
+    print(f'[substack] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'substack', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
+
+    items_new = items_new[:25]
+
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': urlparse(it['url']).netloc or 'substack.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    try:
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[substack] haiku produced={len(mentions or [])}', flush=True)
+    except Exception as e:
+        print(f'[substack] haiku error: {e}', flush=True)
+        return {'platform': 'substack', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            print(f'[substack] validator error: {e}', flush=True)
+
+    try:
+        if mentions:
+            result = save_mentions(mentions)
+        else:
+            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
+    except Exception as e:
+        print(f'[substack] save error: {e}', flush=True)
+        return {'platform': 'substack', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
+
+    return {
+        'platform': 'substack',
+        'fetched': len(all_items),
+        'new': len(items_new),
+        'saved': result.get('saved', 0),
+        'skipped': result.get('skipped', 0),
+        'gate_rejected': result.get('gate_rejected', 0),
+        'gate_rejections': result.get('gate_rejections', []),
+    }
+
+
 def delete_mentions(ids):
     """Delete mentions by ID list."""
     deleted = 0

@@ -384,6 +384,33 @@ def social_discover_youtube():
     return jsonify(discover_youtube())
 
 
+@app.route('/social/discover-medium', methods=['POST'])
+def social_discover_medium():
+    """Fetch Bilibili-related Medium posts via public tag RSS feeds."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_medium
+    return jsonify(discover_medium())
+
+
+@app.route('/social/discover-ptt', methods=['POST'])
+def social_discover_ptt():
+    """Fetch Bilibili-related PTT posts (Taiwan, Traditional Chinese)."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_ptt
+    return jsonify(discover_ptt())
+
+
+@app.route('/social/discover-substack', methods=['POST'])
+def social_discover_substack():
+    """Fetch Bilibili-related Substack posts via public search API."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import discover_substack
+    return jsonify(discover_substack())
+
+
 _discover_all_state = {'active': False}
 
 def _discover_all_background():
@@ -391,13 +418,15 @@ def _discover_all_background():
         from modules.social_listening import (
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
-            discover_youtube,
+            discover_youtube, discover_medium, discover_ptt,
+            discover_substack,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
-                   discover_lihkg, discover_lemmy, discover_mastodon):
+                   discover_lihkg, discover_lemmy, discover_mastodon,
+                   discover_medium, discover_ptt, discover_substack):
             try:
                 fn()
             except Exception as e:
