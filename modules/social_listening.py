@@ -3650,21 +3650,28 @@ def discover_substack():
 
 
 # ─────────────────────────────────────────────
-# TELEGRAM — DDG site:t.me search across alphabet variants of "bilibili"
+# TELEGRAM — Brave Search → channel index harvest
 # ─────────────────────────────────────────────
 #
-# Channel-poll on t.me/s/{channel} yields ~0% Bilibili mentions in any
-# China-watcher / anime / esports channel's recent post window (verified
-# 2026-04-29 across 40+ candidate channels). Telegram has no public
-# cross-channel search API. Pivot: let DDG do the search by indexing
-# t.me, then we fetch each matching post's preview HTML.
+# Channel-poll on t.me/s/{channel} alone yields ~0% Bilibili mentions in
+# any general-interest channel's recent post window (probed 40+ China-
+# watcher / anime / esports channels 2026-04-29). Telegram has no public
+# cross-channel search API.
 #
-# Bilibili's name shows up in many alphabets — Latin (BiliBili), Han
-# (哔哩哔哩 / 嗶哩嗶哩), Cyrillic (Билибили), Hangul (비리비리),
-# Katakana (ビリビリ), Arabic (بيليبيلي), Thai (บิลิบิลิ). Each variant
-# is a separate DDG query so non-Latin posts surface.
+# Pivot: let Brave Search index t.me, query each alphabet variant of
+# "bilibili" with `site:t.me`, harvest channel names from results. Brave
+# returns mostly channel-index URLs (t.me/s/{ch}, t.me/{ch}); fetching
+# t.me/s/{ch} once gives us the full recent timeline. We blob-filter
+# every post on that timeline for a bilibili variant — channels Brave
+# surfaces are ones that have mentioned Bilibili at some point, so the
+# signal-to-noise ratio is much higher than blind channel-poll.
+#
+# Critical Brave note: `freshness='pm'` makes Brave silently drop the
+# `site:t.me` operator (fallback mode, observed 2026-04-29). Always
+# query with `freshness=None` so site: is honoured.
 
-# Multi-alphabet "bilibili" variants for both DDG queries and blob filter.
+# Multi-alphabet "bilibili" variants for both Brave queries and blob
+# filter. Centralised so future sources can reuse via _blob_has_bili_variant.
 _BILI_ALPHA_VARIANTS = [
     'bilibili',
     'B站',
@@ -3679,13 +3686,16 @@ _BILI_ALPHA_VARIANTS = [
 ]
 _TELEGRAM_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                 '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-_TELEGRAM_POST_RE = re.compile(r'^https?://t\.me/([A-Za-z0-9_]+)/(\d+)(?:[?#].*)?$')
+_TELEGRAM_CHANNEL_RE = re.compile(r'^https?://t\.me/(?:s/)?([A-Za-z0-9_]+)(?:[/?#].*)?$')
+# t.me paths that aren't channels: stickers, themes, invites, IV mode, bots.
+_TELEGRAM_SKIP_PREFIXES = ('addemoji', 'addstickers', 'joinchat', 'addtheme', 'iv',
+                           'proxy', 'socks', 'share', '+', 'c')
 
 
 def _blob_has_bili_variant(text):
-    """True if the (lowercased-once) text contains any alphabet variant
-    of 'bilibili'. Used as the per-source blob pre-filter so non-Latin
-    mentions are not silently dropped."""
+    """True if the text contains any alphabet variant of 'bilibili'.
+    Used as the per-source blob pre-filter so non-Latin mentions are
+    not silently dropped."""
     if not text:
         return False
     t = text.lower()
@@ -3695,112 +3705,145 @@ def _blob_has_bili_variant(text):
     return False
 
 
-def _fetch_telegram_post(channel, post_id):
-    """Fetch one t.me/{channel}/{post_id} post's embed-style preview.
+def _telegram_channel_from_url(url):
+    """Extract a Telegram channel handle from a Brave-returned URL.
+    Returns lowercase channel name, or None if the URL is a sticker/
+    theme/invite/etc. Both t.me/X and t.me/s/X are accepted."""
+    m = _TELEGRAM_CHANNEL_RE.match(url)
+    if not m:
+        return None
+    ch = m.group(1)
+    if ch.lower() in _TELEGRAM_SKIP_PREFIXES:
+        return None
+    return ch
 
-    Returns dict with text/author/datetime, or None on any failure."""
+
+def _fetch_telegram_channel_posts(channel):
+    """Fetch t.me/s/{channel} preview, return list of pipeline items
+    for posts whose text contains a bilibili variant.
+
+    Each item carries a stable per-post URL (t.me/{channel}/{post_id})
+    so dedup against social_sources works even if a channel is harvested
+    multiple times. Pre-2026 posts are dropped here."""
     import time
     if _cooling_down('t.me'):
-        return None
-    url = f'https://t.me/{channel}/{post_id}?embed=1&mode=tme'
+        return []
+    url = f'https://t.me/s/{channel}'
     try:
         resp = requests.get(url, headers={'User-Agent': _TELEGRAM_UA}, timeout=8)
     except Exception as e:
-        print(f'[telegram] {channel}/{post_id} request_exception={e}', flush=True)
-        return None
+        print(f'[telegram] {channel} request_err={e}', flush=True)
+        return []
     if resp.status_code in (429, 403):
         _enter_cooldown('t.me', 600)
-        print(f'[telegram] {channel}/{post_id} RATE_LIMITED status={resp.status_code}', flush=True)
-        return None
+        print(f'[telegram] {channel} RATE_LIMITED status={resp.status_code}', flush=True)
+        return []
     if resp.status_code != 200:
-        return None
+        # 302 = channel doesn't exist as public; common after typos.
+        return []
     try:
         soup = BeautifulSoup(resp.text, 'html.parser')
     except Exception:
-        return None
-    text_el = soup.select_one('.tgme_widget_message_text')
-    if not text_el:
-        return None
-    text = text_el.get_text(' ', strip=True)
-    if not text:
-        return None
-    author_el = soup.select_one('.tgme_widget_message_owner_name') \
-        or soup.select_one('.tgme_widget_message_author_name')
-    author = author_el.get_text(strip=True) if author_el else channel
-    date_el = soup.select_one('.tgme_widget_message_date time')
-    iso_dt = ''
-    if date_el and date_el.has_attr('datetime'):
-        iso_dt = date_el['datetime'][:10]
+        return []
+    items = []
+    today = date.today().strftime('%Y-%m-%d')
+    for msg in soup.select('.tgme_widget_message_wrap'):
+        msg_div = msg.select_one('.tgme_widget_message')
+        if not msg_div:
+            continue
+        data_post = (msg_div.get('data-post') or '').strip()
+        m = re.match(r'^[A-Za-z0-9_]+/(\d+)$', data_post)
+        if not m:
+            continue
+        post_id = m.group(1)
+        text_el = msg.select_one('.tgme_widget_message_text')
+        if not text_el:
+            continue
+        text = text_el.get_text(' ', strip=True)
+        if not _blob_has_bili_variant(text):
+            continue
+        date_el = msg.select_one('.tgme_widget_message_date time')
+        iso_dt = ''
+        if date_el and date_el.has_attr('datetime'):
+            iso_dt = date_el['datetime'][:10]
+        if iso_dt and iso_dt < '2026-01-01':
+            continue
+        if not iso_dt:
+            iso_dt = today
+        author_el = (msg.select_one('.tgme_widget_message_author_name')
+                     or msg.select_one('.tgme_widget_message_owner_name'))
+        author = author_el.get_text(strip=True) if author_el else channel
+        post_url = f'https://t.me/{channel}/{post_id}'
+        items.append({
+            'url': post_url,
+            'url_hash': hash_url(post_url),
+            'platform': 'telegram',
+            'text': f'[@{author} on t.me/{channel}] {text}'[:5000],
+            'content_date': iso_dt,
+            'dates_found': [iso_dt],
+        })
+    print(f'[telegram] {channel} bilibili_posts={len(items)}', flush=True)
     time.sleep(0.3)
-    return {'text': text, 'author': author, 'iso_date': iso_dt}
+    return items
 
 
 def discover_telegram():
-    """Discover Bilibili-related Telegram public posts via DDG site search.
+    """Discover Bilibili-related Telegram public posts.
 
-    For each alphabet variant of 'bilibili', query DDG with `site:t.me`
-    so DuckDuckGo's index does the cross-channel search Telegram does
-    not provide natively. Each result URL points to a specific post
-    (t.me/{channel}/{post_id}); we fetch the embed-style preview to get
-    clean post text + author + ISO date, blob-filter for any variant,
-    then run the shared Haiku pipeline."""
+    For each alphabet variant of 'bilibili', query Brave Search with
+    `site:t.me {variant}` (freshness=None — past-month freshness makes
+    Brave drop the site: filter). Brave returns channel-index and
+    channel-home URLs; we extract unique channel handles and harvest
+    each channel's full recent timeline (t.me/s/{ch}) for bilibili-
+    matching posts. Pipeline → Haiku → save."""
     import time
     fetch_start = time.time()
-    candidate_urls = []
-    seen = set()
+    channels_seen = set()
+    channels_ordered = []  # preserve discovery order, source by source
 
     for variant in _BILI_ALPHA_VARIANTS:
-        if time.time() - fetch_start > 30:
+        if time.time() - fetch_start > 25:
             break
         try:
             results = _brave_search(
                 f'site:t.me {variant}',
                 max_results=20,
-                freshness='pm',
+                freshness=None,  # past-month makes Brave drop site:t.me
             )
         except Exception as e:
             print(f'[telegram] brave variant={variant!r} err={e}', flush=True)
             continue
+        new_for_variant = 0
         for url in results or []:
-            m = _TELEGRAM_POST_RE.match(url)
-            if not m:
+            ch = _telegram_channel_from_url(url)
+            if not ch:
                 continue
-            channel, post_id = m.group(1), m.group(2)
-            normalized = f'https://t.me/{channel}/{post_id}'
-            if normalized in seen:
+            ch_key = ch.lower()
+            if ch_key in channels_seen:
                 continue
-            seen.add(normalized)
-            candidate_urls.append((channel, post_id, normalized))
-        print(f'[telegram] brave variant={variant!r} candidates_so_far={len(candidate_urls)}', flush=True)
+            channels_seen.add(ch_key)
+            channels_ordered.append(ch)
+            new_for_variant += 1
+        print(f'[telegram] brave variant={variant!r} new_channels={new_for_variant} '
+              f'total_channels={len(channels_ordered)}', flush=True)
 
-    print(f'[telegram] Brave total unique post URLs={len(candidate_urls)}', flush=True)
-    if not candidate_urls:
+    print(f'[telegram] Brave unique channels={len(channels_ordered)}', flush=True)
+    if not channels_ordered:
         return {'platform': 'telegram', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
 
-    candidate_urls = candidate_urls[:30]
+    # Cap channels to keep within gunicorn 120s budget. 1 fetch ≈ 1s.
+    channels_ordered = channels_ordered[:25]
 
     all_items = []
-    for channel, post_id, url in candidate_urls:
-        if time.time() - fetch_start > 60:
+    seen_urls = set()
+    for ch in channels_ordered:
+        if time.time() - fetch_start > 70:
             break
-        post = _fetch_telegram_post(channel, post_id)
-        if not post:
-            continue
-        if not _blob_has_bili_variant(post['text']):
-            continue
-        iso = post['iso_date']
-        if iso and iso < '2026-01-01':
-            continue
-        if not iso:
-            iso = date.today().strftime('%Y-%m-%d')
-        all_items.append({
-            'url': url,
-            'url_hash': hash_url(url),
-            'platform': 'telegram',
-            'text': f'[@{post["author"]} on t.me/{channel}] {post["text"]}'[:5000],
-            'content_date': iso,
-            'dates_found': [iso],
-        })
+        for it in _fetch_telegram_channel_posts(ch):
+            if it['url'] in seen_urls:
+                continue
+            seen_urls.add(it['url'])
+            all_items.append(it)
 
     print(f'[telegram] total fetched items={len(all_items)}', flush=True)
     if not all_items:
