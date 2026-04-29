@@ -419,16 +419,23 @@ def social_debug_telegram_ddg():
     if timelimit == '':
         timelimit = None
     from modules.social_listening import _ddg_search
+    raw = request.args.get('raw') == '1'  # raw query, no site: prefix
+    full_q = q if raw else f'site:t.me {q}'
     try:
-        urls = _ddg_search(f'site:t.me {q}', max_results=20,
-                           region='wt-wt', timelimit=timelimit)
+        # Bypass _ddg_search's filters to see raw DDG output
+        from duckduckgo_search import DDGS
+        with DDGS() as ddgs:
+            results = list(ddgs.text(full_q, region='wt-wt',
+                                     timelimit=timelimit, max_results=20))
     except Exception as e:
-        return jsonify({'error': str(e), 'query': q}), 500
+        return jsonify({'error': str(e), 'query': full_q,
+                        'error_type': type(e).__name__}), 500
     return jsonify({
-        'query': f'site:t.me {q}',
+        'query': full_q,
         'timelimit': timelimit,
-        'count': len(urls or []),
-        'urls': urls or [],
+        'count': len(results or []),
+        'results': [{'href': r.get('href'), 'title': r.get('title','')[:80]}
+                    for r in (results or [])[:10]],
     })
 
 
