@@ -420,9 +420,13 @@ def social_debug_brave():
     if fresh in ('', 'none', 'all'):
         fresh = None
     api_key = (os.environ.get('BRAVE_API_KEY') or '').strip()
-    params = {'q': q, 'count': 20}
-    if fresh:
-        params['freshness'] = fresh
+    # Strip optional params to rule out plan-tier restrictions
+    minimal = request.args.get('min') == '1'
+    params = {'q': q}
+    if not minimal:
+        params['count'] = 20
+        if fresh:
+            params['freshness'] = fresh
     headers = {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip',
@@ -433,7 +437,7 @@ def social_debug_brave():
                     params=params, headers=headers, timeout=10)
     except Exception as e:
         return jsonify({'error': str(e), 'error_type': type(e).__name__}), 500
-    body_preview = r.text[:600]
+    body_preview = r.text[:1500]
     try:
         j = r.json()
         web_count = len((j.get('web') or {}).get('results') or [])
