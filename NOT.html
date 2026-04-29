@@ -370,6 +370,7 @@
       <label for="fileInput" class="drop" id="dropZone">
         <div class="drop-title">Drop CSV files here or click to browse</div>
         <div class="drop-sub">Format: <code>address,balance_NOT</code> · Multiple files = snapshots over time</div>
+        <div class="drop-sub" style="margin-top:6px">Tip: name files <code>1.csv</code>, <code>2.csv</code>, <code>3.csv</code> … and they auto-sort oldest → newest regardless of upload order.</div>
         <input id="fileInput" type="file" accept=".csv,text/csv" multiple>
       </label>
       <div class="snap-list" id="snapList"></div>
@@ -517,13 +518,14 @@
    ============================================================ */
 
 const state = {
-  snapshots: [],         // ordered by upload
+  snapshots: [],         // sorted: numeric-named (1.csv, 2.csv …) first by number, then by upload order
   decimals: 9,
   activeId: null,
   holderSort: { key: 'balance', dir: 'desc' },
   diffSort:   { key: 'delta',   dir: 'desc' },
   holderPage: 0,
   diffPage:   0,
+  _uploadCounter: 0,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -644,6 +646,23 @@ async function parseCsv(file, onProgress) {
 }
 
 /* ---------- snapshot management ---------- */
+// If filename basename is purely a number (e.g. "1.csv", "12.csv"), use that
+// as the snapshot's chronological order key. Otherwise null → falls back to upload order.
+function snapSortKey(name) {
+  const base = name.replace(/\.csv$/i, '').trim();
+  return /^\d+$/.test(base) ? parseInt(base, 10) : null;
+}
+
+function sortSnapshots() {
+  // numeric-named files first, sorted by their number; non-numeric keep upload order after them
+  state.snapshots.sort((a, b) => {
+    if (a.sortNum !== null && b.sortNum !== null) return a.sortNum - b.sortNum;
+    if (a.sortNum !== null) return -1;
+    if (b.sortNum !== null) return 1;
+    return a.uploadIdx - b.uploadIdx;
+  });
+}
+
 async function addFiles(files) {
   for (const file of files) {
     if (!file.name.toLowerCase().endsWith('.csv')) continue;
@@ -653,9 +672,12 @@ async function addFiles(files) {
       const { map, total, rows, format, rejected } = await parseCsv(file, (n) => {
         pill.querySelector('.pill-meta').textContent = fmtInt(n) + ' rows…';
       });
-      const snap = { id, name: file.name, size: file.size, map, total, rows, format, rejected };
+      const snap = { id, name: file.name, size: file.size, map, total, rows, format, rejected,
+                     sortNum: snapSortKey(file.name),
+                     uploadIdx: state._uploadCounter++ };
       state.snapshots.push(snap);
-      if (!state.activeId) state.activeId = id;
+      sortSnapshots();
+      if (!state.activeId) state.activeId = state.snapshots[0].id;
       pill.remove();
       renderSnapList();
     } catch (e) {
