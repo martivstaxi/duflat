@@ -571,20 +571,41 @@ function shortAddr(a) {
 // Stream-parse a File line by line. Format: address,balance_NOT
 // We tolerate header row and empty lines.
 async function parseCsv(file, onProgress) {
-  const map = new Map();
-  let total = 0n;
-  let rows = 0;
+  // Two CSV formats are accepted:
+  //   raw   — balance is integer nano-units (e.g. "20840892590" = 20.84 NOT @ 9 dec)
+  //   human — balance is already-scaled NOT (e.g. "215687.1063")
+  // Auto-detect: presence of a decimal point in any row → human; otherwise raw.
+  // Internal storage is always BigInt nano-units; toHuman() divides for display.
+  const decimals = state.decimals;
   let buffer = '';
   let firstLineSeen = false;
+  let hasAnyDecimal = false;
+  let rejected = 0;
+  const rawRows = [];
+
+  function processLine(line) {
+    if (!line) return;
+    if (!firstLineSeen) {
+      firstLineSeen = true;
+      const parts = line.split(',');
+      if (parts.length >= 2 && !/^\d+(\.\d+)?$/.test(parts[1].trim())) return;
+    }
+    const comma = line.indexOf(',');
+    if (comma < 0) { rejected++; return; }
+    const addr = line.slice(0, comma).trim();
+    const balStr = line.slice(comma + 1).trim();
+    if (!addr || !/^\d+(\.\d+)?$/.test(balStr)) { rejected++; return; }
+    if (balStr.includes('.')) hasAnyDecimal = true;
+    rawRows.push([addr, balStr]);
+    if (onProgress && rawRows.length % 5000 === 0) onProgress(rawRows.length);
+  }
 
   const reader = file.stream().getReader();
   const decoder = new TextDecoder('utf-8');
-
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
-
     let nl;
     while ((nl = buffer.indexOf('\n')) !== -1) {
       const line = buffer.slice(0, nl).replace(/\r$/, '');
@@ -592,32 +613,26 @@ async function parseCsv(file, onProgress) {
       processLine(line);
     }
   }
-  // tail
-  if (buffer.length) {
-    processLine(buffer.replace(/\r$/, ''));
-  }
+  if (buffer.length) processLine(buffer.replace(/\r$/, ''));
 
-  function processLine(line) {
-    if (!line) return;
-    if (!firstLineSeen) {
-      firstLineSeen = true;
-      // skip header if non-numeric second field
-      const parts = line.split(',');
-      if (parts.length >= 2 && !/^\d+$/.test(parts[1].trim())) return;
+  const isHuman = hasAnyDecimal;
+  const map = new Map();
+  let total = 0n;
+  for (const [addr, balStr] of rawRows) {
+    let bal;
+    if (isHuman) {
+      // scale up to nano-units: int_part + zero-padded fraction (truncated to `decimals`)
+      const [intP, fracP = ''] = balStr.split('.');
+      const padded = (fracP + '0'.repeat(decimals)).slice(0, decimals);
+      bal = BigInt((intP || '0') + padded);
+    } else {
+      bal = BigInt(balStr);
     }
-    const comma = line.indexOf(',');
-    if (comma < 0) return;
-    const addr = line.slice(0, comma).trim();
-    const balStr = line.slice(comma + 1).trim();
-    if (!addr || !/^\d+$/.test(balStr)) return;
-    const bal = BigInt(balStr);
     map.set(addr, bal);
     total += bal;
-    rows++;
-    if (onProgress && rows % 5000 === 0) onProgress(rows);
   }
 
-  return { map, total, rows };
+  return { map, total, rows: rawRows.length, format: isHuman ? 'human' : 'raw', rejected };
 }
 
 /* ---------- snapshot management ---------- */
@@ -627,10 +642,10 @@ async function addFiles(files) {
     const id = uid();
     const pill = renderPendingPill(id, file.name);
     try {
-      const { map, total, rows } = await parseCsv(file, (n) => {
+      const { map, total, rows, format, rejected } = await parseCsv(file, (n) => {
         pill.querySelector('.pill-meta').textContent = fmtInt(n) + ' rows…';
       });
-      const snap = { id, name: file.name, size: file.size, map, total, rows };
+      const snap = { id, name: file.name, size: file.size, map, total, rows, format, rejected };
       state.snapshots.push(snap);
       if (!state.activeId) state.activeId = id;
       pill.remove();
@@ -673,9 +688,11 @@ function renderSnapList() {
   for (const s of state.snapshots) {
     const pill = document.createElement('span');
     pill.className = 'snap-pill';
+    const fmtTag = s.format === 'human' ? 'NOT' : 'raw';
+    const rejNote = s.rejected ? ` · ${fmtInt(s.rejected)} rejected` : '';
     pill.innerHTML = `
       <span class="pill-name">${escapeHtml(s.name)}</span>
-      <span class="pill-meta">${fmtInt(s.rows)} holders · ${fmtNot(s.total)} NOT</span>
+      <span class="pill-meta">${fmtInt(s.rows)} holders · ${fmtNot(s.total)} NOT · ${fmtTag}${rejNote}</span>
       <button title="Remove" data-remove="${s.id}">×</button>
     `;
     list.appendChild(pill);
