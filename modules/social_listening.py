@@ -3253,7 +3253,11 @@ _MEDIUM_TAGS = [
     'bilibili', 'b-station', 'chinese-anime', 'china-streaming',
     'vtuber', 'genshin-impact', 'china-tech', 'mihoyo',
 ]
-_MEDIUM_UA = 'Mozilla/5.0 (compatible; duflat-social-listening/1.0)'
+# Real-browser UA: Medium silently returns empty feeds for bot-flavored
+# UAs (verified 2026-04-29: 'compatible;...' UA = 0 items, browser UA =
+# full feed).
+_MEDIUM_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+              '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
 _MEDIUM_NS = {
     'dc': 'http://purl.org/dc/elements/1.1/',
@@ -3589,109 +3593,117 @@ def discover_ptt():
 
 
 # ─────────────────────────────────────────────
-# SUBSTACK — public post search (undocumented JSON endpoint)
+# SUBSTACK — curated China-focused publication RSS feeds
 # ─────────────────────────────────────────────
+#
+# Substack's public /api/v1/post/search returns 200 with an empty result
+# set for unauthenticated callers (verified 2026-04-29: any query → 0
+# results). Pivot to a curated list of China-focused Substack RSS feeds
+# (each publication exposes /feed publicly). We blob-filter for bilibili
+# keywords since these publications cover broader China topics.
 
-_SUBSTACK_QUERIES = [
-    'bilibili', 'bilibili gaming', 'bilibili anime', 'bilibili streaming',
-    'bilibili creator', 'bilibili AI', 'bilibili genshin', 'bilibili vtuber',
+_SUBSTACK_FEEDS = [
+    # name, host
+    ('chinatalk',         'chinatalk.media'),
+    ('sinocism',          'sinocism.com'),
+    ('beijingchannel',    'beijingchannel.substack.com'),
+    ('chinabooksreview',  'chinabooksreview.substack.com'),
+    ('thechinaproject',   'chinaproject.substack.com'),
+    ('chinaeconomicsreview','china-economic-review.substack.com'),
+    ('interconnected',    'interconnect.substack.com'),
+    ('whatsonweibo',      'whatsonweibo.substack.com'),
+    ('chinaheritage',     'chinaheritage.substack.com'),
+    ('panda-paw-dragon-claw','pandapawdragonclaw.substack.com'),
+    ('thinking-chinese',  'thinkingchinese.substack.com'),
+    ('chinamediabulletin','chinamediabulletin.substack.com'),
 ]
-_SUBSTACK_UA = 'Mozilla/5.0 (compatible; duflat-social-listening/1.0)'
+_SUBSTACK_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
 
-def _fetch_substack_search(query):
-    """Search Substack for posts matching query via the public search API."""
+def _fetch_substack_feed(host):
+    """Fetch one Substack publication's public RSS feed.
+
+    Returns list of <item> ElementTree nodes, or [] on any failure.
+    `host` is the substack subdomain or custom domain (e.g.
+    'sinocism.com' or 'chinatalk.media')."""
     import time
-    from urllib.parse import quote_plus
-    if _cooling_down('substack.com'):
+    import xml.etree.ElementTree as ET
+    if _cooling_down(host):
         return []
-    url = ('https://substack.com/api/v1/post/search'
-           f'?type=all_post&query={quote_plus(query)}')
+    url = f'https://{host}/feed'
     try:
-        resp = requests.get(
-            url,
-            headers={'User-Agent': _SUBSTACK_UA, 'Accept': 'application/json'},
-            timeout=8,
-        )
+        resp = requests.get(url, headers={'User-Agent': _SUBSTACK_UA}, timeout=8)
     except Exception as e:
-        print(f'[substack] q={query} request_exception={e}', flush=True)
+        print(f'[substack] {host} request_exception={e}', flush=True)
         return []
     if resp.status_code in (429, 403):
-        _enter_cooldown('substack.com', 600)
-        print(f'[substack] q={query} RATE_LIMITED status={resp.status_code}', flush=True)
+        _enter_cooldown(host, 600)
+        print(f'[substack] {host} RATE_LIMITED status={resp.status_code}', flush=True)
         return []
     if resp.status_code != 200:
-        print(f'[substack] q={query} status={resp.status_code}', flush=True)
+        print(f'[substack] {host} status={resp.status_code}', flush=True)
         return []
     try:
-        data = resp.json() or {}
+        root = ET.fromstring(resp.content)
+        items = root.findall('.//item') or []
     except Exception as e:
-        print(f'[substack] q={query} json_err={e}', flush=True)
+        print(f'[substack] {host} parse_err={e}', flush=True)
         return []
-    # Endpoint returns either {results: [...]} or {posts: [...]} depending
-    # on which internal version is live. Accept both shapes.
-    posts = data.get('results') or data.get('posts') or []
-    if not isinstance(posts, list):
-        posts = []
-    print(f'[substack] q={query} posts={len(posts)}', flush=True)
-    time.sleep(0.4)
-    return posts
+    print(f'[substack] {host} items={len(items)}', flush=True)
+    time.sleep(0.3)
+    return items
 
 
-def _substack_to_pipeline(post):
-    """Convert a Substack search result into a pipeline item."""
-    canonical = post.get('canonical_url') or post.get('url') or ''
-    if not canonical:
+def _substack_item_to_pipeline(item, host):
+    """Convert a Substack RSS <item> ElementTree node into a pipeline item."""
+    title = (item.findtext('title') or '').strip()
+    link = (item.findtext('link') or '').strip()
+    pub_str = (item.findtext('pubDate') or '').strip()
+    if not link or not title or not pub_str:
         return None
-    title = (post.get('title') or '').strip()
-    subtitle = (post.get('subtitle') or '').strip()
-    body = (post.get('truncated_body_text') or post.get('body_text') or '').strip()
-    pub_str = (post.get('post_date') or post.get('publication_date')
-               or post.get('published_at') or '')
-    if not pub_str:
-        return None
+    author = (item.findtext('dc:creator', namespaces=_MEDIUM_NS) or '').strip()
     try:
-        dt = datetime.strptime(pub_str[:10], '%Y-%m-%d')
+        dt = datetime.strptime(pub_str[:25], '%a, %d %b %Y %H:%M:%S')
     except Exception:
         return None
     if dt.year < 2026:
         return None
-    author = ''
-    bw = post.get('bylines') or []
-    if isinstance(bw, list) and bw:
-        first = bw[0] if isinstance(bw[0], dict) else {}
-        author = (first.get('name') or '').strip()
+    description = item.findtext('description') or ''
+    body_html = item.findtext('content:encoded', namespaces=_MEDIUM_NS) or description
+    body_text = ''
+    if body_html:
+        try:
+            body_text = BeautifulSoup(body_html, 'html.parser').get_text(' ', strip=True)
+        except Exception:
+            pass
     parts = [title]
-    if subtitle:
-        parts.append(subtitle)
-    if body:
-        parts.append(body[:2000])
-    text = '\n'.join(p for p in parts if p).strip()
-    if not text:
-        return None
+    if body_text:
+        parts.append(body_text[:2000])
+    text = '\n'.join(parts).strip()
     return {
-        'url': canonical,
-        'url_hash': hash_url(canonical),
+        'url': link,
+        'url_hash': hash_url(link),
         'platform': 'substack',
-        'text': f'[@{author}] {text}'[:5000],
+        'text': f'[@{author} on {host}] {text}'[:5000],
         'content_date': dt.strftime('%Y-%m-%d'),
         'dates_found': [dt.strftime('%Y-%m-%d')],
     }
 
 
 def discover_substack():
-    """Fetch Bilibili-related Substack posts via public search."""
+    """Fetch Bilibili-related Substack posts via curated publication RSS feeds."""
     import time
     all_items = []
     seen = set()
     fetch_start = time.time()
 
-    for q in _SUBSTACK_QUERIES:
+    for _, host in _SUBSTACK_FEEDS:
         if time.time() - fetch_start > 35:
             break
-        posts = _fetch_substack_search(q)
-        for p in posts:
-            it = _substack_to_pipeline(p)
+        items = _fetch_substack_feed(host)
+        for el in items:
+            it = _substack_item_to_pipeline(el, host)
             if not it or it['url'] in seen:
                 continue
             blob = it['text'].lower()
