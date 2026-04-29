@@ -1709,6 +1709,55 @@ _BING_MARKETS = {
 }
 
 
+def _brave_search(query, max_results=20, freshness='pm', country='us'):
+    """Brave Search Web API — returns list of URLs.
+
+    freshness: 'pd' (past day), 'pw' (past week), 'pm' (past month),
+               'py' (past year), or None for all-time. (Brave's API
+               accepts these tokens; pass None to omit the param.)
+    Requires BRAVE_API_KEY env var (set on Railway). Returns [] on any
+    failure so callers stay simple.
+    """
+    api_key = os.environ.get('BRAVE_API_KEY', '').strip()
+    if not api_key:
+        return []
+    params = {'q': query, 'count': min(max_results, 20)}
+    if country:
+        params['country'] = country
+    if freshness:
+        params['freshness'] = freshness
+    headers = {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': api_key,
+    }
+    try:
+        resp = requests.get('https://api.search.brave.com/res/v1/web/search',
+                            params=params, headers=headers, timeout=10)
+    except Exception as e:
+        print(f'[brave] q={query!r} request_err={e}', flush=True)
+        return []
+    if resp.status_code == 429:
+        _enter_cooldown('api.search.brave.com', 60)
+        print(f'[brave] q={query!r} RATE_LIMITED', flush=True)
+        return []
+    if resp.status_code != 200:
+        print(f'[brave] q={query!r} status={resp.status_code} body={resp.text[:200]}',
+              flush=True)
+        return []
+    try:
+        data = resp.json()
+    except Exception:
+        return []
+    web = (data.get('web') or {}).get('results') or []
+    urls = []
+    for r in web:
+        u = r.get('url') or ''
+        if u and u not in urls:
+            urls.append(u)
+    return urls[:max_results]
+
+
 def _ddg_search(query, max_results=20, region='wt-wt', timelimit=None):
     """DuckDuckGo search via duckduckgo-search library — returns list of URLs.
     timelimit: 'd'=day, 'w'=week, 'm'=month, 'y'=year, None=all time
@@ -3704,14 +3753,13 @@ def discover_telegram():
         if time.time() - fetch_start > 30:
             break
         try:
-            results = _ddg_search(
+            results = _brave_search(
                 f'site:t.me {variant}',
-                max_results=15,
-                region='wt-wt',
-                timelimit='m',
+                max_results=20,
+                freshness='pm',
             )
         except Exception as e:
-            print(f'[telegram] ddg variant={variant!r} err={e}', flush=True)
+            print(f'[telegram] brave variant={variant!r} err={e}', flush=True)
             continue
         for url in results or []:
             m = _TELEGRAM_POST_RE.match(url)
@@ -3723,9 +3771,9 @@ def discover_telegram():
                 continue
             seen.add(normalized)
             candidate_urls.append((channel, post_id, normalized))
-        print(f'[telegram] ddg variant={variant!r} candidates_so_far={len(candidate_urls)}', flush=True)
+        print(f'[telegram] brave variant={variant!r} candidates_so_far={len(candidate_urls)}', flush=True)
 
-    print(f'[telegram] DDG total unique post URLs={len(candidate_urls)}', flush=True)
+    print(f'[telegram] Brave total unique post URLs={len(candidate_urls)}', flush=True)
     if not candidate_urls:
         return {'platform': 'telegram', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
 

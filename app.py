@@ -411,31 +411,26 @@ def social_discover_telegram():
     return jsonify(discover_telegram())
 
 
-@app.route('/social/debug-telegram-ddg', methods=['GET'])
-def social_debug_telegram_ddg():
-    """Debug: return raw DDG site:t.me results for a query, no fetch/save."""
+@app.route('/social/debug-brave', methods=['GET'])
+def social_debug_brave():
+    """Debug: return raw Brave Search results for a query, no fetch/save.
+    ?q=... (required), ?fresh=pm/pw/pd/py/none (optional, default pm)."""
     q = request.args.get('q', 'bilibili')
-    timelimit = request.args.get('t')  # None / 'd' / 'w' / 'm' / 'y'
-    if timelimit == '':
-        timelimit = None
-    from modules.social_listening import _ddg_search
-    raw = request.args.get('raw') == '1'  # raw query, no site: prefix
-    full_q = q if raw else f'site:t.me {q}'
+    fresh = request.args.get('fresh', 'pm')
+    if fresh in ('', 'none', 'all'):
+        fresh = None
+    from modules.social_listening import _brave_search
     try:
-        # Bypass _ddg_search's filters to see raw DDG output
-        from duckduckgo_search import DDGS
-        with DDGS() as ddgs:
-            results = list(ddgs.text(full_q, region='wt-wt',
-                                     timelimit=timelimit, max_results=20))
+        urls = _brave_search(q, max_results=20, freshness=fresh)
     except Exception as e:
-        return jsonify({'error': str(e), 'query': full_q,
+        return jsonify({'error': str(e), 'query': q,
                         'error_type': type(e).__name__}), 500
     return jsonify({
-        'query': full_q,
-        'timelimit': timelimit,
-        'count': len(results or []),
-        'results': [{'href': r.get('href'), 'title': r.get('title','')[:80]}
-                    for r in (results or [])[:10]],
+        'query': q,
+        'freshness': fresh,
+        'count': len(urls),
+        'urls': urls[:20],
+        'has_api_key': bool((os.environ.get('BRAVE_API_KEY') or '').strip()),
     })
 
 
