@@ -393,15 +393,6 @@ def social_discover_medium():
     return jsonify(discover_medium())
 
 
-@app.route('/social/discover-ptt', methods=['POST'])
-def social_discover_ptt():
-    """Fetch Bilibili-related PTT posts (Taiwan, Traditional Chinese)."""
-    auth = _require_cron()
-    if auth: return auth
-    from modules.social_listening import discover_ptt
-    return jsonify(discover_ptt())
-
-
 @app.route('/social/discover-substack', methods=['POST'])
 def social_discover_substack():
     """Fetch Bilibili-related Substack posts via public search API."""
@@ -418,7 +409,7 @@ def _discover_all_background():
         from modules.social_listening import (
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
-            discover_youtube, discover_medium, discover_ptt,
+            discover_youtube, discover_medium,
             discover_substack,
         )
         # Order: highest-ROI first; later sources are drained even if
@@ -426,7 +417,7 @@ def _discover_all_background():
         # candidate pool and running them all keeps diversity balanced.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
                    discover_lihkg, discover_lemmy, discover_mastodon,
-                   discover_medium, discover_ptt, discover_substack):
+                   discover_medium, discover_substack):
             try:
                 fn()
             except Exception as e:
@@ -447,7 +438,7 @@ def social_discover_all():
     return jsonify({
         'status': 'started',
         'sources': ['bluesky', 'reddit', 'youtube', 'lihkg', 'lemmy', 'mastodon',
-                    'medium', 'ptt', 'substack'],
+                    'medium', 'substack'],
     }), 202
 
 
