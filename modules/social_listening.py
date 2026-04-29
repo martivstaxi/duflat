@@ -1716,10 +1716,14 @@ def _brave_search(query, max_results=20, freshness='pm', country='us'):
                'py' (past year), or None for all-time. (Brave's API
                accepts these tokens; pass None to omit the param.)
     Requires BRAVE_API_KEY env var (set on Railway). Returns [] on any
-    failure so callers stay simple.
+    failure so callers stay simple. Free tier rate limit is 1 req/sec;
+    callers must space their calls or rely on the post-call sleep here.
     """
+    import time as _t
     api_key = os.environ.get('BRAVE_API_KEY', '').strip()
     if not api_key:
+        return []
+    if _cooling_down('api.search.brave.com'):
         return []
     params = {'q': query, 'count': min(max_results, 20)}
     if country:
@@ -1748,6 +1752,7 @@ def _brave_search(query, max_results=20, freshness='pm', country='us'):
     try:
         data = resp.json()
     except Exception:
+        _t.sleep(1.1)
         return []
     web = (data.get('web') or {}).get('results') or []
     urls = []
@@ -1755,6 +1760,8 @@ def _brave_search(query, max_results=20, freshness='pm', country='us'):
         u = r.get('url') or ''
         if u and u not in urls:
             urls.append(u)
+    # Free tier is 1 req/sec — sleep here so the next call won't 429.
+    _t.sleep(1.1)
     return urls[:max_results]
 
 
