@@ -446,7 +446,8 @@ def social_discover_all():
     threading.Thread(target=_discover_all_background, daemon=True).start()
     return jsonify({
         'status': 'started',
-        'sources': ['bluesky', 'reddit', 'youtube', 'lihkg', 'lemmy', 'mastodon'],
+        'sources': ['bluesky', 'reddit', 'youtube', 'lihkg', 'lemmy', 'mastodon',
+                    'medium', 'ptt', 'substack'],
     }), 202
 
 
