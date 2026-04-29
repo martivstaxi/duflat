@@ -395,10 +395,8 @@
           <input id="decimalsInput" type="number" min="0" max="18" value="9" style="width:70px">
           <span class="label-inline">Active snapshot:</span>
           <select id="activeSnap"></select>
-          <span class="label-inline">Compare to:</span>
-          <select id="compareSnap"><option value="">— none —</option></select>
         </div>
-        <p class="hint" style="margin-top:10px">NOT on TON uses 9 decimals. Change if your data uses a different scale.</p>
+        <p class="hint" style="margin-top:10px">Active snapshot drives Holders / Distribution / Lookup tabs. Timeline tab uses ALL uploaded snapshots in upload order.</p>
       </div>
     </div>
 
@@ -416,7 +414,7 @@
         <div class="tabs">
           <div class="tab active" data-tab="holders">Holders</div>
           <div class="tab" data-tab="dist">Distribution</div>
-          <div class="tab" data-tab="diff">Snapshot Diff</div>
+          <div class="tab" data-tab="diff">Timeline</div>
           <div class="tab" data-tab="search">Address Lookup</div>
         </div>
 
@@ -459,9 +457,9 @@
           <div class="dist" id="distList"></div>
         </div>
 
-        <!-- Diff tab -->
+        <!-- Timeline tab (multi-snapshot) -->
         <div class="tab-panel" id="tab-diff">
-          <p class="hint" id="diffHint">Pick two snapshots in Settings to enable comparison.</p>
+          <p class="hint" id="diffHint">Upload at least 2 snapshots to compare. Snapshots are ordered by upload time (oldest → newest).</p>
           <div id="diffStats" class="stats" style="margin-bottom:16px"></div>
           <div class="toolbar" id="diffControls" style="display:none">
             <div class="controls">
@@ -476,20 +474,17 @@
               </select>
               <span class="label-inline">Min |Δ|:</span>
               <input id="diffMin" type="number" min="0" step="any" value="0" style="width:120px">
+              <span class="label-inline">Address contains:</span>
+              <input id="diffSearch" type="text" placeholder="filter…" style="width:200px">
             </div>
+            <button class="btn btn-primary" id="diffExport">Export timeline CSV</button>
           </div>
+          <p class="hint" id="diffNote" style="display:none;margin-top:8px;font-size:12px">
+            Note: balance snapshots show net change per wallet, not transaction flow. "Inflow" is the sum of all positive Δ across wallets; "outflow" the sum of negatives. They can be unequal if wallets enter/leave the snapshot's top-N range or due to mint/burn.
+          </p>
           <div class="table-wrap" id="diffTableWrap" style="display:none">
             <table id="diffTable">
-              <thead>
-                <tr>
-                  <th class="rank">#</th>
-                  <th data-sort="addr">Address</th>
-                  <th data-sort="prev" class="num">Before</th>
-                  <th data-sort="curr" class="num">After</th>
-                  <th data-sort="delta" class="num sorted">Δ NOT ▼</th>
-                  <th data-sort="pct" class="num">Δ %</th>
-                </tr>
-              </thead>
+              <thead id="diffHead"></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -524,7 +519,6 @@ const state = {
   snapshots: [],         // ordered by upload
   decimals: 9,
   activeId: null,
-  compareId: null,
   holderSort: { key: 'balance', dir: 'desc' },
   diffSort:   { key: 'delta',   dir: 'desc' },
   holderPage: 0,
@@ -662,7 +656,6 @@ async function addFiles(files) {
 function removeSnap(id) {
   state.snapshots = state.snapshots.filter(s => s.id !== id);
   if (state.activeId === id) state.activeId = state.snapshots[0]?.id || null;
-  if (state.compareId === id) state.compareId = null;
   renderSnapList();
   refreshSnapSelectors();
   renderAll();
@@ -707,9 +700,6 @@ function refreshSnapSelectors() {
   const active = $('#activeSnap');
   active.innerHTML = opts || '<option value="">— none —</option>';
   if (state.activeId) active.value = state.activeId;
-  const cmp = $('#compareSnap');
-  cmp.innerHTML = '<option value="">— none —</option>' + opts;
-  if (state.compareId) cmp.value = state.compareId;
 }
 
 /* ---------- main render ---------- */
@@ -726,7 +716,6 @@ function renderAll() {
 
 /* ---------- stats ---------- */
 function activeSnap() { return state.snapshots.find(s => s.id === state.activeId); }
-function compareSnap() { return state.snapshots.find(s => s.id === state.compareId); }
 
 function renderStats() {
   const s = activeSnap();
@@ -894,132 +883,199 @@ function renderDistribution() {
   }
 }
 
-/* ---------- diff ---------- */
+/* ---------- timeline (multi-snapshot) ---------- */
 function renderDiff() {
-  const a = compareSnap();   // before
-  const b = activeSnap();    // after
-  if (!a || !b || a.id === b.id) {
-    $('#diffHint').style.display = '';
+  const snaps = state.snapshots;
+  const N = snaps.length;
+  const hint = $('#diffHint');
+  if (N < 2) {
+    hint.style.display = '';
+    hint.textContent = `Upload at least 2 snapshots to compare. Currently: ${N}`;
     $('#diffStats').innerHTML = '';
     $('#diffControls').style.display = 'none';
+    $('#diffNote').style.display = 'none';
     $('#diffTableWrap').style.display = 'none';
     $('#diffPagination').innerHTML = '';
     return;
   }
-  $('#diffHint').style.display = 'none';
+  hint.style.display = 'none';
   $('#diffControls').style.display = '';
+  $('#diffNote').style.display = '';
   $('#diffTableWrap').style.display = '';
 
-  // compute diffs
-  const all = new Set([...a.map.keys(), ...b.map.keys()]);
-  let increased = 0, decreased = 0, unchanged = 0, newH = 0, gone = 0;
-  let totalDeltaPos = 0n, totalDeltaNeg = 0n;
-  const diffs = [];
-  for (const addr of all) {
-    const prev = a.map.get(addr) ?? 0n;
-    const curr = b.map.get(addr) ?? 0n;
-    const delta = curr - prev;
-    let kind = 'unchanged';
-    if (prev === 0n && curr > 0n) { kind = 'new'; newH++; }
-    else if (curr === 0n && prev > 0n) { kind = 'gone'; gone++; }
-    else if (delta > 0n) { kind = 'up'; increased++; }
-    else if (delta < 0n) { kind = 'down'; decreased++; }
-    else { unchanged++; }
-    if (delta > 0n) totalDeltaPos += delta; else totalDeltaNeg += -delta;
-    diffs.push({ addr, prev, curr, delta, kind });
+  // build trajectory per address across all snapshots
+  const allAddrs = new Set();
+  for (const s of snaps) for (const k of s.map.keys()) allAddrs.add(k);
+
+  const firstSnap = snaps[0], lastSnap = snaps[N - 1];
+  let totalUp = 0n, totalDown = 0n, newCount = 0, goneCount = 0;
+  let upCount = 0, downCount = 0, stableCount = 0;
+  const rows = [];
+  for (const addr of allAddrs) {
+    const balances = snaps.map(s => s.map.get(addr) ?? 0n);
+    const first = balances[0];
+    const last = balances[N - 1];
+    const delta = last - first;
+    let kind;
+    if (first === 0n && last > 0n) { kind = 'new'; newCount++; }
+    else if (last === 0n && first > 0n) { kind = 'gone'; goneCount++; }
+    else if (delta > 0n) { kind = 'up'; upCount++; }
+    else if (delta < 0n) { kind = 'down'; downCount++; }
+    else { kind = 'stable'; stableCount++; }
+    if (delta > 0n) totalUp += delta;
+    else if (delta < 0n) totalDown += -delta;
+    rows.push({ addr, balances, first, last, delta, kind });
   }
 
   // stats
   const dStats = $('#diffStats');
   dStats.innerHTML = '';
-  dStats.appendChild(stat('From', a.name));
-  dStats.appendChild(stat('To', b.name));
-  dStats.appendChild(stat('Holder Δ', fmtInt(b.rows - a.rows), `${fmtInt(newH)} new · ${fmtInt(gone)} gone`));
-  dStats.appendChild(stat('Increased', fmtInt(increased), '+' + fmtNot(totalDeltaPos) + ' NOT'));
-  dStats.appendChild(stat('Decreased', fmtInt(decreased), '−' + fmtNot(totalDeltaNeg) + ' NOT'));
-  dStats.appendChild(stat('Unchanged', fmtInt(unchanged)));
-  dStats.appendChild(stat('Net supply Δ', fmtNot(b.total - a.total)));
+  dStats.appendChild(stat('Snapshots', fmtInt(N), `${firstSnap.name} → ${lastSnap.name}`));
+  dStats.appendChild(stat('Union holders', fmtInt(allAddrs.size), `${fmtInt(firstSnap.rows)} → ${fmtInt(lastSnap.rows)}`));
+  dStats.appendChild(stat('New', fmtInt(newCount), 'absent at start, present at end'));
+  dStats.appendChild(stat('Gone', fmtInt(goneCount), 'present at start, absent at end'));
+  dStats.appendChild(stat('Increased', fmtInt(upCount), '+' + fmtNot(totalUp) + ' NOT'));
+  dStats.appendChild(stat('Decreased', fmtInt(downCount), '−' + fmtNot(totalDown) + ' NOT'));
+  dStats.appendChild(stat('Net supply Δ', fmtNot(lastSnap.total - firstSnap.total)));
 
   // filter
   const filterSel = $('#diffFilter').value;
   const minDelta = humanToRaw(parseFloat($('#diffMin').value || '0'));
-  let rows = diffs;
-  if (filterSel === 'changed') rows = rows.filter(r => r.kind !== 'unchanged');
-  else if (filterSel === 'up')   rows = rows.filter(r => r.kind === 'up' || r.kind === 'new');
-  else if (filterSel === 'down') rows = rows.filter(r => r.kind === 'down' || r.kind === 'gone');
-  else if (filterSel === 'new')  rows = rows.filter(r => r.kind === 'new');
-  else if (filterSel === 'gone') rows = rows.filter(r => r.kind === 'gone');
-  if (minDelta > 0n) rows = rows.filter(r => (r.delta < 0n ? -r.delta : r.delta) >= minDelta);
+  const search = ($('#diffSearch')?.value || '').trim().toLowerCase();
+  let visible = rows;
+  if (filterSel === 'changed') visible = visible.filter(r => r.kind !== 'stable');
+  else if (filterSel === 'up')   visible = visible.filter(r => r.kind === 'up' || r.kind === 'new');
+  else if (filterSel === 'down') visible = visible.filter(r => r.kind === 'down' || r.kind === 'gone');
+  else if (filterSel === 'new')  visible = visible.filter(r => r.kind === 'new');
+  else if (filterSel === 'gone') visible = visible.filter(r => r.kind === 'gone');
+  if (minDelta > 0n) visible = visible.filter(r => (r.delta < 0n ? -r.delta : r.delta) >= minDelta);
+  if (search) visible = visible.filter(r => r.addr.toLowerCase().includes(search));
 
   // sort
   const { key, dir } = state.diffSort;
   const m = dir === 'asc' ? 1 : -1;
-  rows.sort((x, y) => {
+  visible.sort((x, y) => {
     if (key === 'addr')  return m * x.addr.localeCompare(y.addr);
-    if (key === 'prev')  return m * cmpBig(x.prev, y.prev);
-    if (key === 'curr')  return m * cmpBig(x.curr, y.curr);
     if (key === 'delta') return m * cmpBig(x.delta, y.delta);
     if (key === 'pct') {
-      const px = x.prev === 0n ? Infinity : Number(x.delta * 10000n / x.prev) / 100;
-      const py = y.prev === 0n ? Infinity : Number(y.delta * 10000n / y.prev) / 100;
+      const px = x.first === 0n ? Number.POSITIVE_INFINITY : Number(x.delta * 10000n / x.first) / 100;
+      const py = y.first === 0n ? Number.POSITIVE_INFINITY : Number(y.delta * 10000n / y.first) / 100;
       return m * (px - py);
+    }
+    if (key.startsWith('bal:')) {
+      const i = +key.slice(4);
+      return m * cmpBig(x.balances[i], y.balances[i]);
     }
     return 0;
   });
 
+  // build dynamic header
+  const head = $('#diffHead');
+  let hh = '<tr><th class="rank">#</th><th data-sort="addr">Address</th>';
+  for (let i = 0; i < N; i++) {
+    const lbl = snaps[i].name.replace(/\.csv$/i, '');
+    const short = lbl.length > 14 ? lbl.slice(0, 12) + '…' : lbl;
+    const isSorted = state.diffSort.key === 'bal:' + i;
+    const arrow = isSorted ? (state.diffSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+    hh += `<th data-sort="bal:${i}" class="num${isSorted ? ' sorted' : ''}" title="${escapeHtml(snaps[i].name)}">${escapeHtml(short)}${arrow}</th>`;
+  }
+  const dSorted = state.diffSort.key === 'delta';
+  const pSorted = state.diffSort.key === 'pct';
+  hh += `<th data-sort="delta" class="num${dSorted ? ' sorted' : ''}">Δ first→last${dSorted ? (state.diffSort.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>`;
+  hh += `<th data-sort="pct" class="num${pSorted ? ' sorted' : ''}">Δ %${pSorted ? (state.diffSort.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>`;
+  hh += '<th>Status</th></tr>';
+  head.innerHTML = hh;
+  head.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.sort;
+      if (state.diffSort.key === k) state.diffSort.dir = state.diffSort.dir === 'asc' ? 'desc' : 'asc';
+      else state.diffSort = { key: k, dir: k === 'addr' ? 'asc' : 'desc' };
+      renderDiff();
+    });
+  });
+
   // page
   const pageSize = parseInt($('#pageSize').value, 10) || 100;
-  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize));
   if (state.diffPage >= totalPages) state.diffPage = 0;
   const start = state.diffPage * pageSize;
-  const slice = rows.slice(start, start + pageSize);
+  const slice = visible.slice(start, start + pageSize);
 
   const tbody = $('#diffTable tbody');
   tbody.innerHTML = '';
   for (let i = 0; i < slice.length; i++) {
     const r = slice[i];
-    const tr = document.createElement('tr');
     const deltaClass = r.delta > 0n ? 'delta-pos' : r.delta < 0n ? 'delta-neg' : 'delta-zero';
     const sign = r.delta > 0n ? '+' : '';
     let pctText = '—';
-    if (r.prev > 0n) {
-      const p = Number(r.delta * 10000n / r.prev) / 100;
+    if (r.first > 0n) {
+      const p = Number(r.delta * 10000n / r.first) / 100;
       pctText = (p > 0 ? '+' : '') + p.toFixed(2) + '%';
-    } else if (r.curr > 0n) {
-      pctText = 'new';
-    }
+    } else if (r.last > 0n) pctText = 'new';
     let badge = '';
     if (r.kind === 'new')  badge = '<span class="badge new">new</span>';
     if (r.kind === 'gone') badge = '<span class="badge gone">exited</span>';
+
+    let balCells = '';
+    for (let j = 0; j < N; j++) {
+      const b = r.balances[j];
+      // mark step-by-step direction relative to previous snapshot
+      let stepClass = '';
+      if (j > 0) {
+        const prev = r.balances[j - 1];
+        if (b > prev) stepClass = 'delta-pos';
+        else if (b < prev) stepClass = 'delta-neg';
+      }
+      balCells += `<td class="num ${stepClass}">${b === 0n ? '<span style="color:var(--text-tertiary)">—</span>' : fmtNot(b)}</td>`;
+    }
+
+    const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="rank">${fmtInt(start + i + 1)}</td>
       <td class="addr">${escapeHtml(r.addr)}${badge}</td>
-      <td class="num">${fmtNot(r.prev)}</td>
-      <td class="num">${fmtNot(r.curr)}</td>
+      ${balCells}
       <td class="num ${deltaClass}">${sign}${fmtNot(r.delta)}</td>
       <td class="num ${deltaClass}">${pctText}</td>
+      <td>${r.kind}</td>
     `;
     tbody.appendChild(tr);
   }
 
-  // header arrows
-  $$('#diffTable thead th').forEach(th => {
-    const k = th.dataset.sort;
-    if (!k) return;
-    const isSorted = state.diffSort.key === k;
-    th.classList.toggle('sorted', isSorted);
-    const base = th.textContent.replace(/[ ▼▲]+$/, '');
-    th.textContent = base + (isSorted ? (state.diffSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
-  });
-
   const pag = $('#diffPagination');
   pag.innerHTML = `
-    <span>${fmtInt(rows.length)} rows · page ${state.diffPage + 1} / ${totalPages}</span>
+    <span>${fmtInt(visible.length)} rows · page ${state.diffPage + 1} / ${totalPages}</span>
     <button class="btn" ${state.diffPage === 0 ? 'disabled' : ''} id="dPrev">Prev</button>
     <button class="btn" ${state.diffPage >= totalPages - 1 ? 'disabled' : ''} id="dNext">Next</button>
   `;
   $('#dPrev')?.addEventListener('click', () => { state.diffPage--; renderDiff(); });
   $('#dNext')?.addEventListener('click', () => { state.diffPage++; renderDiff(); });
+
+  state._timelineVisible = visible;
+}
+
+function exportTimeline() {
+  const visible = state._timelineVisible;
+  if (!visible || !visible.length) return;
+  const snaps = state.snapshots;
+  const headers = ['address'];
+  for (const s of snaps) headers.push('balance_' + s.name.replace(/\.csv$/i, '').replace(/[,\s]/g, '_'));
+  headers.push('delta_first_to_last', 'delta_pct', 'status');
+  const lines = [headers.join(',')];
+  for (const r of visible) {
+    const cols = [r.addr];
+    for (const b of r.balances) cols.push(b.toString());
+    cols.push(r.delta.toString());
+    cols.push(r.first > 0n ? (Number(r.delta * 10000n / r.first) / 100).toFixed(4) : '');
+    cols.push(r.kind);
+    lines.push(cols.join(','));
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'NOT_timeline_' + Date.now() + '.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ---------- lookup ---------- */
@@ -1111,7 +1167,6 @@ $('#decimalsInput').addEventListener('input', e => {
   }
 });
 $('#activeSnap').addEventListener('change', e => { state.activeId = e.target.value; renderAll(); });
-$('#compareSnap').addEventListener('change', e => { state.compareId = e.target.value || null; renderDiff(); });
 
 $('#holderSearch').addEventListener('input', () => { state.holderPage = 0; renderHolders(); });
 $('#minBalance').addEventListener('input',   () => { state.holderPage = 0; renderHolders(); });
@@ -1126,18 +1181,11 @@ $$('#holdersTable thead th').forEach(th => {
     renderHolders();
   });
 });
-$$('#diffTable thead th').forEach(th => {
-  th.addEventListener('click', () => {
-    const k = th.dataset.sort;
-    if (!k) return;
-    if (state.diffSort.key === k) state.diffSort.dir = state.diffSort.dir === 'asc' ? 'desc' : 'asc';
-    else state.diffSort = { key: k, dir: k === 'addr' ? 'asc' : 'desc' };
-    renderDiff();
-  });
-});
 
 $('#diffFilter').addEventListener('change', () => { state.diffPage = 0; renderDiff(); });
 $('#diffMin').addEventListener('input',     () => { state.diffPage = 0; renderDiff(); });
+$('#diffSearch').addEventListener('input',  () => { state.diffPage = 0; renderDiff(); });
+$('#diffExport').addEventListener('click',  exportTimeline);
 
 $('#exportBtn').addEventListener('click', exportFiltered);
 $('#lookupInput').addEventListener('input', renderLookup);
