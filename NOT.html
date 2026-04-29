@@ -610,7 +610,20 @@ async function parseCsv(file, onProgress) {
   }
   if (buffer.length) processLine(buffer.replace(/\r$/, ''));
 
-  const isHuman = hasAnyDecimal;
+  // Decide format: any decimal point in the file → definitively human.
+  // Otherwise inspect the magnitude of integer values: NOT total supply is ~10^11 in
+  // human units, so a max integer above 10^15 must be raw nano-units; below ~10^15
+  // it's a human-readable integer balance.
+  let maxIntVal = 0n;
+  if (!hasAnyDecimal) {
+    for (const [, balStr] of rawRows) {
+      const v = BigInt(balStr);
+      if (v > maxIntVal) maxIntVal = v;
+    }
+  }
+  const MAGNITUDE_CUTOFF = 10n ** 15n;
+  const isHuman = hasAnyDecimal || maxIntVal < MAGNITUDE_CUTOFF;
+
   const map = new Map();
   let total = 0n;
   for (const [addr, balStr] of rawRows) {
