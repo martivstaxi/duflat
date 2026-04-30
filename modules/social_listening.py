@@ -3984,18 +3984,21 @@ def _x_tweet_id_from_url(url):
 
 
 def _x_apify_iso_to_date(iso):
-    """Best-effort ISO-8601 → YYYY-MM-DD. Returns '' on parse failure."""
+    """Best-effort timestamp → YYYY-MM-DD. Returns '' on parse failure.
+
+    Apify's tweet-scraper returns either ISO-8601 ('2026-04-29T12:34:56.000Z')
+    or Twitter's legacy format ('Wed Apr 23 12:34:56 +0000 2026'). The
+    legacy format puts the year LAST — slicing it off (e.g. iso[:25])
+    drops the year and strptime defaults to 1900."""
     if not iso:
         return ''
+    s = iso.strip()
     try:
-        # Apify returns either '2026-04-29T12:34:56.000Z' or
-        # 'Wed Apr 29 12:34:56 +0000 2026' depending on actor version.
-        s = iso.replace('Z', '+00:00')
-        return datetime.fromisoformat(s).strftime('%Y-%m-%d')
+        return datetime.fromisoformat(s.replace('Z', '+00:00')).strftime('%Y-%m-%d')
     except Exception:
         pass
     try:
-        return datetime.strptime(iso[:25], '%a %b %d %H:%M:%S %z').strftime('%Y-%m-%d')
+        return datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y').strftime('%Y-%m-%d')
     except Exception:
         return ''
 
