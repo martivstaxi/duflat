@@ -467,15 +467,18 @@ def _discover_all_background():
             discover_reddit, discover_bluesky,
             discover_lemmy, discover_mastodon, discover_lihkg,
             discover_youtube, discover_medium,
-            discover_substack, discover_telegram, discover_x,
+            discover_substack, discover_telegram,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
         # candidate pool and running them all keeps diversity balanced.
+        # discover_x shelved 2026-04-30: Brave's Twitter index lags after
+        # the 2023 API closure (~%1.4 of candidates land in 2026, none
+        # consistently survive oembed). Route still works for manual
+        # one-shot use; revisit when paid X API or Apify scraper is wired.
         for fn in (discover_bluesky, discover_reddit, discover_youtube,
                    discover_lihkg, discover_lemmy, discover_mastodon,
-                   discover_medium, discover_substack, discover_telegram,
-                   discover_x):
+                   discover_medium, discover_substack, discover_telegram):
             try:
                 fn()
             except Exception as e:
