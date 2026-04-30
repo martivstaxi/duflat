@@ -15,7 +15,7 @@ import json
 import os
 import re
 import requests
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
@@ -3938,6 +3938,37 @@ _X_STATUS_RE = re.compile(
 _X_DATE_RE = re.compile(r'>([A-Z][a-z]+ \d{1,2}, \d{4})<')
 _X_OEMBED_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
                 '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+
+# Snowflake: timestamp_ms = (id >> 22) + 1288834974657 (Twitter epoch).
+# Brave + freshness + site:x.com fallback drops site filter, so we ditch
+# pre-2026 tweets via the snowflake instead — saves a publish.twitter.com
+# round-trip per skipped tweet.
+_X_TWITTER_EPOCH_MS = 1288834974657
+_X_2026_FLOOR_MS = int(datetime(2026, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+
+# X-specific Brave query set: 3 multi-alphabet variants for breadth, plus
+# Bilibili-ecosystem terms (BLG, anime, gaming, vtuber) that surface
+# mention-bearing tweets the bare keyword misses. Stays under the 1 RPS
+# free tier inside the 25s fetch budget.
+_X_BRAVE_QUERIES = [
+    'bilibili',
+    '哔哩哔哩',
+    'Билибили',
+    'BLG bilibili',
+    'bilibili gaming',
+    'bilibili world',
+    'bilibili vtuber',
+    'genshin bilibili',
+]
+
+
+def _x_tweet_is_pre_2026(tweet_id):
+    """True if the tweet's snowflake ID resolves to before 2026-01-01."""
+    try:
+        ms = (int(tweet_id) >> 22) + _X_TWITTER_EPOCH_MS
+    except (TypeError, ValueError):
+        return False
+    return ms < _X_2026_FLOOR_MS
 # Handles that publish on behalf of Bilibili itself — promotional output
 # is out of scope for social listening, which targets community voices.
 _X_BILIBILI_OWNED = {
@@ -4052,15 +4083,16 @@ def discover_x():
     fetch_start = time.time()
     seen_ids = set()
     candidates = []  # list of (handle, tweet_id, canonical_url)
+    pre_2026_dropped = 0
 
-    for variant in _BILI_BRAVE_QUERIES:
-        if time.time() - fetch_start > 15:
+    for variant in _X_BRAVE_QUERIES:
+        if time.time() - fetch_start > 25:
             break
         try:
             results = _brave_search(
                 f'site:x.com {variant}',
                 max_results=20,
-                freshness=None,  # past-month freshness drops site: filter
+                freshness=None,  # freshness + site:x.com → Brave fallback (0 results)
             )
         except Exception as e:
             print(f'[x] brave variant={variant!r} err={e}', flush=True)
@@ -4076,15 +4108,20 @@ def discover_x():
             seen_ids.add(tweet_id)
             if _is_bilibili_owned_x_handle(handle):
                 continue
+            if _x_tweet_is_pre_2026(tweet_id):
+                pre_2026_dropped += 1
+                continue
             canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
             candidates.append((handle, tweet_id, canonical))
             new_for_variant += 1
         print(f'[x] brave variant={variant!r} new_tweets={new_for_variant} '
               f'total_candidates={len(candidates)}', flush=True)
+    print(f'[x] pre_2026 snowflake-dropped={pre_2026_dropped}', flush=True)
 
     print(f'[x] Brave unique tweet candidates={len(candidates)}', flush=True)
     if not candidates:
-        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0,
+                'skipped': 0, 'pre_2026_dropped': pre_2026_dropped}
 
     try:
         urls = [c[2] for c in candidates]
@@ -4096,7 +4133,8 @@ def discover_x():
 
     print(f'[x] new after dedup={len(candidates)}', flush=True)
     if not candidates:
-        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0, 'skipped': 0}
+        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0,
+                'skipped': 0, 'pre_2026_dropped': pre_2026_dropped}
 
     candidates = candidates[:25]
 
@@ -4118,7 +4156,8 @@ def discover_x():
     print(f'[x] fetched bilibili-mention tweets={len(items)} reasons={reasons}', flush=True)
     if not items:
         return {'platform': 'x', 'fetched': 0, 'new': len(candidates),
-                'saved': 0, 'skipped': 0, 'reasons': reasons}
+                'saved': 0, 'skipped': 0, 'reasons': reasons,
+                'pre_2026_dropped': pre_2026_dropped}
 
     for it in items:
         try:
