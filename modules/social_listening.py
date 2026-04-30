@@ -3931,68 +3931,30 @@ def discover_telegram():
     }
 
 
-# X (Twitter) public-content access path:
-#   1. Brave Search returns x.com / twitter.com URLs (`site:x.com {variant}`).
-#   2. We keep only `/{handle}/status/{id}` URLs (drop profiles, hashtags,
-#      search pages, /i/ etc).
-#   3. We blacklist Bilibili-owned handles so we don't index their own
-#      promo tweets.
-#   4. For each surviving URL we hit publish.twitter.com/oembed (public,
-#      auth-free) which still returns the tweet text, author name, and
-#      a "Month DD, YYYY" date inside the rendered HTML even after Musk
-#      removed bot/og scraping. Deleted/protected tweets return non-JSON
-#      and are dropped.
+# X (Twitter) discovery via Apify — Brave's Twitter index lags after the
+# 2023 API closure (~%1.4 of candidates land in 2026). Apify's tweet-
+# scraper actor uses Twitter's own search underneath, so it returns fresh
+# tweets with full text, author, and createdAt without us paying for the
+# $100/mo Twitter API. Cost: ~$0.40 per 1000 tweets, ~$5/mo for 4 cron
+# runs/day @ 100 tweets each.
 _X_STATUS_RE = re.compile(
     r'^https?://(?:x\.com|twitter\.com)/([A-Za-z0-9_]{1,15})/status/(\d+)'
 )
-_X_DATE_RE = re.compile(r'>([A-Z][a-z]+ \d{1,2}, \d{4})<')
-_X_OEMBED_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-
-# Snowflake: timestamp_ms = (id >> 22) + 1288834974657 (Twitter epoch).
-# Brave + freshness + site:x.com fallback drops site filter, so we ditch
-# pre-2026 tweets via the snowflake instead — saves a publish.twitter.com
-# round-trip per skipped tweet.
-_X_TWITTER_EPOCH_MS = 1288834974657
-_X_2026_FLOOR_MS = int(datetime(2026, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
-
-# X-specific Brave query set. Brave's Twitter index lags badly post-2023
-# API closure — bare-keyword queries return mostly pre-2026 tweets. Year-
-# specific event queries (LPL 2026, Bilibili World 2026, MSI 2026) bias
-# the index toward fresh tweets that name those events organically.
-# 1 RPS free tier × 18 queries × 1.1s sleep = ~20s; fits 45s fetch budget.
-_X_BRAVE_QUERIES = [
-    # multi-alphabet breadth
+_X_APIFY_ACTOR = 'apidojo/tweet-scraper'
+_X_APIFY_SEARCH_TERMS = [
     'bilibili',
     '哔哩哔哩',
-    'Билибили',
-    # ecosystem (handles + brand)
     'BLG bilibili',
     'bilibili gaming',
     'bilibili vtuber',
-    'genshin bilibili',
-    'hoyoverse bilibili',
     'bilibili anime',
-    # 2026 events
-    'LPL Spring 2026 bilibili',
-    'LPL Summer 2026 bilibili',
-    'MSI 2026 bilibili',
-    'Worlds 2026 LPL',
-    'Bilibili World 2026',
-    'Bilibili Macro Link 2026',
-    'ChinaJoy 2026 bilibili',
-    'BLG roster 2026',
-    'AniSora bilibili',
 ]
+# Cron-path budget. Direct POST to /social/discover-x is gunicorn-bound
+# (120s); the chain runs in a background thread so it can take longer.
+_X_APIFY_MAX_ITEMS = int(os.environ.get('APIFY_X_MAX_ITEMS', '50'))
+_X_APIFY_TIMEOUT_SECS = int(os.environ.get('APIFY_X_TIMEOUT_SECS', '90'))
+_X_APIFY_LOOKBACK_DAYS = int(os.environ.get('APIFY_X_LOOKBACK_DAYS', '7'))
 
-
-def _x_tweet_is_pre_2026(tweet_id):
-    """True if the tweet's snowflake ID resolves to before 2026-01-01."""
-    try:
-        ms = (int(tweet_id) >> 22) + _X_TWITTER_EPOCH_MS
-    except (TypeError, ValueError):
-        return False
-    return ms < _X_2026_FLOOR_MS
 # Handles that publish on behalf of Bilibili itself — promotional output
 # is out of scope for social listening, which targets community voices.
 _X_BILIBILI_OWNED = {
@@ -4008,193 +3970,175 @@ def _is_bilibili_owned_x_handle(handle):
     h = (handle or '').strip().lower().lstrip('@')
     if h in _X_BILIBILI_OWNED:
         return True
-    # Catches future variants like `bilibilixx`, `bilibili_en2`, etc.
     if h.startswith('bilibili'):
         return True
     return False
 
 
 def _x_tweet_id_from_url(url):
-    """Return (handle, tweet_id) for x.com/twitter.com /status/ URLs,
-    else None. Profile, hashtag, search, /i/ pages all return None."""
+    """Return (handle, tweet_id) for x.com/twitter.com /status/ URLs."""
     m = _X_STATUS_RE.match(url or '')
     if not m:
         return None
     return m.group(1), m.group(2)
 
 
-def _fetch_x_tweet_oembed(handle, tweet_id):
-    """Fetch tweet text + date via publish.twitter.com/oembed.
-    Returns (item_or_None, reason_str). Reason is 'ok' on success,
-    or one of: cooldown, request_err, rate_limited, http_{n}, html_envelope,
-    json_err, no_html, no_text, pre_2026."""
-    import time
-    if _cooling_down('publish.twitter.com'):
-        return None, 'cooldown'
-    canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
-    api = ('https://publish.twitter.com/oembed'
-           f'?url={canonical}&omit_script=1&hide_media=false&lang=en')
+def _x_apify_iso_to_date(iso):
+    """Best-effort ISO-8601 → YYYY-MM-DD. Returns '' on parse failure."""
+    if not iso:
+        return ''
     try:
-        resp = requests.get(api, headers={'User-Agent': _X_OEMBED_UA}, timeout=8)
-    except Exception as e:
-        print(f'[x] oembed {tweet_id} request_err={e}', flush=True)
-        return None, 'request_err'
-    if resp.status_code in (429, 420):
-        _enter_cooldown('publish.twitter.com', 600)
-        print(f'[x] oembed RATE_LIMITED status={resp.status_code}', flush=True)
-        return None, 'rate_limited'
-    if resp.status_code != 200:
-        return None, f'http_{resp.status_code}'
-    body = (resp.text or '').lstrip()
-    if not body.startswith('{'):
-        return None, 'html_envelope'
-    try:
-        j = resp.json()
+        # Apify returns either '2026-04-29T12:34:56.000Z' or
+        # 'Wed Apr 29 12:34:56 +0000 2026' depending on actor version.
+        s = iso.replace('Z', '+00:00')
+        return datetime.fromisoformat(s).strftime('%Y-%m-%d')
     except Exception:
-        return None, 'json_err'
-    html = j.get('html') or ''
-    if not html:
-        return None, 'no_html'
+        pass
     try:
-        soup = BeautifulSoup(html, 'html.parser')
+        return datetime.strptime(iso[:25], '%a %b %d %H:%M:%S %z').strftime('%Y-%m-%d')
     except Exception:
-        return None, 'soup_err'
-    p = soup.select_one('blockquote.twitter-tweet p') or soup.select_one('p')
-    text = p.get_text(' ', strip=True) if p else ''
-    if not text:
-        return None, 'no_text'
-    iso_date = ''
-    for a in soup.find_all('a'):
-        s = a.get_text(strip=True)
-        try:
-            dt = datetime.strptime(s, '%B %d, %Y')
-            iso_date = dt.strftime('%Y-%m-%d')
-            break
-        except Exception:
-            continue
-    if not iso_date:
-        m = _X_DATE_RE.search(html)
-        if m:
-            try:
-                iso_date = datetime.strptime(m.group(1), '%B %d, %Y').strftime('%Y-%m-%d')
-            except Exception:
-                pass
-    if iso_date and iso_date < '2026-01-01':
-        return None, 'pre_2026'
-    if not iso_date:
-        iso_date = date.today().strftime('%Y-%m-%d')
-    author_name = (j.get('author_name') or handle).strip()
-    item = {
-        'url': canonical,
-        'url_hash': hash_url(canonical),
-        'platform': 'x',
-        'text': f'[@{handle} ({author_name}) on twitter] {text}'[:5000],
-        'content_date': iso_date,
-        'dates_found': [iso_date],
-    }
-    time.sleep(0.4)
-    return item, 'ok'
+        return ''
 
 
 def discover_x():
-    """Discover Bilibili-related X (Twitter) posts.
+    """Discover Bilibili-related X (Twitter) posts via Apify tweet-scraper.
 
-    Brave Search → /status/ URLs only → handle blacklist → dedup against
-    social_sources → publish.twitter.com/oembed for tweet text → blob
-    filter → Haiku pipeline. publish.twitter.com is the only public path
-    that still surfaces tweet content after the 2023 API closure."""
-    import time
-    fetch_start = time.time()
-    seen_ids = set()
-    candidates = []  # list of (handle, tweet_id, canonical_url, snippet)
-    pre_2026_dropped = 0
-    snippet_no_bili_dropped = 0
+    apidojo/tweet-scraper runs Twitter's own search for our keywords and
+    returns tweet text + author + createdAt directly, no oembed needed.
+    Bilibili-owned handles and pre-2026 tweets are filtered before the
+    Haiku pipeline.
 
-    for variant in _X_BRAVE_QUERIES:
-        if time.time() - fetch_start > 45:
-            break
-        try:
-            results = _brave_search_full(
-                f'site:x.com {variant}',
-                max_results=20,
-                freshness=None,  # freshness + site:x.com → Brave fallback (0 results)
-            )
-        except Exception as e:
-            print(f'[x] brave variant={variant!r} err={e}', flush=True)
-            continue
-        new_for_variant = 0
-        for r in results or []:
-            url = r.get('url') or ''
-            parsed = _x_tweet_id_from_url(url)
-            if not parsed:
-                continue
-            handle, tweet_id = parsed
-            if tweet_id in seen_ids:
-                continue
-            seen_ids.add(tweet_id)
-            if _is_bilibili_owned_x_handle(handle):
-                continue
-            if _x_tweet_is_pre_2026(tweet_id):
-                pre_2026_dropped += 1
-                continue
-            snippet = (r.get('description') or '') + ' ' + (r.get('title') or '')
-            # Cheap pre-filter: Brave description usually contains the tweet
-            # text. If no bilibili variant appears in it, oembed almost
-            # always returns no_bili text too — saves a 1-2s round-trip.
-            if not _blob_has_bili_variant(snippet):
-                snippet_no_bili_dropped += 1
-                continue
-            canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
-            candidates.append((handle, tweet_id, canonical, snippet))
-            new_for_variant += 1
-        print(f'[x] brave variant={variant!r} new_tweets={new_for_variant} '
-              f'total_candidates={len(candidates)}', flush=True)
-    print(f'[x] pre_2026_dropped={pre_2026_dropped} '
-          f'snippet_no_bili_dropped={snippet_no_bili_dropped}', flush=True)
+    Cron-path call is fired from a background thread so the actor's
+    multi-minute runtime doesn't trip gunicorn's 120s request timeout."""
+    if _cooling_down('apify.com'):
+        return {'platform': 'x', 'fetched': 0, 'error': 'cooldown'}
 
-    print(f'[x] Brave unique tweet candidates={len(candidates)}', flush=True)
-    if not candidates:
-        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0,
-                'skipped': 0, 'pre_2026_dropped': pre_2026_dropped}
+    token = os.environ.get('APIFY_API_TOKEN', '').strip()
+    if not token:
+        return {'platform': 'x', 'fetched': 0, 'error': 'no_apify_token'}
 
     try:
-        urls = [c[2] for c in candidates]
-        new_urls_set = {d['url'] for d in check_urls(urls)}
-        candidates = [c for c in candidates if c[2] in new_urls_set]
+        from apify_client import ApifyClient
+    except ImportError:
+        return {'platform': 'x', 'fetched': 0, 'error': 'apify_client_missing'}
+
+    today = date.today()
+    since = (today - timedelta(days=_X_APIFY_LOOKBACK_DAYS)).strftime('%Y-%m-%d')
+    run_input = {
+        'searchTerms': _X_APIFY_SEARCH_TERMS,
+        'maxItems': _X_APIFY_MAX_ITEMS,
+        'sort': 'Latest',
+        'tweetLanguage': 'any',
+        'start': since,
+    }
+    print(f'[x-apify] starting actor={_X_APIFY_ACTOR} '
+          f'maxItems={_X_APIFY_MAX_ITEMS} since={since}', flush=True)
+
+    client = ApifyClient(token=token)
+    try:
+        run = client.actor(_X_APIFY_ACTOR).call(
+            run_input=run_input,
+            timeout_secs=_X_APIFY_TIMEOUT_SECS,
+        )
     except Exception as e:
-        print(f'[x] check_urls error: {e}', flush=True)
-        return {'platform': 'x', 'fetched': 0, 'error': f'dedup: {e}'}
+        msg = str(e).lower()
+        if 'rate' in msg or 'limit' in msg or 'quota' in msg:
+            _enter_cooldown('apify.com', 1800)
+        print(f'[x-apify] actor call err={e}', flush=True)
+        return {'platform': 'x', 'fetched': 0, 'error': f'apify: {e}'}
 
-    print(f'[x] new after dedup={len(candidates)}', flush=True)
-    if not candidates:
-        return {'platform': 'x', 'fetched': 0, 'new': 0, 'saved': 0,
-                'skipped': 0, 'pre_2026_dropped': pre_2026_dropped}
+    dataset_id = (run or {}).get('defaultDatasetId') or ''
+    if not dataset_id:
+        return {'platform': 'x', 'fetched': 0, 'error': 'no_dataset',
+                'run_status': (run or {}).get('status')}
 
-    candidates = candidates[:25]
+    items_raw = []
+    try:
+        items_raw = list(client.dataset(dataset_id).iterate_items())
+    except Exception as e:
+        print(f'[x-apify] dataset iter err={e}', flush=True)
+        return {'platform': 'x', 'fetched': 0, 'error': f'dataset: {e}'}
+    print(f'[x-apify] apify_raw={len(items_raw)}', flush=True)
 
     items = []
-    reasons = {}
-    for handle, tweet_id, canonical, snippet in candidates:
-        if time.time() - fetch_start > 95:
-            reasons['budget_cut'] = reasons.get('budget_cut', 0) + 1
-            break
-        it, reason = _fetch_x_tweet_oembed(handle, tweet_id)
-        reasons[reason] = reasons.get(reason, 0) + 1
-        if not it:
-            continue
-        if not _blob_has_bili_variant(it['text']):
-            reasons['blob_no_bili'] = reasons.get('blob_no_bili', 0) + 1
-            continue
-        items.append(it)
+    seen_urls = set()
+    skipped_owned = 0
+    skipped_pre_2026 = 0
+    skipped_no_bili = 0
+    skipped_no_text = 0
+    skipped_no_url = 0
 
-    print(f'[x] fetched bilibili-mention tweets={len(items)} reasons={reasons}', flush=True)
+    for it in items_raw:
+        url = (it.get('url') or it.get('twitterUrl') or '').strip()
+        if not url:
+            skipped_no_url += 1
+            continue
+        if url in seen_urls:
+            continue
+        parsed = _x_tweet_id_from_url(url)
+        if not parsed:
+            skipped_no_url += 1
+            continue
+        handle, _tweet_id = parsed
+        if _is_bilibili_owned_x_handle(handle):
+            skipped_owned += 1
+            continue
+        text = (it.get('text') or it.get('fullText') or '').strip()
+        if not text:
+            skipped_no_text += 1
+            continue
+        created = _x_apify_iso_to_date(it.get('createdAt') or it.get('created_at') or '')
+        if created and created < '2026-01-01':
+            skipped_pre_2026 += 1
+            continue
+        if not created:
+            created = today.strftime('%Y-%m-%d')
+        if not _blob_has_bili_variant(text):
+            skipped_no_bili += 1
+            continue
+        seen_urls.add(url)
+        author = it.get('author') or {}
+        author_name = (author.get('userName') or author.get('username')
+                       or author.get('name') or handle)
+        items.append({
+            'url': url,
+            'url_hash': hash_url(url),
+            'platform': 'x',
+            'text': f'[@{handle} ({author_name}) on twitter] {text}'[:5000],
+            'content_date': created,
+            'dates_found': [created],
+        })
+
+    funnel = {
+        'apify_raw': len(items_raw),
+        'pipeline_items': len(items),
+        'skipped_owned': skipped_owned,
+        'skipped_pre_2026': skipped_pre_2026,
+        'skipped_no_bili': skipped_no_bili,
+        'skipped_no_text': skipped_no_text,
+        'skipped_no_url': skipped_no_url,
+    }
+    print(f'[x-apify] funnel={funnel}', flush=True)
+
     if not items:
-        return {'platform': 'x', 'fetched': 0, 'new': len(candidates),
-                'saved': 0, 'skipped': 0, 'reasons': reasons,
-                'pre_2026_dropped': pre_2026_dropped,
-                'snippet_no_bili_dropped': snippet_no_bili_dropped}
+        return {'platform': 'x', 'fetched': 0, 'new': 0,
+                'saved': 0, 'skipped': 0, **funnel}
 
-    for it in items:
+    try:
+        urls = [it['url'] for it in items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[x-apify] check_urls err={e}', flush=True)
+        return {'platform': 'x', 'fetched': len(items), 'error': f'dedup: {e}'}
+
+    print(f'[x-apify] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'x', 'fetched': len(items), 'new': 0,
+                'saved': 0, 'skipped': 0, **funnel}
+
+    items_new = items_new[:25]
+    for it in items_new:
         try:
             _db().table('social_sources').upsert({
                 'url_hash': it['url_hash'],
@@ -4207,18 +4151,18 @@ def discover_x():
             pass
 
     try:
-        mentions = _analyze_with_haiku(items)
-        print(f'[x] haiku produced={len(mentions or [])}', flush=True)
+        mentions = _analyze_with_haiku(items_new)
+        print(f'[x-apify] haiku produced={len(mentions or [])}', flush=True)
     except Exception as e:
-        print(f'[x] haiku error: {e}', flush=True)
-        return {'platform': 'x', 'fetched': len(items), 'new': len(candidates),
-                'error': f'haiku: {e}'}
+        print(f'[x-apify] haiku err={e}', flush=True)
+        return {'platform': 'x', 'fetched': len(items_new),
+                'new': len(items_new), 'error': f'haiku: {e}'}
 
     if mentions:
         try:
             mentions = _ai_validate_and_repair(mentions)
         except Exception as e:
-            print(f'[x] validator error: {e}', flush=True)
+            print(f'[x-apify] validator err={e}', flush=True)
 
     try:
         if mentions:
@@ -4226,18 +4170,19 @@ def discover_x():
         else:
             result = {'saved': 0, 'skipped': 0, 'repaired': 0}
     except Exception as e:
-        print(f'[x] save error: {e}', flush=True)
-        return {'platform': 'x', 'fetched': len(items), 'new': len(candidates),
-                'error': f'save: {e}'}
+        print(f'[x-apify] save err={e}', flush=True)
+        return {'platform': 'x', 'fetched': len(items_new),
+                'new': len(items_new), 'error': f'save: {e}'}
 
     return {
         'platform': 'x',
-        'fetched': len(items),
-        'new': len(candidates),
+        'fetched': len(items_new),
+        'new': len(items_new),
         'saved': result.get('saved', 0),
         'skipped': result.get('skipped', 0),
         'gate_rejected': result.get('gate_rejected', 0),
         'gate_rejections': result.get('gate_rejections', []),
+        **funnel,
     }
 
 
