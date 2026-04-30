@@ -1709,15 +1709,14 @@ _BING_MARKETS = {
 }
 
 
-def _brave_search(query, max_results=20, freshness='pm', country='us'):
-    """Brave Search Web API — returns list of URLs.
+def _brave_search_full(query, max_results=20, freshness='pm', country='us'):
+    """Brave Search Web API — returns list of result dicts:
+    [{'url':..., 'title':..., 'description':...}]. URL-only callers can
+    use the `_brave_search` wrapper.
 
-    freshness: 'pd' (past day), 'pw' (past week), 'pm' (past month),
-               'py' (past year), or None for all-time. (Brave's API
-               accepts these tokens; pass None to omit the param.)
-    Requires BRAVE_API_KEY env var (set on Railway). Returns [] on any
-    failure so callers stay simple. Free tier rate limit is 1 req/sec;
-    callers must space their calls or rely on the post-call sleep here.
+    freshness: 'pd'/'pw'/'pm'/'py' or None for all-time. site: filter
+    is silently dropped by Brave when freshness is set, so callers that
+    site:-restrict should pass freshness=None.
     """
     import time as _t
     api_key = os.environ.get('BRAVE_API_KEY', '').strip()
@@ -1755,14 +1754,25 @@ def _brave_search(query, max_results=20, freshness='pm', country='us'):
         _t.sleep(1.1)
         return []
     web = (data.get('web') or {}).get('results') or []
-    urls = []
+    out = []
+    seen = set()
     for r in web:
         u = r.get('url') or ''
-        if u and u not in urls:
-            urls.append(u)
-    # Free tier is 1 req/sec — sleep here so the next call won't 429.
+        if not u or u in seen:
+            continue
+        seen.add(u)
+        out.append({
+            'url': u,
+            'title': r.get('title') or '',
+            'description': r.get('description') or '',
+        })
     _t.sleep(1.1)
-    return urls[:max_results]
+    return out[:max_results]
+
+
+def _brave_search(query, max_results=20, freshness='pm', country='us'):
+    """Backward-compat wrapper: returns list of URLs only."""
+    return [r['url'] for r in _brave_search_full(query, max_results, freshness, country)]
 
 
 def _ddg_search(query, max_results=20, region='wt-wt', timelimit=None):
@@ -3946,19 +3956,33 @@ _X_OEMBED_UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
 _X_TWITTER_EPOCH_MS = 1288834974657
 _X_2026_FLOOR_MS = int(datetime(2026, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
 
-# X-specific Brave query set: 3 multi-alphabet variants for breadth, plus
-# Bilibili-ecosystem terms (BLG, anime, gaming, vtuber) that surface
-# mention-bearing tweets the bare keyword misses. Stays under the 1 RPS
-# free tier inside the 25s fetch budget.
+# X-specific Brave query set. Brave's Twitter index lags badly post-2023
+# API closure — bare-keyword queries return mostly pre-2026 tweets. Year-
+# specific event queries (LPL 2026, Bilibili World 2026, MSI 2026) bias
+# the index toward fresh tweets that name those events organically.
+# 1 RPS free tier × 18 queries × 1.1s sleep = ~20s; fits 45s fetch budget.
 _X_BRAVE_QUERIES = [
+    # multi-alphabet breadth
     'bilibili',
     '哔哩哔哩',
     'Билибили',
+    # ecosystem (handles + brand)
     'BLG bilibili',
     'bilibili gaming',
-    'bilibili world',
     'bilibili vtuber',
     'genshin bilibili',
+    'hoyoverse bilibili',
+    'bilibili anime',
+    # 2026 events
+    'LPL Spring 2026 bilibili',
+    'LPL Summer 2026 bilibili',
+    'MSI 2026 bilibili',
+    'Worlds 2026 LPL',
+    'Bilibili World 2026',
+    'Bilibili Macro Link 2026',
+    'ChinaJoy 2026 bilibili',
+    'BLG roster 2026',
+    'AniSora bilibili',
 ]
 
 
@@ -4082,14 +4106,15 @@ def discover_x():
     import time
     fetch_start = time.time()
     seen_ids = set()
-    candidates = []  # list of (handle, tweet_id, canonical_url)
+    candidates = []  # list of (handle, tweet_id, canonical_url, snippet)
     pre_2026_dropped = 0
+    snippet_no_bili_dropped = 0
 
     for variant in _X_BRAVE_QUERIES:
-        if time.time() - fetch_start > 25:
+        if time.time() - fetch_start > 45:
             break
         try:
-            results = _brave_search(
+            results = _brave_search_full(
                 f'site:x.com {variant}',
                 max_results=20,
                 freshness=None,  # freshness + site:x.com → Brave fallback (0 results)
@@ -4098,7 +4123,8 @@ def discover_x():
             print(f'[x] brave variant={variant!r} err={e}', flush=True)
             continue
         new_for_variant = 0
-        for url in results or []:
+        for r in results or []:
+            url = r.get('url') or ''
             parsed = _x_tweet_id_from_url(url)
             if not parsed:
                 continue
@@ -4111,12 +4137,20 @@ def discover_x():
             if _x_tweet_is_pre_2026(tweet_id):
                 pre_2026_dropped += 1
                 continue
+            snippet = (r.get('description') or '') + ' ' + (r.get('title') or '')
+            # Cheap pre-filter: Brave description usually contains the tweet
+            # text. If no bilibili variant appears in it, oembed almost
+            # always returns no_bili text too — saves a 1-2s round-trip.
+            if not _blob_has_bili_variant(snippet):
+                snippet_no_bili_dropped += 1
+                continue
             canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
-            candidates.append((handle, tweet_id, canonical))
+            candidates.append((handle, tweet_id, canonical, snippet))
             new_for_variant += 1
         print(f'[x] brave variant={variant!r} new_tweets={new_for_variant} '
               f'total_candidates={len(candidates)}', flush=True)
-    print(f'[x] pre_2026 snowflake-dropped={pre_2026_dropped}', flush=True)
+    print(f'[x] pre_2026_dropped={pre_2026_dropped} '
+          f'snippet_no_bili_dropped={snippet_no_bili_dropped}', flush=True)
 
     print(f'[x] Brave unique tweet candidates={len(candidates)}', flush=True)
     if not candidates:
@@ -4140,8 +4174,8 @@ def discover_x():
 
     items = []
     reasons = {}
-    for handle, tweet_id, canonical in candidates:
-        if time.time() - fetch_start > 70:
+    for handle, tweet_id, canonical, snippet in candidates:
+        if time.time() - fetch_start > 95:
             reasons['budget_cut'] = reasons.get('budget_cut', 0) + 1
             break
         it, reason = _fetch_x_tweet_oembed(handle, tweet_id)
@@ -4157,7 +4191,8 @@ def discover_x():
     if not items:
         return {'platform': 'x', 'fetched': 0, 'new': len(candidates),
                 'saved': 0, 'skipped': 0, 'reasons': reasons,
-                'pre_2026_dropped': pre_2026_dropped}
+                'pre_2026_dropped': pre_2026_dropped,
+                'snippet_no_bili_dropped': snippet_no_bili_dropped}
 
     for it in items:
         try:
