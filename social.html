@@ -167,17 +167,19 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     background: var(--hairline); color: var(--text-secondary);
     border: 1px solid transparent;
     transition: background .15s var(--ease);
+    min-width: 60px; justify-content: space-between;
+    cursor: pointer; user-select: none;
 }
 .chip:hover { background: var(--border-subtle); }
+.chip:hover .chip-remove { background: var(--negative); color: #fff; }
 .chip-remove {
-    width: 16px; height: 16px; border: none; background: rgba(0,0,0,.08);
-    border-radius: 50%; cursor: pointer; color: var(--muted);
+    width: 16px; height: 16px; background: rgba(0,0,0,.08);
+    border-radius: 50%; color: var(--muted);
     font-size: .7rem; line-height: 1;
-    padding: 0; margin-left: 2px;
     display: flex; align-items: center; justify-content: center;
     transition: all .15s var(--ease);
+    pointer-events: none;
 }
-.chip-remove:hover { background: var(--negative); color: #fff; }
 
 #filterDropdownAnchor { position: relative; }
 #filterDropdownAnchor .filter-dropdown {
@@ -341,8 +343,14 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 .source-financial  { background: #e6efe5; color: #2d5a3f; }
 
 .card-meta { font-size: .74rem; color: var(--tertiary); }
-.card-meta a { text-decoration: none; font-weight: 500; transition: opacity .15s; }
-.card-meta a:hover { opacity: .7; text-decoration: underline; }
+.card-meta a {
+    text-decoration: none; font-weight: 500;
+    transition: opacity .15s, background .15s;
+    display: inline-block; min-width: 48px;
+    padding: 3px 8px; margin: -3px -2px;
+    text-align: left; border-radius: 7px;
+}
+.card-meta a:hover { opacity: 1; background: var(--hairline); text-decoration: none; }
 .positive .card-meta a { color: var(--positive); }
 .negative .card-meta a { color: var(--negative); }
 .neutral  .card-meta a { color: var(--neutral); }
@@ -837,16 +845,16 @@ function renderFilterDropdown() {
 function renderActiveChips() {
     let html = '';
     if (currentLang !== 'all') {
-        html += `<span class="chip">${escapeHtml(TL(currentLang))}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
+        html += `<span class="chip" onclick="setLang('all')" role="button" tabindex="0">${escapeHtml(TL(currentLang))}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     if (currentDateFilter) {
         const dt = new Date(currentDateFilter + 'T00:00:00');
         const label = dt.toLocaleDateString(I18N[uiLang].dateLocale, { month: 'short', day: 'numeric' });
-        html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
+        html += `<span class="chip" onclick="selectDate(null)" role="button" tabindex="0">${escapeHtml(label)}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     if (currentSensitivity !== 'all') {
         const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
-        html += `<span class="chip">${priLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
+        html += `<span class="chip" onclick="setSensitivity('all')" role="button" tabindex="0">${priLabels[currentSensitivity] || currentSensitivity}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     document.getElementById('activeChips').innerHTML = html;
 }
