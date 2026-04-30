@@ -547,6 +547,17 @@ def social_cleanup():
     return jsonify(result)
 
 
+@app.route('/social/delete-gaming', methods=['POST'])
+def social_delete_gaming():
+    """Admin: delete out-of-scope gaming/esports mentions (BLG/LPL/MSI/Worlds).
+    Pass ?dry=1 for a preview without deleting."""
+    auth = _require_admin()
+    if auth: return auth
+    from modules.social_listening import delete_gaming_mentions
+    dry = (request.args.get('dry') == '1')
+    return jsonify(delete_gaming_mentions(dry_run=dry))
+
+
 @app.route('/social/reclassify', methods=['POST'])
 def social_reclassify():
     """Admin: re-run L3 classification on every existing mention with the current rules."""

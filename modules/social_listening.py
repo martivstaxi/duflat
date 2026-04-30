@@ -369,9 +369,8 @@ def _detect_lang_from_text(text):
 
 # Terms that confirm a mention is about Bilibili
 _BILIBILI_TERMS = [
-    'bilibili', 'b站', 'ビリビリ', 'blg', '哔哩哔哩', '嗶哩嗶哩',
+    'bilibili', 'b站', 'ビリビリ', '哔哩哔哩', '嗶哩嗶哩',
     '9626', 'anisora', 'bili bili', 'bilibil', '哔哩', '嗶哩',
-    'bilibili gaming', 'first stand', 'anisora',
 ]
 
 
@@ -478,7 +477,7 @@ def _ai_validate_and_repair(mentions):
 
 For EACH entry below, answer three questions and return fixes:
 
-1. BILIBILI_RELEVANT: Does content_original actually mention Bilibili, Bilibili Gaming (BLG), B站, ビリビリ, 哔哩哔哩, 嗶哩嗶哩, AniSora, or any directly related topic? Answer true/false.
+1. BILIBILI_RELEVANT: Does content_original actually mention Bilibili the APP/PLATFORM (B站, ビリビリ, 哔哩哔哩, 嗶哩嗶哩, AniSora) or a directly related app/creator/policy topic? Answer true/false. NOTE: Bilibili Gaming / BLG / LPL esports is a SEPARATE entity — content whose primary topic is esports (match results, transfers, tournaments) is NOT app-relevant; answer false.
 
 2. LANGUAGE_CORRECT: Is the language_label correct for the actual text in content_original?
    - If wrong, provide the correct language ("English", "Japanese", "Arabic", "Traditional Chinese", "Simplified Chinese", "Turkish", "Russian", "Spanish", "Portuguese")
@@ -932,15 +931,17 @@ def _layer1_triage_batch(items):
 
 For EACH article, answer three yes/no questions. Only articles that answer YES to ALL THREE should be kept.
 
-1. MENTIONS_BILIBILI: Does this article substantively discuss Bilibili (哔哩哔哩 / 嗶哩嗶哩 / B站 / ビリビリ / BLG / Bilibili Gaming / AniSora)? Not just a name-drop in a list.
+1. MENTIONS_BILIBILI: Does this article substantively discuss the Bilibili APP / PLATFORM (哔哩哔哩 / 嗶哩嗶哩 / B站 / ビリビリ / AniSora)? Not just a name-drop in a list.
+   - IMPORTANT: Bilibili Gaming (BLG) is the LPL esports team — a SEPARATE entity. If the article's primary topic is BLG match results, LPL/MSI/Worlds tournament news, esports rosters, or pro-player coverage, answer FALSE (out of scope, this project tracks the APP not the esports org).
 
 2. IN_SCOPE: Is this content suitable for a non-Mainland-China social listening audience? OUT OF SCOPE = Mainland PRC state media, Mainland news sites, Mainland regulators, Mainland user forums (Weibo/Zhihu/Tieba/Douyin/Toutiao), Simplified Chinese (Mandarin) content. IN SCOPE = Traditional Chinese (Taiwan/HK), English, Japanese, Korean, Arabic, Turkish, Russian, Spanish, Portuguese, etc.
 
-3. HAS_SOCIAL_ANGLE: Is there a non-financial story here worth telling?
-   - SOCIAL angle = user opinion, creator news, product/feature, policy/moderation, AI/strategy, M&A rumor, competitor dynamic, esports (BLG), anime streaming, cultural moment, brand reputation.
+3. HAS_SOCIAL_ANGLE: Is there a non-financial, non-esports story here worth telling?
+   - SOCIAL angle = user opinion, creator news, product/feature, policy/moderation, AI/strategy, M&A rumor, competitor dynamic, anime streaming, VTuber community, cultural moment, brand reputation.
    - NOT a social angle = pure stock price movement, earnings numbers, analyst ratings, bond offering, dividend, IPO, market cap, revenue figures, SEC/CSRC filing.
+   - NOT a social angle = pure gaming/esports coverage (match results, tournament brackets, player transfers, pro-team news).
    - If article MIXES financial info + social story → YES (true). We will extract only the social part later.
-   - If article is PURELY financial with no social angle → NO (false).
+   - If article is PURELY financial OR PURELY gaming/esports with no APP-side angle → NO (false).
 
 Return ONLY a JSON array: [{{"idx":0,"mentions_bilibili":true,"in_scope":true,"has_social_angle":true}}, ...]
 
@@ -999,9 +1000,9 @@ Your job: extract structured fields. FOCUS ONLY on the non-financial angle of th
 
 Write each content_english as a plain-English social insight — like a social media observation, NOT a news headline.
 
-GOOD examples (social voice, non-financial):
+GOOD examples (social voice, non-financial, APP/platform focus):
 - "Fans are hyped about Bilibili's anime lineup for winter 2026, especially Frieren Season 2."
-- "BLG's run at the international esports tournament has Chinese-speaking fans buzzing."
+- "International VTubers are debating whether to set up Bilibili channels after the new creator program update."
 - "Users are pushing back on the new moderation policy after several creators got suspended."
 - "Bilibili is doubling down on AI content tools, which has creators both excited and worried."
 
@@ -1014,12 +1015,12 @@ If the source article mixes financial + social angles (e.g., "CFO announced AI i
 
 For EACH article, extract:
 - content_english: 1-2 sentences, plain social insight tone, non-financial
-- content_chinese: Simplified Chinese translation of content_english, same length and tone. Natural Chinese social-listening voice (not machine-literal word-for-word). Keep brand/product names in Latin letters (e.g. "Bilibili", "AniSora", "AI", "BLG", "PGL"). Use Simplified Chinese characters ONLY. This is purely for UI localization and does not change the scope rules.
+- content_chinese: Simplified Chinese translation of content_english, same length and tone. Natural Chinese social-listening voice (not machine-literal word-for-word). Keep brand/product names in Latin letters (e.g. "Bilibili", "AniSora", "AI"). Use Simplified Chinese characters ONLY. This is purely for UI localization and does not change the scope rules.
 - content_original: 1-3 sentences copied VERBATIM from source text, in original language. Pick the sentences that carry the non-financial story. If only financial sentences exist, return empty string.
 - language: detect from content_original's actual characters. Use one of: "English", "Japanese", "Arabic", "Traditional Chinese", "Turkish", "Russian", "Spanish", "Portuguese". If `lang_hint` provided, use as tie-breaker only. (Simplified Chinese should not appear here — those were filtered.)
 - author: byline if present, else the platform domain
 - country: country of origin if detectable, else "International"
-- keywords: EXACTLY 2 or 3 single-word topic tags (max 3, never more). Use social/product terms like "esports", "creators", "anime", "AI", "moderation", "policy". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.).
+- keywords: EXACTLY 2 or 3 single-word topic tags (max 3, never more). Use social/product terms like "creators", "anime", "vtuber", "AI", "moderation", "policy", "app". Do NOT use financial terms (no "earnings", "stock", "dividend", "revenue", etc.). Do NOT use gaming/esports tags ("esports", "BLG", "LPL" — out of scope).
 
 Return ONLY a JSON array: [{{"idx":0,"content_english":"...","content_chinese":"...","content_original":"...","language":"...","author":"...","country":"...","keywords":[...]}}, ...]
 
@@ -1139,7 +1140,7 @@ For EACH item answer "yes" or "no". Answer "yes" if the item describes a concern
 - Brand-reputation risk: negative cultural framing, PR misstep short of scandal
 
 Hard rules — answer "no" in all of these cases:
-- Positive milestones: MAU / DAU records, record viewer counts, esports wins, gala audiences, anniversary successes
+- Positive milestones: MAU / DAU records, record viewer counts, gala audiences, anniversary successes
 - Product launches, AI tool releases, new features announced or celebrated (unless the coverage is about clear user pushback)
 - Brand partnerships, global brands joining the platform
 - Neutral industry overviews or list inclusions
@@ -1193,7 +1194,7 @@ sentiment: "positive" | "negative" | "neutral"
       * Records, milestones, growth figures, MAU / DAU highs, record viewers
       * Awards, wins, successful launches (AniSora, AI tools, new features launched and received well)
       * Global brand partnerships joining the platform
-      * Esports wins, cultural-event successes, viral positive moments
+      * Cultural-event successes, viral positive moments
       * User excitement, fan praise, creator compliments
       * Successful IP collaborations, well-received content drops
 
@@ -1299,9 +1300,18 @@ For EACH item answer "approve" or "reject". Reject if ANY of the following is tr
 4. PURE FINANCIAL
    - Pure stock/earnings/analyst/IPO/dividend coverage with no product/creator/policy/user angle → REJECT. Mixed content where the non-financial angle is extractable is fine (those should already have been rewritten upstream).
 
+5. GAMING / ESPORTS OUT OF SCOPE
+   - Bilibili Gaming (BLG) is the LPL League of Legends esports team — a SEPARATE entity from the Bilibili APP/PLATFORM that this project tracks. Reject any mention whose primary topic is gaming/esports:
+     - BLG match results, transfers, roster news (BLG vs JD Gaming, BLG vs T1, BLG dropped X, BLG signed Y)
+     - LPL / LCK / LCS / LEC tournament news, MSI 2026, Worlds 2026, First Stand
+     - Pro player highlights, tournament brackets, scoreboard updates, esports.gg articles
+     - Pure gaming-channel coverage where Bilibili appears only as the team owner/sponsor
+   - KEEP: APP/feature/UX/policy/creator/anime/VTuber/AniSora/AI content even if a gaming clip is mentioned in passing.
+   - When primary topic is gaming/esports → REJECT with reason `gaming_out_of_scope`.
+
 Return ONLY a JSON array: [{{"idx":0,"verdict":"approve"}}, {{"idx":1,"verdict":"reject","reason":"year_2025"}}, ...]
 
-Reason codes (short): year_not_2026, not_bilibili, scope_mainland, pure_financial, uncertain.
+Reason codes (short): year_not_2026, not_bilibili, scope_mainland, pure_financial, gaming_out_of_scope, uncertain.
 
 Items:
 {json.dumps(batch, ensure_ascii=False)}"""
@@ -1484,7 +1494,6 @@ _DISCOVER_QUERIES = {
     'English': [
         # Core — always included
         'Bilibili',
-        'Bilibili Gaming',
         # Rotated pool — random 4 picked each run
         'Bilibili app',
         '"bilibili.com"',
@@ -1498,10 +1507,8 @@ _DISCOVER_QUERIES = {
         'Bilibili banned',
         'Bilibili vs YouTube',
         'Bilibili community',
-        # Ecosystem expansion — VTuber, esports, AI, creator, policy
+        # Ecosystem expansion — VTuber, AI, creator, policy
         'Bilibili VTuber',
-        'Bilibili BLG',
-        'Bilibili LPL',
         'Bilibili AniSora',
         'Bilibili AI',
         'Bilibili creator',
@@ -1528,7 +1535,6 @@ _DISCOVER_QUERIES = {
         'ビリビリ アニメ',
         'ビリビリ Vtuber',
         'ビリビリ 声優',
-        'ビリビリ BLG',
         'ビリビリ AI',
         'ビリビリ AniSora',
     ],
@@ -1558,7 +1564,6 @@ _DISCOVER_QUERIES = {
         # Ecosystem
         '嗶哩嗶哩 動漫',
         'B站 VTuber',
-        'B站 BLG',
         'B站 AniSora',
         'B站 AI',
         'B站 創作者',
@@ -1813,12 +1818,11 @@ _LANG_REGIONS = {
 
 # Known domains with Bilibili content — crawl their listing pages for fresh articles
 _DIRECT_CRAWL_SOURCES = [
-    # English — general tech/gaming
-    'https://www.invenglobal.com/lol/teams/bilibili-gaming',
+    # English — general tech / app coverage
     'https://techcrunch.com/tag/bilibili/',
     'https://www.theverge.com/search?q=bilibili',
     'https://www.scmp.com/topics/bilibili',
-    # English — niche gaming/anime (fills the gap news aggregators miss)
+    # English — niche anime / app coverage (fills the gap news aggregators miss)
     'https://www.animenewsnetwork.com/search/?q=bilibili',
     'https://www.gematsu.com/?s=bilibili',
     'https://www.eurogamer.net/search?q=bilibili',
@@ -1910,7 +1914,7 @@ def auto_discover(languages=None):
         search_start = time.time()
 
         # Bilibili-specific Google News queries per language
-        gnews_queries = ['bilibili', 'Bilibili Gaming']
+        gnews_queries = ['bilibili', 'Bilibili app']
         if lang == 'Traditional Chinese':
             gnews_queries = ['嗶哩嗶哩', 'B站', 'bilibili']
         elif lang == 'Japanese':
@@ -1997,17 +2001,17 @@ def auto_discover(languages=None):
 # ─────────────────────────────────────────────
 
 _REDDIT_SUBREDDITS = [
-    'Bilibili', 'gachagaming', 'China', 'HongKong',
+    'Bilibili', 'China', 'HongKong',
     'animepiracy', 'Sino', 'Vtubers',
     'anime', 'animenews', 'AnimeSuggest',
     'GenshinImpact', 'HonkaiStarRail', 'Genshin_Impact',
-    'LeagueOfLegends', 'VtubersAdv', 'VCJ',
+    'VtubersAdv',
 ]
 
 _REDDIT_SEARCH_QUERIES = [
-    'bilibili', 'bilibili gaming', 'bilibili app',
+    'bilibili', 'bilibili app',
     'bilibili hoyoverse', 'genshin bilibili', 'hololive bilibili',
-    'bilibili world', 'bilibili vtuber', 'BLG bilibili',
+    'bilibili world', 'bilibili vtuber',
 ]
 
 _REDDIT_UA = 'web:duflat-social-listening:v1.0 (by /u/duflat_bot)'
@@ -2187,7 +2191,7 @@ def discover_reddit():
 # HACKER NEWS — Algolia public API (stories + comments)
 # ─────────────────────────────────────────────
 
-_HN_QUERIES = ['bilibili', 'b站', 'bilibili gaming', 'anisora']
+_HN_QUERIES = ['bilibili', 'b站', 'bilibili app', 'anisora']
 
 
 def _fetch_hn_algolia(query, tags='story', pages=1):
@@ -2343,7 +2347,7 @@ def discover_hackernews():
 # ─────────────────────────────────────────────
 
 _BLUESKY_QUERIES = [
-    'bilibili', 'bilibili gaming', 'anisora', 'b站', '哔哩哔哩',
+    'bilibili', 'anisora', 'b站', '哔哩哔哩',
     'bilibili hoyoverse', 'genshin bilibili', 'hololive bilibili',
     'bilibili world', 'bilibili vtuber', 'bilibili anime',
 ]
@@ -2510,11 +2514,11 @@ _YOUTUBE_SEARCH_QUERIES = [
     # Core English — broad coverage
     'bilibili', 'bilibili app', 'bilibili china',
     'bilibili review', 'bilibili explained',
-    'bilibili gaming', 'bilibili anime', 'bilibili vtuber',
+    'bilibili anime', 'bilibili vtuber',
     'bilibili world', 'bilibili creator',
     # Topical English — ecosystem, news, controversy
     'bilibili 2026', 'bilibili drama', 'bilibili news',
-    'bilibili ai', 'BLG bilibili', 'hoyoverse bilibili',
+    'bilibili ai', 'hoyoverse bilibili',
     # Japanese — ビリビリ is the katakana transliteration used
     # heavily on JP YouTube for Bilibili coverage
     'ビリビリ動画', 'bilibili 日本',
@@ -3141,8 +3145,8 @@ _LEMMY_INSTANCES = [
     'sh.itjust.works', 'programming.dev',
 ]
 _LEMMY_QUERIES = [
-    'bilibili', 'bilibili gaming', 'bilibili world',
-    'bilibili vtuber', 'bilibili anime', 'BLG bilibili',
+    'bilibili', 'bilibili app', 'bilibili world',
+    'bilibili vtuber', 'bilibili anime',
     'genshin bilibili', 'hoyoverse bilibili',
 ]
 _LEMMY_UA = 'duflat-social-listening/1.0'
@@ -3944,8 +3948,6 @@ _X_APIFY_ACTOR = 'apidojo/tweet-scraper'
 _X_APIFY_SEARCH_TERMS = [
     'bilibili',
     '哔哩哔哩',
-    'BLG bilibili',
-    'bilibili gaming',
     'bilibili vtuber',
     'bilibili anime',
 ]
@@ -4235,6 +4237,104 @@ def delete_mentions_by_domain(domain):
     return deleted
 
 
+# Mentions whose primary topic is the Bilibili Gaming (BLG) esports org,
+# the LPL/MSI/Worlds tournaments, or other pure gaming coverage are out
+# of scope (see rules_social_gaming.md). The lists below are matched
+# case-insensitively against url / author / combined text.
+_GAMING_DELETE_URL_PATTERNS = [
+    'reddit.com/r/leagueoflegends',
+    'reddit.com/r/lcs',
+    'reddit.com/r/vcj',
+    'reddit.com/r/gachagaming',
+    'esports.gg',
+    'sheepesports.com',
+    'invenglobal.com',
+    'liquipedia.net',
+    'lolesports.com',
+]
+
+_GAMING_DELETE_AUTHORS = [
+    'sheep_esports', 'sheepesportslol',
+    'jdgaming', 'blg_lol', 'blg_blg', 'blglol',
+    't1lol', 'lcsofficial', 'lpl_league',
+    'lpl_official_zh', 'lpl_official', 'lcsofficial',
+    'invenglobal',
+]
+
+_GAMING_DELETE_KEYWORDS = [
+    'blg vs', 'vs blg',
+    'lpl spring 2026', 'lpl summer 2026', 'lpl finals',
+    'msi 2026', 'worlds 2026',
+    'first stand 2026',
+    'sheep esports',
+    'jd gaming vs',
+    'pgl wuhan',
+    'lpl tournament', 'lpl roster',
+    'lol worlds', 'league of legends worlds',
+    'esports.gg',
+]
+
+
+def delete_gaming_mentions(dry_run=False):
+    """Admin: delete mentions whose primary topic is gaming/esports (BLG /
+    LPL / MSI / Worlds / esports.gg-style coverage). Bilibili Gaming is a
+    SEPARATE entity from the Bilibili APP/PLATFORM this project tracks.
+
+    Matches by URL substring, author handle, or content keyword. Returns
+    {'matched': N, 'deleted': M, 'samples': [...]} (samples are always
+    a preview of the first 25 hits — useful for verification before
+    a non-dry run)."""
+    try:
+        res = (_db().table('social_mentions')
+               .select('id, url, author, content_english, content_original')
+               .limit(50000).execute())
+        rows = res.data or []
+    except Exception as e:
+        return {'error': f'fetch_failed: {e}'}
+
+    matched_ids = []
+    samples = []
+    for r in rows:
+        url = (r.get('url') or '').lower()
+        author = (r.get('author') or '').lower()
+        text = ((r.get('content_english') or '') + ' ' +
+                (r.get('content_original') or '')).lower()
+
+        reason = ''
+        for p in _GAMING_DELETE_URL_PATTERNS:
+            if p in url:
+                reason = f'url:{p}'
+                break
+        if not reason:
+            for a in _GAMING_DELETE_AUTHORS:
+                if a == author or ('@' + a) == author:
+                    reason = f'author:{a}'
+                    break
+        if not reason:
+            for k in _GAMING_DELETE_KEYWORDS:
+                if k in text:
+                    reason = f'keyword:{k}'
+                    break
+        if not reason:
+            continue
+
+        matched_ids.append(r['id'])
+        if len(samples) < 25:
+            samples.append({
+                'id': r['id'],
+                'url': r.get('url'),
+                'author': r.get('author'),
+                'reason': reason,
+                'preview': (r.get('content_english') or '')[:140],
+            })
+
+    if dry_run:
+        return {'matched': len(matched_ids), 'samples': samples, 'dry_run': True}
+
+    deleted = delete_mentions(matched_ids)
+    return {'matched': len(matched_ids), 'deleted': deleted, 'samples': samples}
+
+
 def translate_missing_chinese():
     """
     Admin: backfill content_chinese for every mention that is still missing one.
@@ -4265,7 +4365,7 @@ def translate_missing_chinese():
 Guidelines:
 - Keep the same length and tone as the English original (short, social voice, not formal news)
 - Use natural Simplified Chinese phrasing — not machine-literal word-for-word
-- Keep brand / product / team names in Latin letters: Bilibili, AniSora, AI, BLG, PGL, Apple, Nike, etc.
+- Keep brand / product names in Latin letters: Bilibili, AniSora, AI, Apple, Nike, etc.
 - Simplified Chinese characters ONLY (no Traditional Chinese)
 - Do not add information that is not in the English source
 - Do not change the meaning
