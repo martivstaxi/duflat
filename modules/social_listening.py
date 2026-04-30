@@ -4070,6 +4070,7 @@ def discover_x():
     skipped_no_bili = 0
     skipped_no_text = 0
     skipped_no_url = 0
+    raw_dates = []  # debug: distribution of createdAt across the dataset
 
     for it in items_raw:
         url = (it.get('url') or it.get('twitterUrl') or '').strip()
@@ -4091,6 +4092,8 @@ def discover_x():
             skipped_no_text += 1
             continue
         created = _x_apify_iso_to_date(it.get('createdAt') or it.get('created_at') or '')
+        if created:
+            raw_dates.append(created)
         if created and created < '2026-01-01':
             skipped_pre_2026 += 1
             continue
@@ -4112,6 +4115,7 @@ def discover_x():
             'dates_found': [created],
         })
 
+    raw_dates_sorted = sorted(raw_dates)
     funnel = {
         'apify_raw': len(items_raw),
         'pipeline_items': len(items),
@@ -4121,6 +4125,9 @@ def discover_x():
         'skipped_no_text': skipped_no_text,
         'skipped_no_url': skipped_no_url,
         'search_terms': search_terms,
+        'raw_oldest_date': raw_dates_sorted[0] if raw_dates_sorted else '',
+        'raw_newest_date': raw_dates_sorted[-1] if raw_dates_sorted else '',
+        'raw_date_sample': raw_dates_sorted[::max(1, len(raw_dates_sorted)//5)] if raw_dates_sorted else [],
     }
     print(f'[x-apify] funnel={funnel}', flush=True)
 
