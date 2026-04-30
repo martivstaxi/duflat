@@ -499,6 +499,7 @@ def _discover_all_background():
             discover_lemmy, discover_mastodon, discover_lihkg,
             discover_youtube, discover_medium,
             discover_substack, discover_telegram, discover_x,
+            process_queue,
         )
         # Order: highest-ROI first; later sources are drained even if
         # earlier ones yielded plenty, because each has an independent
@@ -513,6 +514,18 @@ def _discover_all_background():
                 fn()
             except Exception as e:
                 print(f'[discover-all] {fn.__name__} error: {e}', flush=True)
+        # Phase 1: only discover_x writes to social_url_queue (others still
+        # call save_mentions inline). Drain whatever X queued — up to 4
+        # batches × 25 = 100 items per chain run. Phase 2 will migrate
+        # the rest of the discoverers and this loop will cover them too.
+        try:
+            for _ in range(4):
+                r = process_queue(batch_size=25, max_retries=3)
+                print(f'[discover-all] process_queue={r}', flush=True)
+                if r.get('pending_pulled', 0) == 0:
+                    break
+        except Exception as e:
+            print(f'[discover-all] process_queue error: {e}', flush=True)
     finally:
         _discover_all_state['active'] = False
 
