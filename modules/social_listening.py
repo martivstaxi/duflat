@@ -4024,11 +4024,14 @@ def discover_x():
 
     today = date.today()
     since = (today - timedelta(days=_X_APIFY_LOOKBACK_DAYS)).strftime('%Y-%m-%d')
+    # apidojo's `start` field is ignored when sort=Latest; embedding the
+    # `since:` Twitter search operator in each term is the only way to
+    # actually clip to the lookback window.
+    search_terms = [f'{t} since:{since}' for t in _X_APIFY_SEARCH_TERMS]
     run_input = {
-        'searchTerms': _X_APIFY_SEARCH_TERMS,
+        'searchTerms': search_terms,
         'maxItems': _X_APIFY_MAX_ITEMS,
         'sort': 'Latest',
-        'start': since,
     }
     print(f'[x-apify] starting actor={_X_APIFY_ACTOR} '
           f'maxItems={_X_APIFY_MAX_ITEMS} since={since}', flush=True)
