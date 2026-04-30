@@ -1,8 +1,8 @@
 {
   "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx": {
-    "name": "selling-domain-dogs.ton",
+    "name": "Binance Deposit",
     "is_scam": false,
-    "kind": "named"
+    "kind": "cex"
   },
   "UQABFuckIRGCTerroristsNOBITEX1111111111111111_jT": {
     "name": "use-ton-dns.ton",
@@ -1208,5 +1208,9 @@
     "name": "tower-treasury2.ton",
     "is_scam": false,
     "kind": "named"
+  },
+  "UQCOkbUDgcNt1CrM21H1y12WhIVotJJPgHmxpa5-EPQ-2iNl": {
+    "name": "Binance Hot Wallet 2",
+    "kind": "cex"
   }
 }

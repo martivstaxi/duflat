@@ -1,16 +1,24 @@
 """Re-classify the existing exchanges.json without hitting tonapi.io."""
 import json, sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from discover_cex import classify, OUT_JSON, OUT_JS
+from discover_cex import classify, OUT_JSON, OUT_JS, MANUAL_OVERRIDES
 
 with open(OUT_JSON, encoding="utf-8") as f:
     labels = json.load(f)
 
+# auto-classify
 counts = {"cex": 0, "protocol": 0, "named": 0}
 for addr, meta in labels.items():
     meta["kind"] = classify(meta.get("name", ""))
+
+# apply manual overrides (wins over auto)
+for addr, override in MANUAL_OVERRIDES.items():
+    labels[addr] = {**labels.get(addr, {}), **override}
+
+for meta in labels.values():
     counts[meta["kind"]] += 1
 print(f"{len(labels)} labeled  |  cex={counts['cex']}  protocol={counts['protocol']}  named={counts['named']}")
+print(f"manual overrides applied: {len(MANUAL_OVERRIDES)}")
 
 with open(OUT_JSON, "w", encoding="utf-8") as f:
     json.dump(labels, f, indent=2, ensure_ascii=False)

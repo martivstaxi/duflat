@@ -35,6 +35,20 @@ PROTOCOL_KEYWORDS = [
     "ton foundation",
 ]
 
+# Manual overrides — wins over tonapi.io's name + auto-classification.
+# Use for cases where on-chain flow analysis reveals the true owner
+# (e.g. CEX consolidation wallets that ops staff renamed to junk .ton domains).
+MANUAL_OVERRIDES = {
+    # Binance deposit/consolidation wallet (was labeled "selling-domain-dogs.ton"):
+    # 100% outflow to Binance Hot, 70% inflow from Binance Hot, 42M TON balance.
+    "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx":
+        {"name": "Binance Deposit", "kind": "cex"},
+    # Second Binance hot wallet — tonapi already names it "Binance Hot Wallet"
+    # but it wasn't in our top-9000 NOT holders so the discovery missed it.
+    "UQCOkbUDgcNt1CrM21H1y12WhIVotJJPgHmxpa5-EPQ-2iNl":
+        {"name": "Binance Hot Wallet 2", "kind": "cex"},
+}
+
 
 def classify(name: str) -> str:
     n = (name or "").lower()

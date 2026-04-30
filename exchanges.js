@@ -1,6 +1,8 @@
 const LABELS = {
   // cex
+  "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx": { name: "Binance Deposit", kind: "cex" },
   "UQDKHZ7e70CzqdvZCC83Z4WVR8POC_ZB0J1Y4zo88G-zCSRH": { name: "Binance Hot Wallet", kind: "cex" },
+  "UQCOkbUDgcNt1CrM21H1y12WhIVotJJPgHmxpa5-EPQ-2iNl": { name: "Binance Hot Wallet 2", kind: "cex" },
   "UQDJlZqZfh1OQ4PY2ze4bSEBznjc8fGzkE2YiP5XLvDv1JNr": { name: "Bitget12", kind: "cex" },
   "UQCi-sp63-vVxZcBCNH3kGXO8ysMFD-xNIkGa2hM3X7pXCoH": { name: "BitMart", kind: "cex" },
   "UQA81a1UsZCnHKq5hLDyEON0LH8hR7fpBzN318a0cAFzYham": { name: "Bitrue", kind: "cex" },
@@ -172,7 +174,6 @@ const LABELS = {
   "UQCvHUlS7fUOowv37htON9N_yUKV2nk3i7w9Dvbdk5wd17W3": { name: "satoshifriend420.t.me", kind: "named" },
   "UQCD7SKgUnvYMGrDCLCuwIwGvHj3wUfdXXoZ7jQniu6BXY8O": { name: "secret-girl.ton", kind: "named" },
   "UQCBKCesgqQPoIPVplSbdo6FmEIcWxxHKxfqJfTnIE_6jh9C": { name: "secret-room.ton", kind: "named" },
-  "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx": { name: "selling-domain-dogs.ton", kind: "named" },
   "UQD9uLIfZaGk9WwOjGEVre4sHVkYdx6_yNvKCQqg8dEs9oUF": { name: "sergeygroup.ton", kind: "named" },
   "UQAfw2P8s63-bfgSEDP9ELiGwIvxKgjwnV32ueF75tF4zFBp": { name: "snoopdoggydogg.ton", kind: "named" },
   "UQDd6oBNjM8GBexiu-77pNcYI77gHKo9Xej--1xiNV8m2MFZ": { name: "sport_insider.t.me", kind: "named" },
