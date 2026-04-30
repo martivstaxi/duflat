@@ -4034,7 +4034,8 @@ def discover_x():
         'sort': 'Latest',
     }
     print(f'[x-apify] starting actor={_X_APIFY_ACTOR} '
-          f'maxItems={_X_APIFY_MAX_ITEMS} since={since}', flush=True)
+          f'maxItems={_X_APIFY_MAX_ITEMS} since={since} '
+          f'searchTerms={search_terms!r}', flush=True)
 
     client = ApifyClient(token=token)
     try:
@@ -4119,6 +4120,7 @@ def discover_x():
         'skipped_no_bili': skipped_no_bili,
         'skipped_no_text': skipped_no_text,
         'skipped_no_url': skipped_no_url,
+        'search_terms': search_terms,
     }
     print(f'[x-apify] funnel={funnel}', flush=True)
 
