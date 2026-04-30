@@ -360,9 +360,9 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 .card-meta a {
     text-decoration: none; font-weight: 500;
     transition: opacity .15s, background .15s;
-    display: inline-block; min-width: 56px;
-    padding: 4px 10px; margin: -4px -2px;
-    text-align: center; border-radius: 8px;
+    display: inline-block; min-width: 48px;
+    padding: 3px 8px; margin: -3px -2px;
+    text-align: left; border-radius: 7px;
 }
 .card-meta a:hover { opacity: 1; background: var(--hairline); text-decoration: none; }
 .positive .card-meta a { color: var(--positive); }
