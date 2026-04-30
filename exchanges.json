@@ -1,314 +1,1212 @@
 {
   "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx": {
     "name": "selling-domain-dogs.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQABFuckIRGCTerroristsNOBITEX1111111111111111_jT": {
     "name": "use-ton-dns.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBmoechltZNb69I-ksuqGH2ewSE0tFKWcr3AdjChs5E5Uii": {
     "name": "OKX 11",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQDYh9Di0cT8QSbnHJcNM6sYlpQAAOrnA7sats7Mgwd344Mm": {
     "name": "MEXC 3",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQAbhMWosoxeoXTJi9Tlw09MEjPVvdJe9j0nC6K6ro0d1t87": {
     "name": "amocucinare-rugger.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDYzZmfsrGzhObKJUw4gzdeIxEai3jAFbiGKGwxvxHinf4K": {
     "name": "Pavel Durov",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDJlZqZfh1OQ4PY2ze4bSEBznjc8fGzkE2YiP5XLvDv1JNr": {
     "name": "Bitget12",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQD0BRQt-QdIEbsjuRsMqzDlBkUAEfQixShDECoKEOXRc4eR": {
     "name": "hashtag-on-tele-g.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQAAgSvOzjuIFf-wrQ2RFOGMpqXAH1gZFcMqER-8ib-M2vVt": {
     "name": "check-hashtag-on-tg.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDKHZ7e70CzqdvZCC83Z4WVR8POC_ZB0J1Y4zo88G-zCSRH": {
     "name": "Binance Hot Wallet",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4Tnjo": {
     "name": "STON.fi DEX",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQDIsFlvCQskFf5V7y4HhfHFdpkr_eQ2rqx1787Dqx8PrG9-": {
     "name": "hashtag-on-tele-gram.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBsJbXy_l7xpqGXj2EfYaUIg_1QoIIrGRdkRfypMYIyY9Ql": {
     "name": "visit-hashtag-on-tele.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQChSx9FI4Wyu5hK0sREHh0jyuBx_fwJbfulPrujtv8dEIro": {
     "name": "lbank.info",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQDx--jUU9PUtHltPYZX7wdzIi0SPY3KZ8nvOs0iZvQJd_ng": {
     "name": "STON.fi DEX",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQAPZauWVPUcm2hUJT9n36pxznEhl46rEn1bzBXN0RY_ynFz": {
     "name": "Notcoin Voucher Swap 0",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQD2mP7zgO7-imUJhqYry3i07aJ_SR53DaokMupfAAobtxg1": {
     "name": "Notcoin Voucher Swap F",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQBkiqncd7AFT5_23H-RoA2Vynk-Nzq_dLoeMVRthAU9RADs": {
     "name": "Notcoin Voucher Swap 6",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQDE_XFZOYae_rl3ZMsgBCtRSmYhl8B4y2BZEP7oiGBDhgX3": {
     "name": "Notcoin Voucher Swap C",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQASgm0Qv3h2H2mF0W06ikPqYq2ctT3dyXMJH_svbEKKByVc": {
     "name": "Notcoin Voucher Swap 1",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQArlmP-RhVIG2yAFGZyPZfM3m0YccxmpvoRi6sgRzWnAFDp": {
     "name": "Notcoin Voucher Swap 2",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQBJ_ehYjumQKbXfWUue1KHKXdTm1GuYJB0Fj2ST_DwORqeY": {
     "name": "Notcoin Voucher Swap 4",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQCL-x5kLg6tKVNGryItTuj6tG3FH5mhUEu0xRqQc-kbEjsb": {
     "name": "Notcoin Voucher Swap 8",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQDv0hNNAamhYltCh3pTJrq3oRB9RW2ZhEYkTP6fhj5Btc6r": {
     "name": "Notcoin Voucher Swap E",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQB_OzTHXbztABe0QHgr4PtAV8T64LR6aDunXgaAoihOd0HL": {
     "name": "Notcoin Voucher Swap 7",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQC6DNCBv076TIliRMfOt20RpbS7rNKDfSky3WrFEapFt53C": {
     "name": "Notcoin Voucher Swap B",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQA6pL-spYqZp1Ck6o3rpY45Cl-bvLMW_j3qdVejOkUWpOQj": {
     "name": "Notcoin Voucher Swap 3",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQChKo5IK3iNqUHUGDB9gtzjCjMTPtmsFqekuCA2MdreVBFr": {
     "name": "Notcoin Voucher Swap A",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQBRmYSjxh9xlZpUqEmGjF5UjukI9v_Cm2kCTu4CoBn3Xh5G": {
     "name": "Notcoin Voucher Swap 5",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQCZh2yJ46RaQH3AYmjEA8SMMXi77Oein4-3lvqkHseIAk07": {
     "name": "Notcoin Voucher Swap 9",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQA-ONJOMW4JL4Df_vqkCMFWwZ6iQtvGzv1aXHmcgPqtrO0X": {
     "name": "drew.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDddqpGA2ePXQF47A2DSL3GF6ZzIVmimfM2d16cdymy2ifW": {
     "name": "Notcoin Voucher Swap D",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQAJxbmwhwJw-FomFlt1RYukdeTltiCmWlsurQsQMRJhZaqE": {
     "name": "DeDust NOT vault",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQDhAiVHFVihy7Wc9zyCZcvirKAvgEwaiTmS3_Ro0hwV6efU": {
     "name": "elector.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQAaQRXoGq9Le_BMo4SY1O4DgAEoO2sa1etgeJCR2CLS3lwB": {
     "name": "tonkinside-telega.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCDT9dCT52pdfsLNW0e6qP5T3cgq7M4Ug72zkGYgP17tphG": {
     "name": "STON.fi DEX",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "protocol"
   },
   "UQD_6ogbrUGlsbYPF_a6Vwkahpmc9_CRtW6RSVQ8GR0gIR-I": {
     "name": "crypto-exch-io-token.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDa_D7S54iEgtfS3nUqnKRQcfeCnwVtAjVFAIaXcSOMHxnG": {
     "name": "wyatt.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBZsGXF1mJhpTF2YOlu7kdqpqEbdJvcvowNHz2_JCANHCo7": {
     "name": "OMPFinex",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQC_bb8W1l5lvKgtUH8o6GzstKg-5pTHYCWyVEfO0ot0LkDD": {
     "name": "notlove.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBwxpQd0niY3kjEvUAAPB_ZRMFxCgdMDG_bhqjK98VX8nrO": {
     "name": "not-evangelist.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQC-ftpLejDFwSU0YnmdIR9V2liuMwFsJH8eqzK90d_8VsdA": {
     "name": "dock-master.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQC0lrj3O0af8GotieYsTXChA_wijIIVN7Sd_wkgYLwoHxMv": {
     "name": "Gate.io",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQBsU82HzA0zSG20LBx_wD366y97gVr8NoqxruVn7do_cicK": {
     "name": "Coinspot",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQC6X5Vy8ST8Dnn5hVer8yY5xBK-Qm9IHmDgLLsHveRvjxrq": {
     "name": "fond.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQD1BmMYCRqM-1MOxzIQTOOPd4PZKmZ5_8wM4JYLDpTH0GcG": {
     "name": "Wallet in Telegram",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQCbp35W3x_AG_JYP2FmbBKm1czPi2L9-BJ-2_r0Em-d5tZ0": {
     "name": "vave.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBAE6s0gc16sdoqgmJJQqakO2dFUS1p2ABxwIzXrd4lVmbx": {
     "name": "runshop.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__I5W": {
     "name": "notcoin-minter.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQD3_DcFOFKIIsJRptfGFmDJUWGanOhXi20p7e362j5TboI1": {
     "name": "astropin.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDn6G2gh0LtkzQ0_-uPCKY8fhAO6ELiX1manL8IkVdKbDEu": {
     "name": "OKX 3",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQAHPUUjBEAq9ZtRc3Ot1LUoEvu3cRd22BB-7RhpLrXVHHOw": {
     "name": "visit-hashtag-on-t-g.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCZR0Pv5hBc4aLqKqDGpnCug1wlDmfC8_aW05UCx_GPyOod": {
     "name": "zeroperte.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQA8KeDMombMVb_FsNlppYD6yPUfD-x2VjmejuIOY6rXUgtZ": {
     "name": "mikefromminsk.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCDQBAJISeYZRgreSyIIWwuxnIFUnVzPeGkbA6se7MBIKOB": {
     "name": "potus.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDzW1O6Ct8_G_vKkT44iQhW-AKwp8ZZmUzlb8bCHIsckKs_": {
     "name": "mastergoal.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQC169oN6c1RA_BYXfpu50TS75IgA0YHZH0ZvVR-x_KDiNvW": {
     "name": "anonymous-on.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQD-67kHZRLcE9JvEORKfAH94pTrHRFPZ8eYqJwWp1Peg-bI": {
     "name": "akhena.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQC6uYNyHpNi1egxuyslDjY3iH6wXBaceUFbUeb9myM5Bo5n": {
     "name": "haruki-murakami.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCCaDhZBx-F7QfRABaxm47NGDkzpGmHrtn9xQLyUNlASl7z": {
     "name": "tonoton.t.me",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCU8MAHBuOhn_0TlBgHirjCBdtJr-ag_mjAjYfdjrOUbn9X": {
     "name": "notpaperhands.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBwhUXO-PwBGAIllqBWBEphgz6SNhO_cP0eJfAz_v2KPEyB": {
     "name": "Rapira",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQB9vLBc17hdgqY_I2kUOFwniuJJoOLUd89MRDNulh_M4Ib-": {
     "name": "andrei777.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQAFhhvvp6DJtAyhriy7j8Elcbar0o7bGUeCA9e4yvC_X-6H": {
     "name": "fight.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQA2SljtsGsUhgbKZWurNeVe07Q62RW1YUDCufH59Gvb-5CL": {
     "name": "numbe.t.me",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQBx06oxGmpFCPcwIAGxtC01yX7zf9QjOCLUP_AhDBT0EGv9": {
     "name": "helloqepaaa.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCc5F-tQjJWfiViSEQ6w1Vr1nRDV0Ro9DL1uLAVZrjCJ_eB": {
     "name": "artemdanilov.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQA81a1UsZCnHKq5hLDyEON0LH8hR7fpBzN318a0cAFzYham": {
     "name": "Bitrue",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
   },
   "UQCO7Cvl2SxBU9Cm5cHAKFrlgmeSpMXV7t1XrrIAADubuSS7": {
     "name": "eugenenzh.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQA9sN0ZpF4pYjvd1ckluiGaOFSiHJYKni-fWZgDHIilfgSb": {
     "name": "bitcoinholer.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQC9_fN7oe8EoftOl5vcI3p1AIAQSKFnuvolC8--DHto19DS": {
     "name": "guaranty.t.me",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQDurRvcWeqmmrTiNVeE9usI-GteWUc6Wg3DSt-anRVwt55g": {
     "name": "66668888.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQAKiflnkg4xGFHeFVKOOq0D8zmRjza6fREZLowI6RvQozQN": {
     "name": "irespect.t.me",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCPKyjzp2-6iv3bbcKeehe98MHkKQEUBAvfsNNroU0cA8qM": {
     "name": "evelone.t.me",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQB4EPXZ433Op3X3lTNyl649GxElgULbkEXKm2PX8-nNCl2D": {
     "name": "garbage-address.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQD6IRG0h7oMknMjepw43a8rCoyxuCCMs7TXfZdr5FCs1I3a": {
     "name": "fungi.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQCBKCesgqQPoIPVplSbdo6FmEIcWxxHKxfqJfTnIE_6jh9C": {
     "name": "secret-room.ton",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "named"
   },
   "UQA9LLdOBB3wVgRdO6S-9lD5OMVT24bR2rH4C8nCOP4__rPr": {
     "name": "Rapira",
-    "is_scam": false
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQAzu_uXtCGcSPNhvczI_t58rzsYZEHpikIZqqJgCY3mZ3QB": {
+    "name": "kifpool.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCBu2oiaSh2LF-C-oCSUQwy1-qQlb8_rCU_LjkzAEgExpIA": {
+    "name": "ellafis.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCLBw7bAacA8_akYkx-CG4DbahgYOuwTxmQjuYaNTczX2jy": {
+    "name": "join-to-souvenir.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAVMLNdbHBnp_wq03lxK_DK3Cg6fdS-hMK9NPTRrMQMXSGa": {
+    "name": "mexican.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQABGo8KCza3ea8DNHMnSWZmbRzW-05332eTdfvW-XDQEmnJ": {
+    "name": "xRocket Bot",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCwARlTUp2YaTf3dxov6xKVGl175AHZRZbX9P6KUO8iwJJ6": {
+    "name": "dart.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAWnIXYX6GyQMnF5DQneSLHlVkoL30U45Ijds1dIkUqK7ZO": {
+    "name": "joshua.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAzAm7AVdByF2ih3GpeMXvYXkSLYXykbstwXv1ztCincWvq": {
+    "name": "magik.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBxuGMQdXPOnclIZHvCWCioRjvuxh-z19bdSNNoNlmoCp_6": {
+    "name": "4815162342.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCrbutAkBGsGo5IC9HqJEW-tUVA-T_c1UFvGeG7NB9lLKE8": {
+    "name": "visit-hashtag-on-tele-gram.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDqHHfsPoHxyHo79N5vCvFehHVwN5zaRAW4M2XKSPioLeYO": {
+    "name": "gulfstream.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCoAYGW42Gz972h2RnL-sXHYNnp-KH1yJYPbn6BExMKTOLy": {
+    "name": "xyliganka.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBvaBP-BlKIi-KKZTq6VndH_LvDil0bix8wQItiMSDUHvp7": {
+    "name": "brucewillis.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDDBKiuOhSUSayNyVPx24juwdxn2_5ziZMReV6w9UkP77sR": {
+    "name": "tradein.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBVXzBT4lcTA3S7gxrg4hnl5fnsDKj4oNEzNp09aQxkwmCa": {
+    "name": "Huobi Deposit",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQBMxAros3D4xMWeX-m2VC_AVK9mYj7z7iEWzXxtGa_aMQ4Q": {
+    "name": "firstsnow.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDUW7ljDvwi2a90wU1LVRobWAQ0CyQcRo1khzExtxTEuGGj": {
+    "name": "notfucker.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAvGHhcaEhythBpoDuthgeKQ9HC5cDSTSLnFMEQ2DFmwQXC": {
+    "name": "tvnetwork.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAohA09HOFhfXrYaqVNK94__4aa4zwMEeucwlTzCBANENHr": {
+    "name": "fuckyouspilberg.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD3gxfZFttrYyKsBqERwmW2r-UlZ3NO0QSY3t4M822wJ06G": {
+    "name": "dozzzig.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBrjRt0pc4ujPFbS7MOJQ5MnCfcKVlG6_T4K_FqJigXOUSV": {
+    "name": "yourfurer.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD9DXp0JtRy3SZmiNWTnEZMa683BpQ6u6DIEFWPZY1WpOe0": {
+    "name": "daradofdct.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCexmMrQYjJ8kMxKsDG8BR60XRP7EgYQ-8itL1wRbQurwBr": {
+    "name": "overlandoracle.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC9bHyCGAqxjfZadkqwD5x1HGn1704VROH-wTtBvkuOBltr": {
+    "name": "takechip.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD0RwpJa-tLBav4eIATc0Cxcfh3BstB-h9zROzuxiPKDBdL": {
+    "name": "cola.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDhj3RqnjANZ2YTisNoeEVP-cRv0NKwqRyDONsA02IgLVd4": {
+    "name": "win-to-win.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAibp1I8siUULQqtpA5_UfMaIbQJdi7Lg4tafWhj5qumPRK": {
+    "name": "wtf-coin.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC6yp_TnzUN4FpM975yNk5mWGSLN3W2VF2HzEhSKBS5AuIx": {
+    "name": "ilia-mikheev.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBW60T7Yk4tpgLCSnq9Hb5NziWo5bsuEd0QhXoPCMKeKMv8": {
+    "name": "globalkintek.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAEfvu4ECAWDShGQSQnFmDRVl2q1n-m-YSk9MEWWG9ZaCPE": {
+    "name": "wallet-4you.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBDPNMTVxfqP_JOVCTMyF1jBcKR1w6jdbypXuCVGRlJx0tA": {
+    "name": "memeholder.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCDdfdQey3CHxbh8O8IgI917ypx3JDQ8l5tQC2wlGJTWIm2": {
+    "name": "boyko.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBQXhOFz4ZnC17ClV507ac2M3o5IlNhqLZ91pIC4Zmx9UIR": {
+    "name": "riocool.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDt5-Gf0yBzjX_nG96RTmOAZzOAgdIp35hDiWutrny9x_e9": {
+    "name": "krovavyj.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAzV79Xy4Rvh9g6HrmLm_xvkOM5xHqwDJuDv6e89m7FAoqt": {
+    "name": "rudolfmxxxiii.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDdceUhaG9Bpx55u-c0XvGoyBH8hogco7SNP0cUJikvCLAs": {
+    "name": "russiawallet.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCB1s9MTnuMeDmB9Gw84fUzKDQ_6oNrzWglUlWnib0YyuMD": {
+    "name": "niubi.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBC1BhH1pARrfeT3NHFHgoocXqz1XidQvipCFx9qCXJ9r0m": {
+    "name": "korobko001.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD5E14fhdqyyPZw_edYZzTX0M8L-M0cEar6s5OIw6GtkJJ6": {
+    "name": "dimoncrypto.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD_qlA_yV-b3lc1Wl2J0TleKOHixwAgKTb5G1Tloi5cUC4u": {
+    "name": "dictator-ton-crypto.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAhbuA3pMyppJNorHpWtHvz0BQDsRTWdaec6rAq7GXj9AO0": {
+    "name": "tonano.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBteWo_N_g4HecK1Oc3giUtJbcflxjnXVB-4r8Jsrz1EgNW": {
+    "name": "clusterfuck.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQANPRD2zWF4OeHy_YMyYMmGqfF5tudY5sl7bQ6l47CpyjrU": {
+    "name": "dorsteinn.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAMEaPUWp6IK0OPQF-tAjCH4q9hECE4DCu7h53Z1_a1QHsX": {
+    "name": "grigoryrasputin.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCeSoHJhXWOSEdcsQzAvvLxr6HBL06REunvt_8fEKHRaTMd": {
+    "name": "emigrant.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD5iAPfdUTQZfGg2poQ04MSMfTeZY2ajtNMTpwYYWj4TMad": {
+    "name": "dmitriydictator.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCCshnretFFgFv_uX9qsDYXStWCLqtSHJoIstnY20yGx-DR": {
+    "name": "vpcryptoinvestor.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAm-lwUYbIOKX-GvFft9srnYteYmpUfF05lD_X9o0CfP03K": {
+    "name": "tonland.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDtU7yZnlpK9po_nD3lN299kMSH4VKPMx5xbb6FkD1REpyy": {
+    "name": "Notcoin Royalty",
+    "is_scam": false,
+    "kind": "protocol"
+  },
+  "UQCZ1hh2gey2XImom9xtTiJEHdTQzBRxMF5b8zC2D3ffjdQl": {
+    "name": "notnotcoiner.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCvHUlS7fUOowv37htON9N_yUKV2nk3i7w9Dvbdk5wd17W3": {
+    "name": "satoshifriend420.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD5vcDeRhwaLgAvralVC7sJXI-fc2aNcMUXqcx-BQ-OWi5c": {
+    "name": "OKX 9",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQCvVBkvdXjal6VvPuBsU79WErAUqmDPmyCltS21qxnXiUBr": {
+    "name": "vg-dct-team.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBO9MVJ5i1pWLobhvGLTAHnv-o2nBM_Ml8zPVPwiuX2zVNV": {
+    "name": "djasus-wallet-ton.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCxlxsm183utGEJCh6ugRv-ocrAosm9FMXIjY8g_plGS2BQ": {
+    "name": "triagrutrika.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD60rXUOJGET9rpBLADdDu9Kmi1lQXGJu7xcNQHERJAb3hQ": {
+    "name": "bigchickenbox.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBaCwVfRZjKvm31saKo4QAHdZgdOXnM6c28y8NzSRbC6yvl": {
+    "name": "headfucker.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCNLsm0M2DNcDPM_HUNDn5C0Q547osGH40p-HlDn4z5uUc2": {
+    "name": "dark-souls3.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBkZrijbjyo1wsZiNyBnMAQfoqMvnIL44X_pCBEgYIJem5M": {
+    "name": "avedictator.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCcMwTG3jOOMb2P3bKJVkCS2ZEWEK-L4agsR6_nOJFicnYE": {
+    "name": "web3world.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBbDXXrJsnChbh8gmhT4JZZSR0VYnRLT3lz7aO7oJ3_wc2A": {
+    "name": "allmyfellas.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDER3GqE2SM3WUbyobUisa14zAaDnMee1f9dS4so-DyEd3t": {
+    "name": "millionnft.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDFzBSXoQ2NFopNwL3uHe5BwT99p3uFDq-Tb-hPgkSbl3Yw": {
+    "name": "oboronitel.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQADJ9kq8YJTmXOsafqfHNZyKfm5bDU2cZFZyHTLtZoZqsFM": {
+    "name": "premium_news.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCtS4Nu5lKKdmugZQTIlQ7F1aPr_g1-vv79EOdWBAzOId2Q": {
+    "name": "euheniya.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD0gtzgmJExo-cCPB0o4q3TvhZ0laLvEZ-g21jKSQ6lZPd9": {
+    "name": "optimus-princeps.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDWdAIXTL-GTQVwruXCqfgQXzlaeZ3mw5L1hj6vhYarDJmR": {
+    "name": "bybitsend.ton",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQCEUvU9mgKdFhdrQfwE7oluEspq64GS2JA0_nSh_aeSLoI7": {
+    "name": "dadashzadeh.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDDPGa-U6cvc2zRveS279fH008D8NolonbgBnAVCR9U_pwm": {
+    "name": "onco.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC8XsyYdZfHlt5AlouQHKkmsNBPi6sWqXLDdVbeqUcrPLOr": {
+    "name": "awesome4000.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBPI9thyt_pads2FINIIGxeu06UjYVU4oWpG-nj2GOf5I1d": {
+    "name": "bitmit.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDd6oBNjM8GBexiu-77pNcYI77gHKo9Xej--1xiNV8m2MFZ": {
+    "name": "sport_insider.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAFN7SIDZlmJupe8Cg6K6AvB18V2M1_vBEntoNHYoLeswbS": {
+    "name": "not-not.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDjOj3Yb6wwZn-ncIYgff6oMTumUvzQh4PMkpEMRmVG87zY": {
+    "name": "brilliant-wallet.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCNewvgiDZ-UOZ043gCJ4cU1b_iCkCV9idRJDxWMPiv54P2": {
+    "name": "promining.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCxVdJF42cDwODx13wamt4SJ7ihgagUOkXCmFDsd7uRn7pW": {
+    "name": "targetingads.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC6MgWyeYuaxTwKtTW-cPE9sEMAtRKKgfy7ExcRaBylx0rQ": {
+    "name": "imverysleepy.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBsrGhsBWBL2yDwB2QpOI5oskEx9NWw_9ypmZfijIO3GQvD": {
+    "name": "user.vipx.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCK0rzGz_7Cu80kC0_70JTm_dktc0TSKqThN_7yuimFrXah": {
+    "name": "donflo.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDkPSCHVaTdwwk2ABhKwgBztThtNiKRiZOKMIJHyMvGEav8": {
+    "name": "suppisland.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD9uLIfZaGk9WwOjGEVre4sHVkYdx6_yNvKCQqg8dEs9oUF": {
+    "name": "sergeygroup.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBYVLzw_-FBOeVouMssuvUyU1DVN4xyn43AXb0U7dq_jKvM": {
+    "name": "hodlbitcoin.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBBxrfhEdgRLlvdl5m630mC3yqheL4CRDacVq-h0i0jg2ey": {
+    "name": "onemillionexabytespersecond.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCTp57IatvU5QH1kjFZrJ9Ld8uKPItSdBsztqmJr7wPLFPE": {
+    "name": "samosval.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAEzUAgSL7q2bjnA1uV-_oWylxC7OB05QCF1I1ZVtjE6wo4": {
+    "name": "davlet-sultanov.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCt8DH0wLhde6uOiAHbzfIXIka7ixcveW3u4phwTE5SWjnc": {
+    "name": "pishro.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAS5Yht5UApZVFabpeA21TolwBuXNulkjLVQdJPed0Uu8aq": {
+    "name": "zhdun-derzhun.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBdFxBeTNEpYSFxj1YDxtWWd2dNqEVRQ765ITGlp0ilZ6FP": {
+    "name": "longlife.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDXgkYbrxDpRZD6PUZd0jwdjZmYYQd7l5YOE2UeXunLD5hj": {
+    "name": "exmo.ton",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQDWNjlaECWrFODLfDzMGKqv1oP0YwmvQAIyGrdJl5TEAUPN": {
+    "name": "hippyfitness.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQB3Z1Ctcd4Jg231Eshs0hnUSjGPiQ8QFkmzljLgyf_iACLB": {
+    "name": "toninvest.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDyX8x4iAfBbhJHugynYGBX1U1dKjRdB2KCCEMlMOj6tPpg": {
+    "name": "percivaltrade.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDKDnGnWjTxpRh0b9U1PQfGa0mJfzQB-hQIWtIJUZQ4R0Ya": {
+    "name": "dictat888.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC-UbGoWQUY22co_3WCHg-lc3Mx1QLMWDpu34qBEuWAiERc": {
+    "name": "xhtmlxenops.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDWPe35wKdiSLZsBf_SEg1QgVBg-12lPZ5NUzsU7T7syz75": {
+    "name": "yeshold.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQA2iM4k_jZCfGdVa1jRoImoikPxduOn-13a-nSR_RZ4uVK8": {
+    "name": "dimachuprakov.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCFr3jo0DXpIBF82mVGFc3zcdRkSAtinhENPFMQ2FqzYv0E": {
+    "name": "Huobi",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQCu-kaf7k6Go4l1QpJJADlJKK4vXnZ-2Fco_IKKMaBDX6wc": {
+    "name": "cryptoraccoon.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCuJNpry3MTSEHFsTItvMfrVg0yeyLqhlgm9iJu5sxpF6bn": {
+    "name": "moneyflipin.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDa_T-plbicZOR188te6gp9T1J4XKd7wA7DUMyKCnFMm60U": {
+    "name": "coffeemania.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBuH4B6vm1wX4BS3m44OcwK0VhKJS8AWlRMdNBlcXWuphzc": {
+    "name": "cryptosurfer.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDdUoUFrxXG5SBr3Y9smjtUH4DKmK6KUGarP_jeH_XmeM3K": {
+    "name": "Farhad Exchange",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQBsQ9Q5Lks_r3BdvAyjnTqpX8bwKlYqJ_e2qJnkY0mexLpP": {
+    "name": "liveintonspace.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC6UFUUIBEBmE3Y93dufJ0KBxH1aOg7qQA34TqXY9oPb8AL": {
+    "name": "nikitadictator.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQA2IX4k1k0C00xVTqaM0BseL3XDDnGarB3XmT0nmWsBP6Mc": {
+    "name": "bahchisaray.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAZjg9gwL2ww2mtSEC88qUIxcOC6jsscE9HCiuIUHcKdpOE": {
+    "name": "caneg.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBq8CQX4zFWx_SGp09S7zOxwowMwgejHhdMc9FjAJaH-U0K": {
+    "name": "joydivision.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAVrM3NgOvdXvkA9EGVRbCyt9FkUKpOgVtl5HFNgD_VL0-R": {
+    "name": "fordarklord.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDXuwZLVXxnlx_mrDn1ZbiK72_MQUx5mC6pLZCvHkJ6ua5O": {
+    "name": "xydessa.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCi-sp63-vVxZcBCNH3kGXO8ysMFD-xNIkGa2hM3X7pXCoH": {
+    "name": "BitMart",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQCsAAQoDjtW7E6HzbS8U5cJW5Ub4r1I1e8jr5N1D_9zxKVU": {
+    "name": "magvaer-dct.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCeHnc3vQK-YCkihu2m2R2Kv0GZvLvylzDKJhFzZKc47Fpf": {
+    "name": "aleksdoroga.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQALoCwBVMyW6IFZDf5SCILztGSbSm1zydtPHgIS3fORYFKq": {
+    "name": "xcorp.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDkNYXyQ9MlV5d9aRO4UAS4vYuXuTXiCPWwbiBw3qCXJn2i": {
+    "name": "lifestream.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDtqG0vTOaYkhTJMx-XmmopZNaX2jKrPntYHitmURSe02ys": {
+    "name": "orionuz.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCD7SKgUnvYMGrDCLCuwIwGvHj3wUfdXXoZ7jQniu6BXY8O": {
+    "name": "secret-girl.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBfx4ECQKl5cHPujjvqLLueamflt9D2SAGqe42o7d3I61Vu": {
+    "name": "amanitalovers.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD82G_H22R8Zi1XkkY2fCsXDwzO7yzwQ_B_3xF5NUxjRhuh": {
+    "name": "yuklov-1981.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAfw2P8s63-bfgSEDP9ELiGwIvxKgjwnV32ueF75tF4zFBp": {
+    "name": "snoopdoggydogg.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAYJ4gGIUDwvlEStjkuZENaoBAQU7pt-Bv4-Pmc7-hibY2W": {
+    "name": "samarakovsky.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDksfXjOKX4WHklELwzTOpHDYyjvd_HWOuKPGTl31Y7I6RY": {
+    "name": "illuminat.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDOEDaQDs752LWbxGMbnywEsq18WerRHHKwfowKwqMg7x4x": {
+    "name": "qwicu.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQADS9zHEIXjODNAibC-3Mp6yRmaswVT3PGkQtMoQe0XtWb0": {
+    "name": "premiumname.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQATChk2BbCGUHcb2tLLuL68Rf1v5Jj28BNp1kcE8LBtxB1Y": {
+    "name": "walletalex.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCjcDiLiHhpeg0TiAK0dxzTSdgwW5aS1v7be6-mH0C8mgb3": {
+    "name": "realspin.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC_-t0nCnOFMdp7E7qPxAOCbCWGFz-e3pwxb6tTvFmshma8": {
+    "name": "TONCO",
+    "is_scam": false,
+    "kind": "protocol"
+  },
+  "UQAiOw4zLWQa1Siu6XQ8-3JZaMVaxENW7ermJUrtrTEtxv5D": {
+    "name": "recrent.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBO-exEre52asl4aY2cy60JCJAI2jaIKuoT8wz12BlL_ARZ": {
+    "name": "arzinja.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDCABNVX2hIGnr41pW4tg_M0PilYhID_MFDCBEp2g6mBwIu": {
+    "name": "sunlight.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCA_EVfHdvO8ivCbG3fbGCvqBSEvV3tHpZZZxQZfA7lY6_p": {
+    "name": "joooooooooo.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAH1FlQgFROgfjRL-dWaQKluxoT4g5fFocppHaUdEx1n5JV": {
+    "name": "yearqueen.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAZIjF0naouug8QC2D8xMkV348VBx0rc7wL5G-5wZVqXlpR": {
+    "name": "kurumkangaruda.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBWsMS7YVJz_V_V0SQ7KROXNPcCi7nZ_cM6uLCw5A1o8Q7K": {
+    "name": "kawaii-ing.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAMalEtVI5qTxy5l9yonc5cwapTvB8EubS3cte94t-lmlH8": {
+    "name": "notfree.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDj42evrvim0BMENhEL6gNc4gq7Q3JqoyK9NnT0Fawao0Zf": {
+    "name": "moonman.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCDnkvGku_DcZ8EwY_sZqBPOu8176pk6jD7yW9UzSKd3erZ": {
+    "name": "persiancrypto.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAj7vKLbaWjaNbAuAKP1e1HwmdYZ2vJ2xtWU8qq3JafkaGA": {
+    "name": "CWallet",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQCeE47NvxMtaaOp4BYC9qaiwCUviuiHovDbDCKgQNmcNQjm": {
+    "name": "numberofgod.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC0RRtM5QoxilI2vw6lh4UQ6jmKG9jPwiVnLZ14b_WFXOnH": {
+    "name": "porscheswallet.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCN_txkExD2dfcxRTuCPCtQH1S-XEJ9U1Uj94RzGQ9xtnYB": {
+    "name": "nemo-founder.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAoYuIS9e1pAsAQFFEXVEmKIbdDnKoqjdvJGTFdJwUVFPWL": {
+    "name": "flooooodbot.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBa-PThWxi3sSoTGdiUzYyC1DbfBMvCU-b5xkSzrPjdkcdM": {
+    "name": "threads.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDDnfmC8ZFODz-pSspaPmT22XXLAHe9CVxi_84mjkJlW8Cp": {
+    "name": "web3-studio.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQASH_yC0zwte_zHR0o0T5xvDUhgmDIm1XjXwl9Cp5B-y5Bb": {
+    "name": "dictatorcryptoworld.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCnRJV2bdD21Vqbj-TwCLXlgrIp0GuJJrprlCGJWEA_URnk": {
+    "name": "wallet-dictator.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBfl7xt1zx5o2yHeKvyqLEHIxzpPxjHYskRqj0WGKcqaZYr": {
+    "name": "e_gem.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDLmbhZTwJvfBFNu6iacy894-F7k5vAkN6tMOJs-XKiI0h0": {
+    "name": "hydroxide.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQA-Q8PSIkVWLHfLqG4Seuy5Wr5ZxUDqCG61otvFOW4TNYsQ": {
+    "name": "klimofficial.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQCPyXQH4s1IIkEtOJOAzlDAmSJLAzzyniEIxvCuJRoesBo7": {
+    "name": "theoligarch.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQC8g3CJz4NVIyWFYy6RiABriM62V5Om06cvZJ7kB9Z-tykb": {
+    "name": "vc-projects.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBUKvE-kNJGOLBMknEklrb223QZ_eZ76SQ_7jDfZMn4U2ui": {
+    "name": "imlovingit.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDthf9KrO4ZYBQzxwgMuYA9GvMBnV3_IArAtHkW01DJZVJ0": {
+    "name": "million-mega.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQAlH8tidls2-6lnAq0UDek632J5s_JtcXpM925WuuEHnqc4": {
+    "name": "x2maker.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDz9O0JE6tVXQI3RQWPGmxVpJ1Idlk8ub2rH3gKmbGFvHZD": {
+    "name": "Paribu",
+    "is_scam": false,
+    "kind": "cex"
+  },
+  "UQDGaL0oXC2t1S4_-BCNsh0cHSpcRtDh73fH5JCVic3cWbUA": {
+    "name": "honorandrespect.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDjOBrRBcpPwC9YUuF_u0XHEpj7SW37AT5hCOdt5GtnM-hA": {
+    "name": "hardworkpaysoff.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQD0jl7nBceKl_pKo43UoalZe10Tk5UgiXi8Zv8nuzNbugqG": {
+    "name": "durovfragment.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDbeCMIciXTzYeCb0kHYMCi3KUVPfIHY3d8CY_cUX4rKMNT": {
+    "name": "macedonia.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDffDXFVYDpapNwsHOQ6EIMtEk1E61AeqxaJYW7KtxZRGWe": {
+    "name": "francescomontana.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBqYvg__AiIZphan7ymlfEVhim-uga2tMNqIoPGPS5a64KN": {
+    "name": "pavelpromov.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDyii0B48UvZh0zwtlnrYJ_mVRit7XL8NtbUwB8RjOzFt46": {
+    "name": "darkwebsite.t.me",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQDAPye7HAPAAl4WXpz5jOCdhf2H9h9QkkzRQ-6K5usiuVpH": {
+    "name": "STON.fi DEX",
+    "is_scam": false,
+    "kind": "protocol"
+  },
+  "UQAlL_zWmmdpcmkGKO5aftkhsoSWATALlk6ALpUBaCNwou0G": {
+    "name": "bilklinton.ton",
+    "is_scam": false,
+    "kind": "named"
+  },
+  "UQBt6OVD9eaqzTP80QmZfMOF5GCt8JsricPmWzq8uqcFHM6f": {
+    "name": "tower-treasury2.ton",
+    "is_scam": false,
+    "kind": "named"
   }
 }
