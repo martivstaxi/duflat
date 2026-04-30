@@ -14,7 +14,7 @@ let archivePage = 0;
 const DATES_PER_PAGE = 4;
 let filterMonth = null; // null = collapsed, 0-11 = show day picker for that month
 let currentSensitivity = 'all';
-let currentSourceType = 'all';
+let currentPlatform = 'all'; // 'all' | 'x' | 'reddit' | 'bluesky' | 'youtube' | 'others'
 let showMonths = false; // whether month list is expanded
 
 const CACHE_KEY = 'social_mentions_cache';
@@ -41,7 +41,9 @@ const I18N = {
         filterLanguage: 'Language',
         filterPriority: 'Priority',
         filterDate: 'Date',
+        filterPlatform: 'Platform',
         filterMonth: 'Month',
+        platformOthers: 'Others',
         unknownDate: 'Unknown date',
         unknownLang: 'Unknown',
         close: 'Close',
@@ -71,7 +73,9 @@ const I18N = {
         filterLanguage: '语言',
         filterPriority: '优先级',
         filterDate: '日期',
+        filterPlatform: '平台',
         filterMonth: '月份',
+        platformOthers: '其他',
         unknownDate: '未知日期',
         unknownLang: '未知',
         close: '关闭',
@@ -239,7 +243,7 @@ document.addEventListener('click', function(e) {
 
 function updateFilterToggle() {
     const btn = document.getElementById('filterToggle');
-    const count = (currentLang !== 'all' ? 1 : 0) + (currentDateFilter ? 1 : 0) + (currentSensitivity !== 'all' ? 1 : 0) + (currentSourceType !== 'all' ? 1 : 0);
+    const count = (currentLang !== 'all' ? 1 : 0) + (currentDateFilter ? 1 : 0) + (currentSensitivity !== 'all' ? 1 : 0) + (currentPlatform !== 'all' ? 1 : 0);
     btn.classList.toggle('has-filter', count > 0);
     const existing = btn.querySelector('.filter-badge');
     if (existing) existing.remove();
@@ -286,6 +290,20 @@ function renderFilterDropdown() {
         if (priorityCounts[p]) {
             html += `<button class="filter-option ${currentSensitivity===p?'active':''}" onclick="setSensitivity('${p}')">${priLabels[p]}<span class="opt-count">${priorityCounts[p]}</span></button>`;
         }
+    });
+    html += `</div></div>`;
+
+    // Platform section — top 4 buckets explicit, rest collapsed into "Others"
+    const platformCounts = { x: 0, reddit: 0, bluesky: 0, youtube: 0, others: 0 };
+    base.forEach(m => { platformCounts[platformBucket(m.platform)]++; });
+    html += `<div class="filter-section">
+        <div class="filter-section-title">${escapeHtml(T('filterPlatform'))}</div>
+        <div class="filter-options">
+            <button class="filter-option ${currentPlatform==='all'?'active':''}" onclick="setPlatform('all')">${escapeHtml(T('all'))}<span class="opt-count">${base.length}</span></button>`;
+    PLATFORM_ORDER.forEach(p => {
+        if (!platformCounts[p]) return;
+        const lbl = p === 'others' ? T('platformOthers') : PLATFORM_LABELS[p];
+        html += `<button class="filter-option ${currentPlatform===p?'active':''}" onclick="setPlatform('${p}')">${escapeHtml(lbl)}<span class="opt-count">${platformCounts[p]}</span></button>`;
     });
     html += `</div></div>`;
 
@@ -368,6 +386,9 @@ function renderActiveChips() {
         const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
         html += `<span class="chip" onclick="setSensitivity('all')" role="button" tabindex="0">${priLabels[currentSensitivity] || currentSensitivity}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
+    if (currentPlatform !== 'all') {
+        html += `<span class="chip" onclick="setPlatform('all')" role="button" tabindex="0">${escapeHtml(platformLabel(currentPlatform))}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
+    }
     document.getElementById('activeChips').innerHTML = html;
 }
 
@@ -377,13 +398,29 @@ function sensToPriority(s) {
     return 'p2';
 }
 
+const PLATFORM_LABELS = { x: 'X', reddit: 'Reddit', bluesky: 'Bluesky', youtube: 'YouTube' };
+const PLATFORM_ORDER = ['x', 'reddit', 'bluesky', 'youtube', 'others'];
+
+function platformBucket(p) {
+    const v = (p || '').toLowerCase().trim();
+    if (v === 'x' || v === 'x.com' || v === 'twitter.com') return 'x';
+    if (v === 'reddit.com' || v.startsWith('reddit')) return 'reddit';
+    if (v === 'bsky.app' || v.startsWith('bsky') || v.startsWith('bluesky')) return 'bluesky';
+    if (v === 'youtube.com' || v.startsWith('youtu')) return 'youtube';
+    return 'others';
+}
+
+function platformLabel(bucket) {
+    return PLATFORM_LABELS[bucket] || T('platformOthers');
+}
+
 function getFilteredMentions() {
     let list = allMentions;
     if (currentDateFilter) list = list.filter(m => m.content_date === currentDateFilter);
     if (currentFilter !== 'all') list = list.filter(m => m.sentiment === currentFilter);
     if (currentLang !== 'all') list = list.filter(m => (m.language || 'Unknown') === currentLang);
     if (currentSensitivity !== 'all') list = list.filter(m => sensToPriority(m.sensitivity) === currentSensitivity);
-    if (currentSourceType !== 'all') list = list.filter(m => (m.source_type || 'news_minor') === currentSourceType);
+    if (currentPlatform !== 'all') list = list.filter(m => platformBucket(m.platform) === currentPlatform);
     return list;
 }
 
@@ -565,8 +602,8 @@ function setSensitivity(val) {
     renderAll();
 }
 
-function setSourceType(val) {
-    currentSourceType = val;
+function setPlatform(val) {
+    currentPlatform = val;
     filterOpen = false;
     document.getElementById('filterDropdownAnchor').classList.remove('open');
     renderAll();
