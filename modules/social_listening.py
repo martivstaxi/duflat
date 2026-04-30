@@ -3970,11 +3970,12 @@ def _x_tweet_id_from_url(url):
 
 def _fetch_x_tweet_oembed(handle, tweet_id):
     """Fetch tweet text + date via publish.twitter.com/oembed.
-    Returns a pipeline item dict, or None when the tweet is deleted /
-    protected / pre-2026 / Bilibili-owned."""
+    Returns (item_or_None, reason_str). Reason is 'ok' on success,
+    or one of: cooldown, request_err, rate_limited, http_{n}, html_envelope,
+    json_err, no_html, no_text, pre_2026."""
     import time
     if _cooling_down('publish.twitter.com'):
-        return None
+        return None, 'cooldown'
     canonical = f'https://twitter.com/{handle}/status/{tweet_id}'
     api = ('https://publish.twitter.com/oembed'
            f'?url={canonical}&omit_script=1&hide_media=false&lang=en')
@@ -3982,35 +3983,31 @@ def _fetch_x_tweet_oembed(handle, tweet_id):
         resp = requests.get(api, headers={'User-Agent': _X_OEMBED_UA}, timeout=8)
     except Exception as e:
         print(f'[x] oembed {tweet_id} request_err={e}', flush=True)
-        return None
+        return None, 'request_err'
     if resp.status_code in (429, 420):
         _enter_cooldown('publish.twitter.com', 600)
         print(f'[x] oembed RATE_LIMITED status={resp.status_code}', flush=True)
-        return None
+        return None, 'rate_limited'
     if resp.status_code != 200:
-        # 404 covers deleted/protected/suspended tweets — silent skip.
-        return None
+        return None, f'http_{resp.status_code}'
     body = (resp.text or '').lstrip()
     if not body.startswith('{'):
-        # publish.twitter.com sometimes returns an HTML error envelope
-        # for unavailable tweets despite a 200 status code.
-        return None
+        return None, 'html_envelope'
     try:
         j = resp.json()
     except Exception:
-        return None
+        return None, 'json_err'
     html = j.get('html') or ''
     if not html:
-        return None
+        return None, 'no_html'
     try:
         soup = BeautifulSoup(html, 'html.parser')
     except Exception:
-        return None
+        return None, 'soup_err'
     p = soup.select_one('blockquote.twitter-tweet p') or soup.select_one('p')
     text = p.get_text(' ', strip=True) if p else ''
     if not text:
-        return None
-    # Date: last <a> in the blockquote whose text matches "Month DD, YYYY".
+        return None, 'no_text'
     iso_date = ''
     for a in soup.find_all('a'):
         s = a.get_text(strip=True)
@@ -4021,7 +4018,6 @@ def _fetch_x_tweet_oembed(handle, tweet_id):
         except Exception:
             continue
     if not iso_date:
-        # Fallback to a regex sweep on the raw html in case bs4 lost the node.
         m = _X_DATE_RE.search(html)
         if m:
             try:
@@ -4029,7 +4025,7 @@ def _fetch_x_tweet_oembed(handle, tweet_id):
             except Exception:
                 pass
     if iso_date and iso_date < '2026-01-01':
-        return None
+        return None, 'pre_2026'
     if not iso_date:
         iso_date = date.today().strftime('%Y-%m-%d')
     author_name = (j.get('author_name') or handle).strip()
@@ -4042,7 +4038,7 @@ def _fetch_x_tweet_oembed(handle, tweet_id):
         'dates_found': [iso_date],
     }
     time.sleep(0.4)
-    return item
+    return item, 'ok'
 
 
 def discover_x():
@@ -4105,20 +4101,24 @@ def discover_x():
     candidates = candidates[:25]
 
     items = []
+    reasons = {}
     for handle, tweet_id, canonical in candidates:
         if time.time() - fetch_start > 70:
+            reasons['budget_cut'] = reasons.get('budget_cut', 0) + 1
             break
-        it = _fetch_x_tweet_oembed(handle, tweet_id)
+        it, reason = _fetch_x_tweet_oembed(handle, tweet_id)
+        reasons[reason] = reasons.get(reason, 0) + 1
         if not it:
             continue
         if not _blob_has_bili_variant(it['text']):
+            reasons['blob_no_bili'] = reasons.get('blob_no_bili', 0) + 1
             continue
         items.append(it)
 
-    print(f'[x] fetched bilibili-mention tweets={len(items)}', flush=True)
+    print(f'[x] fetched bilibili-mention tweets={len(items)} reasons={reasons}', flush=True)
     if not items:
         return {'platform': 'x', 'fetched': 0, 'new': len(candidates),
-                'saved': 0, 'skipped': 0}
+                'saved': 0, 'skipped': 0, 'reasons': reasons}
 
     for it in items:
         try:
