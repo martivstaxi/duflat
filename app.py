@@ -420,6 +420,37 @@ def social_discover_x():
     return jsonify(discover_x())
 
 
+@app.route('/social/discover-x-backfill', methods=['POST'])
+def social_discover_x_backfill():
+    """Admin: kick off a one-shot Apify backfill for a given date window.
+    Returns immediately; the actor + Haiku pipeline runs in a background
+    thread (multi-minute, beyond the 120s gunicorn budget).
+
+    Query args:
+      since=YYYY-MM-DD (required, inclusive)
+      until=YYYY-MM-DD (required, exclusive)
+      max=NNN          (optional, default 500, capped at 1000)
+
+    Poll GET /social/discover-x-backfill-status for completion."""
+    auth = _require_admin()
+    if auth: return auth
+    since = (request.args.get('since') or '').strip()
+    until = (request.args.get('until') or '').strip()
+    try:
+        max_items = int(request.args.get('max') or 500)
+    except Exception:
+        max_items = 500
+    from modules.social_listening import start_x_backfill
+    return jsonify(start_x_backfill(since, until, max_items))
+
+
+@app.route('/social/discover-x-backfill-status', methods=['GET'])
+def social_discover_x_backfill_status():
+    """Return the latest backfill state (idle / running / done / error)."""
+    from modules.social_listening import get_x_backfill_status
+    return jsonify(get_x_backfill_status())
+
+
 @app.route('/social/debug-brave', methods=['GET'])
 def social_debug_brave():
     """Debug: list URLs returned by Brave Search for a given query."""

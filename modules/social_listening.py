@@ -3945,17 +3945,36 @@ _X_STATUS_RE = re.compile(
     r'^https?://(?:x\.com|twitter\.com)/([A-Za-z0-9_]{1,15})/status/(\d+)'
 )
 _X_APIFY_ACTOR = 'apidojo/tweet-scraper'
+# Multi-alphabet + ecosystem terms. Gaming/esports terms are excluded
+# (BLG / LPL / Worlds / MSI are out of scope — see rules_social_gaming.md).
 _X_APIFY_SEARCH_TERMS = [
+    # Core (Latin + Simplified)
     'bilibili',
     '哔哩哔哩',
-    'bilibili vtuber',
+    # Multi-alphabet — non-English fan communities
+    '嗶哩嗶哩',          # Traditional Chinese (HK/TW)
+    'ビリビリ',           # Japanese katakana
+    '비리비리',           # Korean hangul
+    # APP / platform / creator ecosystem
+    'bilibili app',
+    'bilibili creator',
+    'bilibili streamer',
     'bilibili anime',
+    'bilibili vtuber',
+    'bilibili comics',
+    'bilibili manga',
+    'bilibili upload',
+    'bilibili premium',
+    'bilibili download',
+    'anisora',
 ]
 # Cron-path budget. Direct POST to /social/discover-x is gunicorn-bound
 # (120s); the chain runs in a background thread so it can take longer.
-_X_APIFY_MAX_ITEMS = int(os.environ.get('APIFY_X_MAX_ITEMS', '50'))
+# 100 items × $0.0004 = $0.04/run, 4 runs/day = ~$5/mo (~17% of $29 tier).
+_X_APIFY_MAX_ITEMS = int(os.environ.get('APIFY_X_MAX_ITEMS', '100'))
 _X_APIFY_TIMEOUT_SECS = int(os.environ.get('APIFY_X_TIMEOUT_SECS', '90'))
-_X_APIFY_LOOKBACK_DAYS = int(os.environ.get('APIFY_X_LOOKBACK_DAYS', '7'))
+# 14-day lookback gives overlap with prior run; dedup is urlhash-based.
+_X_APIFY_LOOKBACK_DAYS = int(os.environ.get('APIFY_X_LOOKBACK_DAYS', '14'))
 
 # Handles that publish on behalf of Bilibili itself — promotional output
 # is out of scope for social listening, which targets community voices.
@@ -4200,6 +4219,252 @@ def discover_x():
         'gate_rejections': result.get('gate_rejections', []),
         **funnel,
     }
+
+
+def discover_x_backfill(since, until, max_items=500):
+    """One-shot Apify backfill for a [since, until) date window.
+
+    Same actor + filter funnel as discover_x, but with a caller-supplied
+    date window (since:/until: operators embedded per term) and a much
+    higher item cap. The Haiku batch is uncapped — backfill is intended
+    to be fired from a background thread so the multi-minute Haiku work
+    doesn't trip gunicorn's 120s budget. Cost: ~$0.40 per 1000 tweets.
+
+    Args:
+      since: 'YYYY-MM-DD' inclusive lower bound (Twitter operator)
+      until: 'YYYY-MM-DD' exclusive upper bound (Twitter operator)
+      max_items: total tweet cap across all searchTerms (Apify caps ~1000)
+    """
+    if _cooling_down('apify.com'):
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'cooldown'}
+    if not (since and until):
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'missing_since_until'}
+    try:
+        d_since = datetime.strptime(since, '%Y-%m-%d').date()
+        d_until = datetime.strptime(until, '%Y-%m-%d').date()
+    except Exception as e:
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': f'bad_date: {e}'}
+    if d_until <= d_since:
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'until_before_since'}
+
+    max_items = max(50, min(int(max_items or 500), 1000))
+
+    token = os.environ.get('APIFY_API_TOKEN', '').strip()
+    if not token:
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'no_apify_token'}
+    try:
+        from apify_client import ApifyClient
+    except ImportError:
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'apify_client_missing'}
+
+    search_terms = [f'{t} since:{since} until:{until}' for t in _X_APIFY_SEARCH_TERMS]
+    run_input = {
+        'searchTerms': search_terms,
+        'maxItems': max_items,
+        'sort': 'Latest',
+    }
+    print(f'[x-backfill] starting since={since} until={until} '
+          f'maxItems={max_items} terms={len(search_terms)}', flush=True)
+
+    client = ApifyClient(token=token)
+    try:
+        run = client.actor(_X_APIFY_ACTOR).call(
+            run_input=run_input,
+            timeout_secs=600,  # backfill runs in a background thread
+        )
+    except Exception as e:
+        msg = str(e).lower()
+        if 'rate' in msg or 'limit' in msg or 'quota' in msg:
+            _enter_cooldown('apify.com', 1800)
+        print(f'[x-backfill] actor call err={e}', flush=True)
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': f'apify: {e}'}
+
+    dataset_id = (run or {}).get('defaultDatasetId') or ''
+    if not dataset_id:
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': 'no_dataset',
+                'run_status': (run or {}).get('status')}
+
+    try:
+        items_raw = list(client.dataset(dataset_id).iterate_items())
+    except Exception as e:
+        print(f'[x-backfill] dataset iter err={e}', flush=True)
+        return {'platform': 'x_backfill', 'fetched': 0, 'error': f'dataset: {e}'}
+    print(f'[x-backfill] apify_raw={len(items_raw)}', flush=True)
+
+    items = []
+    seen_urls = set()
+    skipped_owned = skipped_out_of_window = skipped_no_bili = 0
+    skipped_no_text = skipped_no_url = 0
+
+    for it in items_raw:
+        url = (it.get('url') or it.get('twitterUrl') or '').strip()
+        if not url or url in seen_urls:
+            skipped_no_url += 1
+            continue
+        parsed = _x_tweet_id_from_url(url)
+        if not parsed:
+            skipped_no_url += 1
+            continue
+        handle, _ = parsed
+        if _is_bilibili_owned_x_handle(handle):
+            skipped_owned += 1
+            continue
+        text = (it.get('text') or it.get('fullText') or '').strip()
+        if not text:
+            skipped_no_text += 1
+            continue
+        created = _x_apify_iso_to_date(it.get('createdAt') or it.get('created_at') or '')
+        # Strict window enforcement — apidojo sometimes ignores until:
+        # when sort=Latest, so trim here even though the operator is
+        # embedded in the search term.
+        if not created or created < since or created >= until:
+            skipped_out_of_window += 1
+            continue
+        if not _blob_has_bili_variant(text):
+            skipped_no_bili += 1
+            continue
+        seen_urls.add(url)
+        author = it.get('author') or {}
+        author_name = (author.get('userName') or author.get('username')
+                       or author.get('name') or handle)
+        items.append({
+            'url': url,
+            'url_hash': hash_url(url),
+            'platform': 'x',
+            'text': f'[@{handle} ({author_name}) on twitter] {text}'[:5000],
+            'content_date': created,
+            'dates_found': [created],
+        })
+
+    funnel = {
+        'apify_raw': len(items_raw),
+        'pipeline_items': len(items),
+        'skipped_owned': skipped_owned,
+        'skipped_out_of_window': skipped_out_of_window,
+        'skipped_no_bili': skipped_no_bili,
+        'skipped_no_text': skipped_no_text,
+        'skipped_no_url': skipped_no_url,
+        'since': since,
+        'until': until,
+        'max_items': max_items,
+    }
+    print(f'[x-backfill] funnel={funnel}', flush=True)
+
+    if not items:
+        return {'platform': 'x_backfill', 'fetched': 0, 'new': 0,
+                'saved': 0, **funnel}
+
+    try:
+        urls = [it['url'] for it in items]
+        new_urls_set = {d['url'] for d in check_urls(urls)}
+        items_new = [it for it in items if it['url'] in new_urls_set]
+    except Exception as e:
+        print(f'[x-backfill] check_urls err={e}', flush=True)
+        return {'platform': 'x_backfill', 'fetched': len(items),
+                'error': f'dedup: {e}', **funnel}
+
+    print(f'[x-backfill] new after dedup={len(items_new)}', flush=True)
+    if not items_new:
+        return {'platform': 'x_backfill', 'fetched': len(items), 'new': 0,
+                'saved': 0, **funnel}
+
+    # No [:25] cap — backfill runs in a background thread.
+    for it in items_new:
+        try:
+            _db().table('social_sources').upsert({
+                'url_hash': it['url_hash'],
+                'url': it['url'],
+                'domain': 'twitter.com',
+                'has_2026_content': True,
+                'checked_at': datetime.utcnow().isoformat(),
+            }, on_conflict='url_hash').execute()
+        except Exception:
+            pass
+
+    saved_total = skipped_total = gate_rejected_total = 0
+    # Process in chunks of 25 to keep Haiku batch sizes sane.
+    for chunk in _chunks(items_new, 25):
+        try:
+            mentions = _analyze_with_haiku(chunk)
+            print(f'[x-backfill] chunk haiku produced={len(mentions or [])}', flush=True)
+        except Exception as e:
+            print(f'[x-backfill] haiku err={e}', flush=True)
+            continue
+        if mentions:
+            try:
+                mentions = _ai_validate_and_repair(mentions)
+            except Exception as e:
+                print(f'[x-backfill] validator err={e}', flush=True)
+        try:
+            if mentions:
+                result = save_mentions(mentions)
+                saved_total += result.get('saved', 0)
+                skipped_total += result.get('skipped', 0)
+                gate_rejected_total += result.get('gate_rejected', 0)
+        except Exception as e:
+            print(f'[x-backfill] save err={e}', flush=True)
+
+    return {
+        'platform': 'x_backfill',
+        'fetched': len(items_new),
+        'new': len(items_new),
+        'saved': saved_total,
+        'skipped': skipped_total,
+        'gate_rejected': gate_rejected_total,
+        **funnel,
+    }
+
+
+# Tracks the most recent backfill run started from the /social/discover-x-backfill
+# endpoint, so a follow-up GET can see status without re-firing the actor.
+_X_BACKFILL_STATE = {'status': 'idle', 'started_at': '', 'finished_at': '',
+                     'since': '', 'until': '', 'max_items': 0, 'result': None}
+
+
+def _x_backfill_thread(since, until, max_items):
+    """Worker thread body — fills _X_BACKFILL_STATE so callers can poll."""
+    _X_BACKFILL_STATE.update({
+        'status': 'running',
+        'started_at': datetime.utcnow().isoformat(),
+        'finished_at': '',
+        'since': since, 'until': until, 'max_items': max_items,
+        'result': None,
+    })
+    try:
+        result = discover_x_backfill(since, until, max_items)
+        _X_BACKFILL_STATE['result'] = result
+        _X_BACKFILL_STATE['status'] = 'done'
+    except Exception as e:
+        _X_BACKFILL_STATE['result'] = {'error': f'thread: {e}'}
+        _X_BACKFILL_STATE['status'] = 'error'
+    finally:
+        _X_BACKFILL_STATE['finished_at'] = datetime.utcnow().isoformat()
+
+
+def start_x_backfill(since, until, max_items=500):
+    """Spawn a background thread running discover_x_backfill. Returns
+    immediately with an `accepted` ack so the gunicorn worker isn't
+    held hostage by the multi-minute Apify run.
+
+    A second invocation while one is still running returns 'busy'."""
+    import threading
+    if _X_BACKFILL_STATE.get('status') == 'running':
+        return {'accepted': False, 'reason': 'busy',
+                'state': dict(_X_BACKFILL_STATE)}
+    t = threading.Thread(
+        target=_x_backfill_thread,
+        args=(since, until, int(max_items or 500)),
+        daemon=True,
+    )
+    t.start()
+    return {'accepted': True,
+            'since': since, 'until': until, 'max_items': max_items,
+            'note': 'GET /social/discover-x-backfill-status to poll'}
+
+
+def get_x_backfill_status():
+    """Return the current backfill state (last run / running / idle)."""
+    return dict(_X_BACKFILL_STATE)
 
 
 def delete_mentions(ids):
