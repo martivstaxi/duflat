@@ -1498,6 +1498,219 @@ Items:
     return approved, rejected_details
 
 
+def enqueue_items(items, source_platform):
+    """Park raw discover items in social_url_queue for later Haiku processing.
+
+    Items are full dicts already past discover-time filters (Bilibili-owned
+    skip, blob filter, 2026 date, dedup against social_mentions). Each row
+    holds the dict as JSONB so process_queue can rehydrate it without
+    re-fetching the source — no Apify cost is paid twice.
+
+    Idempotent on url_hash: if the URL is already queued, the second insert
+    is a no-op (unique-violation swallowed). Returns {queued, skipped}."""
+    if not items:
+        return {'queued': 0, 'skipped': 0}
+    queued = skipped = errored = 0
+    now_iso = datetime.utcnow().isoformat()
+    for it in items:
+        url = (it.get('url') or '').strip()
+        if not url:
+            continue
+        try:
+            res = _db().table('social_url_queue').insert({
+                'url_hash': it.get('url_hash') or hash_url(url),
+                'url': url[:2000],
+                'source_platform': source_platform or it.get('platform', ''),
+                'raw_payload': it,
+                'status': 'pending',
+                'last_attempted_at': None,
+            }).execute()
+            queued += len(res.data or [])
+        except Exception as e:
+            msg = str(e).lower()
+            # 23505 = unique_violation (Postgres). PostgREST surfaces it
+            # in the message body. Already in queue → not an error.
+            if '23505' in msg or 'duplicate' in msg or 'unique' in msg:
+                skipped += 1
+            else:
+                errored += 1
+                print(f'[enqueue] err url={url[:120]} err={e}', flush=True)
+    return {'queued': queued, 'skipped': skipped, 'errored': errored}
+
+
+def _dequeue_pending(batch_size=25, max_retries=3):
+    """Pull a batch of pending queue rows and flip them to 'processing'.
+
+    Two-phase to avoid concurrent workers grabbing the same rows:
+    1. SELECT id list of pending rows (status='pending' AND retry_count<max)
+    2. UPDATE those rows to status='processing'
+    Returns: list of row dicts (id, url, source_platform, raw_payload)."""
+    try:
+        res = (_db().table('social_url_queue')
+               .select('id,url,url_hash,source_platform,raw_payload,retry_count')
+               .eq('status', 'pending')
+               .lt('retry_count', max_retries)
+               .order('created_at')
+               .limit(batch_size)
+               .execute())
+        rows = res.data or []
+    except Exception as e:
+        print(f'[dequeue] select err={e}', flush=True)
+        return []
+    if not rows:
+        return []
+    ids = [r['id'] for r in rows]
+    try:
+        (_db().table('social_url_queue')
+         .update({'status': 'processing',
+                  'last_attempted_at': datetime.utcnow().isoformat()})
+         .in_('id', ids).execute())
+    except Exception as e:
+        print(f'[dequeue] mark-processing err={e}', flush=True)
+        # Soft fallback — return rows anyway; worst case is duplicate work
+    return rows
+
+
+def _mark_queue_done(ids):
+    """Delete fully-processed queue rows. mentions table is the system of
+    record — keeping done rows in the queue would just bloat it."""
+    if not ids:
+        return 0
+    try:
+        res = _db().table('social_url_queue').delete().in_('id', ids).execute()
+        return len(res.data or [])
+    except Exception as e:
+        print(f'[mark_done] err={e}', flush=True)
+        return 0
+
+
+def _mark_queue_failed(ids, error_msg, max_retries=3):
+    """Bump retry_count for a failed batch. Rows under max_retries return
+    to 'pending' for the next worker run; rows that hit the cap flip to
+    'failed' for manual review."""
+    if not ids:
+        return {'returned_to_pending': 0, 'flipped_failed': 0}
+    err = str(error_msg)[:500]
+    now_iso = datetime.utcnow().isoformat()
+    returned = flipped = 0
+    try:
+        res = (_db().table('social_url_queue')
+               .select('id,retry_count')
+               .in_('id', ids).execute())
+        for row in (res.data or []):
+            new_count = (row.get('retry_count') or 0) + 1
+            new_status = 'failed' if new_count >= max_retries else 'pending'
+            try:
+                (_db().table('social_url_queue')
+                 .update({'status': new_status,
+                          'retry_count': new_count,
+                          'last_error': err,
+                          'last_attempted_at': now_iso})
+                 .eq('id', row['id']).execute())
+                if new_status == 'failed':
+                    flipped += 1
+                else:
+                    returned += 1
+            except Exception:
+                pass
+    except Exception as e:
+        print(f'[mark_failed] err={e}', flush=True)
+    return {'returned_to_pending': returned, 'flipped_failed': flipped}
+
+
+def process_queue(batch_size=25, max_retries=3):
+    """Drain pending URL queue: rehydrate items → Haiku pipeline → save.
+
+    Resilient to Anthropic outages: a Haiku/validator/save exception
+    returns the batch to 'pending' with retry_count++, so the URL is
+    not lost. After max_retries the row flips to 'failed' for manual
+    review (status is visible via /social/queue-stats)."""
+    rows = _dequeue_pending(batch_size, max_retries)
+    if not rows:
+        return {'pending_pulled': 0, 'haiku_produced': 0, 'saved': 0,
+                'gate_rejected': 0, 'cleared': 0,
+                'returned_to_pending': 0, 'flipped_failed': 0}
+
+    # Rehydrate items from raw_payload JSONB
+    items = []
+    drop_ids = []
+    for r in rows:
+        payload = r.get('raw_payload') or {}
+        if not payload.get('url'):
+            drop_ids.append(r['id'])
+            continue
+        items.append(payload)
+
+    # Empty payloads are bugs — clear them so they don't keep cycling.
+    if drop_ids:
+        _mark_queue_done(drop_ids)
+
+    if not items:
+        return {'pending_pulled': len(rows), 'haiku_produced': 0,
+                'saved': 0, 'gate_rejected': 0, 'cleared': len(drop_ids),
+                'returned_to_pending': 0, 'flipped_failed': 0,
+                'note': 'empty_payloads_cleared'}
+
+    live_ids = [r['id'] for r in rows if r['id'] not in drop_ids]
+
+    # L1+L2 pipeline
+    try:
+        mentions = _analyze_with_haiku(items)
+    except Exception as e:
+        print(f'[process_queue] haiku err={e}', flush=True)
+        retry_info = _mark_queue_failed(live_ids, f'haiku: {e}', max_retries)
+        return {'pending_pulled': len(rows), 'haiku_produced': 0,
+                'saved': 0, 'error': f'haiku: {e}', **retry_info}
+
+    if mentions:
+        try:
+            mentions = _ai_validate_and_repair(mentions)
+        except Exception as e:
+            # Validator is best-effort; pipeline can proceed without it.
+            print(f'[process_queue] validator err={e}', flush=True)
+
+    saved = skipped = gate_rejected = 0
+    if mentions:
+        try:
+            result = save_mentions(mentions)  # gaming filter + L4 + upsert inside
+            saved = result.get('saved', 0)
+            skipped = result.get('skipped', 0)
+            gate_rejected = result.get('gate_rejected', 0)
+        except Exception as e:
+            print(f'[process_queue] save err={e}', flush=True)
+            retry_info = _mark_queue_failed(live_ids, f'save: {e}', max_retries)
+            return {'pending_pulled': len(rows), 'haiku_produced': len(mentions),
+                    'saved': 0, 'error': f'save: {e}', **retry_info}
+
+    # All rows handled (saved, gate-rejected, or L1-dropped) — clear them.
+    cleared = _mark_queue_done(live_ids)
+    return {
+        'pending_pulled': len(rows),
+        'haiku_produced': len(mentions or []),
+        'saved': saved,
+        'skipped': skipped,
+        'gate_rejected': gate_rejected,
+        'cleared': cleared,
+        'returned_to_pending': 0,
+        'flipped_failed': 0,
+    }
+
+
+def queue_stats():
+    """Return queue counts by status for telemetry / health checks."""
+    stats = {'pending': 0, 'processing': 0, 'failed': 0, 'total': 0}
+    try:
+        for status in ('pending', 'processing', 'failed'):
+            res = (_db().table('social_url_queue')
+                   .select('id', count='exact', head=True)
+                   .eq('status', status).execute())
+            stats[status] = res.count or 0
+        stats['total'] = stats['pending'] + stats['processing'] + stats['failed']
+    except Exception as e:
+        stats['error'] = str(e)
+    return stats
+
+
 def retry_gate_failures():
     """Admin: re-run the L4 gate on previously parked (Haiku-failed) batches.
 
@@ -4301,7 +4514,9 @@ def discover_x():
         return {'platform': 'x', 'fetched': len(items), 'new': 0,
                 'saved': 0, 'skipped': 0, **funnel}
 
-    items_new = items_new[:25]
+    # Queue-only pattern: discover writes to social_url_queue, the Haiku
+    # pipeline runs out-of-band via process_queue. No [:25] cap here —
+    # queue depth is unbounded; process_queue's batch_size controls fan-in.
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -4314,38 +4529,14 @@ def discover_x():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[x-apify] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[x-apify] haiku err={e}', flush=True)
-        return {'platform': 'x', 'fetched': len(items_new),
-                'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[x-apify] validator err={e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[x-apify] save err={e}', flush=True)
-        return {'platform': 'x', 'fetched': len(items_new),
-                'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'x')
+    print(f'[x-apify] enqueue={enq}', flush=True)
     return {
         'platform': 'x',
         'fetched': len(items_new),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
         **funnel,
     }
 

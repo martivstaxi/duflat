@@ -616,6 +616,36 @@ def social_retry_gate_failures():
     return jsonify(retry_gate_failures())
 
 
+@app.route('/social/process-queue', methods=['POST'])
+def social_process_queue():
+    """Cron: drain pending URL queue through Haiku pipeline → mentions.
+
+    Body (optional JSON): {batch_size: 25, max_retries: 3, drains: 1}
+    `drains` = how many sequential batches to pull in one request (default 1).
+    Useful to clear a backlog without firing many separate cron hits."""
+    auth = _require_cron()
+    if auth: return auth
+    from modules.social_listening import process_queue
+    body = request.get_json(silent=True) or {}
+    batch_size = max(1, min(int(body.get('batch_size', 25)), 100))
+    max_retries = max(1, min(int(body.get('max_retries', 3)), 10))
+    drains = max(1, min(int(body.get('drains', 1)), 8))
+    runs = []
+    for _ in range(drains):
+        r = process_queue(batch_size, max_retries)
+        runs.append(r)
+        if r.get('pending_pulled', 0) == 0:
+            break  # queue empty, no point continuing
+    return jsonify({'drains': len(runs), 'runs': runs})
+
+
+@app.route('/social/queue-stats', methods=['GET'])
+def social_queue_stats():
+    """Public: queue depth telemetry (pending/processing/failed)."""
+    from modules.social_listening import queue_stats
+    return jsonify(queue_stats())
+
+
 @app.route('/social/debug-haiku', methods=['POST'])
 def social_debug_haiku():
     """Debug: process URLs through pipeline and return raw Haiku output (no save)."""

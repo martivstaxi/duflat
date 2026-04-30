@@ -69,6 +69,27 @@ CREATE TABLE IF NOT EXISTS social_gate_failures (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table 6: URL queue — discover/process split
+-- Discover_* functions enqueue raw item dicts (already past blob filter,
+-- date check, owned-handle skip) here as JSONB. process_queue drains
+-- pending rows, runs the Haiku pipeline, and writes successes to
+-- social_mentions. Failures bump retry_count; after 3 attempts a row
+-- flips to 'failed' (manual cleanup). Surviving an Anthropic outage is
+-- the main motivation: previously a Haiku exception lost the URL,
+-- since the discover loop wouldn't necessarily resurface it.
+CREATE TABLE IF NOT EXISTS social_url_queue (
+    id BIGSERIAL PRIMARY KEY,
+    url_hash TEXT UNIQUE NOT NULL,
+    url TEXT NOT NULL,
+    source_platform TEXT DEFAULT '',
+    raw_payload JSONB NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'done', 'failed')),
+    retry_count INT DEFAULT 0,
+    last_error TEXT DEFAULT '',
+    last_attempted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for fast queries
 CREATE INDEX IF NOT EXISTS idx_mentions_date ON social_mentions(content_date DESC);
 CREATE INDEX IF NOT EXISTS idx_mentions_sentiment ON social_mentions(sentiment);
@@ -77,6 +98,10 @@ CREATE INDEX IF NOT EXISTS idx_mentions_source_type ON social_mentions(source_ty
 CREATE INDEX IF NOT EXISTS idx_sources_hash ON social_sources(url_hash);
 CREATE INDEX IF NOT EXISTS idx_rejections_created ON social_rejections(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_gate_failures_unresolved ON social_gate_failures(resolved, created_at) WHERE resolved = FALSE;
+CREATE INDEX IF NOT EXISTS idx_url_queue_pending
+    ON social_url_queue(retry_count, created_at)
+    WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_url_queue_platform ON social_url_queue(source_platform);
 
 -- Disable RLS for API access (anon key)
 ALTER TABLE social_sources DISABLE ROW LEVEL SECURITY;
@@ -84,6 +109,7 @@ ALTER TABLE social_mentions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_scan_log DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_rejections DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_gate_failures DISABLE ROW LEVEL SECURITY;
+ALTER TABLE social_url_queue DISABLE ROW LEVEL SECURITY;
 
 -- Grant access to anon role
 GRANT ALL ON social_sources TO anon;
@@ -91,4 +117,5 @@ GRANT ALL ON social_mentions TO anon;
 GRANT ALL ON social_scan_log TO anon;
 GRANT ALL ON social_rejections TO anon;
 GRANT ALL ON social_gate_failures TO anon;
+GRANT ALL ON social_url_queue TO anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
