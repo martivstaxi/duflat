@@ -4028,7 +4028,6 @@ def discover_x():
         'searchTerms': _X_APIFY_SEARCH_TERMS,
         'maxItems': _X_APIFY_MAX_ITEMS,
         'sort': 'Latest',
-        'tweetLanguage': 'any',
         'start': since,
     }
     print(f'[x-apify] starting actor={_X_APIFY_ACTOR} '
