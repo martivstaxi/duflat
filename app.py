@@ -514,12 +514,13 @@ def _discover_all_background():
                 fn()
             except Exception as e:
                 print(f'[discover-all] {fn.__name__} error: {e}', flush=True)
-        # Phase 1: only discover_x writes to social_url_queue (others still
-        # call save_mentions inline). Drain whatever X queued — up to 4
-        # batches × 25 = 100 items per chain run. Phase 2 will migrate
-        # the rest of the discoverers and this loop will cover them too.
+        # All 11 discoverers write to social_url_queue. Drain up to 12
+        # batches × 25 = 300 items per chain run (queue depth headroom for
+        # busy days; early-exit when pending hits 0). Each batch is one
+        # Haiku call so 12 batches ≈ 7-8 min of background work — safe
+        # because the chain runs in a thread, not on the request worker.
         try:
-            for _ in range(4):
+            for _ in range(12):
                 r = process_queue(batch_size=25, max_retries=3)
                 print(f'[discover-all] process_queue={r}', flush=True)
                 if r.get('pending_pulled', 0) == 0:

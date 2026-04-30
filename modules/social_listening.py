@@ -2479,10 +2479,7 @@ def discover_reddit():
     if not items_new:
         return {'platform': 'reddit', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    # Cap to stay within gunicorn 120s — Haiku on 25 items ≈ 30-40s
-    items_new = items_new[:25]
-
-    # Log source records
+    # Queue-only: enqueue raw items; process_queue drains them out-of-band.
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -2495,37 +2492,14 @@ def discover_reddit():
         except Exception:
             pass
 
-    # Haiku analyze + validate + save
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[reddit] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[reddit] haiku error: {e}', flush=True)
-        return {'platform': 'reddit', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[reddit] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[reddit] save error: {e}', flush=True)
-        return {'platform': 'reddit', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'reddit')
+    print(f'[reddit] enqueue={enq}', flush=True)
     return {
         'platform': 'reddit',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -2637,8 +2611,6 @@ def discover_hackernews():
     if not items_new:
         return {'platform': 'hackernews', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -2651,36 +2623,14 @@ def discover_hackernews():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[hn] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[hn] haiku error: {e}', flush=True)
-        return {'platform': 'hackernews', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[hn] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[hn] save error: {e}', flush=True)
-        return {'platform': 'hackernews', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'hackernews')
+    print(f'[hn] enqueue={enq}', flush=True)
     return {
         'platform': 'hackernews',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -2796,8 +2746,6 @@ def discover_bluesky():
     if not items_new:
         return {'platform': 'bluesky', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -2810,36 +2758,14 @@ def discover_bluesky():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[bsky] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[bsky] haiku error: {e}', flush=True)
-        return {'platform': 'bluesky', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[bsky] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[bsky] save error: {e}', flush=True)
-        return {'platform': 'bluesky', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'bluesky')
+    print(f'[bsky] enqueue={enq}', flush=True)
     return {
         'platform': 'bluesky',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3097,8 +3023,6 @@ def discover_youtube():
     if not items_new:
         return {'platform': 'youtube', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3111,36 +3035,14 @@ def discover_youtube():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[youtube] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[youtube] haiku error: {e}', flush=True)
-        return {'platform': 'youtube', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[youtube] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[youtube] save error: {e}', flush=True)
-        return {'platform': 'youtube', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'youtube')
+    print(f'[youtube] enqueue={enq}', flush=True)
     return {
         'platform': 'youtube',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3263,8 +3165,6 @@ def discover_mastodon():
     if not items_new:
         return {'platform': 'mastodon', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3277,36 +3177,14 @@ def discover_mastodon():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[mastodon] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[mastodon] haiku error: {e}', flush=True)
-        return {'platform': 'mastodon', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[mastodon] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[mastodon] save error: {e}', flush=True)
-        return {'platform': 'mastodon', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'mastodon')
+    print(f'[mastodon] enqueue={enq}', flush=True)
     return {
         'platform': 'mastodon',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3429,8 +3307,6 @@ def discover_lihkg():
     if not items_new:
         return {'platform': 'lihkg', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3443,36 +3319,14 @@ def discover_lihkg():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[lihkg] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[lihkg] haiku error: {e}', flush=True)
-        return {'platform': 'lihkg', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[lihkg] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[lihkg] save error: {e}', flush=True)
-        return {'platform': 'lihkg', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'lihkg')
+    print(f'[lihkg] enqueue={enq}', flush=True)
     return {
         'platform': 'lihkg',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3610,8 +3464,6 @@ def discover_lemmy():
     if not items_new:
         return {'platform': 'lemmy', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3624,36 +3476,14 @@ def discover_lemmy():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[lemmy] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[lemmy] haiku error: {e}', flush=True)
-        return {'platform': 'lemmy', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[lemmy] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[lemmy] save error: {e}', flush=True)
-        return {'platform': 'lemmy', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'lemmy')
+    print(f'[lemmy] enqueue={enq}', flush=True)
     return {
         'platform': 'lemmy',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3781,8 +3611,6 @@ def discover_medium():
     if not items_new:
         return {'platform': 'medium', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3795,36 +3623,14 @@ def discover_medium():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[medium] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[medium] haiku error: {e}', flush=True)
-        return {'platform': 'medium', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[medium] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[medium] save error: {e}', flush=True)
-        return {'platform': 'medium', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'medium')
+    print(f'[medium] enqueue={enq}', flush=True)
     return {
         'platform': 'medium',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -3965,8 +3771,6 @@ def discover_substack():
     if not items_new:
         return {'platform': 'substack', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -3979,36 +3783,14 @@ def discover_substack():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[substack] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[substack] haiku error: {e}', flush=True)
-        return {'platform': 'substack', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[substack] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[substack] save error: {e}', flush=True)
-        return {'platform': 'substack', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'substack')
+    print(f'[substack] enqueue={enq}', flush=True)
     return {
         'platform': 'substack',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -4230,8 +4012,6 @@ def discover_telegram():
     if not items_new:
         return {'platform': 'telegram', 'fetched': len(all_items), 'new': 0, 'saved': 0, 'skipped': 0}
 
-    items_new = items_new[:25]
-
     for it in items_new:
         try:
             _db().table('social_sources').upsert({
@@ -4244,36 +4024,14 @@ def discover_telegram():
         except Exception:
             pass
 
-    try:
-        mentions = _analyze_with_haiku(items_new)
-        print(f'[telegram] haiku produced={len(mentions or [])}', flush=True)
-    except Exception as e:
-        print(f'[telegram] haiku error: {e}', flush=True)
-        return {'platform': 'telegram', 'fetched': len(all_items), 'new': len(items_new), 'error': f'haiku: {e}'}
-
-    if mentions:
-        try:
-            mentions = _ai_validate_and_repair(mentions)
-        except Exception as e:
-            print(f'[telegram] validator error: {e}', flush=True)
-
-    try:
-        if mentions:
-            result = save_mentions(mentions)
-        else:
-            result = {'saved': 0, 'skipped': 0, 'repaired': 0}
-    except Exception as e:
-        print(f'[telegram] save error: {e}', flush=True)
-        return {'platform': 'telegram', 'fetched': len(all_items), 'new': len(items_new), 'error': f'save: {e}'}
-
+    enq = enqueue_items(items_new, 'telegram')
+    print(f'[telegram] enqueue={enq}', flush=True)
     return {
         'platform': 'telegram',
         'fetched': len(all_items),
         'new': len(items_new),
-        'saved': result.get('saved', 0),
-        'skipped': result.get('skipped', 0),
-        'gate_rejected': result.get('gate_rejected', 0),
-        'gate_rejections': result.get('gate_rejections', []),
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
     }
 
 
@@ -4701,36 +4459,14 @@ def discover_x_backfill(since, until, max_items=500):
         except Exception:
             pass
 
-    saved_total = skipped_total = gate_rejected_total = 0
-    # Process in chunks of 25 to keep Haiku batch sizes sane.
-    for chunk in _chunks(items_new, 25):
-        try:
-            mentions = _analyze_with_haiku(chunk)
-            print(f'[x-backfill] chunk haiku produced={len(mentions or [])}', flush=True)
-        except Exception as e:
-            print(f'[x-backfill] haiku err={e}', flush=True)
-            continue
-        if mentions:
-            try:
-                mentions = _ai_validate_and_repair(mentions)
-            except Exception as e:
-                print(f'[x-backfill] validator err={e}', flush=True)
-        try:
-            if mentions:
-                result = save_mentions(mentions)
-                saved_total += result.get('saved', 0)
-                skipped_total += result.get('skipped', 0)
-                gate_rejected_total += result.get('gate_rejected', 0)
-        except Exception as e:
-            print(f'[x-backfill] save err={e}', flush=True)
-
+    enq = enqueue_items(items_new, 'x')
+    print(f'[x-backfill] enqueue={enq}', flush=True)
     return {
         'platform': 'x_backfill',
         'fetched': len(items_new),
         'new': len(items_new),
-        'saved': saved_total,
-        'skipped': skipped_total,
-        'gate_rejected': gate_rejected_total,
+        'queued': enq.get('queued', 0),
+        'queue_skipped': enq.get('skipped', 0),
         **funnel,
     }
 
