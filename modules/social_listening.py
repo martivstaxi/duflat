@@ -1290,28 +1290,43 @@ def _layer_gaming_filter(mentions):
 
         prompt = f"""You are the gaming/esports filter for a Bilibili APP/PLATFORM social listening project.
 
+CRITICAL RULE: "Bilibili Gaming" (often shortened "BLG") is a PROFESSIONAL ESPORTS ORGANIZATION — Bilibili's League of Legends team in the LPL. It is a SEPARATE entity from the Bilibili APP/PLATFORM that this project tracks. ANY content centered on the Bilibili Gaming team must be REJECTED, regardless of how positive, neutral, or fan-friendly the framing sounds.
+
 For EACH item, decide whether the PRIMARY topic is gaming/esports (out of scope) or APP/platform/creator content (in scope).
 
-REJECT (gaming/esports primary topic):
-- Bilibili Gaming (BLG), the LPL League of Legends esports team
-- BLG vs X / X vs BLG match results, BLG roster, BLG transfers, BLG tournament runs
+REJECT — anything centered on the Bilibili Gaming TEAM (the LPL esports org):
+- Match results, scrims, scoreboard, bracket coverage (BLG vs X, X vs BLG)
+- Roster, transfers, signings, contract news, coach announcements
+- Pro player highlights, MVP plays, individual player coverage (e.g. "Knight is on fire")
+- Team merchandise, jerseys, kits, uniforms, posters, banners, hoodies — including "new jersey design", "uniform reveal", "merch drop"
+- Fan reactions to the TEAM (cheers, hype posts, fan art focused on the team logo / players)
+- Practice rooms, training facility, team house tours, behind-the-scenes content
+- Sponsorship deals where BLG is sponsored (BLG x [brand])
+- Pre-game content, post-game interviews, scrim reports, watch-parties of BLG matches
+
+REJECT — broader esports / pro gaming coverage that brings in Bilibili tangentially:
 - LPL / LCK / LCS / LEC / MSI / Worlds / First Stand / EWC / IEM / DreamHack tournament coverage
-- Pro player highlights, scoreboard, bracket, championship news, esports clip compilations
-- esports.gg / Sheep Esports / invenglobal / liquipedia / lolesports articles
-- Mobile gacha esports coverage that mentions Bilibili tangentially
+- Pro tournaments, esports leagues, scoreboard / bracket tracking, esports clip compilations
+- esports.gg / Sheep Esports / invenglobal / liquipedia / lolesports / Riot esports articles
+- Mobile gacha esports coverage that name-drops Bilibili
+- Anything with "esports" framing as the primary lens
 
 KEEP (Bilibili APP / platform / creator):
 - App UX, features, moderation, policy, AI tools, AniSora, anime catalog, VTuber programs
 - Creator news, content moderation, censorship debate, livestream rules
 - Anime / drama / music streaming on the platform
 - A gaming streamer / clip mentioned in passing IF the article is primarily about Bilibili APP/creator/policy
-- BLG sponsoring or promoting the Bilibili APP itself (rare)
+- BLG sponsoring or promoting the Bilibili APP itself (rare — BLG promotes APP via its handle)
 
-Be STRICT. When in doubt about gaming-vs-APP focus, REJECT.
+DECISION LOGIC:
+- If the post's main subject is the Bilibili Gaming team or its players, REJECT regardless of tone (positive, neutral, fan, hype, jersey, merch — all REJECT).
+- If "Bilibili Gaming" appears as a brand/team name and the post is fan reaction, hype, merch, jersey, fan art → REJECT.
+- If "bilibili" appears in an APP/creator/anime/VTuber context, KEEP.
+- When in doubt about gaming-vs-APP focus, REJECT.
 
-Return ONLY a JSON array: [{{"idx":0,"verdict":"keep"}}, {{"idx":1,"verdict":"reject","reason":"esports_lpl"}}, ...]
+Return ONLY a JSON array: [{{"idx":0,"verdict":"keep"}}, {{"idx":1,"verdict":"reject","reason":"team_merch"}}, ...]
 
-Reason codes (short): blg_match, lpl_tournament, worlds_msi, pro_player, esports_news, gaming_primary.
+Reason codes (short): blg_match, blg_roster, blg_player, blg_merch, blg_fan_post, blg_general, lpl_tournament, worlds_msi, pro_player, esports_news, gaming_primary.
 
 Items:
 {json.dumps(entries, ensure_ascii=False)}"""
@@ -4641,14 +4656,35 @@ _GAMING_DELETE_AUTHORS = [
 ]
 
 _GAMING_DELETE_KEYWORDS = [
+    # BLG match coverage
     'blg vs', 'vs blg',
+    # BLG-as-team posts (Bilibili Gaming used as the team's proper noun)
+    "bilibili gaming's",   # possessive almost always means the team
+    'bilibili gaming team',
+    'bilibili gaming roster',
+    'bilibili gaming jersey',
+    'bilibili gaming kit',
+    'bilibili gaming uniform',
+    'bilibili gaming merch',
+    'bilibili gaming hoodie',
+    'bilibili gaming poster',
+    'bilibili gaming wins',
+    'bilibili gaming lost',
+    'bilibili gaming defeated',
+    'bilibili gaming players',
+    'bilibili gaming fans',
+    'bilibili gaming coach',
+    'bilibili gaming signed',
+    'bilibili gaming announcement',
+    'bilibili gaming championship',
+    # LPL / Worlds / MSI / esports tournament coverage
     'lpl spring 2026', 'lpl summer 2026', 'lpl finals',
     'msi 2026', 'worlds 2026',
     'first stand 2026',
     'sheep esports',
     'jd gaming vs',
     'pgl wuhan',
-    'lpl tournament', 'lpl roster',
+    'lpl tournament', 'lpl roster', 'lpl playoffs',
     'lol worlds', 'league of legends worlds',
     'esports.gg',
 ]
