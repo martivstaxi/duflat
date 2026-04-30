@@ -370,30 +370,6 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
 .neutral  .card-meta a { color: var(--neutral); }
 .card-meta .sep { margin: 0 6px; opacity: .35; }
 
-.yt-thumb {
-    position: relative; display: block;
-    width: 100%; aspect-ratio: 16/9;
-    border-radius: 12px; overflow: hidden;
-    margin-bottom: 14px; background: var(--hairline);
-    transition: transform .15s ease, box-shadow .15s ease;
-}
-.yt-thumb img {
-    width: 100%; height: 100%; object-fit: cover;
-    display: block;
-}
-.yt-thumb:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
-.yt-play {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 52px; height: 52px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.62); color: #fff;
-    border-radius: 50%; font-size: 18px;
-    padding-left: 4px;
-    transition: background .15s, transform .15s;
-}
-.yt-thumb:hover .yt-play { background: rgba(0,0,0,.78); transform: translate(-50%, -50%) scale(1.06); }
-
 .card-quote {
     font-size: .94rem; line-height: 1.6;
     color: var(--text); margin-bottom: 14px;

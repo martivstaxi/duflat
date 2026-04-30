@@ -420,12 +420,6 @@ function renderMentions() {
     el.innerHTML = html;
 }
 
-function extractYouTubeId(url) {
-    if (!url) return '';
-    const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return m ? m[1] : '';
-}
-
 function renderCard(m, uid) {
     const s = m.sentiment || 'neutral';
     const sensitivity = m.sensitivity || 'low';
@@ -453,11 +447,6 @@ function renderCard(m, uid) {
     const priorityLabel = priorityLabels[sensitivity] || 'P2';
     const priorityMarker = `<div class="priority-marker ${priorityClass}" title="${sensitivity || 'low'}">${priorityLabel}</div>`;
 
-    const ytId = extractYouTubeId(m.url);
-    const ytThumb = ytId
-        ? `<a class="yt-thumb" href="${escapeHtml(m.url)}" target="_blank" rel="noopener" aria-label="Open YouTube video"><img src="https://i.ytimg.com/vi/${ytId}/mqdefault.jpg" loading="lazy" alt=""><span class="yt-play" aria-hidden="true">▶</span></a>`
-        : '';
-
     return `<div class="mention-card ${s}">
         ${priorityMarker}
         <div class="card-top">
@@ -466,7 +455,6 @@ function renderCard(m, uid) {
             <span style="flex:1"></span>
             ${detailsBtn}
         </div>
-        ${ytThumb}
         <div class="card-quote">${escapeHtml(displayQuote)}</div>
         ${detailsHtml}
     </div>`;
