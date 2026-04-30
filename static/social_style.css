@@ -173,21 +173,19 @@ html[lang^="zh"] header h1 { font-family: "Noto Sans SC", var(--font-system); le
     background: var(--hairline); color: var(--text-secondary);
     border: 1px solid transparent;
     transition: background .15s var(--ease);
+    min-width: 60px; justify-content: space-between;
+    cursor: pointer; user-select: none;
 }
 .chip:hover { background: var(--border-subtle); }
+.chip:hover .chip-remove { background: var(--negative); color: #fff; }
 .chip-remove {
-    width: 16px; height: 16px; border: none; background: rgba(0,0,0,.08);
-    border-radius: 50%; cursor: pointer; color: var(--muted);
+    width: 16px; height: 16px; background: rgba(0,0,0,.08);
+    border-radius: 50%; color: var(--muted);
     font-size: .7rem; line-height: 1;
-    padding: 0; margin-left: 2px;
     display: flex; align-items: center; justify-content: center;
     transition: all .15s var(--ease);
-    position: relative;
+    pointer-events: none;
 }
-.chip-remove::before {
-    content: ''; position: absolute; inset: -12px;
-}
-.chip-remove:hover { background: var(--negative); color: #fff; }
 
 /* ───── Filter dropdown ───── */
 #filterDropdownAnchor { position: relative; }

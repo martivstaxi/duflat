@@ -357,16 +357,16 @@ function renderFilterDropdown() {
 function renderActiveChips() {
     let html = '';
     if (currentLang !== 'all') {
-        html += `<span class="chip">${escapeHtml(TL(currentLang))}<button class="chip-remove" onclick="setLang('all')">&times;</button></span>`;
+        html += `<span class="chip" onclick="setLang('all')" role="button" tabindex="0">${escapeHtml(TL(currentLang))}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     if (currentDateFilter) {
         const dt = new Date(currentDateFilter + 'T00:00:00');
         const label = dt.toLocaleDateString(I18N[uiLang].dateLocale, { month: 'short', day: 'numeric' });
-        html += `<span class="chip">${escapeHtml(label)}<button class="chip-remove" onclick="selectDate(null)">&times;</button></span>`;
+        html += `<span class="chip" onclick="selectDate(null)" role="button" tabindex="0">${escapeHtml(label)}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     if (currentSensitivity !== 'all') {
         const priLabels = {p0:'P0',p1:'P1',p2:'P2'};
-        html += `<span class="chip">${priLabels[currentSensitivity] || currentSensitivity}<button class="chip-remove" onclick="setSensitivity('all')">&times;</button></span>`;
+        html += `<span class="chip" onclick="setSensitivity('all')" role="button" tabindex="0">${priLabels[currentSensitivity] || currentSensitivity}<span class="chip-remove" aria-hidden="true">&times;</span></span>`;
     }
     document.getElementById('activeChips').innerHTML = html;
 }
