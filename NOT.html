@@ -258,6 +258,8 @@
   }
   .badge.new { background: #d4edda; color: #155724; }
   .badge.gone { background: #f8d7da; color: #721c24; }
+  .badge.cex { background: #fde2e2; color: #b42318; }
+  .badge.protocol { background: #dbe9ff; color: #1849a9; }
 
   /* Distribution bars */
   .dist {
@@ -530,6 +532,52 @@ const state = {
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+
+/* ---------- known address labels (top-1000 NOT holders, via tonapi.io) ---------- */
+const LABELS = {
+  // CEX
+  "UQDKHZ7e70CzqdvZCC83Z4WVR8POC_ZB0J1Y4zo88G-zCSRH": { name: "Binance",            kind: "cex" },
+  "UQDJlZqZfh1OQ4PY2ze4bSEBznjc8fGzkE2YiP5XLvDv1JNr": { name: "Bitget",             kind: "cex" },
+  "UQA81a1UsZCnHKq5hLDyEON0LH8hR7fpBzN318a0cAFzYham": { name: "Bitrue",             kind: "cex" },
+  "UQBsU82HzA0zSG20LBx_wD366y97gVr8NoqxruVn7do_cicK": { name: "Coinspot",           kind: "cex" },
+  "UQC0lrj3O0af8GotieYsTXChA_wijIIVN7Sd_wkgYLwoHxMv": { name: "Gate.io",            kind: "cex" },
+  "UQDYh9Di0cT8QSbnHJcNM6sYlpQAAOrnA7sats7Mgwd344Mm": { name: "MEXC",               kind: "cex" },
+  "UQBmoechltZNb69I-ksuqGH2ewSE0tFKWcr3AdjChs5E5Uii": { name: "OKX",                kind: "cex" },
+  "UQDn6G2gh0LtkzQ0_-uPCKY8fhAO6ELiX1manL8IkVdKbDEu": { name: "OKX",                kind: "cex" },
+  "UQBZsGXF1mJhpTF2YOlu7kdqpqEbdJvcvowNHz2_JCANHCo7": { name: "OMPFinex",           kind: "cex" },
+  "UQBwhUXO-PwBGAIllqBWBEphgz6SNhO_cP0eJfAz_v2KPEyB": { name: "Rapira",             kind: "cex" },
+  "UQA9LLdOBB3wVgRdO6S-9lD5OMVT24bR2rH4C8nCOP4__rPr": { name: "Rapira",             kind: "cex" },
+  "UQChSx9FI4Wyu5hK0sREHh0jyuBx_fwJbfulPrujtv8dEIro": { name: "LBank",              kind: "cex" },
+  "UQD1BmMYCRqM-1MOxzIQTOOPd4PZKmZ5_8wM4JYLDpTH0GcG": { name: "Telegram Wallet",    kind: "cex" },
+  // Protocols / DEX / Notcoin contracts
+  "UQAJxbmwhwJw-FomFlt1RYukdeTltiCmWlsurQsQMRJhZaqE": { name: "DeDust",             kind: "protocol" },
+  "UQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4Tnjo": { name: "STON.fi",            kind: "protocol" },
+  "UQDx--jUU9PUtHltPYZX7wdzIi0SPY3KZ8nvOs0iZvQJd_ng": { name: "STON.fi",            kind: "protocol" },
+  "UQCDT9dCT52pdfsLNW0e6qP5T3cgq7M4Ug72zkGYgP17tphG": { name: "STON.fi",            kind: "protocol" },
+  "UQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__I5W": { name: "Notcoin Minter",    kind: "protocol" },
+  "UQAPZauWVPUcm2hUJT9n36pxznEhl46rEn1bzBXN0RY_ynFz": { name: "Voucher Swap",      kind: "protocol" },
+  "UQASgm0Qv3h2H2mF0W06ikPqYq2ctT3dyXMJH_svbEKKByVc": { name: "Voucher Swap",      kind: "protocol" },
+  "UQArlmP-RhVIG2yAFGZyPZfM3m0YccxmpvoRi6sgRzWnAFDp": { name: "Voucher Swap",      kind: "protocol" },
+  "UQA6pL-spYqZp1Ck6o3rpY45Cl-bvLMW_j3qdVejOkUWpOQj": { name: "Voucher Swap",      kind: "protocol" },
+  "UQBJ_ehYjumQKbXfWUue1KHKXdTm1GuYJB0Fj2ST_DwORqeY": { name: "Voucher Swap",      kind: "protocol" },
+  "UQBRmYSjxh9xlZpUqEmGjF5UjukI9v_Cm2kCTu4CoBn3Xh5G": { name: "Voucher Swap",      kind: "protocol" },
+  "UQBkiqncd7AFT5_23H-RoA2Vynk-Nzq_dLoeMVRthAU9RADs": { name: "Voucher Swap",      kind: "protocol" },
+  "UQB_OzTHXbztABe0QHgr4PtAV8T64LR6aDunXgaAoihOd0HL": { name: "Voucher Swap",      kind: "protocol" },
+  "UQCL-x5kLg6tKVNGryItTuj6tG3FH5mhUEu0xRqQc-kbEjsb": { name: "Voucher Swap",      kind: "protocol" },
+  "UQCZh2yJ46RaQH3AYmjEA8SMMXi77Oein4-3lvqkHseIAk07": { name: "Voucher Swap",      kind: "protocol" },
+  "UQChKo5IK3iNqUHUGDB9gtzjCjMTPtmsFqekuCA2MdreVBFr": { name: "Voucher Swap",      kind: "protocol" },
+  "UQC6DNCBv076TIliRMfOt20RpbS7rNKDfSky3WrFEapFt53C": { name: "Voucher Swap",      kind: "protocol" },
+  "UQDE_XFZOYae_rl3ZMsgBCtRSmYhl8B4y2BZEP7oiGBDhgX3": { name: "Voucher Swap",      kind: "protocol" },
+  "UQDddqpGA2ePXQF47A2DSL3GF6ZzIVmimfM2d16cdymy2ifW": { name: "Voucher Swap",      kind: "protocol" },
+  "UQDv0hNNAamhYltCh3pTJrq3oRB9RW2ZhEYkTP6fhj5Btc6r": { name: "Voucher Swap",      kind: "protocol" },
+  "UQD2mP7zgO7-imUJhqYry3i07aJ_SR53DaokMupfAAobtxg1": { name: "Voucher Swap",      kind: "protocol" },
+};
+
+function labelBadge(addr) {
+  const l = LABELS[addr];
+  if (!l) return '';
+  return `<span class="badge ${l.kind}">${escapeHtml(l.name)}</span>`;
+}
 
 /* ---------- helpers ---------- */
 function uid() { return Math.random().toString(36).slice(2, 9); }
@@ -846,7 +894,7 @@ function renderHolders() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="rank">${fmtInt(start + i + 1)}</td>
-      <td class="addr">${escapeHtml(r.addr)}</td>
+      <td class="addr">${escapeHtml(r.addr)}${labelBadge(r.addr)}</td>
       <td class="num">${fmtNot(r.balance)}</td>
       <td class="num">${pct.toFixed(4)}%</td>
     `;
@@ -1080,7 +1128,7 @@ function renderDiff() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="rank">${fmtInt(start + i + 1)}</td>
-      <td class="addr">${escapeHtml(r.addr)}${badge}</td>
+      <td class="addr">${escapeHtml(r.addr)}${labelBadge(r.addr)}${badge}</td>
       ${balCells}
       <td class="num ${deltaClass}">${sign}${fmtNot(r.delta)}</td>
       <td class="num ${deltaClass}">${pctText}</td>
@@ -1159,7 +1207,7 @@ function renderLookup() {
     for (const m of matches) {
       const pct = snap.total === 0n ? 0 : Number(m.bal * 1000000n / snap.total) / 10000;
       html += `<tr>
-        <td class="addr">${escapeHtml(m.addr)}</td>
+        <td class="addr">${escapeHtml(m.addr)}${labelBadge(m.addr)}</td>
         <td class="num">${fmtNot(m.bal)}</td>
         <td class="num">${pct.toFixed(4)}%</td>
       </tr>`;
