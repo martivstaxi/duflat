@@ -552,6 +552,7 @@ def save_mentions(mentions):
     skipped = 0
     repaired = 0
     gate_rejected = 0
+    gaming_rejected = 0
     candidates = []
     alert_queue = []
 
@@ -591,6 +592,15 @@ def save_mentions(mentions):
             repaired += 1
 
         candidates.append(m)
+
+    # ── Pass 1.5: dedicated gaming/esports filter (Haiku) ──────────────
+    # Narrow single-purpose lens — rejects gaming-primary content before
+    # it even reaches the L4 multi-criteria gate. L4 still has its own
+    # rule 5 as a backup if this layer fail-opens.
+    pre_gaming_count = len(candidates)
+    candidates = _layer_gaming_filter(candidates)
+    gaming_rejected = pre_gaming_count - len(candidates)
+    skipped += gaming_rejected
 
     # ── Pass 2: L4 FINAL GATE (Haiku) — last line of defence ───────────
     pre_gate_count = len(candidates)
@@ -648,6 +658,7 @@ def save_mentions(mentions):
         'repaired': repaired,
         'gate_rejected': gate_rejected,
         'gate_rejections': gate_rejections,
+        'gaming_rejected': gaming_rejected,
     }
 
 
@@ -1245,6 +1256,109 @@ Mentions:
     for m in mentions:
         m.setdefault('sentiment', 'neutral')
         m.setdefault('source_type', 'news_minor')
+
+
+def _layer_gaming_filter(mentions):
+    """Dedicated narrow Haiku check — reject mentions whose PRIMARY topic
+    is gaming/esports (BLG / LPL / Worlds / MSI / pro-player coverage).
+
+    Bilibili Gaming (BLG) is the LPL League of Legends esports org and
+    is a SEPARATE entity from the Bilibili APP/PLATFORM this project
+    tracks (see rules_social_gaming.md). Earlier layers and the L4
+    final gate already include a gaming clause, but a dedicated single-
+    purpose lens catches edge cases the multi-criteria prompts miss.
+
+    Runs AFTER validate_and_repair, BEFORE the L4 final gate. Fail-OPEN
+    on Haiku error — the L4 gate's own rule 5 still applies as backup.
+    Rejected items are logged to social_rejections (layer='gaming').
+
+    Returns the filtered list of mentions.
+    """
+    if not mentions:
+        return mentions
+
+    approved_all = []
+    for batch in _chunks(mentions, 15):
+        entries = []
+        for i, m in enumerate(batch):
+            entries.append({
+                'idx': i,
+                'url': (m.get('url') or '')[:200],
+                'content_english': (m.get('content_english') or '')[:400],
+                'content_original': (m.get('content_original') or '')[:400],
+            })
+
+        prompt = f"""You are the gaming/esports filter for a Bilibili APP/PLATFORM social listening project.
+
+For EACH item, decide whether the PRIMARY topic is gaming/esports (out of scope) or APP/platform/creator content (in scope).
+
+REJECT (gaming/esports primary topic):
+- Bilibili Gaming (BLG), the LPL League of Legends esports team
+- BLG vs X / X vs BLG match results, BLG roster, BLG transfers, BLG tournament runs
+- LPL / LCK / LCS / LEC / MSI / Worlds / First Stand / EWC / IEM / DreamHack tournament coverage
+- Pro player highlights, scoreboard, bracket, championship news, esports clip compilations
+- esports.gg / Sheep Esports / invenglobal / liquipedia / lolesports articles
+- Mobile gacha esports coverage that mentions Bilibili tangentially
+
+KEEP (Bilibili APP / platform / creator):
+- App UX, features, moderation, policy, AI tools, AniSora, anime catalog, VTuber programs
+- Creator news, content moderation, censorship debate, livestream rules
+- Anime / drama / music streaming on the platform
+- A gaming streamer / clip mentioned in passing IF the article is primarily about Bilibili APP/creator/policy
+- BLG sponsoring or promoting the Bilibili APP itself (rare)
+
+Be STRICT. When in doubt about gaming-vs-APP focus, REJECT.
+
+Return ONLY a JSON array: [{{"idx":0,"verdict":"keep"}}, {{"idx":1,"verdict":"reject","reason":"esports_lpl"}}, ...]
+
+Reason codes (short): blg_match, lpl_tournament, worlds_msi, pro_player, esports_news, gaming_primary.
+
+Items:
+{json.dumps(entries, ensure_ascii=False)}"""
+
+        verdicts = _haiku_call(prompt, max_tokens=1024)
+        if not verdicts:
+            # Fail-OPEN — the L4 gate's rule 5 still applies as a backup,
+            # so a transient Haiku failure won't auto-publish gaming
+            # content (it will simply lean on the next layer).
+            print(f'[gaming-filter] haiku failed batch={len(batch)} fail-open',
+                  flush=True)
+            approved_all.extend(batch)
+            continue
+
+        approved_idx = set()
+        for v in verdicts:
+            idx = v.get('idx')
+            if idx is None or not isinstance(idx, int) or idx >= len(batch):
+                continue
+            verdict = str(v.get('verdict', '')).strip().lower()
+            if verdict == 'keep':
+                approved_idx.add(idx)
+            else:
+                reason = v.get('reason', 'gaming_primary')
+                m = batch[idx]
+                url = m.get('url', '')
+                preview = (m.get('content_english') or
+                           m.get('content_original') or '')[:300]
+                print(f'[gaming-filter] REJECT idx={idx} reason={reason} '
+                      f'url={url}', flush=True)
+                try:
+                    _db().table('social_rejections').insert({
+                        'url': url,
+                        'content_date': m.get('content_date') or None,
+                        'reason': f'gaming:{reason}',
+                        'layer': 'gaming',
+                        'content_preview': preview,
+                    }).execute()
+                except Exception as e2:
+                    print(f'[gaming-filter] rejections insert err: '
+                          f'{type(e2).__name__}', flush=True)
+
+        for i, m in enumerate(batch):
+            if i in approved_idx:
+                approved_all.append(m)
+
+    return approved_all
 
 
 def _layer4_final_gate(mentions):
