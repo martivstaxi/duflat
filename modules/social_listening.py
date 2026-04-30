@@ -1447,23 +1447,17 @@ Items:
 
         verdicts = _haiku_call(prompt, max_tokens=1024)
         if not verdicts:
-            # Fail-CLOSED: Haiku fail → park the batch in the retry queue
-            # instead of auto-publishing unvetted content. A transient API
-            # blip must not bypass year/scope/financial checks.
+            # Fail-CLOSED: raise so the caller (process_queue) returns the
+            # whole batch to social_url_queue with retry_count++. After
+            # max_retries the row flips to 'failed' for manual review.
+            # A transient API blip must not bypass year/scope/financial checks.
             batch_urls = [mentions[e['idx']].get('url', '') for e in batch]
             print(
-                f'[L4 gate] haiku call failed, fail-CLOSED batch={len(batch)} '
+                f'[L4 gate] haiku call failed, raising for queue retry batch={len(batch)} '
                 f'urls={batch_urls[:3]}...',
                 flush=True,
             )
-            try:
-                _db().table('social_gate_failures').insert({
-                    'batch': [mentions[e['idx']] for e in batch],
-                    'error_type': 'haiku_call_failed',
-                }).execute()
-            except Exception as e2:
-                print(f'[L4 gate] gate_failures insert error: {type(e2).__name__}', flush=True)
-            continue
+            raise RuntimeError('l4_gate_haiku_failed')
 
         for v in verdicts:
             idx = v.get('idx')
@@ -1709,52 +1703,6 @@ def queue_stats():
     except Exception as e:
         stats['error'] = str(e)
     return stats
-
-
-def retry_gate_failures():
-    """Admin: re-run the L4 gate on previously parked (Haiku-failed) batches.
-
-    Used to drain the social_gate_failures queue once the API is healthy
-    again. Successful rows are upserted via the normal save_mentions path
-    so that Telegram/WeCom alerts still fire for any P0s. Resolved rows
-    are marked instead of deleted for audit.
-    Returns {'retried': N, 'saved': M, 'still_failing': K}."""
-    try:
-        res = (_db().table('social_gate_failures')
-               .select('id, batch, retry_count')
-               .eq('resolved', False)
-               .order('created_at')
-               .limit(100)
-               .execute())
-        rows = res.data or []
-    except Exception as e:
-        return {'error': f'fetch_failed: {type(e).__name__}'}
-
-    retried = 0
-    saved_total = 0
-    still_failing = 0
-    for row in rows:
-        batch = row.get('batch') or []
-        if not isinstance(batch, list) or not batch:
-            continue
-        retried += 1
-        result = save_mentions(batch)  # re-runs L4 gate + upsert
-        saved_total += result.get('saved', 0)
-        # Consider it resolved if Haiku produced a verdict this time:
-        # save_mentions returns gate_rejected >= 0 only when the gate ran.
-        # If everything was still parked again we treat as still-failing.
-        try:
-            _db().table('social_gate_failures').update({
-                'resolved': True,
-                'retry_count': (row.get('retry_count') or 0) + 1,
-            }).eq('id', row['id']).execute()
-        except Exception:
-            still_failing += 1
-    return {
-        'retried': retried,
-        'saved': saved_total,
-        'still_failing': still_failing,
-    }
 
 
 def _analyze_with_haiku(items):

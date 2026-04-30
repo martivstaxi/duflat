@@ -621,15 +621,6 @@ def social_translate_missing():
     return jsonify(translate_missing_chinese())
 
 
-@app.route('/social/retry-gate-failures', methods=['POST'])
-def social_retry_gate_failures():
-    """Admin: drain the L4 fail-closed queue. Safe to call repeatedly."""
-    auth = _require_admin()
-    if auth: return auth
-    from modules.social_listening import retry_gate_failures
-    return jsonify(retry_gate_failures())
-
-
 @app.route('/social/process-queue', methods=['POST'])
 def social_process_queue():
     """Cron: drain pending URL queue through Haiku pipeline → mentions.

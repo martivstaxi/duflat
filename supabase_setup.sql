@@ -57,19 +57,7 @@ CREATE TABLE IF NOT EXISTS social_rejections (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table 5: Haiku-call failures (retry queue)
--- When L4 gate's Haiku call fails, the batch is parked here instead of
--- auto-approved. Admin endpoint /social/retry-gate-failures can flush it.
-CREATE TABLE IF NOT EXISTS social_gate_failures (
-    id BIGSERIAL PRIMARY KEY,
-    batch JSONB NOT NULL,
-    error_type TEXT DEFAULT '',
-    retry_count INT DEFAULT 0,
-    resolved BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Table 6: URL queue — discover/process split
+-- Table 5: URL queue — discover/process split
 -- Discover_* functions enqueue raw item dicts (already past blob filter,
 -- date check, owned-handle skip) here as JSONB. process_queue drains
 -- pending rows, runs the Haiku pipeline, and writes successes to
@@ -97,7 +85,6 @@ CREATE INDEX IF NOT EXISTS idx_mentions_sensitivity ON social_mentions(sensitivi
 CREATE INDEX IF NOT EXISTS idx_mentions_source_type ON social_mentions(source_type);
 CREATE INDEX IF NOT EXISTS idx_sources_hash ON social_sources(url_hash);
 CREATE INDEX IF NOT EXISTS idx_rejections_created ON social_rejections(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_gate_failures_unresolved ON social_gate_failures(resolved, created_at) WHERE resolved = FALSE;
 CREATE INDEX IF NOT EXISTS idx_url_queue_pending
     ON social_url_queue(retry_count, created_at)
     WHERE status = 'pending';
@@ -108,7 +95,6 @@ ALTER TABLE social_sources DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_mentions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_scan_log DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_rejections DISABLE ROW LEVEL SECURITY;
-ALTER TABLE social_gate_failures DISABLE ROW LEVEL SECURITY;
 ALTER TABLE social_url_queue DISABLE ROW LEVEL SECURITY;
 
 -- Grant access to anon role
@@ -116,6 +102,5 @@ GRANT ALL ON social_sources TO anon;
 GRANT ALL ON social_mentions TO anon;
 GRANT ALL ON social_scan_log TO anon;
 GRANT ALL ON social_rejections TO anon;
-GRANT ALL ON social_gate_failures TO anon;
 GRANT ALL ON social_url_queue TO anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
