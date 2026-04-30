@@ -1,0 +1,31 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Claude Code internals
+.claude/
+
+# Local environment
+.env
+.env.local
+.venv/
+venv/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Debug payloads & scratch outputs (root + any subdirectory)
+_*.json
+debug_*.json
+discover_*.json
+mentions_*.json
+reclassify*.json
+scan_*.json
+scan_urls.json
+cs_resp.json
+cs_top.json
+test_result_local.json
