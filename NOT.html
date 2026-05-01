@@ -245,6 +245,9 @@
   td.num { text-align: right; white-space: nowrap; }
   td.delta-pos { color: var(--green); }
   td.delta-neg { color: var(--red); }
+  .flow-pos { color: var(--green); }
+  .flow-neg { color: var(--red); }
+  .flow-mute { color: var(--text-tertiary); }
   td.delta-zero { color: var(--text-tertiary); }
   .rank { color: var(--text-tertiary); font-size: 12px; width: 40px; }
   .badge {
@@ -466,6 +469,7 @@
         <div class="tab-panel" id="tab-diff">
           <p class="hint" id="diffHint">Upload at least 2 snapshots to compare. Snapshots are ordered by upload time (oldest → newest).</p>
           <div id="diffStats" class="stats" style="margin-bottom:16px"></div>
+          <div id="diffFlow" style="display:none"></div>
           <div class="toolbar" id="diffControls" style="display:none">
             <div class="controls">
               <span class="label-inline">Show:</span>
@@ -942,6 +946,8 @@ function renderDiff() {
     hint.style.display = '';
     hint.textContent = `Upload at least 2 snapshots to compare. Currently: ${N}`;
     $('#diffStats').innerHTML = '';
+    $('#diffFlow').style.display = 'none';
+    $('#diffFlow').innerHTML = '';
     $('#diffControls').style.display = 'none';
     $('#diffNote').style.display = 'none';
     $('#diffTableWrap').style.display = 'none';
@@ -1113,6 +1119,176 @@ function renderDiff() {
   $('#dNext')?.addEventListener('click', () => { state.diffPage++; renderDiff(); });
 
   state._timelineVisible = visible;
+
+  renderDiffFlowAnalysis(snaps, rows);
+}
+
+/* ---------- diff flow analysis ---------- */
+function renderDiffFlowAnalysis(snaps, rows) {
+  const container = $('#diffFlow');
+  const N = snaps.length;
+  if (N < 2 || typeof LABELS === 'undefined') {
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  const firstSnap = snaps[0], lastSnap = snaps[N - 1];
+
+  // wallet movement totals (presence in T1 vs Tn)
+  let newTotal = 0n, exitedTotal = 0n, newCount = 0, exitedCount = 0;
+  for (const r of rows) {
+    if (r.kind === 'new')  { newTotal    += r.last;  newCount++;    }
+    if (r.kind === 'gone') { exitedTotal += r.first; exitedCount++; }
+  }
+  const walletNetN   = newCount - exitedCount;
+  const walletNetNOT = newTotal - exitedTotal;
+
+  // CEX flow: scan every labeled CEX address that has a non-zero delta
+  const familyOf = (name) => {
+    if (!name) return '?';
+    const fam = name.split(' ')[0];
+    if (fam === 'Wallet' && name.toLowerCase().includes('telegram')) return 'Telegram Wallet';
+    const base = fam.replace(/\d+$/, '');
+    if (['Bitget','OKX','Binance','MEXC','Gate.io'].indexOf(base) !== -1) return base;
+    return fam;
+  };
+  const typeOf = (name) => {
+    const n = (name || '').toLowerCase();
+    for (const t of ['cold','deposit','internal','hot']) {
+      if (n.indexOf(t) !== -1) return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+    return 'Other';
+  };
+
+  let cexInflow = 0n, cexOutflow = 0n, cexInN = 0, cexOutN = 0, cexTotalWallets = 0;
+  const byFam = new Map(), byType = new Map();
+  for (const addr of Object.keys(LABELS)) {
+    const label = LABELS[addr];
+    if (label.kind !== 'cex') continue;
+    cexTotalWallets++;
+    const f = firstSnap.map.get(addr) ?? 0n;
+    const l = lastSnap.map.get(addr) ?? 0n;
+    if (f === 0n && l === 0n) continue;          // not in either snapshot's top-N
+    const delta = l - f;
+    if (delta === 0n) continue;
+    const fam = familyOf(label.name);
+    const typ = typeOf(label.name);
+    if (!byFam.has(fam))  byFam.set(fam,  { in: 0n, out: 0n, inN: 0, outN: 0, wallets: new Set() });
+    if (!byType.has(typ)) byType.set(typ, { in: 0n, out: 0n, inN: 0, outN: 0, wallets: new Set() });
+    byFam.get(fam).wallets.add(addr);
+    byType.get(typ).wallets.add(addr);
+    if (delta > 0n) {
+      cexInflow += delta; cexInN++;
+      byFam.get(fam).in  += delta; byFam.get(fam).inN++;
+      byType.get(typ).in += delta; byType.get(typ).inN++;
+    } else {
+      const ad = -delta;
+      cexOutflow += ad; cexOutN++;
+      byFam.get(fam).out  += ad; byFam.get(fam).outN++;
+      byType.get(typ).out += ad; byType.get(typ).outN++;
+    }
+  }
+  const cexNet = cexInflow - cexOutflow;
+
+  const sgn  = (b) => b > 0n ? '+' : b < 0n ? '−' : '';
+  const ab   = (b) => b < 0n ? -b : b;
+  const sgnN = (n) => n > 0 ? '+' : '';
+
+  // wallet-movement card
+  let html = `
+    <div class="card"><div class="card-pad">
+      <h2 style="margin:0 0 12px;font-size:17px;font-weight:600">Cüzdan Hareketleri (T1 → T${N})</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Yeni Cüzdan</div>
+          <div class="stat-value flow-pos">+${fmtInt(newCount)}</div>
+          <div class="stat-sub">${fmtNot(newTotal)} NOT</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Sıfırlanan / Çıkan</div>
+          <div class="stat-value flow-neg">−${fmtInt(exitedCount)}</div>
+          <div class="stat-sub">${fmtNot(exitedTotal)} NOT</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Net Cüzdan Sayısı</div>
+          <div class="stat-value ${walletNetN >= 0 ? 'flow-pos' : 'flow-neg'}">${sgnN(walletNetN)}${fmtInt(walletNetN)}</div>
+          <div class="stat-sub">yeni − çıkan</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Net NOT Farkı</div>
+          <div class="stat-value ${walletNetNOT >= 0n ? 'flow-pos' : 'flow-neg'}">${sgn(walletNetNOT)}${fmtNot(ab(walletNetNOT))}</div>
+          <div class="stat-sub">yeni − çıkan</div>
+        </div>
+      </div>
+    </div></div>`;
+
+  // CEX flow card
+  html += `
+    <div class="card"><div class="card-pad">
+      <h2 style="margin:0 0 12px;font-size:17px;font-weight:600">Borsa Akışı (T1 → T${N})</h2>
+      <p class="hint" style="margin:-4px 0 12px;font-size:12px">${fmtInt(cexTotalWallets)} bilinen CEX cüzdanın bakiye delta'larından hesaplanır — net hareket. Transfer adedi yerine kaç cüzdanın bakiyesi pozitif/negatif yönde değiştiği gösterilir. Cüzdan T1'de yoksa ve T${N}'de varsa "yeni gelen NOT" pozitif delta sayılır.</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Borsalara Net Giriş</div>
+          <div class="stat-value flow-pos">${fmtNot(cexInflow)}</div>
+          <div class="stat-sub">${cexInN} cüzdan büyüdü</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Borsalardan Net Çıkış</div>
+          <div class="stat-value flow-neg">${fmtNot(cexOutflow)}</div>
+          <div class="stat-sub">${cexOutN} cüzdan küçüldü</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Net Borsa Akışı</div>
+          <div class="stat-value ${cexNet >= 0n ? 'flow-pos' : 'flow-neg'}">${sgn(cexNet)}${fmtNot(ab(cexNet))}</div>
+          <div class="stat-sub">${cexNet >= 0n ? 'borsalarda biriken' : 'borsadan dağıtılan'}</div>
+        </div>
+      </div>
+    </div></div>`;
+
+  // helper for rollup tables
+  const rollupTable = (title, hint, mp) => {
+    const arr = [...mp.entries()].sort((a, b) => {
+      const ta = a[1].in + a[1].out, tb = b[1].in + b[1].out;
+      return tb > ta ? 1 : tb < ta ? -1 : 0;
+    });
+    let body = '';
+    for (const [k, v] of arr) {
+      const net = v.in - v.out;
+      body += `<tr>
+        <td>${escapeHtml(k)}</td>
+        <td class="num">${v.wallets.size}</td>
+        <td class="num delta-pos">${fmtNot(v.in)}</td>
+        <td class="num flow-mute">×${v.inN}</td>
+        <td class="num delta-neg">${fmtNot(v.out)}</td>
+        <td class="num flow-mute">×${v.outN}</td>
+        <td class="num ${net >= 0n ? 'delta-pos' : 'delta-neg'}">${sgn(net)}${fmtNot(ab(net))}</td>
+      </tr>`;
+    }
+    return `<div class="card"><div class="card-pad">
+      <h2 style="margin:0 0 12px;font-size:17px;font-weight:600">${escapeHtml(title)}</h2>
+      ${hint ? `<p class="hint" style="margin:-4px 0 12px;font-size:12px">${escapeHtml(hint)}</p>` : ''}
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>${title.indexOf('Tip') !== -1 ? 'Tip' : 'Borsa'}</th>
+          <th class="num">Cüzdan</th>
+          <th class="num">Giriş NOT</th>
+          <th class="num">Δ#</th>
+          <th class="num">Çıkış NOT</th>
+          <th class="num">Δ#</th>
+          <th class="num">Net</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+      </table></div>
+    </div></div>`;
+  };
+
+  if (byFam.size > 0)  html += rollupTable('Borsa Bazında Akış', '', byFam);
+  if (byType.size > 0) html += rollupTable('Cüzdan Tipi Bazında Akış',
+    "Hot = sıcak (kullanıcıya açık), Cold = soğuk depolama, Deposit = kullanıcı yatırma, Internal = borsa içi.", byType);
+
+  container.innerHTML = html;
+  container.style.display = '';
 }
 
 function exportTimeline() {
