@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOT — Günlük Akış Analizi</title>
+<style>
+  :root {
+    --bg: #fbfbfd;
+    --bg-elevated: #ffffff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --border: #d2d2d7;
+    --border-soft: #e8e8ed;
+    --accent: #0071e3;
+    --tag-bg: #f5f5f7;
+    --green: #34c759;
+    --red: #ff3b30;
+    --orange: #ff9500;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+  header.top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
+  }
+  header.top h1 {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px;
+  }
+  header.top .sub { font-size: 14px; color: var(--text-secondary); margin: 0; }
+  header.top .nav a {
+    color: var(--accent); text-decoration: none; font-size: 14px; margin-left: 16px;
+  }
+  header.top .nav a:hover { text-decoration: underline; }
+
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    padding: 20px 24px;
+  }
+  .card h2 {
+    font-size: 17px; font-weight: 600; margin: 0 0 16px; letter-spacing: -0.01em;
+  }
+  .card .hint { font-size: 13px; color: var(--text-tertiary); margin: -8px 0 12px; }
+
+  .grid { display: grid; gap: 16px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 700px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  .stat {
+    background: var(--tag-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .lbl {
+    font-size: 12px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .stat .val {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .sub {
+    font-size: 12px; color: var(--text-tertiary); margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .muted { color: var(--text-tertiary); }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums; font-size: 14px;
+  }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  th {
+    font-weight: 600; font-size: 12px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  td.num, th.num { text-align: right; }
+  tbody tr:last-child td { border-bottom: none; }
+  .addr-cell {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+  }
+
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--text-tertiary);
+  }
+  .err {
+    background: #fff4f4; border: 1px solid #ffd5d5;
+    color: #b30000; padding: 12px 16px; border-radius: 10px;
+    margin-bottom: 24px; font-size: 13px;
+  }
+  select.date-picker {
+    font-size: 14px; padding: 6px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: white;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>NOT — Günlük Akış Analizi</h1>
+      <p class="sub">Top 9.000 holder + bilinen CEX cüzdanları üzerinden 24 saatlik akış. Her gün otomatik güncellenir.</p>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/NOT.html">NOT Holder Analyzer</a>
+    </nav>
+  </header>
+
+  <div id="container">
+    <div class="empty">Yükleniyor…</div>
+  </div>
+</div>
+
+<script>
+const fmtN = (n, d=0) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtNOT = (n) => fmtN(n, 0) + " NOT";
+const signed = (n, fn=fmtN) => (n > 0 ? "+" : "") + fn(n);
+const addrShort = (a) => a ? `${a.slice(0,6)}…${a.slice(-4)}` : "";
+
+async function loadIndex() {
+  const r = await fetch("flow_reports/index.json", { cache: "no-store" });
+  if (!r.ok) throw new Error("index.json bulunamadı");
+  return r.json();
+}
+async function loadReport(date) {
+  const r = await fetch(`flow_reports/report_${date}.json`, { cache: "no-store" });
+  if (!r.ok) throw new Error(`report_${date}.json bulunamadı`);
+  return r.json();
+}
+
+function renderError(msg) {
+  document.getElementById("container").innerHTML = `<div class="err">${msg}</div>`;
+}
+
+function renderTotals(rep) {
+  const f = rep.cex_flow?.totals;
+  const d = rep.diff;
+  if (!f && !d) return "";
+
+  const tInflow  = f ? f.inflow_NOT  : 0;
+  const tOutflow = f ? f.outflow_NOT : 0;
+  const tNet     = f ? f.net_NOT     : 0;
+  const inN  = f ? f.inflow_n  : 0;
+  const outN = f ? f.outflow_n : 0;
+
+  let diffHTML = "";
+  if (d && !d.first_run) {
+    const newW = d.new_wallets, exW = d.exited_wallets;
+    diffHTML = `
+      <div class="card">
+        <h2>Top 9K Holder Listesi — Değişim (${d.yesterday} → ${d.today})</h2>
+        <div class="grid grid-4">
+          <div class="stat">
+            <div class="lbl">Yeni Cüzdan</div>
+            <div class="val pos">+${fmtN(newW.count)}</div>
+            <div class="sub">${fmtNOT(newW.total_NOT)}</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Sıfırlanan / Çıkan</div>
+            <div class="val neg">−${fmtN(exW.count)}</div>
+            <div class="sub">${fmtNOT(exW.total_NOT)}</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Net Cüzdan Sayısı</div>
+            <div class="val ${d.net_wallet_count >= 0 ? "pos" : "neg"}">${signed(d.net_wallet_count)}</div>
+            <div class="sub">yeni − çıkan</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Net NOT Farkı</div>
+            <div class="val ${d.net_wallet_NOT >= 0 ? "pos" : "neg"}">${signed(d.net_wallet_NOT, fmtN)}</div>
+            <div class="sub">yeni cüzdanlar − çıkanlar</div>
+          </div>
+        </div>
+        <div style="margin-top:16px" class="grid grid-3">
+          <div class="stat">
+            <div class="lbl">Toplam Holder</div>
+            <div class="val">${fmtN(d.today_holders)}</div>
+            <div class="sub muted">dün: ${fmtN(d.yesterday_holders)}</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Top 9K Toplam Bakiye</div>
+            <div class="val">${fmtNOT(d.today_total_NOT)}</div>
+            <div class="sub ${d.delta_total_NOT >= 0 ? "pos" : "neg"}">${signed(d.delta_total_NOT, fmtN)} NOT</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Net Akış Pencereği</div>
+            <div class="val muted">24 sa</div>
+            <div class="sub">UTC</div>
+          </div>
+        </div>
+      </div>`;
+  } else if (d && d.first_run) {
+    diffHTML = `
+      <div class="card">
+        <h2>Top 9K Holder Listesi — Değişim</h2>
+        <div class="empty">Bu ilk snapshot — yarınki rapor ilk diff'i gösterecek.</div>
+      </div>`;
+  }
+
+  const cexHTML = f ? `
+      <div class="card">
+        <h2>Borsa Akışı — Son 24 Saat</h2>
+        <div class="hint">${rep.cex_flow.n_cex_wallets} bilinen CEX cüzdanı tarandı.</div>
+        <div class="grid grid-3">
+          <div class="stat">
+            <div class="lbl">Borsalara Giriş (deposit)</div>
+            <div class="val pos">${fmtNOT(tInflow)}</div>
+            <div class="sub">${fmtN(inN)} transfer</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Borsalardan Çıkış (withdraw)</div>
+            <div class="val neg">${fmtNOT(tOutflow)}</div>
+            <div class="sub">${fmtN(outN)} transfer</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Net Akış</div>
+            <div class="val ${tNet >= 0 ? "pos" : "neg"}">${signed(tNet, fmtN)} NOT</div>
+            <div class="sub">${tNet >= 0 ? "borsalara biriken" : "borsadan dağıtılan"}</div>
+          </div>
+        </div>
+      </div>` : "";
+
+  return diffHTML + cexHTML;
+}
+
+function renderFamilyTable(rep) {
+  const fam = rep.cex_flow?.by_family;
+  if (!fam || Object.keys(fam).length === 0) return "";
+  const rows = Object.entries(fam).map(([k, v]) => {
+    const net = v.inflow_NOT - v.outflow_NOT;
+    return `
+      <tr>
+        <td>${k}</td>
+        <td class="num">${fmtN(v.wallets)}</td>
+        <td class="num pos">${fmtN(v.inflow_NOT)}</td>
+        <td class="num muted">×${fmtN(v.inflow_n)}</td>
+        <td class="num neg">${fmtN(v.outflow_NOT)}</td>
+        <td class="num muted">×${fmtN(v.outflow_n)}</td>
+        <td class="num ${net >= 0 ? "pos" : "neg"}">${signed(net, fmtN)}</td>
+      </tr>`;
+  }).join("");
+  return `
+    <div class="card">
+      <h2>Borsa Bazında Akış</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Borsa</th>
+            <th class="num">Cüzdan</th>
+            <th class="num">Giriş NOT</th>
+            <th class="num">×</th>
+            <th class="num">Çıkış NOT</th>
+            <th class="num">×</th>
+            <th class="num">Net</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderTypeTable(rep) {
+  const typ = rep.cex_flow?.by_type;
+  if (!typ || Object.keys(typ).length === 0) return "";
+  const rows = Object.entries(typ).map(([k, v]) => {
+    const net = v.inflow_NOT - v.outflow_NOT;
+    return `
+      <tr>
+        <td>${k}</td>
+        <td class="num">${fmtN(v.wallets)}</td>
+        <td class="num pos">${fmtN(v.inflow_NOT)}</td>
+        <td class="num muted">×${fmtN(v.inflow_n)}</td>
+        <td class="num neg">${fmtN(v.outflow_NOT)}</td>
+        <td class="num muted">×${fmtN(v.outflow_n)}</td>
+        <td class="num ${net >= 0 ? "pos" : "neg"}">${signed(net, fmtN)}</td>
+      </tr>`;
+  }).join("");
+  return `
+    <div class="card">
+      <h2>Cüzdan Tipi Bazında Akış</h2>
+      <div class="hint">Hot = sıcak (kullanıcıya açık), Cold = soğuk depolama, Deposit = kullanıcı yatırma adresi, Internal = borsa içi.</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Tip</th>
+            <th class="num">Cüzdan</th>
+            <th class="num">Giriş NOT</th>
+            <th class="num">×</th>
+            <th class="num">Çıkış NOT</th>
+            <th class="num">×</th>
+            <th class="num">Net</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderTopChangers(rep) {
+  const d = rep.diff;
+  if (!d || d.first_run) return "";
+  const renderList = (arr, title) => {
+    if (!arr || arr.length === 0) return "";
+    const rows = arr.slice(0, 15).map(x => `
+      <tr>
+        <td class="addr-cell">${addrShort(x.addr)}</td>
+        <td class="num">${fmtN(x.balance ?? x.today)}</td>
+        <td class="num ${(x.delta ?? x.balance) >= 0 ? "pos" : "neg"}">${signed(x.delta ?? x.balance, fmtN)}</td>
+      </tr>`).join("");
+    return `
+      <div class="card" style="flex:1">
+        <h2>${title}</h2>
+        <table>
+          <thead><tr><th>Adres</th><th class="num">Bakiye</th><th class="num">Δ NOT</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  };
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      ${renderList(d.top_gainers, "En Çok Artan (24s)")}
+      ${renderList(d.top_losers, "En Çok Azalan (24s)")}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      ${renderList(d.new_addrs_sample, "Yeni Cüzdanlar (top)")}
+      ${renderList(d.exited_addrs_sample, "Çıkan Cüzdanlar (top)")}
+    </div>`;
+}
+
+async function main() {
+  let idx;
+  try {
+    idx = await loadIndex();
+  } catch (e) {
+    return renderError("Henüz hiç günlük rapor yok. İlk rapor üretildiğinde burada görünecek.");
+  }
+  if (!idx.dates.length) return renderError("Henüz hiç günlük rapor yok.");
+
+  const dates = idx.dates.slice().reverse();
+  const initialDate = idx.latest;
+
+  const renderAll = async (date) => {
+    let rep;
+    try {
+      rep = await loadReport(date);
+    } catch (e) {
+      return renderError(e.message);
+    }
+    const dateLabel = `<div class="card"><h2>Rapor Tarihi: ${date}</h2>
+      <div class="hint">Üretildi: ${rep.generated || "—"} (UTC)</div>
+      <div style="margin-top:8px">
+        <select class="date-picker" id="datePicker">
+          ${dates.map(d => `<option value="${d}" ${d===date?"selected":""}>${d}</option>`).join("")}
+        </select>
+      </div></div>`;
+    document.getElementById("container").innerHTML =
+      dateLabel + renderTotals(rep) + renderFamilyTable(rep) + renderTypeTable(rep) + renderTopChangers(rep);
+    document.getElementById("datePicker").addEventListener("change", e => renderAll(e.target.value));
+  };
+  renderAll(initialDate);
+}
+
+main();
+</script>
+</body>
+</html>

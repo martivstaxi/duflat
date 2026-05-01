@@ -29,3 +29,7 @@ scan_urls.json
 cs_resp.json
 cs_top.json
 test_result_local.json
+
+# Daily run logs and intermediate text dumps
+scripts/*.log
+scripts/overrides_top1000.txt
