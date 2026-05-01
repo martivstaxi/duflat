@@ -1280,5 +1280,573 @@
   "UQAD8XEJQppmZDZvlTAKopt2E_c-Xbhzt7_vKH98W4qB5HOs": {
     "name": "OKX Cold",
     "kind": "cex"
+  },
+  "UQCpj_o0KHiwPbf82pPQWKGSP0MbDhCx7IBI-gH_Pb5T2UiO": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBSxsL86qU_FRQMfJq8vRJtBG_X9W2lTL1M1KfTbEX1rR-_": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCJyUqClMkFAnuKPybjFOgHqUQ0fbG45Fi33PtHaNfe1czc": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQDOOTbcADshrW_QyUezIPKqCzdWJG8MsM6OgfFL255IshXK": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBXzIZ5k-1jQlGR7hGGOMpIJIbrE8XQieWesPHymfoxa8kL": {
+    "name": "OKX Deposit",
+    "kind": "cex"
+  },
+  "UQB9MC2viPZ1_jaNGbkOPVV57R6mJ5ovBKM1aNeRYN6G5V2o": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQDRONjMI_1wgqAL-h6hdMazQTyTKqnLhRvZz6V0KdUa4rlm": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDNlMHUDcsLjBjaWeoEB6bH8WDwLtavvwlLsiC_-Y2ekeqb": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBkwJ_CWNHCY0KUxfVXdGeyF_i2oVXWvXVaAHstNdf6aelE": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQBr4lIb0Ne2V2fx01OI4jCc8oSNVdXYQ0Y5-11sL7IyWYbt": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQASniao-4aP3WXvEJKNjbYGgZ8qy2UFEheGOMfhsmCnKhco": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDB0TLpGbHx0vrNYKchMyBihCxfCIU6eaazVJbCTooJ2TeZ": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCEqa5GKxOJPr3C1N1WhZwuukcV-D2JF_Q5QjhffK9GlRa4": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCsG02jBNCStgL5HyDGkEBCJq-F2T-M-UJVCfw_CX_-oXuT": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBi3f2ADbsbzeVwa-uKPii7jIttaIplToltgSflzRMgq55A": {
+    "name": "Gate.io Deposit",
+    "kind": "cex"
+  },
+  "UQAa7ZkFEabP0rTuAYa2Kr-VMOYoDu7q7FS8QxrRSfwGKqe3": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBQDVjD2ZvskPfrg9DJO3OwiJBx7XdneZU6nCflpgDXtypN": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQATp74958DsWobRhq7yd8FMLDDSQd0gz8bSJMtWGKFtDrKb": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQDaI9wRrhNBF__ujvldXTOm8Ng7QQ2olxJ00Bw3g-HXiZop": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBZPxNyPLpmObaGwfZFaEGj-0d91nJQjxrAISL4T6pB1xVM": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAH-GM9B1_XL0Skdnvc91isz3_A30bGmDmhbgLN4PHvIgE0": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQDtY3oAD9x6JWaVIux4LKf1mP-2x9nvw22uIfKU7usscAYC": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAORqYGkAA70EPvF7WNSZMG7d8jECYKVzBCxi9tYqrxSoy3": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQApjN7PK6UknElx7xT6iM6GyYs1QSVlXf2_I21fp6_JckC2": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQD4nQbv0IOllXsREBDmXklmmf8ZqI-vDJpcpFPtcohw-BMK": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQALPBuydPH5HhVljyMfJ0T_7jR1VrE5kmNxFifTJtQ2fWM4": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQCmg4J3A5bvLB9pcEsCZh9YcF8GcCkxDlceQLsQKZOlEK-P": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDW_77lq04_KBMfYP9DCvm3yo0LPJAgciFraEPOq22dIUmS": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQAFkoVS5SoolPy25NLDHABHczXfiD4TntiaJbY_H63cUSOY": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQDvEFxgqpnZ5eOPvyIj9gMhkOQUqzwyemuuXoitwIJ2xISW": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBQgG0PXsEjRWOY-tk6-wxfBB0UDadQ5U2eFl7eKg4aUYcB": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQCwqpqU_uFK2AllRfNFUOl2pcxx8M-ZfMpCUo40OFsKjPtm": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBUDAYhWh_sP8ApLdcXjchmVDGdnMJ0aRsxSYhcabOKTIJn": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQB-6BxOjpB-nTJDbYw_FX6nx4xdN5vSL6yJknFBf7MaiA85": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAKBsfqTzb08Ou2qNGFq1NwGrS5MXUOVF4aK29rbf1GU3xh": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQC59FxwLBbPzSiGghIwwO3IuWOmK1Qu1isGJyR53gBj4sdL": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQD7Xl3NCxscAuTxEg3Nsklsd_yLx32KnQbXkhy9HDcDci2P": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBoIYlQBr3aoPOGKoUgezQsgb5kIBsxRKVxeBHN5EnAPJd3": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCruT0e40zvplVy8Lq91J8aG1d5m9LuvECuflTr5O6niGNG": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAZ9xlA9DHpQ49wuqZqWW07zhXX1mttaLC2nqYPEtcuthr-": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAV5Of9JAk8iT233ORrI9MNQ8Ani41FwQsaqdTGCRjIf89d": {
+    "name": "OKX Deposit",
+    "kind": "cex"
+  },
+  "UQA_vgoiM-a7O1UEwqTK8fFDwsr2L0Oyyhp0lRam88GLPtBR": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQCNymQ_2Qsqshogklm6PFEh8FuC0FCyJpbaAwdDq4fsjxLH": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQDxl2X0MsM7QDc5LWtDnsllS-ph_7OFA-yXQt_oTQmLLp-Q": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAF3LCYM6sOfDe1peWFxPPBlRFhe1-2vJDkspwbFUKQ_4o2": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQApROwDA0T-9CSdh7Gdt0I-FcS6aSvIJV-STdxCn1kR9WlJ": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQCPbCEw-1L-wICGscSFrk8tuM4pq65mqyqc0taY7S2Mz5mN": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQDFN-T3vTf2Al64VbBz6jq5_7O9kVB_RQD0Vs9cRfHBDs0t": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAV-RZpRCVJfc0VxW5U2aP30MRBOk4sNdla9sE6xfIfYPuw": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCqbcU-LRjkNxTvwQqVANZXK6OsLNst0PwNUyOFysAkOeGb": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBN_hhDd1zCGG6reOI8PAIh6S-8dgVFe85COIprsgAGUqF9": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQBFc-46F_4IZIKISp624CjSQP4uasUnfMqF9gYjtNsxiaDZ": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBgWMlSNsEHeiYp8I6NRXo13tmo1Irr8qO7ZXFAzgdo_iiU": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQDeQdDO6gRkT0Juab1MExQ7x6BLa3QCf-Rn78NE_kwh0huk": {
+    "name": "Telegram Wallet Cold",
+    "kind": "cex"
+  },
+  "UQBZmwPiMoDjMsiTxDaCfQcIkAxSbnOHZDpTC9B98VMhIPqp": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCcgw0-ykW8E1SqsrJleTflQ9kJ5-rKGjLtodLG4-UlTMzy": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQCx714BnJuss6SOJsTaCN8tcr27FMtJBFC0hUkZOKkZQXER": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDbldgnITf_aTpqVjVY5kkKo2IEpAWCT4bsDSttS8WTQh49": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAMoZPtm3TCY7a1-Aq3R2JRONlPloJf0fS3L8ZKAUXscfpT": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBphCthYXb_lETYopWtbSXtwfb7RKJGO9NEuIBPMPDMHozt": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQCkbZz-Wkr61zwroaBbhfu-nx8MCuHSR8eV5UJEOYzwcfDv": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQAkAddIVaJOo7RlrdA1YFLwUx4rvjkm9wp0UvO3GbzK4toY": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQDgl_7P1Cmu5j6ePi0LhnXLRWFtudLIEhWvQUHJI9e28T3K": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQAeWEaNXSSg_PwNncagDcRK1fBYj3xQy0l7GTlTDDD8kmT8": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAajPP6cJ5i1RLIMe596Se8lq4wnsRKwCoUkGkU4mzlj4_7": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQDsEWFbBRGimZcB8hs00xnUKDjLOuyuDKtedBoVqOHsdm-q": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDsn5Sv9RIjBGytbIBLcBcNtM_j0o0vq4nO_3mrorfFo_OX": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQBlddzSZ2gTmF534guur6qExDzLUrt1K8ErcbGwwhODHe5b": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDoZbmdwcaQ_ChC6io681SAL0p1EvvAGfNmbe3dD5cDjYV0": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDf-g5AU9CwUiWpLcD6KilRkVM7cTLfv7sYCCC5i_36TTxy": {
+    "name": "Gate.io Cold",
+    "kind": "cex"
+  },
+  "UQAM7neInG9akbVPY3vFFSDXbsZ2elu-LhL-lVSHQxhTZldq": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQA2ogqg4sy7KfGuQVXWtbOm3vnE7NVGCeBCl6-XdJkqy3pq": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQD43kP-yXDGBuEty7-inqvIp46iirQJt2sG99J5DyoymvnN": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAODzhtWtvM2U1cFeYHsbExTVvkPKHrWyC8Ie0yQk5uorKz": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCGLIrEiUHtJtq9QnfWIcYbczYX3i1LoEQTUNMRGAr8nsm1": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQCodhLBc_Oin7zqfQvDZ-jNKL7UBmMISSf7LSXvHRkM-tBQ": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQCkzr6utJHxYmc3ef7nPlNILnMuDJsqRRJtWAyNhq_ulBIY": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQDj1q0RjYWsEMWw7l1QD3wVrwPg4XC36yEEGiJPKu0uVsn6": {
+    "name": "OKX Deposit",
+    "kind": "cex"
+  },
+  "UQAauCzaEl-jJLi3Dc0Dqf2HtqIvJzLa9uK-dm931UjtcJwv": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQAIUE9p6aP7ArvuLzwSNUgx-b2EzRRJ5-sGF9xxMHzypXnS": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAm5QdcGhLAVyeiwievd6o3kN709rLnyDpX5WUe6GDUPrLi": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBfHxmUSNPYhAdn8qfvc_ajvuv3T7wwR97nOngCxRvZnLwm": {
+    "name": "OKX Deposit",
+    "kind": "cex"
+  },
+  "UQCbCZBPnYMYomapYp1SXAOvssb2r7-yXBYmZGkSAiE5RskQ": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQAQfHIo7X2g68tY77QR6165uLJnit11STF1GW20OX_NTdUQ": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCAecf1ACdPv7NGnA9NGb1Hv3IJxDIWc9rWKpjeMOmbY44w": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAWYtCmKR1usM3Z_v2zBjarP_PGM7D-fZCJssjChlmepGAc": {
+    "name": "Telegram Wallet Cold",
+    "kind": "cex"
+  },
+  "UQBK_u0nsBW-LJrI8cNOR57F3pcs9_UXuoP3i-5KCN-CP1pE": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBDyteAMO6l53QGDaJNWMGs3me4x5y29eHkrkgae--wYixm": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAC5G3Dthc3vHzKhtPvbmiusbURR9n4EPvCMJR-OhzF30c6": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDh_QbzMENaZG189Y5ZFbzV5miaSR79Zc66dZosetmC72dd": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCclTV4tr_yl5lIlVDF2ez-UQqddN-WLXLICUTJBsa5ex6h": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQClmpYGx1_yIxcs9Uztjs6Q7t-1BK3gz3I1WC3WsUwV7gj7": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCht6Pqy53p4xta2IsIuFodYHRb4SGmZD_HZki8V_6L8gOd": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAv5LdrtfmkN4MC8lL0iKY2uYC9Q33lG_3OnszjRE6yq4dy": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQAqPRIm5UUYvwhBlprnwm_fQp80KiW0RWv1Vx5AOWDYqiRM": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAYlYkBnlZyEHauqurmNy-MsIgIUbkyTWTo0hOW4uhIb6zy": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQCSn_bBUbw0SBxR1OfzZA2r3wOqgW1jDa8pbMJXn0TNhCNe": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQC5dWiiQY5O5kQo22LqreByJNlPV2nTfn7dDKI1vyh3QTkA": {
+    "name": "Rapira Cold",
+    "kind": "cex"
+  },
+  "UQClf4P2mVixJB8QPa9yA0fiLfezCueS4Hl51UWqwKx-RRZo": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQCypKI3y88KN4zW0ASVlMbnYWPPapRucD9soDhYTAOpe8yl": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQD5WeMUd0p3VotBUOW2I18YK2UtW_17bzLNuCKyxuJSXjKK": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDJ2TOEiCX7bY85Is3KWPZnQOGBLtiGzw5mlOQaqicCfy7i": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQC4qk7BVnRn_zlOVSRU-DPyi_F5uTsXgm5jEYljxaJKNm70": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQA28xxzOBrOEqQB9tRfrAe8JWwqeqCTFLeLvQo1ISnxUCCH": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAjvddqEk-7AzXdMWuUHBzPDEBQ0Y6HSlIwxB_hoIEy3nxz": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQA5En1_Bw9CWzH5I4UGdAoiUZN_mue5FHgY1ctZLxUFqma4": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCtJEbppklHiQOi7wc67ca63gl0yjYFVjtvTcco0MjZ6Utp": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCJyRv1fNqLmxmg6tSrjDb5WvnWLiRpLwmODsKnCP5eY624": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCLZQsUJTIKkFOW8Bw0urD9wFH_-rzkLBNXMp3ovbqdb1VB": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBIXC7C9h57eupMne8R7naaQgqsaKvH4GdZnSqH-KGtbyN8": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQBLZLh_O8PHcoZTuDtA6FcGWXdMtMpVj_4XiwrBFT1c3uuD": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAl05JB2nB72TdISnaDRfwh3W6GMQx0U0idHt2rBU4cqZFS": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCEqkax9N0JZ-kH-rZNxW_--HjnbiA7TA-mhYbNM6WqqYHD": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCQeJf0sfgsbHzTZh2sEeayt9-EIW8w48soCjF7TLNS8AOM": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBCYWVUnWf2pMoOVgZbRdHN_xpcggsu7BZDrZs1N5xaxKVd": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQCvl7MwZ7MBKbmNMfM4FveSMcwDNVmX2SeR3-LgONTv498c": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQB45ogFK3sf1dseYO0aakV2_BZPc2MPgkF0X9be6FHGoSg9": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQBV7MMe1T6hUXDYNa_7_IsJtF7TIxvRt8jo9mlyYi_I4Ppp": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAQRUqj7T_2vz2kW0kThfz05bFsvxx94S0Pf7uXnp_biRIg": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAzXx41Bs6TUppE3-ktNplrl4osR_ppu9L0FsJdxVGF4vzW": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQCBy_4sHXCUKkStfRjhi2v00WLe9ZHkJOXQJ0nSBpUQjtSH": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQAbl_9Btx9222md1ddQnU4LZICOccmdCOkE1fVEpzoLBVTd": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCA5YPQPzr9blo-uQaataBFiN-lpZ-KWtoexPbkZaMTuSY_": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDWbtIP3CENt1S1KFz273A4MQYY7KlINfIhD4dHCVhaG17s": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQC80S-Rf17hm8WpU3p7mmDH5pIwMunK90IVpKeoMMekmSxA": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQDjIKl9xerLccwMBTUUF-i7aq5gqGv9Tho9vi4AihpxVLQY": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQARpt7JNUq5GXfAPhc4vXzOVCF9YmWoyajBEX-EtaTlNCcn": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCvcDP7FGFQBTNpZitUSipRaCiIpyQP21jvELWdyNPUCVFQ": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBrrLhxOBag3TsvyXIZij-htAqkJwe1gmk2TI3IZTBLcDG9": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQCxbIZF7H0LZnyy4jgVrSC6KeJzXeKvz2axi6AfJNQYrY3i": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQA5d2wR1bbjTsRuANxBUzzOjm2gwKjhurQLBl38LN10ltiT": {
+    "name": "MEXC Cold",
+    "kind": "cex"
+  },
+  "UQC0J-99ktwFXhwJuTAoRKDWFpI5NhZPO8aqZskH6uajJneY": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQDaWIelcziGencW2TQT4mYEfQm4Dqoqxm94Yd15RPnEX3Yb": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAu37D834r987WKk8jSrwQYq_Uqwc-_K-r8YZXdt_YZmGRG": {
+    "name": "Telegram Wallet Cold",
+    "kind": "cex"
+  },
+  "UQDN9E4TfqC6N3D5aDic-h5IgZk1jm7okMtVctAYTXtvoAmI": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQB9UzGf-4lppNDqeOE-_nx7pjAdD7liTPdOAECOjO_NX0Ci": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQD2iP78ecHdtsVdkJ_rxp9FbrqfjjhwdSV_WRDnzb13zLlU": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCgyf7fEpCnGW_JM8t0LM7vWjj25Q-qDhlNTOPW7qAhyt4Y": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQBTxgdCQEsoX0DaGHAgQVEF4ydw6BI7wsZzNm-ZdkQbpk4R": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQBbQksmWYXJQfM3roLpuaLFEvot7kxpH3Ue_lEDdTlNg0nm": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCh559JMAnoVKk-bjRqlaHJQ00OB7B8-u0KIkfWsVvPxCpY": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDXUALQZLi_XFZb_oXrNa_ssqTsTkujXXLo7M_ze_ixzH5p": {
+    "name": "Binance Cold",
+    "kind": "cex"
   }
 }

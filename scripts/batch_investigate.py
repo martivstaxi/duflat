@@ -8,9 +8,11 @@ from investigate_wallet import (
     JETTON, LABELS_JSON, load_key, to_uq, http, fetch_jetton_history,
 )
 
+# Defaults; overridable via CLI: batch_investigate.py [INPUT] [OUTPUT] [PAGES] [SLEEP]
 INPUT  = r"C:\Users\livea\duflat\scripts\top100_unlabeled.json"
 OUTPUT = r"C:\Users\livea\duflat\scripts\batch_flow_report.json"
-PAGES  = 5  # up to 500 NOT transfer events per address
+PAGES  = 5      # up to PAGES * 100 NOT transfer events per address
+SLEEP  = 0.1    # seconds between addresses
 
 
 def analyze(addr, key, labels):
@@ -116,11 +118,17 @@ def verdict(r):
 
 
 def main():
+    global INPUT, OUTPUT, PAGES, SLEEP
+    if len(sys.argv) > 1: INPUT  = sys.argv[1]
+    if len(sys.argv) > 2: OUTPUT = sys.argv[2]
+    if len(sys.argv) > 3: PAGES  = int(sys.argv[3])
+    if len(sys.argv) > 4: SLEEP  = float(sys.argv[4])
+
     key = load_key()
     labels = json.load(open(LABELS_JSON, encoding="utf-8"))
     holders = json.load(open(INPUT, encoding="utf-8"))
     unlabeled = [h for h in holders if not h["labeled"]]
-    print(f"Analyzing {len(unlabeled)} unlabeled holders, {PAGES} pages each\n")
+    print(f"Analyzing {len(unlabeled)} unlabeled holders, {PAGES} pages each, sleep={SLEEP}s\n")
 
     results = []
     for i, h in enumerate(unlabeled, 1):
@@ -138,7 +146,7 @@ def main():
                 f"out:{r['cex_out_pct']:>5.1f}%CEX[{r['out_top_fam'] or '-'}:{r['out_top_pct']:>5.1f}%] "
                 f"=> {v}"
             )
-        time.sleep(0.1)
+        time.sleep(SLEEP)
 
     json.dump(results, open(OUTPUT, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     print(f"\nsaved -> {OUTPUT}")
