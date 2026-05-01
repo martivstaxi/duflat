@@ -1,0 +1,1002 @@
+[
+  {
+    "rank": 1,
+    "address": "UQD4uGNdB4a3f52mYOZf0x1nCmdd1DAvrLppL0a1cetTYCQx",
+    "balance_NOT": 19700000000.0,
+    "tonapi_name": "selling-domain-dogs.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "Binance Deposit",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 2,
+    "address": "UQDPfqI17W9lF-3OmAJu92GOn22BoTMdTmW6cY4s0V-ArUmd",
+    "balance_NOT": 10505798161.02,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 3,
+    "address": "UQD6GtXDZxaWo9VEAz1LQPWMMC4IsZLEihuN1Q7hQK3VsprG",
+    "balance_NOT": 3223095291.8,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 4,
+    "address": "UQABFuckIRGCTerroristsNOBITEX1111111111111111_jT",
+    "balance_NOT": 3023350001.61,
+    "tonapi_name": "use-ton-dns.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "use-ton-dns.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 5,
+    "address": "UQDckH7C2IB_CyCnM6HfaL56VkLcU8GhCu3_noRiIFwSGwFA",
+    "balance_NOT": 2735708942.37,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 6,
+    "address": "UQBmoechltZNb69I-ksuqGH2ewSE0tFKWcr3AdjChs5E5Uii",
+    "balance_NOT": 2555778979.34,
+    "tonapi_name": "OKX 11",
+    "is_scam": false,
+    "labeled": true,
+    "label": "OKX 11",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 7,
+    "address": "UQDVV10gxEPfjuyFpu4hp43bFZlUg7M0PMmYOGXqcZ_jFkNj",
+    "balance_NOT": 2147389432.46,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 8,
+    "address": "UQBs6No0_I8KxJ2nW9hIagQkjRSaGCISnS6nsiCwIGm9zeTl",
+    "balance_NOT": 1812780123.56,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 9,
+    "address": "UQCFupq4i6T9x9tI1WvVA5xqR295WulH23ukNr4gECrt_LVv",
+    "balance_NOT": 1716485771.71,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 10,
+    "address": "UQB_LPN1koEFYocWeuKaAkDTQMFFycDs9CGrwPLpnJQ0U6Gy",
+    "balance_NOT": 1438388312.44,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 11,
+    "address": "UQDYh9Di0cT8QSbnHJcNM6sYlpQAAOrnA7sats7Mgwd344Mm",
+    "balance_NOT": 1435941613.27,
+    "tonapi_name": "MEXC 3",
+    "is_scam": false,
+    "labeled": true,
+    "label": "MEXC 3",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 12,
+    "address": "UQAlUIj4emu0wstPVV7OG3Kw7hlnS7lXDC_LMofZvCfsBjQ1",
+    "balance_NOT": 1406647072.5,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 13,
+    "address": "UQA7hl8xdtMpwYKAuzZHei7OSnJpVaznO7JwFLVYjY4At45g",
+    "balance_NOT": 1196572314.9,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 14,
+    "address": "UQBdX85dtHYp8qhHD8njEKq9Tbec3IX4jJAnk5otZ2KRNXYu",
+    "balance_NOT": 1193711519.53,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 15,
+    "address": "UQCkdi_s8DUFA1kjX5jrr7oLG0SbVTGK4-Q52Yvdw1cRGfku",
+    "balance_NOT": 1171892909.87,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 16,
+    "address": "UQAbhMWosoxeoXTJi9Tlw09MEjPVvdJe9j0nC6K6ro0d1t87",
+    "balance_NOT": 1109833118.35,
+    "tonapi_name": "amocucinare-rugger.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "amocucinare-rugger.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 17,
+    "address": "UQDYzZmfsrGzhObKJUw4gzdeIxEai3jAFbiGKGwxvxHinf4K",
+    "balance_NOT": 1030406182.65,
+    "tonapi_name": "Pavel Durov",
+    "is_scam": false,
+    "labeled": true,
+    "label": "Pavel Durov",
+    "label_kind": "named"
+  },
+  {
+    "rank": 18,
+    "address": "UQBmlAmSmKc6GbesAPi3Pk6i-ooyUPXgFS2LmLv0uTXqP-ei",
+    "balance_NOT": 994066950.73,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 19,
+    "address": "UQALCiRSoydJukCcTChrJICZpppVZduZ0N2wOeXurS8NvOlM",
+    "balance_NOT": 961529800.29,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 20,
+    "address": "UQAHsamD0jg4uG0FtCCkKBP2JPLLT02RaU2Ous8PX0sCrbCt",
+    "balance_NOT": 881874046.77,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 21,
+    "address": "UQCRzplhFEoCV7c9jKV4JhiQ4UR-vuz4Etz8VWlz10-jHb0E",
+    "balance_NOT": 784613949.74,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 22,
+    "address": "UQDJlZqZfh1OQ4PY2ze4bSEBznjc8fGzkE2YiP5XLvDv1JNr",
+    "balance_NOT": 784354370.73,
+    "tonapi_name": "Bitget12",
+    "is_scam": false,
+    "labeled": true,
+    "label": "Bitget12",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 23,
+    "address": "UQDKHZ7e70CzqdvZCC83Z4WVR8POC_ZB0J1Y4zo88G-zCSRH",
+    "balance_NOT": 697439295.62,
+    "tonapi_name": "Binance Hot Wallet",
+    "is_scam": false,
+    "labeled": true,
+    "label": "Binance Hot Wallet",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 24,
+    "address": "UQDYM0YvFy2-1J4vTsn_GKUx8UKBCvs2A5QKJt8wVTXqhsK0",
+    "balance_NOT": 696417181.4,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 25,
+    "address": "UQDY4-KtVxawZU_Vva7KTOhlhx8Ho0jI0ahyebYT5YuJkYSf",
+    "balance_NOT": 644184995.61,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 26,
+    "address": "UQDwRmfWo3TRVQa159IcYwee1SBAikm_wqlLu5uuGMUfDw3O",
+    "balance_NOT": 636632666.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 27,
+    "address": "UQCiErgR_u2U30EI2G5RzLfLANOhzOz8jXU5K2bkVOtczTcP",
+    "balance_NOT": 609816031.63,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 28,
+    "address": "UQAPykgBUhbI2Fz_JNhT89NhT8HTKSw3Im32EipXtqLSIkmt",
+    "balance_NOT": 598386483.45,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 29,
+    "address": "UQD0BRQt-QdIEbsjuRsMqzDlBkUAEfQixShDECoKEOXRc4eR",
+    "balance_NOT": 559779356.46,
+    "tonapi_name": "hashtag-on-tele-g.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "hashtag-on-tele-g.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 30,
+    "address": "UQDBH7hoQwba-QxZoPl7wka2XZPtp3LdMZieG6mw-CCcBQXT",
+    "balance_NOT": 512061048.27,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 31,
+    "address": "UQAAgSvOzjuIFf-wrQ2RFOGMpqXAH1gZFcMqER-8ib-M2vVt",
+    "balance_NOT": 511045622.22,
+    "tonapi_name": "check-hashtag-on-tg.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "check-hashtag-on-tg.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 32,
+    "address": "UQAG8_BzwlWkmqb9zImr9RJjjgZZCLMOQXP9PR0B1PYHvalX",
+    "balance_NOT": 441764587.95,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 33,
+    "address": "UQDyoucGvxKV-mOI4wqZxDHOKUrvACcnlG0BOoXfwVVDF8MU",
+    "balance_NOT": 424155805.55,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 34,
+    "address": "UQBjtW8IpOPQYO-qd8oKXlkZZNrH7j6k9RZ43-LCQFGsZ8aC",
+    "balance_NOT": 401028613.96,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 35,
+    "address": "UQCKpFqSdys6hMSf-_Tr3R2ZNRQpi3UDyu6Ep60-HolLopIj",
+    "balance_NOT": 344256698.66,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 36,
+    "address": "UQA3cnyXnGlWgdk3U-tMHoorVYhKAB_XkuzyP-EE4DyDaJdm",
+    "balance_NOT": 314824338.61,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 37,
+    "address": "UQCWULrv4afVSJNRbaVO6LcJoRisdnFaujnBQptKSXBH0TMO",
+    "balance_NOT": 299730089.94,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 38,
+    "address": "UQDrYiDWDH_MToxCvkaItdhs83nGu5_tX28T-dhKwzGVDaSI",
+    "balance_NOT": 294998640.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 39,
+    "address": "UQB4HFOu8nI8DuyfCBhPagIW_CbaKs2NP3AlomM7dqLEF_O8",
+    "balance_NOT": 284767547.85,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 40,
+    "address": "UQC5-g3fOp_2LJBPeDX3Rj_jW13WFLQtiy-RpmSMhe5vC1M5",
+    "balance_NOT": 272106019.88,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 41,
+    "address": "UQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4Tnjo",
+    "balance_NOT": 265667483.6,
+    "tonapi_name": "STON.fi DEX",
+    "is_scam": false,
+    "labeled": true,
+    "label": "STON.fi DEX",
+    "label_kind": "protocol"
+  },
+  {
+    "rank": 42,
+    "address": "UQBcMta8wlpWkk1-pU1iEb1iKeYVOPTxc565PvVsJJZ0ihgl",
+    "balance_NOT": 236227312.1,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 43,
+    "address": "UQDYa6Lp99YwuDrDmCsngxs5dKzL_P7epA4iP0T7dsoY1po4",
+    "balance_NOT": 213228544.51,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 44,
+    "address": "UQCgJMAdLq3CtecfGqKY3bJye9kjrDp6BW_MnW_7zwclJQKz",
+    "balance_NOT": 200897725.13,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 45,
+    "address": "UQDy_hPG41yzzb7aq1p50Nx1-cKlZQPM0Bcwaxg1Jf8-ESpS",
+    "balance_NOT": 184436264.54,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 46,
+    "address": "UQDdc4iZ8eLmoMdGUuw_K6UN60UydPaXN1w-OpjvGMBEEUYQ",
+    "balance_NOT": 172486489.71,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 47,
+    "address": "UQAxg9T-usK3Vn9cqADvoEisUnqS6T3SvwSCNLRJgPp_T2-z",
+    "balance_NOT": 167957480.53,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 48,
+    "address": "UQD3cTJV7BJ7ZNXyFcvykK_J4JYPafQjoJjp4Wb5BG7rwKks",
+    "balance_NOT": 165156251.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 49,
+    "address": "UQDcLs9hF1R8LESUyJjARQB-0l91Ir6D8rkAGFM9zSAqXU_r",
+    "balance_NOT": 151379934.17,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 50,
+    "address": "UQDg5iDIqj8O4xHM0rsL26Vo_a4OKZnblc_EI6LJ37kRC1AC",
+    "balance_NOT": 151318857.42,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 51,
+    "address": "UQCCicv6tmoxkQ0o-YTwEFkZzHXRE7_FykNXEDv1nwD5Dn3V",
+    "balance_NOT": 149001823.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 52,
+    "address": "UQDKYZnO9o4kwU10XjYuVnD5qftb24GLw54Y1XpyrDhJqsAO",
+    "balance_NOT": 148781715.23,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 53,
+    "address": "UQDIv0mSHnXxE6C_CTIZXRkricGJwpUNg5PXU3BaZW1nFhqB",
+    "balance_NOT": 135284294.48,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 54,
+    "address": "UQBsJbXy_l7xpqGXj2EfYaUIg_1QoIIrGRdkRfypMYIyY9Ql",
+    "balance_NOT": 131507707.89,
+    "tonapi_name": "OKX 12",
+    "is_scam": false,
+    "labeled": true,
+    "label": "visit-hashtag-on-tele.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 55,
+    "address": "UQDIsFlvCQskFf5V7y4HhfHFdpkr_eQ2rqx1787Dqx8PrG9-",
+    "balance_NOT": 123480750.28,
+    "tonapi_name": "hashtag-on-tele-gram.ton",
+    "is_scam": false,
+    "labeled": true,
+    "label": "hashtag-on-tele-gram.ton",
+    "label_kind": "named"
+  },
+  {
+    "rank": 56,
+    "address": "UQDQKawuKNAAC6NJuiBsnyr8ewqCLuFmYWavUoP7BIVxAmVC",
+    "balance_NOT": 122005940.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 57,
+    "address": "UQDmTo2Aun0l40gEng6BiidXALpwEdAOdxNzHOGYQ3p5x5Sj",
+    "balance_NOT": 120026264.5,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 58,
+    "address": "UQB-Wm_qp9yFlpuI_d1hItFMkojuGYqQG00IDl4l-4Glzy7E",
+    "balance_NOT": 116260699.61,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 59,
+    "address": "UQApf4sNxaOv28M0ObgSwszBYkFXT1goePR383bEPo-2qxxr",
+    "balance_NOT": 114697225.61,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 60,
+    "address": "UQCa8U7SrtpuvYKHhYYk47b61lQ8YrRQkQGdLe7kBR_KWoMC",
+    "balance_NOT": 111253083.91,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 61,
+    "address": "UQB-D5gKB83ynJCf24yhg_lcWq7X7tjNQ6jXz0uXtkkPShZ6",
+    "balance_NOT": 110443477.11,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 62,
+    "address": "UQBs4XrkdUtLd7_1LYsLH-d-QhT664VhHcqH3TgCu8Gj-1ls",
+    "balance_NOT": 108306168.63,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 63,
+    "address": "UQAhNddMFE2xHgU5ZsINftgOM-bNnbv3cOwiJR13UmYCNzXa",
+    "balance_NOT": 104829286.74,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 64,
+    "address": "UQC8K85OC_wxIpFTlW98Z2_z-zV86cB-GcKMnGaSMSsfohat",
+    "balance_NOT": 104560613.45,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 65,
+    "address": "UQDNH6P8W4f68LRScjwuqhee5SgP9btMzoESFu8ewzRuDQ1o",
+    "balance_NOT": 102664262.35,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 66,
+    "address": "UQAkTGtILzYb0k5h55IWoHhkiuheFgvP7igsVy_stx08YgFm",
+    "balance_NOT": 101583048.6,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 67,
+    "address": "UQC3fQd1k29Sh3qo3c3FwK0fTA5N1uEyI5X_wyZSZn0Ak28_",
+    "balance_NOT": 100362979.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 68,
+    "address": "UQAU3ksCZHlBd5EIt7mb6FWWJgzN6BM1EAAFXXRN2KugTJYl",
+    "balance_NOT": 93207530.56,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 69,
+    "address": "UQCx-KS4C28A6HoZ5VnDr8kzcV89YcLqVzd7WNvj_FfBWJqa",
+    "balance_NOT": 90860657.98,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 70,
+    "address": "UQACHN0ftaMgE-5Nh3Mg_p6kq8XUYFN_e5dnB9f_iArAGjBC",
+    "balance_NOT": 88841439.49,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 71,
+    "address": "UQDz8Y1fIYhK8RRFZBtV0vgeh59n55O5hayjil9wKm2w6fhi",
+    "balance_NOT": 88085574.66,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 72,
+    "address": "UQCcubKJFR1h9ndc1Xg9yrP-R4qP4XgHzPtXqHbUXZH0hPPQ",
+    "balance_NOT": 82891986.39,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 73,
+    "address": "UQBFXlFYIXyjsNkmdXI1OtSQQDP7gknYp-zVOKZNGzFCHgcQ",
+    "balance_NOT": 82211561.06,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 74,
+    "address": "UQCJGVn5fz2lGruG3QUfKhU07MvKHEhxQhzheiyvSFlraxwP",
+    "balance_NOT": 79935111.65,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 75,
+    "address": "UQAbaGyvY1BZK3Raas803llcVH5wZ62_FluG056j8kmMhaSV",
+    "balance_NOT": 79029464.32,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 76,
+    "address": "UQBPyemREQAlSxBJdWArlJCXtjzcOPBnKiwWz8sw9_8L_wzb",
+    "balance_NOT": 76233699.15,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 77,
+    "address": "UQBSMXzs7ykTu1NJQ9CVniv08yFjsxVdLkvGVTZT8YKcRbXI",
+    "balance_NOT": 73286421.93,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 78,
+    "address": "UQDNVsqiDSHhUKPCp6tf0kRXvYpGkXaKmNtXKJ5nxiUPqRD0",
+    "balance_NOT": 71260050.12,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 79,
+    "address": "UQDwhP3ozCpqxsgroNyC1uBxloqh8Q60C3lTQINrlAX_3tXD",
+    "balance_NOT": 70639050.52,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 80,
+    "address": "UQDEYl2dmHSU2pvoSE8CS-PwkjGNcrq3A6v-B7X6Ly44OcE1",
+    "balance_NOT": 68173594.82,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 81,
+    "address": "UQC0lrj3O0af8GotieYsTXChA_wijIIVN7Sd_wkgYLwoHxMv",
+    "balance_NOT": 67290162.41,
+    "tonapi_name": "Gate.io",
+    "is_scam": false,
+    "labeled": true,
+    "label": "Gate.io",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 82,
+    "address": "UQDQp9s8gsduffBq4sP4VbncBx25HgvxUHuUemLlZ76dMICS",
+    "balance_NOT": 65490783.59,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 83,
+    "address": "UQCEfvjUxopnkTkFfAR9LEvQhwEm_1CEOTUWausV2BfnTcUy",
+    "balance_NOT": 62648365.74,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 84,
+    "address": "UQALNg_rFGuNZRbrDpP2ZdqABigEEr3Vsj0e79GhhJnmeaMn",
+    "balance_NOT": 62303116.03,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 85,
+    "address": "UQAiFGlJtgF4K78MAlAPkmdXBRlLrCx9MR8ZvQBH7uMjq2tH",
+    "balance_NOT": 60489708.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 86,
+    "address": "UQAG1fGl5Qx3kq-18F33TFsIjZA7ZCSdAshk0lPmdrL_Zrc9",
+    "balance_NOT": 60000000.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 87,
+    "address": "UQBj4hVj_IXYQbco8svTeQb2ZAPq1aANQi0fWsQ19CMgXWJa",
+    "balance_NOT": 59433471.46,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 88,
+    "address": "UQArhe9wZz4NYlLdaJHJHX70fxUKhUlmAP2t1nSGcf2k3Sw3",
+    "balance_NOT": 58276570.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 89,
+    "address": "UQChSx9FI4Wyu5hK0sREHh0jyuBx_fwJbfulPrujtv8dEIro",
+    "balance_NOT": 57563087.09,
+    "tonapi_name": "lbank.info",
+    "is_scam": false,
+    "labeled": true,
+    "label": "lbank.info",
+    "label_kind": "cex"
+  },
+  {
+    "rank": 90,
+    "address": "UQBs-KUFGpku4UKI3PdKoA_A1zNDHZDPS3l16N8GBI-TukVW",
+    "balance_NOT": 57271115.51,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 91,
+    "address": "UQDiOQyJ_m6w4wnI045M6jlZ84lXvBAZB72DGyXaHu2wYReo",
+    "balance_NOT": 57105062.0,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 92,
+    "address": "UQAD8XEJQppmZDZvlTAKopt2E_c-Xbhzt7_vKH98W4qB5HOs",
+    "balance_NOT": 55706997.29,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 93,
+    "address": "UQCpZYAEwL8ibXs-0gt94GWOtDBJDmJdr17aCYLLfArf89Yt",
+    "balance_NOT": 55196088.85,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 94,
+    "address": "UQCp4npCTYRH2nkNfo-VIB9vqHoNq69Uy-KtdUCiU3CNeC7Z",
+    "balance_NOT": 53608492.75,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 95,
+    "address": "UQAigd8MjqsJejMuIB0UPhErOlGe22dezkpjvpWt9kOrthx5",
+    "balance_NOT": 53137704.57,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 96,
+    "address": "UQDeokJviFMgvQocUk_b7Q-dt3UC7kOWtaEaqDnOBpeJt4qE",
+    "balance_NOT": 53014964.16,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 97,
+    "address": "UQBhOBkbx-4mGsy0zkI9PK_jKtWdl5H_F9K-17YlTlGtRkwa",
+    "balance_NOT": 51980917.38,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 98,
+    "address": "UQD62C2D-yGPiVsaoW9loD_IcyIt3rxix8QdUKcfUHEQIq0d",
+    "balance_NOT": 50544358.75,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 99,
+    "address": "UQAlxVxKxBCSsdItzldzT3O9Gi-7-lEbN22_2ThHQAL75JG8",
+    "balance_NOT": 50000000.48,
+    "tonapi_name": "",
+    "is_scam": false,
+    "labeled": false,
+    "label": "",
+    "label_kind": ""
+  },
+  {
+    "rank": 100,
+    "address": "UQDx--jUU9PUtHltPYZX7wdzIi0SPY3KZ8nvOs0iZvQJd_ng",
+    "balance_NOT": 48447744.44,
+    "tonapi_name": "STON.fi DEX",
+    "is_scam": false,
+    "labeled": true,
+    "label": "STON.fi DEX",
+    "label_kind": "protocol"
+  }
+]

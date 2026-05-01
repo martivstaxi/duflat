@@ -1212,5 +1212,73 @@
   "UQCOkbUDgcNt1CrM21H1y12WhIVotJJPgHmxpa5-EPQ-2iNl": {
     "name": "Binance Hot Wallet 2",
     "kind": "cex"
+  },
+  "UQB_LPN1koEFYocWeuKaAkDTQMFFycDs9CGrwPLpnJQ0U6Gy": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQCkdi_s8DUFA1kjX5jrr7oLG0SbVTGK4-Q52Yvdw1cRGfku": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQBmlAmSmKc6GbesAPi3Pk6i-ooyUPXgFS2LmLv0uTXqP-ei": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQDYM0YvFy2-1J4vTsn_GKUx8UKBCvs2A5QKJt8wVTXqhsK0": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDY4-KtVxawZU_Vva7KTOhlhx8Ho0jI0ahyebYT5YuJkYSf": {
+    "name": "OKX Internal",
+    "kind": "cex"
+  },
+  "UQCiErgR_u2U30EI2G5RzLfLANOhzOz8jXU5K2bkVOtczTcP": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAPykgBUhbI2Fz_JNhT89NhT8HTKSw3Im32EipXtqLSIkmt": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCgJMAdLq3CtecfGqKY3bJye9kjrDp6BW_MnW_7zwclJQKz": {
+    "name": "OKX Cold",
+    "kind": "cex"
+  },
+  "UQDg5iDIqj8O4xHM0rsL26Vo_a4OKZnblc_EI6LJ37kRC1AC": {
+    "name": "lbank.info Cold",
+    "kind": "cex"
+  },
+  "UQDQKawuKNAAC6NJuiBsnyr8ewqCLuFmYWavUoP7BIVxAmVC": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDmTo2Aun0l40gEng6BiidXALpwEdAOdxNzHOGYQ3p5x5Sj": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCJGVn5fz2lGruG3QUfKhU07MvKHEhxQhzheiyvSFlraxwP": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQDNVsqiDSHhUKPCp6tf0kRXvYpGkXaKmNtXKJ5nxiUPqRD0": {
+    "name": "Bitget Cold",
+    "kind": "cex"
+  },
+  "UQDEYl2dmHSU2pvoSE8CS-PwkjGNcrq3A6v-B7X6Ly44OcE1": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQCEfvjUxopnkTkFfAR9LEvQhwEm_1CEOTUWausV2BfnTcUy": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQArhe9wZz4NYlLdaJHJHX70fxUKhUlmAP2t1nSGcf2k3Sw3": {
+    "name": "Binance Cold",
+    "kind": "cex"
+  },
+  "UQAD8XEJQppmZDZvlTAKopt2E_c-Xbhzt7_vKH98W4qB5HOs": {
+    "name": "OKX Cold",
+    "kind": "cex"
   }
 }

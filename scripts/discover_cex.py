@@ -47,6 +47,62 @@ MANUAL_OVERRIDES = {
     # but it wasn't in our top-9000 NOT holders so the discovery missed it.
     "UQCOkbUDgcNt1CrM21H1y12WhIVotJJPgHmxpa5-EPQ-2iNl":
         {"name": "Binance Hot Wallet 2", "kind": "cex"},
+
+    # ---- 2026-05-01 batch: top-100 unlabeled holders, NOT-flow analysis ----
+    # All entries below: tonapi has no name; flow shows >=85% inflow from a
+    # single CEX family with ~zero outflow (sub/cold pattern) — or both sides
+    # >=85% same family (internal). Source: scripts/batch_flow_report.json.
+    # rank#10, in:97.0% OKX, out~0, ev=10, bal=1438M NOT
+    "UQB_LPN1koEFYocWeuKaAkDTQMFFycDs9CGrwPLpnJQ0U6Gy":
+        {"name": "OKX Cold", "kind": "cex"},
+    # rank#15, in:85.8%/out:99.5% OKX, ev=45, bal=1172M NOT
+    "UQCkdi_s8DUFA1kjX5jrr7oLG0SbVTGK4-Q52Yvdw1cRGfku":
+        {"name": "OKX Internal", "kind": "cex"},
+    # rank#18, in:85.7% OKX, out~0, ev=7, bal=994M NOT
+    "UQBmlAmSmKc6GbesAPi3Pk6i-ooyUPXgFS2LmLv0uTXqP-ei":
+        {"name": "OKX Cold", "kind": "cex"},
+    # rank#24, in:100.0% Binance, out~0, ev=3, bal=696M NOT
+    "UQDYM0YvFy2-1J4vTsn_GKUx8UKBCvs2A5QKJt8wVTXqhsK0":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#25, in:100.0%/out:100.0% OKX, ev=499, bal=644M NOT
+    "UQDY4-KtVxawZU_Vva7KTOhlhx8Ho0jI0ahyebYT5YuJkYSf":
+        {"name": "OKX Internal", "kind": "cex"},
+    # rank#27, in:100.0% Binance, out~0, ev=130, bal=610M NOT
+    "UQCiErgR_u2U30EI2G5RzLfLANOhzOz8jXU5K2bkVOtczTcP":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#28, in:100.0% Binance, out~0, ev=17, bal=598M NOT
+    "UQAPykgBUhbI2Fz_JNhT89NhT8HTKSw3Im32EipXtqLSIkmt":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#44, in:87.4% OKX, out~0, ev=8, bal=201M NOT
+    "UQCgJMAdLq3CtecfGqKY3bJye9kjrDp6BW_MnW_7zwclJQKz":
+        {"name": "OKX Cold", "kind": "cex"},
+    # rank#50, in:100.0% lbank.info, out~0, ev=3, bal=151M NOT
+    "UQDg5iDIqj8O4xHM0rsL26Vo_a4OKZnblc_EI6LJ37kRC1AC":
+        {"name": "lbank.info Cold", "kind": "cex"},
+    # rank#56, in:100.0% Binance, out~0, ev=2, bal=122M NOT
+    "UQDQKawuKNAAC6NJuiBsnyr8ewqCLuFmYWavUoP7BIVxAmVC":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#57, in:100.0% Binance, out~0, ev=2, bal=120M NOT
+    "UQDmTo2Aun0l40gEng6BiidXALpwEdAOdxNzHOGYQ3p5x5Sj":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#74, in:100.0% Binance, out~0, ev=2, bal=80M NOT
+    "UQCJGVn5fz2lGruG3QUfKhU07MvKHEhxQhzheiyvSFlraxwP":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#78, in:100.0% Bitget, out~0, ev=22, bal=71M NOT
+    "UQDNVsqiDSHhUKPCp6tf0kRXvYpGkXaKmNtXKJ5nxiUPqRD0":
+        {"name": "Bitget Cold", "kind": "cex"},
+    # rank#80, in:87.4% Binance, out~0, ev=26, bal=68M NOT
+    "UQDEYl2dmHSU2pvoSE8CS-PwkjGNcrq3A6v-B7X6Ly44OcE1":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#83, in:100.0% Binance, out~0, ev=2, bal=63M NOT
+    "UQCEfvjUxopnkTkFfAR9LEvQhwEm_1CEOTUWausV2BfnTcUy":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#88, in:100.0% Binance, out~0, ev=3, bal=58M NOT
+    "UQArhe9wZz4NYlLdaJHJHX70fxUKhUlmAP2t1nSGcf2k3Sw3":
+        {"name": "Binance Cold", "kind": "cex"},
+    # rank#92, in:100.0% OKX, out~0, ev=3, bal=56M NOT
+    "UQAD8XEJQppmZDZvlTAKopt2E_c-Xbhzt7_vKH98W4qB5HOs":
+        {"name": "OKX Cold", "kind": "cex"},
 }
 
 
