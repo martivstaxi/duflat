@@ -167,7 +167,7 @@
 <script>
 // Cloudflare Worker that gates manual pipeline dispatches (12h cooldown).
 // Set this to your deployed Worker URL — either workers.dev or a custom domain.
-const WORKER_URL = "https://duflat-dispatcher.martivstaxi.workers.dev";
+const WORKER_URL = "https://duflat-dispatcher.djamaldinovic.workers.dev";
 
 const fmtN = (n, d=0) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtNOT = (n) => fmtN(n, 0) + " NOT";
