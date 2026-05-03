@@ -5,7 +5,8 @@ Also maintains flow_reports/index.json (list of all report dates)."""
 import json, os, sys
 from datetime import datetime, timezone
 
-DIR = r"C:\Users\livea\duflat\flow_reports"
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIR  = os.path.join(REPO, "flow_reports")
 
 
 def main():

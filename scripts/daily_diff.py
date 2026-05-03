@@ -7,8 +7,9 @@ Outputs flow_reports/diff_YYYY-MM-DD.json (date = today's snapshot)."""
 import json, os, sys
 from datetime import datetime, timezone, timedelta
 
-SNAP_DIR  = r"C:\Users\livea\duflat\snapshots"
-OUT_DIR   = r"C:\Users\livea\duflat\flow_reports"
+REPO      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SNAP_DIR  = os.path.join(REPO, "snapshots")
+OUT_DIR   = os.path.join(REPO, "flow_reports")
 TOP_N     = 50  # how many top changers to keep in the diff
 
 

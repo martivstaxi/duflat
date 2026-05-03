@@ -1,0 +1,17 @@
+name = "duflat-dispatcher"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+
+# Bindings — fill kv_namespaces.id after creating the namespace,
+# then set GH_TOKEN secret separately:
+#   wrangler kv:namespace create STATE
+#   wrangler secret put GH_TOKEN
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+REPO           = "martivstaxi/duflat"
+WORKFLOW       = "daily-not-flow.yml"
+ALLOWED_ORIGIN = "https://duflat.com"

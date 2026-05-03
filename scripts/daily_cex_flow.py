@@ -9,12 +9,20 @@ import urllib.request, urllib.error, json, base64, os, sys, time
 from datetime import datetime, timezone, timedelta
 
 JETTON     = "EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT"
+REPO       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KEY_FILE   = os.path.join(os.path.expanduser("~"), ".tonapi_key")
-LABELS_JSON = r"C:\Users\livea\duflat\exchanges.json"
-DEST_DIR   = r"C:\Users\livea\duflat\flow_reports"
+LABELS_JSON = os.path.join(REPO, "exchanges.json")
+DEST_DIR   = os.path.join(REPO, "flow_reports")
 PAGE       = 100         # max per history page
 SLEEP      = 0.4         # between addresses
 WINDOW_S   = 24 * 3600   # 24 hours
+
+
+def get_key():
+    env = os.environ.get("TONAPI_KEY")
+    if env:
+        return env.strip()
+    return open(KEY_FILE).read().strip()
 
 
 def crc16(data):
@@ -101,7 +109,7 @@ def family(name):
 
 
 def main():
-    key = open(KEY_FILE).read().strip()
+    key = get_key()
     labels = json.load(open(LABELS_JSON, encoding="utf-8"))
     cex_addrs = {a: m for a, m in labels.items() if m.get("kind") == "cex"}
     print(f"scanning {len(cex_addrs)} CEX wallets, 24h window\n")

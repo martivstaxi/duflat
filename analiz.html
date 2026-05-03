@@ -116,6 +116,29 @@
     border: 1px solid var(--border); background: white;
     font-variant-numeric: tabular-nums;
   }
+  .refresh-btn {
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 8px 14px; border-radius: 980px;
+    border: 1px solid var(--accent); background: var(--accent); color: white;
+    cursor: pointer; transition: opacity .15s, background .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 16px;
+  }
+  .refresh-btn:hover:not(:disabled) { background: #0077ed; border-color: #0077ed; }
+  .refresh-btn:disabled {
+    background: var(--tag-bg); color: var(--text-tertiary);
+    border-color: var(--border); cursor: not-allowed;
+  }
+  .refresh-btn .cd { font-variant-numeric: tabular-nums; opacity: .85; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1d1d1f; color: white; padding: 12px 20px; border-radius: 12px;
+    font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .toast.err { background: #b30000; }
 </style>
 </head>
 <body>
@@ -128,8 +151,13 @@
     <nav class="nav">
       <a href="/">Home</a>
       <a href="/NOT.html">NOT Holder Analyzer</a>
+      <button id="refreshBtn" class="refresh-btn" disabled title="Veriyi yeniden çek">
+        <span class="lbl">Yükleniyor…</span>
+        <span class="cd"></span>
+      </button>
     </nav>
   </header>
+  <div id="toast" class="toast"></div>
 
   <div id="container">
     <div class="empty">Yükleniyor…</div>
@@ -137,6 +165,10 @@
 </div>
 
 <script>
+// Cloudflare Worker that gates manual pipeline dispatches (12h cooldown).
+// Set this to your deployed Worker URL — either workers.dev or a custom domain.
+const WORKER_URL = "https://duflat-dispatcher.martivstaxi.workers.dev";
+
 const fmtN = (n, d=0) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtNOT = (n) => fmtN(n, 0) + " NOT";
 const signed = (n, fn=fmtN) => (n > 0 ? "+" : "") + fn(n);
@@ -351,6 +383,102 @@ function renderTopChangers(rep) {
       ${renderList(d.exited_addrs_sample, "Çıkan Cüzdanlar (top)")}
     </div>`;
 }
+
+function fmtCountdown(ms) {
+  const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (h > 0) return `${h}sa ${m}dk`;
+  if (m > 0) return `${m}dk`;
+  return `${s}sn`;
+}
+
+function showToast(msg, isErr = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("err", !!isErr);
+  t.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove("show"), 4500);
+}
+
+const refreshState = { remaining: 0, lastTick: 0, busy: false };
+
+function paintBtn() {
+  const btn = document.getElementById("refreshBtn");
+  if (!btn) return;
+  const lbl = btn.querySelector(".lbl");
+  const cd  = btn.querySelector(".cd");
+  if (refreshState.busy) {
+    btn.disabled = true;
+    lbl.textContent = "Tetikleniyor…";
+    cd.textContent = "";
+    return;
+  }
+  if (refreshState.remaining > 0) {
+    btn.disabled = true;
+    lbl.textContent = "Yenilenemez";
+    cd.textContent = fmtCountdown(refreshState.remaining);
+    btn.title = `12 saatlik bekleme süresi var. Kalan: ${fmtCountdown(refreshState.remaining)}`;
+  } else {
+    btn.disabled = false;
+    lbl.textContent = "Veriyi yenile";
+    cd.textContent = "";
+    btn.title = "Pipeline'ı şimdi tetikle (sonraki 12 saat kilitli)";
+  }
+}
+
+function tickCooldown() {
+  if (refreshState.remaining <= 0) return;
+  const now = Date.now();
+  refreshState.remaining = Math.max(0, refreshState.remaining - (now - refreshState.lastTick));
+  refreshState.lastTick = now;
+  paintBtn();
+}
+setInterval(tickCooldown, 1000);
+
+async function loadCooldown() {
+  try {
+    const r = await fetch(`${WORKER_URL}/status`, { cache: "no-store" });
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    const s = await r.json();
+    refreshState.remaining = s.cooldown_remaining_ms || 0;
+    refreshState.lastTick = Date.now();
+  } catch (e) {
+    refreshState.remaining = 0;
+    console.warn("cooldown status fetch failed:", e);
+  }
+  paintBtn();
+}
+
+async function dispatchRefresh() {
+  if (refreshState.busy || refreshState.remaining > 0) return;
+  refreshState.busy = true;
+  paintBtn();
+  try {
+    const r = await fetch(`${WORKER_URL}/dispatch`, { method: "POST" });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.ok) {
+      refreshState.remaining = 12 * 3600 * 1000;
+      refreshState.lastTick = Date.now();
+      showToast("Pipeline tetiklendi — yeni rapor 3-5dk içinde hazır olur. Sayfayı sonra yenileyebilirsin.");
+    } else if (r.status === 429) {
+      refreshState.remaining = data.cooldown_remaining_ms || 0;
+      refreshState.lastTick = Date.now();
+      showToast(`12sa bekleme süresi aktif. Kalan: ${fmtCountdown(refreshState.remaining)}`, true);
+    } else {
+      showToast(`Dispatch başarısız: ${data.error || r.status}`, true);
+    }
+  } catch (e) {
+    showToast(`Bağlantı hatası: ${e.message}`, true);
+  } finally {
+    refreshState.busy = false;
+    paintBtn();
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", dispatchRefresh);
+loadCooldown();
 
 async function main() {
   let idx;

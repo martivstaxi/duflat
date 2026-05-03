@@ -1,0 +1,46 @@
+name: Daily NOT flow analysis
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:00 UTC = 09:00 Europe/Istanbul (TR has no DST since 2016, fixed UTC+3)
+    - cron: '0 6 * * *'
+
+# Only one run at a time — don't stack scheduled + manual dispatches
+concurrency:
+  group: daily-not-flow
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run pipeline
+        env:
+          TONAPI_KEY: ${{ secrets.TONAPI_KEY }}
+        run: |
+          python -u scripts/daily_snapshot.py
+          python -u scripts/daily_cex_flow.py
+          python -u scripts/daily_diff.py
+          python -u scripts/daily_report.py
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add snapshots/ flow_reports/
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+          else
+            git commit -m "NOT analiz: daily flow report"
+            git push
+          fi

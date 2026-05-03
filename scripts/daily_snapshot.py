@@ -4,11 +4,19 @@ import urllib.request, json, base64, os, sys, time
 from datetime import datetime, timezone
 
 JETTON   = "EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT"
+REPO     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KEY_FILE = os.path.join(os.path.expanduser("~"), ".tonapi_key")
-DEST_DIR = r"C:\Users\livea\duflat\snapshots"
+DEST_DIR = os.path.join(REPO, "snapshots")
 PAGE     = 1000      # tonapi cap
 TARGET   = 9000      # tonapi holders cap
 SLEEP    = 0.3
+
+
+def get_key():
+    env = os.environ.get("TONAPI_KEY")
+    if env:
+        return env.strip()
+    return open(KEY_FILE).read().strip()
 
 
 def crc16(data):
@@ -39,7 +47,7 @@ def fetch_page(key, offset, limit):
 
 
 def main():
-    key = open(KEY_FILE).read().strip()
+    key = get_key()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     os.makedirs(DEST_DIR, exist_ok=True)
     out = os.path.join(DEST_DIR, f"{today}.json")
