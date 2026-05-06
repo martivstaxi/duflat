@@ -49,59 +49,10 @@
   }
   a { color: inherit; text-decoration: none; }
 
-  /* ───── STICKY FILTER BAR ───── */
-  .bar {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(246,243,236,0.82);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  .bar .inner {
-    max-width: 920px; margin: 0 auto;
-    padding: 18px 24px;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-  }
-  .group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .pill {
-    border: 1px solid var(--border-subtle);
-    background: var(--card);
-    color: var(--text-secondary);
-    padding: 7px 14px; border-radius: 980px;
-    font-family: inherit;
-    font-size: .8rem; font-weight: 500;
-    cursor: pointer;
-    transition: all .2s var(--ease);
-    user-select: none;
-    box-shadow: var(--shadow-sm);
-    line-height: 1;
-  }
-  .pill:hover {
-    border-color: var(--border); color: var(--text);
-    transform: translateY(-1px); box-shadow: var(--shadow-md);
-  }
-  .pill.on {
-    background: var(--accent); color: #fff; border-color: var(--accent);
-  }
-  .search {
-    margin-left: auto;
-    border: 1px solid var(--border-subtle);
-    background: var(--card);
-    border-radius: 980px;
-    padding: 8px 16px;
-    font-size: .82rem; width: 240px;
-    outline: none;
-    font-family: inherit;
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
-    transition: all .2s var(--ease);
-  }
-  .search::placeholder { color: var(--tertiary); }
-  .search:focus { border-color: var(--accent); box-shadow: var(--shadow-md); }
-  @media (max-width: 760px) { .search { margin-left: 0; width: 100%; } }
-
   /* ───── TABLE ───── */
-  .wrap { max-width: 920px; margin: 0 auto; padding: 8px 24px 120px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 24px 120px; }
+  /* first month section: no big top gap since there's no header above */
+  table.cal tr.month-row:first-child td { padding-top: 8px; }
 
   table.cal {
     width: 100%;
@@ -218,27 +169,6 @@
 </style>
 </head>
 <body>
-
-<div class="bar">
-  <div class="inner">
-    <div class="group">
-      <span class="pill on" data-f="cat" data-v="all">All</span>
-      <span class="pill" data-f="cat" data-v="anime">Anime</span>
-      <span class="pill" data-f="cat" data-v="comic">Comic</span>
-      <span class="pill" data-f="cat" data-v="game">Game</span>
-      <span class="pill" data-f="cat" data-v="mixed">Mixed</span>
-    </div>
-    <div class="group">
-      <span class="pill on" data-f="reg" data-v="all">All</span>
-      <span class="pill" data-f="reg" data-v="asia">Asia</span>
-      <span class="pill" data-f="reg" data-v="europe">Europe</span>
-      <span class="pill" data-f="reg" data-v="na">N. America</span>
-      <span class="pill" data-f="reg" data-v="oceania">Oceania</span>
-      <span class="pill" data-f="reg" data-v="sa">S. America</span>
-    </div>
-    <input class="search" id="searchInput" type="text" placeholder="Search..." />
-  </div>
-</div>
 
 <div class="wrap">
   <table class="cal" id="cal"><tbody></tbody></table>
@@ -372,8 +302,6 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 const MSHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const CAT = { anime:"Anime", comic:"Comic", game:"Game", mixed:"Mixed" };
 
-const state = { cat:"all", reg:"all", q:"" };
-
 function fmtRange(ev) {
   const s = new Date(ev.date+"T00:00");
   const e = ev.endDate ? new Date(ev.endDate+"T00:00") : null;
@@ -385,27 +313,12 @@ function fmtRange(ev) {
   return `${sM} ${s.getDate()} – ${eM} ${e.getDate()}`;
 }
 
-function pass(ev) {
-  if (state.cat !== "all" && ev.category !== state.cat) return false;
-  if (state.reg !== "all" && ev.region !== state.reg) return false;
-  if (state.q) {
-    const q = state.q.toLowerCase();
-    const hay = (ev.name + " " + ev.city + " " + ev.country).toLowerCase();
-    if (!hay.includes(q)) return false;
-  }
-  return true;
-}
-
 function render() {
-  const filtered = EVENTS.filter(pass).sort((a,b) => a.date.localeCompare(b.date));
+  const sorted = [...EVENTS].sort((a,b) => a.date.localeCompare(b.date));
   const tbody = document.querySelector("#cal tbody");
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty">No events match.</div></td></tr>`;
-    return;
-  }
   let html = "";
   let lastMonth = -1;
-  filtered.forEach(ev => {
+  sorted.forEach(ev => {
     const mIdx = parseInt(ev.date.slice(5,7),10) - 1;
     if (mIdx !== lastMonth) {
       html += `<tr class="month-row"><td colspan="4">${MONTHS[mIdx]}</td></tr>`;
@@ -422,19 +335,6 @@ function render() {
   tbody.innerHTML = html;
 }
 
-document.querySelectorAll(".pill[data-f]").forEach(p => {
-  p.addEventListener("click", () => {
-    const f = p.dataset.f;
-    document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(x => x.classList.remove("on"));
-    p.classList.add("on");
-    state[f] = p.dataset.v;
-    render();
-  });
-});
-document.getElementById("searchInput").addEventListener("input", e => {
-  state.q = e.target.value.trim();
-  render();
-});
 document.querySelector("#cal tbody").addEventListener("click", e => {
   const row = e.target.closest("tr.row");
   if (row && row.dataset.url) window.open(row.dataset.url, "_blank", "noopener");
