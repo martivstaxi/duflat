@@ -82,8 +82,10 @@
   table.cal tr.row { transition: background .15s var(--ease); cursor: pointer; }
   table.cal tr.row:hover { background: var(--hairline); }
   table.cal tr.row:hover td.name .ev-name { color: var(--accent); }
-  table.cal tr.row:hover td.name .ev-name::after {
-    transform: translate(2px, -2px); opacity: 1;
+  table.cal tr.row:hover td.arrow-cell .arrow {
+    transform: translate(2px, -2px);
+    opacity: 1;
+    color: var(--accent);
   }
   table.cal tr.row td {
     padding: 18px 16px;
@@ -117,17 +119,6 @@
   table.cal tr.row td.name .ev-name {
     color: inherit;
     transition: color .15s var(--ease);
-    display: inline-flex; align-items: center;
-  }
-  table.cal tr.row td.name .ev-name::after {
-    content: "↗";
-    display: inline-block;
-    margin-left: 7px;
-    font-size: .85rem;
-    font-weight: 500;
-    color: var(--tertiary);
-    opacity: .55;
-    transition: transform .2s var(--ease), opacity .2s var(--ease), color .15s var(--ease);
   }
   table.cal tr.row td.name .notes {
     display: block;
@@ -149,8 +140,22 @@
   table.cal tr.row td.tag-cell {
     text-align: right;
     width: 116px;
-    padding-right: 4px;
+    padding-right: 8px;
     white-space: nowrap;
+  }
+  table.cal tr.row td.arrow-cell {
+    width: 32px;
+    padding: 0 6px 0 0;
+    text-align: right;
+  }
+  .arrow {
+    display: inline-block;
+    font-size: 1.25rem;     /* 20px */
+    line-height: 1;
+    font-weight: 400;
+    color: var(--tertiary);
+    opacity: .45;
+    transition: transform .2s var(--ease), opacity .2s var(--ease), color .15s var(--ease);
   }
   .tag {
     display: inline-flex; align-items: center;
@@ -181,16 +186,19 @@
     table.cal tr.month-row td { padding: 40px 0 10px; font-size: 1.0625rem; }
     table.cal tr.row {
       display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 4px 12px;
+      grid-template-columns: 1fr auto auto;
+      gap: 4px 10px;
       padding: 18px 4px;
       border-bottom: 1px solid var(--hairline);
+      align-items: center;
     }
     table.cal tr.row td { padding: 0; border: none; }
-    table.cal tr.row td.date { grid-column: 1; grid-row: 1; width: auto; }
-    table.cal tr.row td.tag-cell { grid-column: 2; grid-row: 1; text-align: right; width: auto; }
-    table.cal tr.row td.name { grid-column: 1 / -1; grid-row: 2; margin-top: 8px; font-size: 1rem; }
-    table.cal tr.row td.loc  { grid-column: 1 / -1; grid-row: 3; margin-top: 2px; }
+    table.cal tr.row td.date       { grid-column: 1; grid-row: 1; width: auto; }
+    table.cal tr.row td.tag-cell   { grid-column: 2; grid-row: 1; text-align: right; width: auto; padding: 0; }
+    table.cal tr.row td.arrow-cell { grid-column: 3; grid-row: 1; width: auto; padding: 0; }
+    table.cal tr.row td.name       { grid-column: 1 / -1; grid-row: 2; margin-top: 8px; font-size: 1rem; }
+    table.cal tr.row td.loc        { grid-column: 1 / -1; grid-row: 3; margin-top: 2px; }
+    .arrow { font-size: 1.15rem; }
   }
 </style>
 </head>
@@ -347,7 +355,7 @@ function render() {
   sorted.forEach(ev => {
     const mIdx = parseInt(ev.date.slice(5,7),10) - 1;
     if (mIdx !== lastMonth) {
-      html += `<tr class="month-row"><td colspan="4">${MONTHS[mIdx]}</td></tr>`;
+      html += `<tr class="month-row"><td colspan="5">${MONTHS[mIdx]}</td></tr>`;
       lastMonth = mIdx;
     }
     html += `
@@ -356,6 +364,7 @@ function render() {
         <td class="name"><span class="ev-name">${ev.name}</span>${ev.notes ? `<span class="notes">${ev.notes}</span>` : ""}</td>
         <td class="loc">${ev.city}, ${ev.country}</td>
         <td class="tag-cell"><span class="tag t-${ev.category}">${CAT[ev.category]}</span></td>
+        <td class="arrow-cell"><span class="arrow">↗</span></td>
       </tr>`;
   });
   tbody.innerHTML = html;
