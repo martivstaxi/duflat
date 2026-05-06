@@ -93,13 +93,27 @@
     vertical-align: middle;
   }
 
+  table.cal tr.row td.flag-cell {
+    width: 32px;
+    padding: 0 0 0 4px;
+  }
+  .flag {
+    display: block;
+    width: 22px; height: 16px;
+    border-radius: 2px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.07) inset;
+  }
+  .flag-placeholder {
+    background: var(--hairline);
+  }
   table.cal tr.row td.date {
     font-size: .875rem;      /* 14px */
     font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
-    width: 132px;
-    padding-left: 4px;
+    width: 130px;
+    padding-left: 8px;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
   }
@@ -186,16 +200,17 @@
     table.cal tr.month-row td { padding: 40px 0 10px; font-size: 1.0625rem; }
     table.cal tr.row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: auto 1fr auto auto;
       gap: 4px 10px;
       padding: 18px 4px;
       border-bottom: 1px solid var(--hairline);
       align-items: center;
     }
     table.cal tr.row td { padding: 0; border: none; }
-    table.cal tr.row td.date       { grid-column: 1; grid-row: 1; width: auto; }
-    table.cal tr.row td.tag-cell   { grid-column: 2; grid-row: 1; text-align: right; width: auto; padding: 0; }
-    table.cal tr.row td.arrow-cell { grid-column: 3; grid-row: 1; width: auto; padding: 0; }
+    table.cal tr.row td.flag-cell  { grid-column: 1; grid-row: 1; width: auto; padding: 0; }
+    table.cal tr.row td.date       { grid-column: 2; grid-row: 1; width: auto; padding-left: 0; }
+    table.cal tr.row td.tag-cell   { grid-column: 3; grid-row: 1; text-align: right; width: auto; padding: 0; }
+    table.cal tr.row td.arrow-cell { grid-column: 4; grid-row: 1; width: auto; padding: 0; }
     table.cal tr.row td.name       { grid-column: 1 / -1; grid-row: 2; margin-top: 8px; font-size: 1rem; }
     table.cal tr.row td.loc        { grid-column: 1 / -1; grid-row: 3; margin-top: 2px; }
     .arrow { font-size: 1.15rem; }
@@ -336,6 +351,20 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 const MSHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const CAT = { anime:"Anime", comic:"Comic", game:"Game", mixed:"Mixed" };
 
+const ISO = {
+  "USA": "us", "Taiwan": "tw", "Japan": "jp", "UK": "gb", "Canada": "ca",
+  "France": "fr", "Australia": "au", "China": "cn", "Hong Kong": "hk",
+  "Germany": "de", "Indonesia": "id", "South Korea": "kr", "Singapore": "sg",
+  "Italy": "it", "Brazil": "br",
+};
+function flagHTML(country) {
+  const code = ISO[country];
+  if (!code) return `<span class="flag flag-placeholder" aria-hidden="true"></span>`;
+  return `<img class="flag" loading="lazy" alt="${country} flag"
+            src="https://flagcdn.com/w40/${code}.png"
+            srcset="https://flagcdn.com/w40/${code}.png 1x, https://flagcdn.com/w80/${code}.png 2x">`;
+}
+
 function fmtRange(ev) {
   const s = new Date(ev.date+"T00:00");
   const e = ev.endDate ? new Date(ev.endDate+"T00:00") : null;
@@ -355,11 +384,12 @@ function render() {
   sorted.forEach(ev => {
     const mIdx = parseInt(ev.date.slice(5,7),10) - 1;
     if (mIdx !== lastMonth) {
-      html += `<tr class="month-row"><td colspan="5">${MONTHS[mIdx]}</td></tr>`;
+      html += `<tr class="month-row"><td colspan="6">${MONTHS[mIdx]}</td></tr>`;
       lastMonth = mIdx;
     }
     html += `
       <tr class="row" data-url="${ev.url}">
+        <td class="flag-cell">${flagHTML(ev.country)}</td>
         <td class="date">${fmtRange(ev)}${ev.dateApprox ? `<span class="approx">~</span>` : ""}</td>
         <td class="name"><span class="ev-name">${ev.name}</span>${ev.notes ? `<span class="notes">${ev.notes}</span>` : ""}</td>
         <td class="loc">${ev.city}, ${ev.country}</td>
