@@ -23,10 +23,15 @@
     --accent: #b85d3a;
     --accent-soft: rgba(184,93,58,.10);
 
-    --c-anime: #c2185b;
-    --c-comic: #d97706;
-    --c-game:  #4f46c0;
-    --c-mixed: #2e8a52;
+    /* category accents — solid (text) + tint (bg) pairs */
+    --c-anime:      #b8174f;
+    --c-anime-bg:   #fbe4ec;
+    --c-comic:      #a3530a;
+    --c-comic-bg:   #fbecd2;
+    --c-game:       #3b34a0;
+    --c-game-bg:    #e3e2f8;
+    --c-mixed:      #1f6e3e;
+    --c-mixed-bg:   #d8efde;
 
     --shadow-sm: 0 1px 2px rgba(63,47,30,.04);
     --shadow-md: 0 4px 14px rgba(63,47,30,.06), 0 1px 3px rgba(63,47,30,.04);
@@ -74,8 +79,12 @@
   }
   table.cal tr.month-row:first-child td { padding-top: 12px; }
 
-  table.cal tr.row { transition: background .15s var(--ease); }
-  table.cal tr.row:hover { background: var(--hairline); cursor: pointer; }
+  table.cal tr.row { transition: background .15s var(--ease); cursor: pointer; }
+  table.cal tr.row:hover { background: var(--hairline); }
+  table.cal tr.row:hover td.name .ev-name { color: var(--accent); }
+  table.cal tr.row:hover td.name .ev-name::after {
+    transform: translate(2px, -2px); opacity: 1;
+  }
   table.cal tr.row td {
     padding: 18px 16px;
     border-bottom: 1px solid var(--hairline);
@@ -105,6 +114,21 @@
     color: var(--text);
     line-height: 1.35;
   }
+  table.cal tr.row td.name .ev-name {
+    color: inherit;
+    transition: color .15s var(--ease);
+    display: inline-flex; align-items: center;
+  }
+  table.cal tr.row td.name .ev-name::after {
+    content: "↗";
+    display: inline-block;
+    margin-left: 7px;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--tertiary);
+    opacity: .55;
+    transition: transform .2s var(--ease), opacity .2s var(--ease), color .15s var(--ease);
+  }
   table.cal tr.row td.name .notes {
     display: block;
     font-weight: 400;
@@ -132,24 +156,16 @@
     display: inline-flex; align-items: center;
     font-size: .75rem;        /* 12px */
     font-weight: 600;
-    color: var(--muted);
-    padding: 4px 10px 4px 9px;
-    border-radius: 980px;
-    background: var(--card);
-    border: 1px solid var(--border-subtle);
+    padding: 5px 11px;
+    border-radius: 6px;
     line-height: 1;
     letter-spacing: .01em;
+    border: none;
   }
-  .tag::before {
-    content: "";
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    margin-right: 7px;
-  }
-  .tag.t-anime::before { background: var(--c-anime); }
-  .tag.t-comic::before { background: var(--c-comic); }
-  .tag.t-game::before  { background: var(--c-game); }
-  .tag.t-mixed::before { background: var(--c-mixed); }
+  .tag.t-anime { background: var(--c-anime-bg); color: var(--c-anime); }
+  .tag.t-comic { background: var(--c-comic-bg); color: var(--c-comic); }
+  .tag.t-game  { background: var(--c-game-bg);  color: var(--c-game); }
+  .tag.t-mixed { background: var(--c-mixed-bg); color: var(--c-mixed); }
 
   .empty {
     text-align: center;
@@ -337,7 +353,7 @@ function render() {
     html += `
       <tr class="row" data-url="${ev.url}">
         <td class="date">${fmtRange(ev)}${ev.dateApprox ? `<span class="approx">~</span>` : ""}</td>
-        <td class="name">${ev.name}${ev.notes ? `<span class="notes">${ev.notes}</span>` : ""}</td>
+        <td class="name"><span class="ev-name">${ev.name}</span>${ev.notes ? `<span class="notes">${ev.notes}</span>` : ""}</td>
         <td class="loc">${ev.city}, ${ev.country}</td>
         <td class="tag-cell"><span class="tag t-${ev.category}">${CAT[ev.category]}</span></td>
       </tr>`;
