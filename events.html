@@ -3,300 +3,508 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ACG Events 2026 — Duflat</title>
+<title>ACG 2026 — Duflat</title>
 <style>
   :root {
-    --bg: #fbfbfd;
-    --bg-elevated: #ffffff;
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --bg-dark: #000000;
     --text: #1d1d1f;
+    --text-on-dark: #f5f5f7;
     --text-secondary: #6e6e73;
     --text-tertiary: #86868b;
     --border: #d2d2d7;
     --border-soft: #e8e8ed;
     --accent: #0071e3;
-    --tag-bg: #f5f5f7;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.04);
+    --accent-hover: #0077ED;
 
-    --anime: #ff2d92;
-    --comic: #ff9500;
-    --game:  #5856d6;
-    --mixed: #34c759;
-
-    --asia:    #ff3b30;
-    --europe:  #0071e3;
-    --na:      #af52de;
-    --oceania: #00c7be;
-    --sa:      #ffcc00;
+    /* category accents — used sparingly, as color-coded thin marks */
+    --c-anime: #FF2D55;
+    --c-comic: #FF9500;
+    --c-game:  #5E5CE6;
+    --c-mixed: #30D158;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0;
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: #1d1d1f; color: #fff; }
 
-  header.top {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
+  /* ───── NAVBAR ───── */
+  nav.bar {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(255,255,255,0.72);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
   }
-  header.top h1 {
-    font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px;
+  nav.bar .inner {
+    max-width: 1024px; margin: 0 auto;
+    height: 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    font-size: 14px;
   }
-  header.top .sub { font-size: 14px; color: var(--text-secondary); margin: 0; }
-  header.top .nav a {
-    color: var(--accent); text-decoration: none; font-size: 14px; margin-left: 16px;
-  }
-  header.top .nav a:hover { text-decoration: underline; }
+  nav.bar a.brand { font-weight: 600; letter-spacing: -0.01em; }
+  nav.bar .links a { color: var(--text-secondary); margin-left: 22px; transition: color .2s; }
+  nav.bar .links a:hover { color: var(--text); }
 
-  .card {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-soft);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    margin-bottom: 24px;
-    padding: 20px 24px;
+  /* ───── HERO ───── */
+  .hero {
+    background: #000;
+    color: var(--text-on-dark);
+    text-align: center;
+    padding: 120px 22px 100px;
+    position: relative;
+    overflow: hidden;
   }
-
-  .stats { display: grid; gap: 12px; grid-template-columns: repeat(5, 1fr); }
-  @media (max-width: 800px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-
-  .stat {
-    background: var(--tag-bg);
-    border-radius: 10px;
-    padding: 14px 16px;
+  .hero::before {
+    content: "";
+    position: absolute; inset: -40% -10% auto -10%;
+    height: 80%;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(255,45,85,.35), transparent 55%),
+      radial-gradient(ellipse at 70% 30%, rgba(94,92,230,.35), transparent 55%),
+      radial-gradient(ellipse at 50% 80%, rgba(255,149,0,.20), transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
   }
-  .stat .lbl {
-    font-size: 11px; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.04em;
-    margin-bottom: 4px;
+  .hero > * { position: relative; z-index: 1; }
+  .hero .eyebrow {
+    font-size: 17px;
+    font-weight: 500;
+    color: #f5f5f7;
+    opacity: .7;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
   }
-  .stat .val {
-    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
-    font-variant-numeric: tabular-nums;
+  .hero h1 {
+    font-size: clamp(56px, 9vw, 112px);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    margin: 0 0 24px;
   }
-
-  .filterbar {
-    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-    margin-bottom: 8px;
+  .hero h1 .grad {
+    background: linear-gradient(135deg, #FF2D55 0%, #FF9500 35%, #5E5CE6 70%, #30D158 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
-  .filterbar .label {
-    font-size: 11px; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.04em;
-    margin-right: 4px;
+  .hero .lede {
+    font-size: clamp(19px, 2.2vw, 24px);
+    line-height: 1.4;
+    color: #d2d2d7;
+    max-width: 640px;
+    margin: 0 auto 36px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
   }
-  .chip {
+  .hero .cta-row {
+    display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .btn {
     display: inline-flex; align-items: center;
-    padding: 6px 12px;
-    border: 1px solid var(--border-soft);
     border-radius: 999px;
-    background: var(--bg-elevated);
-    font-size: 13px;
-    color: var(--text-secondary);
+    padding: 12px 22px;
+    font-size: 15px; font-weight: 500;
+    letter-spacing: -0.01em;
     cursor: pointer;
-    user-select: none;
-    transition: all .15s ease;
+    transition: all .2s;
+    border: none;
   }
-  .chip:hover { border-color: var(--border); color: var(--text); }
-  .chip.active {
-    background: var(--text);
-    color: var(--bg-elevated);
-    border-color: var(--text);
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.7); }
+  .btn .arr { margin-left: 6px; transition: transform .2s; }
+  .btn:hover .arr { transform: translateX(3px); }
+
+  /* ───── BIG NUMBERS BAND ───── */
+  .numbers {
+    background: #000;
+    color: #f5f5f7;
+    padding: 60px 22px 100px;
+    text-align: center;
+    border-top: 1px solid #1a1a1a;
   }
-  .chip .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    margin-right: 6px; display: inline-block;
+  .numbers .row {
+    max-width: 980px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+  .numbers .n .v {
+    font-size: clamp(48px, 6vw, 88px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, #888 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .numbers .n .l {
+    font-size: 14px;
+    color: #86868b;
+    margin-top: 10px;
+    letter-spacing: -0.005em;
+  }
+  @media (max-width: 700px) { .numbers .row { grid-template-columns: repeat(2, 1fr); gap: 40px 16px; } }
+
+  /* ───── SECTION HEADER ───── */
+  .section { padding: 100px 22px; }
+  .section.alt { background: var(--bg-soft); }
+  .section .container { max-width: 1024px; margin: 0 auto; }
+  .section-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 56px;
+  }
+  .section-head .kicker {
+    font-size: 14px; font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.005em;
+    text-transform: none;
+    margin: 0 0 12px;
+  }
+  .section-head h2 {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin: 0 0 16px;
+  }
+  .section-head h2 .grad {
+    background: linear-gradient(135deg, #FF2D55 0%, #5E5CE6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .section-head p {
+    font-size: 19px; line-height: 1.45;
+    color: var(--text-secondary);
+    margin: 0;
   }
 
-  .search-wrap {
-    display: flex; align-items: center; gap: 8px;
-    margin-left: auto;
+  /* ───── FEATURED TILES ───── */
+  .featured {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
-  .search-wrap input {
+  @media (max-width: 760px) { .featured { grid-template-columns: 1fr; } }
+  .tile {
+    border-radius: 28px;
+    padding: 48px 40px;
+    color: #fff;
+    min-height: 420px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+    transition: transform .35s ease;
+  }
+  .tile:hover { transform: translateY(-4px); }
+  .tile.large { min-height: 460px; }
+  .tile .top .when {
+    font-size: 14px; opacity: .85; letter-spacing: -0.005em;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .tile h3 {
+    font-size: clamp(32px, 3.6vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin: 0 0 12px;
+  }
+  .tile .where { font-size: 17px; opacity: .85; }
+  .tile .bottom { font-size: 13px; opacity: .8; }
+  .tile .bottom .arr { margin-left: 4px; }
+
+  .tile.t1 { background: linear-gradient(135deg, #ff2d55 0%, #ff9500 100%); }
+  .tile.t2 { background: linear-gradient(135deg, #1d1d1f 0%, #3a3a3c 100%); }
+  .tile.t3 { background: linear-gradient(135deg, #5e5ce6 0%, #0071e3 100%); }
+  .tile.t4 { background: linear-gradient(135deg, #30d158 0%, #00a87e 100%); }
+
+  /* ───── FILTER BAR ───── */
+  .filter-rail {
+    position: sticky; top: 48px; z-index: 30;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .filter-rail .inner {
+    max-width: 1024px; margin: 0 auto;
+    padding: 14px 22px;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .filter-rail .group {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .filter-rail .label {
+    font-size: 12px; color: var(--text-tertiary); margin-right: 4px;
+  }
+  .pill {
     border: 1px solid var(--border-soft);
-    background: var(--bg-elevated);
-    border-radius: 999px;
-    padding: 8px 14px;
+    background: rgba(255,255,255,0.6);
+    color: var(--text-secondary);
+    padding: 6px 13px; border-radius: 999px;
     font-size: 13px;
-    width: 220px;
-    color: var(--text);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+    font-weight: 500;
+  }
+  .pill:hover { color: var(--text); border-color: var(--border); }
+  .pill.on { background: #1d1d1f; color: #fff; border-color: #1d1d1f; }
+  .filter-rail .search {
+    margin-left: auto;
+    border: 1px solid var(--border-soft);
+    background: rgba(255,255,255,0.6);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px; width: 240px;
     outline: none;
     font-family: inherit;
-  }
-  .search-wrap input:focus { border-color: var(--accent); }
-
-  .timeline {
-    display: grid; gap: 24px;
-  }
-  .month-block {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-soft);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    padding: 16px 20px 8px;
-  }
-  .month-block h3 {
-    margin: 0 0 12px; font-size: 13px;
-    color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    font-weight: 600;
-    display: flex; justify-content: space-between; align-items: baseline;
-  }
-  .month-block h3 .count {
-    font-size: 12px; color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .event {
-    display: grid;
-    grid-template-columns: 70px 1fr auto;
-    gap: 16px;
-    align-items: start;
-    padding: 14px 4px;
-    border-top: 1px solid var(--border-soft);
-  }
-  .event:first-of-type { border-top: none; }
-  .event .date {
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-    padding-top: 2px;
-  }
-  .event .date .d {
-    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--text);
   }
-  .event .date .m {
-    font-size: 10px; color: var(--text-tertiary);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    margin-top: 2px;
+  .filter-rail .search:focus { border-color: var(--accent); }
+  @media (max-width: 760px) {
+    .filter-rail .search { margin-left: 0; width: 100%; }
   }
-  .event .body .name {
-    font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+
+  /* ───── CALENDAR ───── */
+  .calendar {
+    max-width: 1024px; margin: 0 auto;
+  }
+  .month {
+    padding: 80px 22px 0;
+    scroll-margin-top: 120px;
+  }
+  .month-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 18px; margin-bottom: 32px;
+  }
+  .month-head h2 {
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin: 0;
+    line-height: 1;
+  }
+  .month-head .ct {
+    font-size: 14px; color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 760px) { .ev-grid { grid-template-columns: 1fr; } }
+
+  .ev {
+    background: #fff;
+    border-radius: 22px;
+    padding: 28px 28px 24px;
+    border: 1px solid var(--border-soft);
+    transition: all .25s ease;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 20px;
+    align-items: start;
+    position: relative;
+  }
+  .section.alt .ev { background: #fff; }
+  .ev:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+    border-color: transparent;
+  }
+  .ev .day {
+    text-align: center;
+    border-right: 1px solid var(--border-soft);
+    padding-right: 16px;
+    padding-top: 4px;
+  }
+  .ev .day .d {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .ev .day .m {
+    font-size: 11px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .ev .body .name {
+    font-size: 22px; font-weight: 600; letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .ev .body .name a:hover { color: var(--accent); }
+  .ev .body .where {
+    font-size: 14px; color: var(--text-secondary);
     margin-bottom: 4px;
   }
-  .event .body .name a {
-    color: var(--text); text-decoration: none;
+  .ev .body .when {
+    font-size: 13px; color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 12px;
   }
-  .event .body .name a:hover { color: var(--accent); }
-  .event .body .meta {
+  .ev .body .notes {
     font-size: 13px; color: var(--text-secondary);
-    display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
-  }
-  .event .body .meta .place::before { content: "📍"; margin-right: 4px; opacity: .7; font-size: 11px; }
-  .event .body .notes {
-    font-size: 12px; color: var(--text-tertiary);
+    line-height: 1.5;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-soft);
     margin-top: 4px;
   }
-  .event .badges {
-    display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
-    max-width: 200px;
+  .ev .tag {
+    position: absolute; top: 22px; right: 22px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--text-secondary);
   }
-  .badge {
-    font-size: 10px; font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: white;
+  .ev .tag::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    margin-right: 6px; vertical-align: 1px;
   }
-  .badge.cat-anime { background: var(--anime); }
-  .badge.cat-comic { background: var(--comic); }
-  .badge.cat-game  { background: var(--game); }
-  .badge.cat-mixed { background: var(--mixed); }
-  .badge.reg-asia    { background: var(--asia); }
-  .badge.reg-europe  { background: var(--europe); }
-  .badge.reg-na      { background: var(--na); }
-  .badge.reg-oceania { background: var(--oceania); }
-  .badge.reg-sa      { background: var(--sa); color: #1d1d1f; }
+  .ev .tag.t-anime::before { background: var(--c-anime); }
+  .ev .tag.t-comic::before { background: var(--c-comic); }
+  .ev .tag.t-game::before  { background: var(--c-game); }
+  .ev .tag.t-mixed::before { background: var(--c-mixed); }
 
   .empty {
-    text-align: center; padding: 60px 20px; color: var(--text-tertiary);
+    text-align: center; padding: 80px 20px;
+    color: var(--text-tertiary);
+    font-size: 17px;
   }
 
+  /* ───── FOOTER ───── */
   footer.foot {
-    text-align: center; font-size: 12px; color: var(--text-tertiary);
-    margin-top: 40px;
+    background: var(--bg-soft);
+    color: var(--text-tertiary);
+    padding: 40px 22px;
+    font-size: 12px;
+    text-align: center;
+    border-top: 1px solid var(--border-soft);
+    margin-top: 80px;
+    line-height: 1.6;
   }
-
-  @media (max-width: 700px) {
-    .event { grid-template-columns: 56px 1fr; }
-    .event .badges { grid-column: 1 / -1; justify-content: flex-start; max-width: none; }
-    .search-wrap { margin-left: 0; width: 100%; }
-    .search-wrap input { width: 100%; }
-  }
+  footer.foot a { color: var(--text-secondary); }
+  footer.foot a:hover { color: var(--text); }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="top">
-    <div>
-      <h1>ACG Events 2026</h1>
-      <p class="sub">Anime · Comics · Games — major conventions and festivals around the globe</p>
-    </div>
-    <div class="nav">
+<nav class="bar">
+  <div class="inner">
+    <a href="/" class="brand">Duflat</a>
+    <div class="links">
+      <a href="#featured">Featured</a>
+      <a href="#calendar">Calendar</a>
       <a href="/">Home</a>
-      <a href="/tools">Tools</a>
     </div>
-  </header>
+  </div>
+</nav>
 
-  <div class="card">
-    <div class="stats" id="stats"></div>
+<header class="hero">
+  <p class="eyebrow">Anime · Comics · Games</p>
+  <h1>2026, <span class="grad">globally.</span></h1>
+  <p class="lede">Every major ACG convention worth flying for. One page, fully filterable, with links straight to the source.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="#calendar">Browse the calendar<span class="arr">→</span></a>
+    <a class="btn btn-ghost" href="#featured">See featured</a>
+  </div>
+</header>
+
+<section class="numbers">
+  <div class="row">
+    <div class="n"><div class="v" id="numTotal">—</div><div class="l">Major events</div></div>
+    <div class="n"><div class="v" id="numCity">—</div><div class="l">Cities</div></div>
+    <div class="n"><div class="v" id="numCountry">—</div><div class="l">Countries</div></div>
+    <div class="n"><div class="v" id="numCont">5</div><div class="l">Continents</div></div>
+  </div>
+</section>
+
+<section class="section" id="featured">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">Featured</div>
+      <h2>The <span class="grad">unmissable</span> four.</h2>
+      <p>If you only catch a handful of events this year, make them these.</p>
+    </div>
+    <div class="featured" id="featured-grid"></div>
+  </div>
+</section>
+
+<section class="section alt" id="calendar">
+  <div class="container">
+    <div class="section-head">
+      <div class="kicker">Calendar</div>
+      <h2>Twelve months. <span class="grad">One scroll.</span></h2>
+      <p>Filter by category or region. Search by event name or city.</p>
+    </div>
   </div>
 
-  <div class="card">
-    <div class="filterbar">
-      <span class="label">Category</span>
-      <span class="chip active" data-filter="cat" data-value="all">All</span>
-      <span class="chip" data-filter="cat" data-value="anime"><span class="dot" style="background:var(--anime)"></span>Anime</span>
-      <span class="chip" data-filter="cat" data-value="comic"><span class="dot" style="background:var(--comic)"></span>Comic</span>
-      <span class="chip" data-filter="cat" data-value="game"><span class="dot" style="background:var(--game)"></span>Game</span>
-      <span class="chip" data-filter="cat" data-value="mixed"><span class="dot" style="background:var(--mixed)"></span>Mixed</span>
-    </div>
-    <div class="filterbar">
-      <span class="label">Region</span>
-      <span class="chip active" data-filter="reg" data-value="all">All</span>
-      <span class="chip" data-filter="reg" data-value="asia"><span class="dot" style="background:var(--asia)"></span>Asia</span>
-      <span class="chip" data-filter="reg" data-value="europe"><span class="dot" style="background:var(--europe)"></span>Europe</span>
-      <span class="chip" data-filter="reg" data-value="na"><span class="dot" style="background:var(--na)"></span>N. America</span>
-      <span class="chip" data-filter="reg" data-value="oceania"><span class="dot" style="background:var(--oceania)"></span>Oceania</span>
-      <span class="chip" data-filter="reg" data-value="sa"><span class="dot" style="background:var(--sa)"></span>S. America</span>
-      <div class="search-wrap">
-        <input id="searchInput" type="text" placeholder="Search event or city..." />
+  <div class="filter-rail">
+    <div class="inner">
+      <div class="group">
+        <span class="label">Type</span>
+        <span class="pill on" data-f="cat" data-v="all">All</span>
+        <span class="pill" data-f="cat" data-v="anime">Anime</span>
+        <span class="pill" data-f="cat" data-v="comic">Comic</span>
+        <span class="pill" data-f="cat" data-v="game">Game</span>
+        <span class="pill" data-f="cat" data-v="mixed">Mixed</span>
       </div>
+      <div class="group">
+        <span class="label">Region</span>
+        <span class="pill on" data-f="reg" data-v="all">All</span>
+        <span class="pill" data-f="reg" data-v="asia">Asia</span>
+        <span class="pill" data-f="reg" data-v="europe">Europe</span>
+        <span class="pill" data-f="reg" data-v="na">N. America</span>
+        <span class="pill" data-f="reg" data-v="oceania">Oceania</span>
+        <span class="pill" data-f="reg" data-v="sa">S. America</span>
+      </div>
+      <input class="search" id="searchInput" type="text" placeholder="Search event or city..." />
     </div>
   </div>
 
-  <div class="timeline" id="timeline"></div>
+  <div class="calendar" id="calendar-list"></div>
+</section>
 
-  <footer class="foot">
-    Dates marked <em>~</em> are estimated based on prior years' patterns. Verify on each event's official site before booking travel.
-  </footer>
-</div>
+<footer class="foot">
+  Dates marked <em>~</em> are estimated based on prior years' patterns.<br>
+  Always verify on each event's official site before booking travel.<br><br>
+  © Duflat · <a href="/">duflat.com</a>
+</footer>
 
 <script>
-// 2026 ACG events — major recurring international conventions.
-// date format: YYYY-MM-DD for start. endDate optional. dateApprox: true if estimated.
 const EVENTS = [
-  // ---- JANUARY ----
   { name: "Taipei Game Show 2026", city: "Taipei", country: "Taiwan", region: "asia",
     date: "2026-01-22", endDate: "2026-01-25", category: "game",
     url: "https://tgs.tca.org.tw/", notes: "Asia Pacific Game Summit + B2C/B2B halls" },
   { name: "Anime Los Angeles 2026", city: "Long Beach, CA", country: "USA", region: "na",
     date: "2026-01-15", endDate: "2026-01-18", category: "anime",
     url: "https://animelosangeles.org/" },
-
-  // ---- FEBRUARY ----
   { name: "Katsucon 2026", city: "National Harbor, MD", country: "USA", region: "na",
     date: "2026-02-13", endDate: "2026-02-15", category: "anime",
     url: "https://www.katsucon.org/" },
   { name: "PAX East 2026", city: "Boston, MA", country: "USA", region: "na",
     date: "2026-02-26", endDate: "2026-03-01", category: "game", dateApprox: true,
     url: "https://east.paxsite.com/" },
-
-  // ---- MARCH ----
   { name: "AnimeJapan 2026", city: "Tokyo (Big Sight)", country: "Japan", region: "asia",
     date: "2026-03-21", endDate: "2026-03-22", category: "anime",
     url: "https://www.anime-japan.jp/", notes: "World's largest anime industry expo" },
@@ -306,145 +514,134 @@ const EVENTS = [
   { name: "WonderCon 2026", city: "Anaheim, CA", country: "USA", region: "na",
     date: "2026-03-27", endDate: "2026-03-29", category: "comic", dateApprox: true,
     url: "https://www.comic-con.org/wca" },
-  { name: "GDC 2026 (Game Developers Conference)", city: "San Francisco, CA", country: "USA", region: "na",
+  { name: "GDC 2026", city: "San Francisco, CA", country: "USA", region: "na",
     date: "2026-03-16", endDate: "2026-03-20", category: "game",
-    url: "https://gdconf.com/" },
-
-  // ---- APRIL ----
-  { name: "MCM Comic Con London (May)", city: "London", country: "UK", region: "europe",
-    date: "2026-05-22", endDate: "2026-05-24", category: "mixed", dateApprox: true,
-    url: "https://www.mcmcomiccon.com/london/" },
+    url: "https://gdconf.com/", notes: "Game Developers Conference" },
   { name: "C2E2 2026", city: "Chicago, IL", country: "USA", region: "na",
     date: "2026-04-10", endDate: "2026-04-12", category: "comic", dateApprox: true,
     url: "https://www.c2e2.com/" },
   { name: "Sakura-Con 2026", city: "Seattle, WA", country: "USA", region: "na",
     date: "2026-04-03", endDate: "2026-04-05", category: "anime", dateApprox: true,
     url: "https://sakuracon.org/" },
-
-  // ---- MAY ----
-  { name: "Anime North 2026", city: "Toronto", country: "Canada", region: "na",
-    date: "2026-05-22", endDate: "2026-05-24", category: "anime", dateApprox: true,
-    url: "https://www.animenorth.com/" },
   { name: "Star Wars Celebration 2026", city: "TBA", country: "TBA", region: "na",
     date: "2026-05-01", endDate: "2026-05-03", category: "mixed", dateApprox: true,
     url: "https://www.starwarscelebration.com/", notes: "Location TBA — typically rotates US/EU/JP" },
-
-  // ---- JUNE ----
+  { name: "Anime North 2026", city: "Toronto", country: "Canada", region: "na",
+    date: "2026-05-22", endDate: "2026-05-24", category: "anime", dateApprox: true,
+    url: "https://www.animenorth.com/" },
+  { name: "MCM Comic Con London (May)", city: "London", country: "UK", region: "europe",
+    date: "2026-05-22", endDate: "2026-05-24", category: "mixed", dateApprox: true,
+    url: "https://www.mcmcomiccon.com/london/" },
   { name: "Summer Game Fest 2026", city: "Los Angeles, CA", country: "USA", region: "na",
     date: "2026-06-05", endDate: "2026-06-12", category: "game", dateApprox: true,
     url: "https://summergamefest.com/", notes: "Multi-day digital + physical showcase week" },
-  { name: "Japan Expo Paris 2026", city: "Paris", country: "France", region: "europe",
-    date: "2026-07-02", endDate: "2026-07-05", category: "anime",
-    url: "https://www.japan-expo-paris.com/", notes: "Largest Japanese culture event in Europe" },
-
-  // ---- JULY ----
   { name: "Anime Expo 2026", city: "Los Angeles, CA", country: "USA", region: "na",
     date: "2026-07-02", endDate: "2026-07-05", category: "anime",
     url: "https://www.anime-expo.org/", notes: "Largest anime convention in N. America" },
-  { name: "San Diego Comic-Con 2026 (SDCC)", city: "San Diego, CA", country: "USA", region: "na",
+  { name: "Japan Expo Paris 2026", city: "Paris", country: "France", region: "europe",
+    date: "2026-07-02", endDate: "2026-07-05", category: "anime",
+    url: "https://www.japan-expo-paris.com/", notes: "Largest Japanese culture event in Europe" },
+  { name: "SMASH! Sydney", city: "Sydney", country: "Australia", region: "oceania",
+    date: "2026-07-04", endDate: "2026-07-05", category: "anime", dateApprox: true,
+    url: "https://smash.org.au/" },
+  { name: "BiliBili World 2026", city: "Shanghai", country: "China", region: "asia",
+    date: "2026-07-17", endDate: "2026-07-19", category: "mixed", dateApprox: true,
+    url: "https://www.bilibili.com/", notes: "Bilibili's flagship ACG fan event" },
+  { name: "San Diego Comic-Con 2026", city: "San Diego, CA", country: "USA", region: "na",
     date: "2026-07-23", endDate: "2026-07-26", category: "mixed",
     url: "https://www.comic-con.org/cci", notes: "Hollywood + comics flagship event" },
+  { name: "Hong Kong Ani-Com & Games", city: "Hong Kong", country: "Hong Kong", region: "asia",
+    date: "2026-07-24", endDate: "2026-07-28", category: "mixed", dateApprox: true,
+    url: "https://www.ani-com.hk/" },
+  { name: "Otakon 2026", city: "Washington, DC", country: "USA", region: "na",
+    date: "2026-07-31", endDate: "2026-08-02", category: "anime", dateApprox: true,
+    url: "https://www.otakon.com/" },
   { name: "ChinaJoy 2026", city: "Shanghai", country: "China", region: "asia",
     date: "2026-07-31", endDate: "2026-08-03", category: "game", dateApprox: true,
     url: "https://www.chinajoy.net/", notes: "Largest gaming expo in mainland China" },
-  { name: "BiliBili World 2026", city: "Shanghai", country: "China", region: "asia",
-    date: "2026-07-17", endDate: "2026-07-19", category: "mixed", dateApprox: true,
-    url: "https://www.bilibili.com/blackboard/activity-bw2025.html",
-    notes: "Bilibili's flagship ACG fan event" },
-
-  // ---- AUGUST ----
   { name: "Comiket 108 (Summer)", city: "Tokyo (Big Sight)", country: "Japan", region: "asia",
     date: "2026-08-15", endDate: "2026-08-16", category: "comic", dateApprox: true,
     url: "https://www.comiket.co.jp/", notes: "World's largest doujinshi fair" },
   { name: "Gamescom 2026", city: "Cologne", country: "Germany", region: "europe",
     date: "2026-08-19", endDate: "2026-08-23", category: "game",
     url: "https://www.gamescom.global/", notes: "World's largest gaming trade fair" },
-  { name: "Otakon 2026", city: "Washington, DC", country: "USA", region: "na",
-    date: "2026-07-31", endDate: "2026-08-02", category: "anime", dateApprox: true,
-    url: "https://www.otakon.com/" },
   { name: "AFA Indonesia 2026", city: "Jakarta", country: "Indonesia", region: "asia",
     date: "2026-08-21", endDate: "2026-08-23", category: "anime", dateApprox: true,
     url: "https://animefestival.asia/" },
-
-  // ---- SEPTEMBER ----
-  { name: "Tokyo Game Show 2026", city: "Chiba (Makuhari Messe)", country: "Japan", region: "asia",
-    date: "2026-09-24", endDate: "2026-09-27", category: "game", dateApprox: true,
-    url: "https://tgs.cesa.or.jp/", notes: "TGS — major Japanese gaming showcase" },
-  { name: "PAX West 2026", city: "Seattle, WA", country: "USA", region: "na",
-    date: "2026-09-04", endDate: "2026-09-07", category: "game", dateApprox: true,
-    url: "https://west.paxsite.com/" },
-  { name: "Hong Kong Ani-Com & Games (Summer)", city: "Hong Kong", country: "Hong Kong", region: "asia",
-    date: "2026-07-24", endDate: "2026-07-28", category: "mixed", dateApprox: true,
-    url: "https://www.ani-com.hk/" },
-
-  // ---- OCTOBER ----
-  { name: "New York Comic Con 2026 (NYCC)", city: "New York, NY", country: "USA", region: "na",
-    date: "2026-10-08", endDate: "2026-10-11", category: "mixed", dateApprox: true,
-    url: "https://www.newyorkcomiccon.com/" },
-  { name: "Lucca Comics & Games 2026", city: "Lucca", country: "Italy", region: "europe",
-    date: "2026-10-28", endDate: "2026-11-01", category: "mixed", dateApprox: true,
-    url: "https://www.luccacomicsandgames.com/", notes: "Largest comic & game festival in Europe" },
   { name: "Anime NYC 2026", city: "New York, NY", country: "USA", region: "na",
     date: "2026-08-21", endDate: "2026-08-23", category: "anime", dateApprox: true,
     url: "https://animenyc.com/" },
-  { name: "MCM Comic Con London (Oct)", city: "London", country: "UK", region: "europe",
-    date: "2026-10-23", endDate: "2026-10-25", category: "mixed", dateApprox: true,
-    url: "https://www.mcmcomiccon.com/london/" },
+  { name: "PAX West 2026", city: "Seattle, WA", country: "USA", region: "na",
+    date: "2026-09-04", endDate: "2026-09-07", category: "game", dateApprox: true,
+    url: "https://west.paxsite.com/" },
+  { name: "Madman Anime Festival Melbourne", city: "Melbourne", country: "Australia", region: "oceania",
+    date: "2026-09-12", endDate: "2026-09-13", category: "anime", dateApprox: true,
+    url: "https://madmananimefestival.com.au/" },
+  { name: "Tokyo Game Show 2026", city: "Chiba (Makuhari Messe)", country: "Japan", region: "asia",
+    date: "2026-09-24", endDate: "2026-09-27", category: "game", dateApprox: true,
+    url: "https://tgs.cesa.or.jp/", notes: "Major Japanese gaming showcase" },
+  { name: "PAX Australia 2026", city: "Melbourne", country: "Australia", region: "oceania",
+    date: "2026-10-09", endDate: "2026-10-11", category: "game", dateApprox: true,
+    url: "https://aus.paxsite.com/" },
+  { name: "New York Comic Con 2026", city: "New York, NY", country: "USA", region: "na",
+    date: "2026-10-08", endDate: "2026-10-11", category: "mixed", dateApprox: true,
+    url: "https://www.newyorkcomiccon.com/" },
   { name: "Brasil Comic Con 2026", city: "São Paulo", country: "Brazil", region: "sa",
     date: "2026-10-15", endDate: "2026-10-18", category: "mixed", dateApprox: true,
     url: "https://www.ccxp.com.br/" },
-
-  // ---- NOVEMBER ----
+  { name: "MCM Comic Con London (Oct)", city: "London", country: "UK", region: "europe",
+    date: "2026-10-23", endDate: "2026-10-25", category: "mixed", dateApprox: true,
+    url: "https://www.mcmcomiccon.com/london/" },
+  { name: "Lucca Comics & Games 2026", city: "Lucca", country: "Italy", region: "europe",
+    date: "2026-10-28", endDate: "2026-11-01", category: "mixed", dateApprox: true,
+    url: "https://www.luccacomicsandgames.com/", notes: "Largest comic & game festival in Europe" },
+  { name: "Paris Games Week 2026", city: "Paris", country: "France", region: "europe",
+    date: "2026-11-04", endDate: "2026-11-08", category: "game", dateApprox: true,
+    url: "https://parisgamesweek.com/" },
   { name: "G-STAR 2026", city: "Busan", country: "South Korea", region: "asia",
     date: "2026-11-19", endDate: "2026-11-22", category: "game", dateApprox: true,
     url: "https://www.gstar.or.kr/", notes: "Korea's largest game expo" },
   { name: "AFA Singapore 2026", city: "Singapore", country: "Singapore", region: "asia",
     date: "2026-11-27", endDate: "2026-11-29", category: "anime", dateApprox: true,
     url: "https://animefestival.asia/" },
-  { name: "Paris Games Week 2026", city: "Paris", country: "France", region: "europe",
-    date: "2026-11-04", endDate: "2026-11-08", category: "game", dateApprox: true,
-    url: "https://parisgamesweek.com/" },
   { name: "CCXP 2026", city: "São Paulo", country: "Brazil", region: "sa",
     date: "2026-12-03", endDate: "2026-12-06", category: "mixed", dateApprox: true,
-    url: "https://www.ccxp.com.br/", notes: "Comic Con Experience — largest pop-culture event in LATAM" },
-  { name: "SMASH! Sydney", city: "Sydney", country: "Australia", region: "oceania",
-    date: "2026-07-04", endDate: "2026-07-05", category: "anime", dateApprox: true,
-    url: "https://smash.org.au/" },
-
-  // ---- DECEMBER ----
-  { name: "Comiket 109 (Winter)", city: "Tokyo (Big Sight)", country: "Japan", region: "asia",
-    date: "2026-12-29", endDate: "2026-12-31", category: "comic", dateApprox: true,
-    url: "https://www.comiket.co.jp/", notes: "Year-end edition of the world's largest doujinshi fair" },
+    url: "https://www.ccxp.com.br/", notes: "Largest pop-culture event in Latin America" },
   { name: "Jump Festa 2027", city: "Chiba (Makuhari Messe)", country: "Japan", region: "asia",
     date: "2026-12-19", endDate: "2026-12-20", category: "anime", dateApprox: true,
     url: "https://www.jumpfesta.com/", notes: "Shueisha's annual Shonen Jump showcase" },
-  { name: "PAX Australia 2026", city: "Melbourne", country: "Australia", region: "oceania",
-    date: "2026-10-09", endDate: "2026-10-11", category: "game", dateApprox: true,
-    url: "https://aus.paxsite.com/" },
-  { name: "Madman Anime Festival Melbourne", city: "Melbourne", country: "Australia", region: "oceania",
-    date: "2026-09-12", endDate: "2026-09-13", category: "anime", dateApprox: true,
-    url: "https://madmananimefestival.com.au/" },
+  { name: "Comiket 109 (Winter)", city: "Tokyo (Big Sight)", country: "Japan", region: "asia",
+    date: "2026-12-29", endDate: "2026-12-31", category: "comic", dateApprox: true,
+    url: "https://www.comiket.co.jp/", notes: "Year-end edition of the world's largest doujinshi fair" },
 ];
 
-const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const FEATURED_NAMES = [
+  "Comiket 108 (Summer)",
+  "San Diego Comic-Con 2026",
+  "Gamescom 2026",
+  "AnimeJapan 2026",
+];
+const TILE_CLASS = ["t1","t2","t3","t4"];
 
-const REGION_LABEL = { asia:"Asia", europe:"Europe", na:"N. America", oceania:"Oceania", sa:"S. America" };
-const CAT_LABEL = { anime:"Anime", comic:"Comic", game:"Game", mixed:"Mixed" };
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MSHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const REGION = { asia:"Asia", europe:"Europe", na:"N. America", oceania:"Oceania", sa:"S. America" };
+const CAT = { anime:"Anime", comic:"Comic", game:"Game", mixed:"Mixed" };
 
-const state = { cat: "all", reg: "all", q: "" };
+const state = { cat:"all", reg:"all", q:"" };
 
-function fmtDateRange(ev) {
-  const s = new Date(ev.date + "T00:00");
-  const e = ev.endDate ? new Date(ev.endDate + "T00:00") : null;
-  const sM = MONTH_SHORT[s.getMonth()];
-  if (!e) return `${sM} ${s.getDate()}`;
-  if (s.getMonth() === e.getMonth()) return `${sM} ${s.getDate()}–${e.getDate()}`;
-  const eM = MONTH_SHORT[e.getMonth()];
-  return `${sM} ${s.getDate()} – ${eM} ${e.getDate()}`;
+function fmtRange(ev) {
+  const s = new Date(ev.date+"T00:00");
+  const e = ev.endDate ? new Date(ev.endDate+"T00:00") : null;
+  const sM = MSHORT[s.getMonth()];
+  if (!e) return `${sM} ${s.getDate()}, 2026`;
+  if (s.getMonth() === e.getMonth())
+    return `${sM} ${s.getDate()}–${e.getDate()}, 2026`;
+  const eM = MSHORT[e.getMonth()];
+  return `${sM} ${s.getDate()} – ${eM} ${e.getDate()}, 2026`;
 }
 
-function passes(ev) {
+function pass(ev) {
   if (state.cat !== "all" && ev.category !== state.cat) return false;
   if (state.reg !== "all" && ev.region !== state.reg) return false;
   if (state.q) {
@@ -455,82 +652,87 @@ function passes(ev) {
   return true;
 }
 
-function render() {
-  const filtered = EVENTS.filter(passes).sort((a,b) => a.date.localeCompare(b.date));
+function renderNumbers() {
+  document.getElementById("numTotal").textContent = EVENTS.length;
+  document.getElementById("numCity").textContent  = new Set(EVENTS.map(e => e.city)).size;
+  document.getElementById("numCountry").textContent = new Set(EVENTS.map(e => e.country)).size;
+}
 
-  // stats
-  const stats = document.getElementById("stats");
-  const byCat = {};
-  filtered.forEach(e => { byCat[e.category] = (byCat[e.category]||0) + 1; });
-  const byReg = {};
-  filtered.forEach(e => { byReg[e.region] = (byReg[e.region]||0) + 1; });
-  const topReg = Object.entries(byReg).sort((a,b)=>b[1]-a[1])[0];
-  stats.innerHTML = `
-    <div class="stat"><div class="lbl">Total events</div><div class="val">${filtered.length}</div></div>
-    <div class="stat"><div class="lbl">Anime</div><div class="val">${byCat.anime||0}</div></div>
-    <div class="stat"><div class="lbl">Comic</div><div class="val">${byCat.comic||0}</div></div>
-    <div class="stat"><div class="lbl">Game</div><div class="val">${byCat.game||0}</div></div>
-    <div class="stat"><div class="lbl">Top region</div><div class="val" style="font-size:18px">${topReg ? REGION_LABEL[topReg[0]] + " (" + topReg[1] + ")" : "—"}</div></div>
-  `;
+function renderFeatured() {
+  const grid = document.getElementById("featured-grid");
+  const items = FEATURED_NAMES.map(n => EVENTS.find(e => e.name === n)).filter(Boolean);
+  grid.innerHTML = items.map((ev, i) => `
+    <a class="tile ${TILE_CLASS[i]}" href="${ev.url}" target="_blank" rel="noopener">
+      <div class="top">
+        <div class="when">${fmtRange(ev)}${ev.dateApprox?" · est.":""}</div>
+        <h3>${ev.name.replace(/\s+\(.+\)$/, "")}</h3>
+        <div class="where">${ev.city}, ${ev.country}</div>
+      </div>
+      <div class="bottom">${ev.notes || CAT[ev.category] + " · " + REGION[ev.region]} <span class="arr">→</span></div>
+    </a>
+  `).join("");
+}
 
-  // timeline grouped by month
-  const tl = document.getElementById("timeline");
+function renderCalendar() {
+  const filtered = EVENTS.filter(pass).sort((a,b) => a.date.localeCompare(b.date));
+  const container = document.getElementById("calendar-list");
   if (filtered.length === 0) {
-    tl.innerHTML = `<div class="card empty">No events match the current filters.</div>`;
+    container.innerHTML = `<div class="empty">No events match the current filters.</div>`;
     return;
   }
   const groups = {};
-  filtered.forEach(e => {
-    const m = e.date.slice(0,7);
-    (groups[m] ||= []).push(e);
-  });
-  tl.innerHTML = Object.entries(groups).map(([ym, events]) => {
-    const monthIdx = parseInt(ym.slice(5,7),10) - 1;
-    const monthLabel = MONTH_NAMES[monthIdx] + " 2026";
+  filtered.forEach(e => { (groups[e.date.slice(0,7)] ||= []).push(e); });
+
+  container.innerHTML = Object.entries(groups).map(([ym, evs]) => {
+    const mIdx = parseInt(ym.slice(5,7),10) - 1;
     return `
-      <div class="month-block">
-        <h3>${monthLabel}<span class="count">${events.length} event${events.length!==1?"s":""}</span></h3>
-        ${events.map(ev => `
-          <div class="event">
-            <div class="date">
-              <div class="d">${new Date(ev.date+"T00:00").getDate()}${ev.dateApprox?"~":""}</div>
-              <div class="m">${MONTH_SHORT[new Date(ev.date+"T00:00").getMonth()]}</div>
-            </div>
-            <div class="body">
-              <div class="name"><a href="${ev.url}" target="_blank" rel="noopener">${ev.name}</a></div>
-              <div class="meta">
-                <span class="place">${ev.city}, ${ev.country}</span>
-                <span class="muted">·</span>
-                <span>${fmtDateRange(ev)}${ev.dateApprox?" (est.)":""}</span>
-              </div>
-              ${ev.notes ? `<div class="notes">${ev.notes}</div>` : ""}
-            </div>
-            <div class="badges">
-              <span class="badge cat-${ev.category}">${CAT_LABEL[ev.category]}</span>
-              <span class="badge reg-${ev.region}">${REGION_LABEL[ev.region]}</span>
-            </div>
-          </div>
-        `).join("")}
-      </div>`;
+      <section class="month">
+        <div class="month-head">
+          <h2>${MONTHS[mIdx]}</h2>
+          <div class="ct">${evs.length} event${evs.length!==1?"s":""}</div>
+        </div>
+        <div class="ev-grid">
+          ${evs.map(ev => {
+            const d = new Date(ev.date+"T00:00");
+            return `
+              <a class="ev" href="${ev.url}" target="_blank" rel="noopener">
+                <div class="day">
+                  <div class="d">${d.getDate()}${ev.dateApprox?"~":""}</div>
+                  <div class="m">${MSHORT[d.getMonth()]}</div>
+                </div>
+                <div class="body">
+                  <div class="name">${ev.name}</div>
+                  <div class="where">${ev.city}, ${ev.country}</div>
+                  <div class="when">${fmtRange(ev)}${ev.dateApprox?" (est.)":""}</div>
+                  ${ev.notes ? `<div class="notes">${ev.notes}</div>` : ""}
+                </div>
+                <div class="tag t-${ev.category}">${CAT[ev.category]}</div>
+              </a>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `;
   }).join("");
 }
 
-// wire up filter chips
-document.querySelectorAll(".chip[data-filter]").forEach(chip => {
-  chip.addEventListener("click", () => {
-    const f = chip.dataset.filter;
-    document.querySelectorAll(`.chip[data-filter="${f}"]`).forEach(c => c.classList.remove("active"));
-    chip.classList.add("active");
-    state[f] = chip.dataset.value;
-    render();
+document.querySelectorAll(".pill[data-f]").forEach(p => {
+  p.addEventListener("click", () => {
+    const f = p.dataset.f;
+    document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(x => x.classList.remove("on"));
+    p.classList.add("on");
+    state[f] = p.dataset.v;
+    renderCalendar();
   });
 });
 document.getElementById("searchInput").addEventListener("input", e => {
   state.q = e.target.value.trim();
-  render();
+  renderCalendar();
 });
 
-render();
+renderNumbers();
+renderFeatured();
+renderCalendar();
 </script>
 </body>
 </html>
