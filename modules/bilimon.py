@@ -199,7 +199,10 @@ def _new_bb_session(session_id: str = '') -> requests.Session:
 
 def proxy_diagnostic() -> dict:
     """Test whether the configured proxy actually reaches the public internet.
-    Returns a dict suitable for /bili/proxy-status."""
+    Returns a dict suitable for /bili/proxy-status.
+
+    Tests multiple username formats so we can tell whether 407 is caused by
+    a wrong password, wrong group syntax, or wrong plan entitlement."""
     pwd_fp = ''
     if APIFY_PROXY_PASSWORD:
         p = APIFY_PROXY_PASSWORD
@@ -218,19 +221,31 @@ def proxy_diagnostic() -> dict:
         info['mode'] = 'direct'
         return info
     info['mode'] = 'proxy'
+
     sess_id = f'diag{int(time.time())}'
-    try:
-        s = _new_bb_session(sess_id)
-        r = s.get('https://api.ipify.org?format=json', timeout=20)
-        info['ipify_status']    = r.status_code
-        info['ipify_body']      = r.text[:200]
-        # Hit Bilibili's nav endpoint via proxy too — tells us if BB itself
-        # is reachable from the proxy IP and whether WBI keys parse.
-        r2 = s.get('https://api.bilibili.com/x/web-interface/nav', timeout=20)
-        info['bb_nav_status']   = r2.status_code
-        info['bb_nav_code']     = (r2.json() or {}).get('code')
-    except Exception as e:
-        info['error'] = f'{type(e).__name__}: {e}'
+    pwd_enc = urllib.parse.quote(APIFY_PROXY_PASSWORD, safe='')
+
+    variants = [
+        ('auto',           'auto'),
+        ('current',        f'groups-{APIFY_PROXY_GROUPS},session-{sess_id}'),
+        ('plus_encoded',   f'groups-{APIFY_PROXY_GROUPS.replace("+", "%2B")},'
+                           f'session-{sess_id}'),
+        ('no_groups',      f'session-{sess_id}'),
+    ]
+    results = {}
+    for name, username in variants:
+        proxy_url = f'http://{username}:{pwd_enc}@proxy.apify.com:8000'
+        try:
+            r = requests.get(
+                'https://api.ipify.org?format=json',
+                proxies={'http': proxy_url, 'https': proxy_url},
+                timeout=15,
+            )
+            results[name] = {'status': r.status_code,
+                             'body': r.text[:120]}
+        except Exception as e:
+            results[name] = {'error': f'{type(e).__name__}: {str(e)[:200]}'}
+    info['variant_tests'] = results
     return info
 
 
