@@ -274,59 +274,53 @@ function appendRows(c, r) {
     const tbody = $('#rows');
     const creatorCell = renderCreatorCell(c);
 
-    // Error / unsupported states
+    // Hard errors stay visible — they're actionable diagnostics.
     if (r.error) {
         tbody.insertAdjacentHTML('beforeend',
             `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
              <td colspan="3" class="error-row">${esc(r.error)}</td></tr>`);
         return 0;
     }
-    if (r.status === 'no_bilibili' || r.status === 'no_platforms') {
+
+    // Bilibili check failed — surface the creator with a "couldn't check"
+    // row so the user knows it wasn't silently dropped.
+    if (r.status === 'bb_unavailable') {
+        const errLabel = r.bb_error || 'unknown';
         tbody.insertAdjacentHTML('beforeend',
             `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
-             <td colspan="3" class="empty-row">No Bilibili account on file — cannot compare.</td></tr>`);
+             <td colspan="3" class="error-row">Bilibili check failed: ${esc(errLabel)}</td></tr>`);
         return 0;
     }
 
+    // Out-of-scope creators (no Bilibili / no YT uploads / no platforms) are
+    // hidden — the page is specifically a "missing on Bilibili" view.
+    if (r.status === 'no_bilibili' || r.status === 'no_platforms') return 0;
     const yt = r.youtube_recent || [];
-    if (!yt.length) {
-        tbody.insertAdjacentHTML('beforeend',
-            `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
-             <td colspan="3" class="empty-row">No YouTube uploads in window.</td></tr>`);
-        return 0;
-    }
+    if (!yt.length) return 0;
 
-    const bbErr = (r.status === 'bb_unavailable');
-    const errLabel = bbErr ? (r.bb_error || 'unknown') : '';
     const missingIds = new Set((r.missing_on_bilibili || []).map(v => v.video_id));
-    let missingCount = 0;
-    yt.forEach((v, i) => {
-        const isMissing = !bbErr && missingIds.has(v.video_id);
-        if (isMissing) missingCount++;
-        let pill;
-        if (bbErr) {
-            pill = `<span class="status-pill qm" title="Bilibili check failed: ${esc(errLabel)}">?</span>`;
-        } else if (isMissing) {
-            pill = '<span class="status-pill no" title="Not posted on Bilibili">✗</span>';
-        } else {
-            pill = '<span class="status-pill yes" title="Posted on Bilibili">✓</span>';
-        }
+    const missing = yt.filter(v => missingIds.has(v.video_id));
+    if (!missing.length) return 0;  // fully cross-posted → skip creator
+
+    missing.forEach((v, i) => {
         const nameCell = i === 0
-            ? `<td class="creator-cell" rowspan="${yt.length}">${creatorCell}</td>`
+            ? `<td class="creator-cell" rowspan="${missing.length}">${creatorCell}</td>`
             : '';
-        const cls = [i === 0 ? 'creator-start' : '', isMissing ? 'flag' : ''].filter(Boolean).join(' ');
+        const cls = [i === 0 ? 'creator-start' : '', 'flag'].filter(Boolean).join(' ');
         tbody.insertAdjacentHTML('beforeend', `
-            <tr${cls ? ` class="${cls}"` : ''}>
+            <tr class="${cls}">
                 ${nameCell}
                 <td class="title-cell">
                     <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>
                 </td>
                 <td class="date-cell">${esc(v.published || '—')}</td>
-                <td class="status-cell">${pill}</td>
+                <td class="status-cell">
+                    <span class="status-pill no" title="Not posted on Bilibili">✗</span>
+                </td>
             </tr>
         `);
     });
-    return missingCount;
+    return missing.length;
 }
 
 function renderCreatorCell(c) {
