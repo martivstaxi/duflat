@@ -43,13 +43,12 @@ APIFY_PROXY_PASSWORD = (
     or ''
 ).strip()
 
-# Free / starter Apify accounts only have datacenter groups
-# (SHADER+BUYPROXIES94952). RESIDENTIAL is a paid add-on and returns 407 if
-# the account is not entitled. Override with APIFY_PROXY_GROUPS if your plan
-# includes residential (e.g. "RESIDENTIAL").
-APIFY_PROXY_GROUPS = os.environ.get(
-    'APIFY_PROXY_GROUPS', 'SHADER+BUYPROXIES94952',
-).strip()
+# Apify proxy username supports either `auto` (default group), an explicit
+# `groups-X,session-Y` spec, or just `session-Y` (no group spec). Specifying
+# a group the account is not entitled to returns 407, even with the right
+# password. Default to no group spec so the account's default group is used;
+# set APIFY_PROXY_GROUPS only if a specific group is required.
+APIFY_PROXY_GROUPS = os.environ.get('APIFY_PROXY_GROUPS', '').strip()
 
 DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
 WINDOW_DAYS_DEFAULT = 30
@@ -177,15 +176,22 @@ _bb_state = {'keys': None, 'keys_ts': 0.0, 'last_call': 0.0}
 
 def _proxy_for(session_id: str) -> str:
     """Build an Apify proxy URL pinned to a session-id (=stable IP).
-    Apify expects the username with a literal comma (groups-X,session-Y);
-    we leave the comma un-encoded because the proxy parser treats %2C as a
-    different string. The password is URL-encoded because Apify passwords can
-    contain @ / : + which break URL parsing if left raw."""
+
+    Username layout depends on APIFY_PROXY_GROUPS:
+      - empty (default) → "session-{id}" — uses account's default group
+      - set            → "groups-{X},session-{id}" — explicit group spec
+
+    Specifying a group the account isn't entitled to returns 407, so we
+    leave it off unless the operator opted in. The password is URL-encoded
+    because Apify passwords can contain @ / : + which break URL parsing."""
     if not APIFY_PROXY_PASSWORD or not session_id:
         return ''
     pwd = urllib.parse.quote(APIFY_PROXY_PASSWORD, safe='')
-    return (f'http://groups-{APIFY_PROXY_GROUPS},session-{session_id}:'
-            f'{pwd}@proxy.apify.com:8000')
+    if APIFY_PROXY_GROUPS:
+        username = f'groups-{APIFY_PROXY_GROUPS},session-{session_id}'
+    else:
+        username = f'session-{session_id}'
+    return f'http://{username}:{pwd}@proxy.apify.com:8000'
 
 
 def _new_bb_session(session_id: str = '') -> requests.Session:
