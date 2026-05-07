@@ -52,8 +52,11 @@ def list_managers() -> list:
     return _load().get('managers', [])
 
 
-def creators_for(manager: str) -> list:
-    return [c for c in _load().get('creators', []) if c.get('manager') == manager]
+def creators_for(manager: str, youtube_only: bool = False) -> list:
+    rows = [c for c in _load().get('creators', []) if c.get('manager') == manager]
+    if youtube_only:
+        rows = [c for c in rows if c.get('youtube_url')]
+    return rows
 
 
 # ─────────────────────────────────────────────

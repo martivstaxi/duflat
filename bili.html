@@ -21,7 +21,7 @@
     --border-m: rgba(177,173,161,.18);
     --text:     #FFFFFF;
     --faint:    rgba(177,173,161,.38);
-    --radius:   14px;
+    --radius:   12px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -33,117 +33,111 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
-main { max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
-.hero { text-align: center; padding: 80px 0 36px; }
+main { max-width: 1100px; margin: 0 auto; padding: 0 24px 100px; }
+.hero { text-align: center; padding: 64px 0 28px; }
 .hero h1 {
-    font-size: 2rem; font-weight: 600; letter-spacing: -.5px; margin-bottom: 10px;
+    font-size: 1.9rem; font-weight: 600; letter-spacing: -.5px; margin-bottom: 8px;
 }
-.hero p { color: var(--muted); font-size: .95rem; max-width: 520px; margin: 0 auto; }
+.hero p { color: var(--muted); font-size: .92rem; max-width: 540px; margin: 0 auto; }
 
 .controls {
     display: flex; gap: 12px; align-items: center; justify-content: center;
-    flex-wrap: wrap; margin-bottom: 36px;
+    flex-wrap: wrap; margin-bottom: 24px;
 }
 .control-group { display: flex; align-items: center; gap: 8px; }
 .control-group label { color: var(--muted); font-size: .85rem; }
 select, button {
     background: var(--surface); color: var(--text);
-    border: 1px solid var(--border-m); border-radius: 10px;
-    padding: 8px 14px; font-family: inherit; font-size: .9rem; cursor: pointer;
+    border: 1px solid var(--border-m); border-radius: 9px;
+    padding: 7px 12px; font-family: inherit; font-size: .88rem; cursor: pointer;
 }
 select:focus, button:focus { outline: none; border-color: var(--accent); }
 button.primary { background: var(--accent); border-color: var(--accent); font-weight: 500; }
-button:disabled { opacity: .5; cursor: not-allowed; }
+button:disabled { opacity: .45; cursor: not-allowed; }
 
 #stats {
     text-align: center; color: var(--muted); font-size: .85rem;
-    margin-bottom: 24px; min-height: 18px;
+    margin-bottom: 18px; min-height: 18px;
 }
-
-.creator {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    overflow: hidden;
-    transition: border-color .15s;
-}
-.creator:hover { border-color: var(--border-m); }
-.creator-head {
-    display: flex; align-items: center; gap: 16px;
-    padding: 16px 20px;
-}
-.creator-name { flex: 1; min-width: 0; }
-.creator-name h3 {
-    font-size: 1.05rem; font-weight: 600; margin-bottom: 3px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.creator-name .meta { color: var(--muted); font-size: .82rem; }
-.creator-name .meta a { color: var(--muted); text-decoration: none; }
-.creator-name .meta a:hover { color: var(--accent); }
-.creator-name .meta .sep { margin: 0 8px; opacity: .5; }
-
-.badge {
-    display: inline-block; padding: 3px 10px; border-radius: 999px;
-    font-size: .72rem; font-weight: 500; letter-spacing: .2px;
-    background: rgba(255,255,255,.06); color: var(--muted);
-    white-space: nowrap;
-}
-.badge.ok    { background: rgba(95,179,122,.14); color: var(--good); }
-.badge.warn  { background: rgba(216,161,58,.14); color: var(--warn); }
-.badge.bad   { background: rgba(196,86,74,.14); color: var(--bad); }
-.badge.miss  { background: rgba(196,86,74,.18); color: var(--bad); font-weight: 600; }
-
-.creator-body { display: none; padding: 0 20px 20px; }
-.creator.open .creator-body { display: block; }
-
-.section-title {
-    font-size: .78rem; text-transform: uppercase; letter-spacing: .8px;
-    color: var(--muted); margin: 18px 0 10px;
-}
-.section-title:first-child { margin-top: 4px; }
-
-.video-list { display: grid; gap: 8px; }
-.video {
-    display: flex; gap: 12px; align-items: center;
-    padding: 8px; background: var(--surface2); border-radius: 10px;
-    text-decoration: none; color: var(--text);
-    border: 1px solid transparent; transition: border-color .15s;
-}
-.video:hover { border-color: var(--border-m); }
-.video.flag { border-color: rgba(196,86,74,.4); }
-.video img {
-    width: 88px; height: 50px; object-fit: cover; border-radius: 6px;
-    background: var(--bg); flex-shrink: 0;
-}
-.video .vinfo { flex: 1; min-width: 0; }
-.video .vtitle {
-    font-size: .85rem; font-weight: 500;
-    overflow: hidden; text-overflow: ellipsis;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
-.video .vmeta { color: var(--muted); font-size: .72rem; margin-top: 3px; }
-
-.empty { color: var(--faint); font-size: .85rem; padding: 8px 0; font-style: italic; }
-
-.spinner {
+#stats .progress-bar {
     display: inline-block; width: 14px; height: 14px;
     border: 2px solid var(--border-m); border-top-color: var(--accent);
     border-radius: 50%; animation: spin .8s linear infinite;
-    vertical-align: middle; margin-right: 6px;
+    vertical-align: middle; margin-right: 8px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-msg {
+.tbl-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+    text-align: left; padding: 12px 16px;
+    font-size: .72rem; font-weight: 600; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--muted);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border-m);
+    white-space: nowrap;
+}
+tbody td {
+    padding: 11px 16px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+}
+tbody tr.creator-start td { border-top: 1px solid var(--border-m); }
+tbody tr.creator-start:first-child td { border-top: none; }
+
+td.creator-cell {
+    font-weight: 600; font-size: .92rem;
+    width: 22%; vertical-align: top; padding-top: 14px;
+}
+td.creator-cell .clinks {
+    margin-top: 4px; display: flex; flex-direction: column; gap: 2px;
+}
+td.creator-cell .clinks a {
+    color: var(--muted); font-size: .75rem; font-weight: 400;
+    text-decoration: none;
+}
+td.creator-cell .clinks a:hover { color: var(--accent); }
+
+td.title-cell { width: 56%; }
+td.title-cell a {
+    color: var(--text); text-decoration: none;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+td.title-cell a:hover { color: var(--accent); }
+td.date-cell {
+    color: var(--muted); font-family: 'Roboto Mono', monospace;
+    font-size: .8rem; white-space: nowrap; width: 11%;
+}
+td.status-cell {
+    text-align: center; width: 11%; white-space: nowrap;
+}
+.status-pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-weight: 700; font-size: 1rem;
+}
+.status-pill.yes { background: rgba(95,179,122,.16); color: var(--good); }
+.status-pill.no  { background: rgba(196,86,74,.18);  color: var(--bad);  }
+.status-pill.qm  { background: rgba(216,161,58,.16); color: var(--warn); }
+tr.flag td { background: rgba(196,86,74,.05); }
+
+td.empty-row {
+    color: var(--faint); font-style: italic; font-size: .85rem;
+}
+td.error-row {
     color: var(--bad); font-size: .82rem;
-    padding: 10px 12px; background: rgba(196,86,74,.08);
-    border-radius: 8px; margin-top: 10px;
 }
 
-@media (max-width: 600px) {
-    .creator-head { flex-wrap: wrap; }
-    .creator-name { flex-basis: 100%; }
-    .video img { width: 64px; height: 36px; }
+@media (max-width: 760px) {
+    td.creator-cell { width: 30%; font-size: .85rem; }
+    td.title-cell   { font-size: .85rem; }
+    td.date-cell    { display: none; }
 }
 </style>
 </head>
@@ -151,13 +145,13 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 <main>
     <div class="hero">
         <h1>Cross-post Monitor</h1>
-        <p>YouTube'da paylaşılıp Bilibili'de eksik kalan videoları yakala.</p>
+        <p>Manager seç — yönettiğin creator'ların YouTube'da paylaşıp Bilibili'de paylaşmadığı videolar listelenir.</p>
     </div>
 
     <div class="controls">
         <div class="control-group">
             <label for="manager">Manager</label>
-            <select id="manager"><option value="">Loading...</option></select>
+            <select id="manager"><option value="">Loading…</option></select>
         </div>
         <div class="control-group">
             <label for="window">Window</label>
@@ -168,11 +162,24 @@ button:disabled { opacity: .5; cursor: not-allowed; }
                 <option value="90">90 days</option>
             </select>
         </div>
-        <button id="checkAll" class="primary" disabled>Check all</button>
+        <button id="refresh" disabled>Refresh</button>
     </div>
 
     <div id="stats"></div>
-    <div id="creators"></div>
+
+    <div class="tbl-wrap" id="tableWrap" style="display:none">
+        <table>
+            <thead>
+                <tr>
+                    <th>Creator</th>
+                    <th>YouTube video</th>
+                    <th>Date</th>
+                    <th style="text-align:center">Bilibili</th>
+                </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
 </main>
 
 <script>
@@ -180,24 +187,17 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
     ? 'http://localhost:5000'
     : 'https://duflat-production.up.railway.app';
 
-const $  = sel => document.querySelector(sel);
-const el = (tag, cls, html) => {
-    const e = document.createElement(tag);
-    if (cls)  e.className = cls;
-    if (html != null) e.innerHTML = html;
-    return e;
-};
+const $   = sel => document.querySelector(sel);
 const esc = s => (s || '').replace(/[&<>"]/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-let creators = [];
+let inflight = false;
 
-// ─────────────────────────────────────────────
 async function loadManagers() {
     const sel = $('#manager');
     try {
-        const r  = await fetch(`${API_BASE}/bili/managers`);
-        const j  = await r.json();
+        const r = await fetch(`${API_BASE}/bili/managers`);
+        const j = await r.json();
         sel.innerHTML = '<option value="">Select manager…</option>' +
             (j.managers || []).map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
     } catch (e) {
@@ -205,184 +205,139 @@ async function loadManagers() {
     }
 }
 
-async function loadCreators(manager) {
+async function runChecks() {
+    if (inflight) return;
+    const manager = $('#manager').value;
     if (!manager) {
-        creators = [];
-        $('#creators').innerHTML = '';
+        $('#tableWrap').style.display = 'none';
         $('#stats').textContent = '';
-        $('#checkAll').disabled = true;
+        $('#refresh').disabled = true;
         return;
     }
-    $('#stats').textContent = 'Loading…';
+    inflight = true;
+    $('#refresh').disabled = true;
+    $('#manager').disabled = true;
+    $('#window').disabled = true;
+    $('#rows').innerHTML = '';
+    $('#tableWrap').style.display = 'block';
+    $('#stats').innerHTML = '<span class="progress-bar"></span>Loading roster…';
+
+    let creators = [];
     try {
         const r = await fetch(`${API_BASE}/bili/creators?manager=${encodeURIComponent(manager)}`);
         const j = await r.json();
         creators = j.creators || [];
-        renderRoster();
-        const comp = creators.filter(c => c.youtube_url && c.bilibili_mid).length;
-        $('#stats').textContent = `${creators.length} creators • ${comp} comparable (YT + BB)`;
-        $('#checkAll').disabled = comp === 0;
     } catch (e) {
-        $('#stats').textContent = 'Failed to load';
+        $('#stats').textContent = 'Failed to load roster';
+        finishRun();
+        return;
     }
-}
-
-function renderRoster() {
-    const root = $('#creators');
-    root.innerHTML = '';
-    creators.forEach((c, i) => {
-        const hasYT = !!c.youtube_url;
-        const hasBB = !!c.bilibili_mid;
-        const card  = el('div', 'creator');
-        card.dataset.idx = i;
-
-        const head = el('div', 'creator-head');
-        const left = el('div', 'creator-name');
-        const linkBits = [];
-        if (hasYT) linkBits.push(`<a href="${esc(c.youtube_url)}" target="_blank" rel="noopener">YouTube</a>`);
-        if (hasBB) linkBits.push(`<a href="${esc(c.bilibili_url || ('https://space.bilibili.com/' + c.bilibili_mid))}" target="_blank" rel="noopener">Bilibili</a>`);
-        if (c.instagram_url) linkBits.push(`<a href="${esc(c.instagram_url)}" target="_blank" rel="noopener">Instagram</a>`);
-        const followers = c.followers ? Number(c.followers).toLocaleString() + ' followers' : '';
-        left.innerHTML = `
-            <h3>${esc(c.name)}</h3>
-            <div class="meta">
-                ${linkBits.join('<span class="sep">·</span>')}
-                ${followers ? '<span class="sep">·</span>' + esc(followers) : ''}
-            </div>
-        `;
-
-        const badge = el('span', 'badge');
-        if (hasYT && hasBB)      { badge.textContent = 'comparable'; badge.classList.add('ok'); }
-        else if (!hasYT && !hasBB) { badge.textContent = 'no platforms'; badge.classList.add('bad'); }
-        else if (!hasYT)         { badge.textContent = 'no YouTube'; badge.classList.add('warn'); }
-        else                     { badge.textContent = 'no Bilibili'; badge.classList.add('warn'); }
-
-        const btn = el('button');
-        btn.textContent = 'Check';
-        btn.disabled = !(hasYT && hasBB);
-        btn.onclick = () => runCheck(i);
-
-        head.append(left, badge, btn);
-
-        const body = el('div', 'creator-body');
-        body.id = `body-${i}`;
-
-        card.append(head, body);
-        root.append(card);
-    });
-}
-
-async function runCheck(i) {
-    const c = creators[i];
-    if (!c) return;
-    const card  = document.querySelector(`.creator[data-idx="${i}"]`);
-    const body  = $(`#body-${i}`);
-    const btn   = card.querySelector('button');
-    body.innerHTML = '<div class="empty"><span class="spinner"></span>Fetching YouTube + Bilibili…</div>';
-    card.classList.add('open');
-    btn.disabled = true;
-    btn.textContent = 'Checking…';
-    try {
-        const r = await fetch(`${API_BASE}/bili/check`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({creator: c, window_days: parseInt($('#window').value, 10)}),
-        });
-        const j = await r.json();
-        renderResult(card, body, j);
-    } catch (e) {
-        body.innerHTML = `<div class="error-msg">Request failed: ${esc(e.message || String(e))}</div>`;
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Recheck';
+    if (!creators.length) {
+        $('#stats').textContent = 'No creators with a YouTube channel.';
+        finishRun();
+        return;
     }
+
+    const window_days = parseInt($('#window').value, 10);
+    let totalMissing = 0;
+    let done = 0;
+    for (const c of creators) {
+        $('#stats').innerHTML =
+            `<span class="progress-bar"></span>Checking ${done+1}/${creators.length}: ${esc(c.name)}…`;
+        try {
+            const r = await fetch(`${API_BASE}/bili/check`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({creator: c, window_days}),
+            });
+            const result = await r.json();
+            totalMissing += appendRows(c, result);
+        } catch (e) {
+            appendRows(c, {error: e.message || String(e)});
+        }
+        done++;
+    }
+    const missingNote = totalMissing
+        ? ` — <strong style="color:var(--bad)">${totalMissing} video missing on Bilibili</strong>`
+        : ' — all caught up ✓';
+    $('#stats').innerHTML = `${done} creators checked${missingNote}`;
+    finishRun();
 }
 
-function renderResult(card, body, r) {
+function finishRun() {
+    inflight = false;
+    $('#refresh').disabled = false;
+    $('#manager').disabled = false;
+    $('#window').disabled = false;
+}
+
+function appendRows(c, r) {
+    const tbody = $('#rows');
+    const creatorCell = renderCreatorCell(c);
+
+    // Error / unsupported states
     if (r.error) {
-        body.innerHTML = `<div class="error-msg">${esc(r.error)}</div>`;
-        return;
+        tbody.insertAdjacentHTML('beforeend',
+            `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
+             <td colspan="3" class="error-row">${esc(r.error)}</td></tr>`);
+        return 0;
     }
-    if (r.status === 'no_youtube' || r.status === 'no_bilibili' || r.status === 'no_platforms') {
-        body.innerHTML = `<div class="empty">Cannot compare: ${esc(r.status.replaceAll('_', ' '))}</div>`;
-        return;
+    if (r.status === 'no_bilibili' || r.status === 'no_platforms') {
+        tbody.insertAdjacentHTML('beforeend',
+            `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
+             <td colspan="3" class="empty-row">No Bilibili account on file — cannot compare.</td></tr>`);
+        return 0;
     }
-    const head = card.querySelector('.creator-head');
-    let flag = head.querySelector('.badge.miss');
 
-    const sections = [];
-    if (r.status === 'bb_unavailable') {
-        const errMap = {
-            rate_limited: 'Bilibili rate-limited this IP — wait a few minutes and try again.',
-            banned:       'Bilibili blocked this request (-412). Wait several minutes and recheck.',
-            fetch_error:  'Network error reaching Bilibili.',
-        };
-        const msg = errMap[r.bb_error] || `Bilibili error: ${r.bb_error || 'unknown'}`;
-        sections.push(`<div class="error-msg">${esc(msg)} Cannot determine missing posts yet.</div>`);
-        if (flag) flag.remove();
-    } else {
-        const missing = r.missing_on_bilibili || [];
-        if (missing.length) {
-            if (!flag) {
-                flag = el('span', 'badge miss');
-                head.insertBefore(flag, head.querySelector('button'));
-            }
-            flag.textContent = `${missing.length} missing on BB`;
-        } else if (flag) {
-            flag.remove();
-        }
-        sections.push(`<div class="section-title">Missing on Bilibili (${missing.length})</div>`);
-        if (missing.length) {
-            sections.push('<div class="video-list">' + missing.map(v => videoRow(v, true)).join('') + '</div>');
+    const yt = r.youtube_recent || [];
+    if (!yt.length) {
+        tbody.insertAdjacentHTML('beforeend',
+            `<tr class="creator-start"><td class="creator-cell">${creatorCell}</td>
+             <td colspan="3" class="empty-row">No YouTube uploads in window.</td></tr>`);
+        return 0;
+    }
+
+    const bbErr = (r.status === 'bb_unavailable');
+    const missingIds = new Set((r.missing_on_bilibili || []).map(v => v.video_id));
+    let missingCount = 0;
+    yt.forEach((v, i) => {
+        const isMissing = !bbErr && missingIds.has(v.video_id);
+        if (isMissing) missingCount++;
+        let pill;
+        if (bbErr) {
+            pill = '<span class="status-pill qm" title="Bilibili check failed">?</span>';
+        } else if (isMissing) {
+            pill = '<span class="status-pill no" title="Not posted on Bilibili">✗</span>';
         } else {
-            sections.push(`<div class="empty">All recent YouTube uploads have a Bilibili counterpart. ✓</div>`);
+            pill = '<span class="status-pill yes" title="Posted on Bilibili">✓</span>';
         }
-    }
-
-    sections.push(`<div class="section-title">YouTube — last ${r.window_days}d (${r.youtube_recent.length})</div>`);
-    sections.push(r.youtube_recent.length
-        ? '<div class="video-list">' + r.youtube_recent.map(v => videoRow(v, false)).join('') + '</div>'
-        : '<div class="empty">No uploads in window.</div>');
-
-    sections.push(`<div class="section-title">Bilibili — last ${r.window_days}d (${r.bilibili_recent.length})</div>`);
-    sections.push(r.bilibili_recent.length
-        ? '<div class="video-list">' + r.bilibili_recent.map(v => videoRow(v, false)).join('') + '</div>'
-        : '<div class="empty">No uploads in window.</div>');
-
-    body.innerHTML = sections.join('');
+        const nameCell = i === 0
+            ? `<td class="creator-cell" rowspan="${yt.length}">${creatorCell}</td>`
+            : '';
+        const cls = [i === 0 ? 'creator-start' : '', isMissing ? 'flag' : ''].filter(Boolean).join(' ');
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr${cls ? ` class="${cls}"` : ''}>
+                ${nameCell}
+                <td class="title-cell">
+                    <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>
+                </td>
+                <td class="date-cell">${esc(v.published || '—')}</td>
+                <td class="status-cell">${pill}</td>
+            </tr>
+        `);
+    });
+    return missingCount;
 }
 
-function videoRow(v, flag) {
-    const date  = v.published || '—';
-    const ratio = v.match_ratio != null ? ` · best BB match: ${(v.match_ratio * 100).toFixed(0)}%` : '';
-    return `
-        <a class="video ${flag ? 'flag' : ''}" href="${esc(v.url)}" target="_blank" rel="noopener">
-            <img src="${esc(v.thumbnail || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
-            <div class="vinfo">
-                <div class="vtitle">${esc(v.title)}</div>
-                <div class="vmeta">${esc(date)}${ratio}</div>
-            </div>
-        </a>
-    `;
+function renderCreatorCell(c) {
+    const links = [];
+    if (c.youtube_url)  links.push(`<a href="${esc(c.youtube_url)}"  target="_blank" rel="noopener">YouTube ↗</a>`);
+    if (c.bilibili_url) links.push(`<a href="${esc(c.bilibili_url)}" target="_blank" rel="noopener">Bilibili ↗</a>`);
+    return `${esc(c.name)}<div class="clinks">${links.join('')}</div>`;
 }
 
-async function checkAll() {
-    const btn = $('#checkAll');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Checking…';
-    const indices = creators
-        .map((c, i) => (c.youtube_url && c.bilibili_mid) ? i : -1)
-        .filter(i => i >= 0);
-    for (const i of indices) {
-        await runCheck(i);
-    }
-    btn.disabled = false;
-    btn.textContent = 'Recheck all';
-}
-
-// ─────────────────────────────────────────────
-$('#manager').addEventListener('change', e => loadCreators(e.target.value));
-$('#checkAll').addEventListener('click', checkAll);
+$('#manager').addEventListener('change', runChecks);
+$('#window') .addEventListener('change', runChecks);
+$('#refresh').addEventListener('click',  runChecks);
 loadManagers();
 </script>
 </body>

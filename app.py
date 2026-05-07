@@ -1215,7 +1215,11 @@ def bili_creators():
     manager = (request.args.get('manager') or '').strip()
     if not manager:
         return jsonify({'error': 'manager parameter required'}), 400
-    return jsonify({'manager': manager, 'creators': bilimon.creators_for(manager)})
+    yt_only = (request.args.get('youtube_only', '1').strip() != '0')
+    return jsonify({
+        'manager':  manager,
+        'creators': bilimon.creators_for(manager, youtube_only=yt_only),
+    })
 
 
 @app.route('/bili/check', methods=['POST'])
