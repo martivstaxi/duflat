@@ -43,6 +43,14 @@ APIFY_PROXY_PASSWORD = (
     or ''
 ).strip()
 
+# Free / starter Apify accounts only have datacenter groups
+# (SHADER+BUYPROXIES94952). RESIDENTIAL is a paid add-on and returns 407 if
+# the account is not entitled. Override with APIFY_PROXY_GROUPS if your plan
+# includes residential (e.g. "RESIDENTIAL").
+APIFY_PROXY_GROUPS = os.environ.get(
+    'APIFY_PROXY_GROUPS', 'SHADER+BUYPROXIES94952',
+).strip()
+
 DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
 WINDOW_DAYS_DEFAULT = 30
 TITLE_MATCH_THRESHOLD = 0.55  # below this counts as "missing on Bilibili"
@@ -168,13 +176,13 @@ _bb_state = {'keys': None, 'keys_ts': 0.0, 'last_call': 0.0}
 
 
 def _proxy_for(session_id: str) -> str:
-    """Build an Apify residential proxy URL pinned to a session-id (=stable IP).
-    Apify expects the username with a literal comma (groups-RESIDENTIAL,session-X);
+    """Build an Apify proxy URL pinned to a session-id (=stable IP).
+    Apify expects the username with a literal comma (groups-X,session-Y);
     we leave it un-encoded because the proxy parser treats %2C as a different
     string and rejects auth."""
     if not APIFY_PROXY_PASSWORD or not session_id:
         return ''
-    return (f'http://groups-RESIDENTIAL,session-{session_id}:'
+    return (f'http://groups-{APIFY_PROXY_GROUPS},session-{session_id}:'
             f'{APIFY_PROXY_PASSWORD}@proxy.apify.com:8000')
 
 
@@ -192,6 +200,7 @@ def proxy_diagnostic() -> dict:
     Returns a dict suitable for /bili/proxy-status."""
     info = {
         'proxy_password_set': bool(APIFY_PROXY_PASSWORD),
+        'proxy_groups':       APIFY_PROXY_GROUPS,
         'env_seen': {
             'APIFY_PROXY_PASSWORD': bool(os.environ.get('APIFY_PROXY_PASSWORD')),
             'APIFY_API_TOKEN':      bool(os.environ.get('APIFY_API_TOKEN')),
