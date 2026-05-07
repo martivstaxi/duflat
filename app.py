@@ -28,6 +28,7 @@ from modules.social_listening import (
     delete_mentions, update_mention, auto_discover, _analyze_with_haiku,
 )
 from modules import cs_reviews
+from modules import bilimon
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -1165,6 +1166,69 @@ def debug_search():
         'ecosia': _search_ecosia(q),
         'startpage': _search_startpage(q),
     })
+
+
+# ─────────────────────────────────────────────
+# CRYPTO TOP-CALLERS ROUTES (Round 1: Oct 2025 sell-signal detection)
+# ─────────────────────────────────────────────
+
+@app.route('/crypto')
+def crypto_page():
+    return send_from_directory('.', 'crypto.html')
+
+
+@app.route('/api/crypto/leaderboard', methods=['GET'])
+def crypto_leaderboard():
+    import json
+    from pathlib import Path
+    f = Path(__file__).resolve().parent / 'data' / 'leaderboard_round1.json'
+    if not f.exists():
+        return jsonify({
+            'summary': {
+                'window': '2025-10-01 → 2025-10-31',
+                'criterion': '≥1 of top-3 October videos contains a sell signal',
+                'channels_total': 0, 'channels_with_oct_videos': 0,
+                'channels_passed': 0, 'channels_failed': 0, 'pass_rate': 0.0,
+            },
+            'passed': [], 'failed': [],
+            'note': 'pipeline has not run yet',
+        })
+    return app.response_class(f.read_text(encoding='utf-8'), mimetype='application/json')
+
+
+# ─────────────────────────────────────────────
+# BILIMON ROUTES (cross-post monitor: YouTube vs Bilibili)
+# ─────────────────────────────────────────────
+
+@app.route('/bili')
+def bili_page():
+    return send_from_directory('.', 'bili.html')
+
+
+@app.route('/bili/managers', methods=['GET'])
+def bili_managers():
+    return jsonify({'managers': bilimon.list_managers()})
+
+
+@app.route('/bili/creators', methods=['GET'])
+def bili_creators():
+    manager = (request.args.get('manager') or '').strip()
+    if not manager:
+        return jsonify({'error': 'manager parameter required'}), 400
+    return jsonify({'manager': manager, 'creators': bilimon.creators_for(manager)})
+
+
+@app.route('/bili/check', methods=['POST'])
+def bili_check():
+    body = request.get_json(silent=True) or {}
+    creator = body.get('creator') or {}
+    if not creator:
+        return jsonify({'error': 'creator object required'}), 400
+    try:
+        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
+    except Exception:
+        window = bilimon.WINDOW_DAYS_DEFAULT
+    return jsonify(bilimon.check_creator(creator, window_days=window))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,386 @@
+"""
+modules/bilimon.py — Bilibili posting monitor
+
+Compares each managed creator's recent YouTube uploads against their recent
+Bilibili uploads. A YouTube upload in the last `window_days` whose title has no
+fuzzy match on Bilibili is flagged so the manager can remind the creator to
+cross-post.
+
+Public API:
+    list_managers()                       -> [str]
+    creators_for(manager)                 -> [dict]
+    check_creator(creator, window_days)   -> dict
+"""
+
+import hashlib
+import json
+import os
+import re
+import time
+import urllib.parse
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
+from difflib import SequenceMatcher
+from pathlib import Path
+
+import requests
+import yt_dlp
+
+# When the Apify API token is set, all Bilibili requests are routed through
+# Apify's residential proxy. A per-creator session-id keeps the same IP across
+# the space-page warmup and the WBI API call (so cookies remain consistent),
+# and rotates across creators and days to avoid pattern detection.
+# Railway already has APIFY_API_TOKEN (used by social_listening); we accept
+# the shorter APIFY_TOKEN as a fallback for any future tooling that uses it.
+APIFY_TOKEN = (os.environ.get('APIFY_API_TOKEN')
+               or os.environ.get('APIFY_TOKEN') or '').strip()
+
+DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
+WINDOW_DAYS_DEFAULT = 30
+TITLE_MATCH_THRESHOLD = 0.55  # below this counts as "missing on Bilibili"
+
+
+# ─────────────────────────────────────────────
+# Roster
+# ─────────────────────────────────────────────
+
+def _load() -> dict:
+    return json.loads(DATA_FILE.read_text(encoding='utf-8'))
+
+
+def list_managers() -> list:
+    return _load().get('managers', [])
+
+
+def creators_for(manager: str) -> list:
+    return [c for c in _load().get('creators', []) if c.get('manager') == manager]
+
+
+# ─────────────────────────────────────────────
+# YouTube — recent uploads
+# ─────────────────────────────────────────────
+# yt-dlp extract_flat does not surface upload dates for channel listings, so
+# we resolve the channel_id (one yt-dlp call when the URL is a handle) and
+# then read the public RSS feed which carries <published> for each entry.
+
+_RE_CHANNEL_ID = re.compile(r'/channel/(UC[A-Za-z0-9_-]{22})')
+_YT_NS = {
+    'a':     'http://www.w3.org/2005/Atom',
+    'media': 'http://search.yahoo.com/mrss/',
+    'yt':    'http://www.youtube.com/xml/schemas/2015',
+}
+
+
+def _resolve_channel_id(channel_url: str) -> str:
+    m = _RE_CHANNEL_ID.search(channel_url)
+    if m:
+        return m.group(1)
+    try:
+        opts = {'skip_download': True, 'quiet': True, 'no_warnings': True,
+                'ignoreerrors': True, 'extract_flat': True, 'playlistend': 1}
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(channel_url.rstrip('/'), download=False)
+        return (info or {}).get('channel_id') or ''
+    except Exception:
+        return ''
+
+
+def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
+    if not channel_url:
+        return []
+    cid = _resolve_channel_id(channel_url)
+    if not cid:
+        return []
+    try:
+        r = requests.get(
+            f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}',
+            timeout=10,
+        )
+    except Exception:
+        return []
+    if r.status_code != 200 or not r.text:
+        return []
+    try:
+        root = ET.fromstring(r.text)
+    except Exception:
+        return []
+    out = []
+    for entry in root.findall('a:entry', _YT_NS)[:limit]:
+        vid = (entry.findtext('yt:videoId', default='', namespaces=_YT_NS) or '').strip()
+        if not vid:
+            continue
+        title = (entry.findtext('a:title', default='', namespaces=_YT_NS) or '').strip()
+        published_iso = (entry.findtext('a:published', default='', namespaces=_YT_NS) or '').strip()
+        published = published_iso[:10] if len(published_iso) >= 10 else ''
+        thumb = ''
+        media_group = entry.find('media:group', _YT_NS)
+        if media_group is not None:
+            mt = media_group.find('media:thumbnail', _YT_NS)
+            if mt is not None:
+                thumb = mt.get('url') or ''
+        out.append({
+            'video_id':  vid,
+            'title':     title,
+            'url':       f'https://www.youtube.com/watch?v={vid}',
+            'published': published,
+            'thumbnail': thumb or f'https://i.ytimg.com/vi/{vid}/mqdefault.jpg',
+        })
+    return out
+
+
+# ─────────────────────────────────────────────
+# Bilibili — recent uploads via WBI-signed space.arc/search
+# ─────────────────────────────────────────────
+
+_MIXIN_KEY_ENC_TAB = [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
+    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
+    37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4,
+    22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52,
+]
+
+_BB_HEADERS = {
+    'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/120.0.0.0 Safari/537.36'),
+    'Accept':          'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8',
+    'Origin':          'https://space.bilibili.com',
+}
+
+# Bilibili rate-limits aggressively (-412 / -799) when traffic from one IP
+# looks bot-like. With Apify residential proxy each creator gets its own IP
+# so per-IP rate-limit pressure goes away; without proxy we still pace
+# requests at ≥3s apart from a single IP.
+_BB_MIN_GAP_SEC = 3.0
+_bb_state = {'keys': None, 'keys_ts': 0.0, 'last_call': 0.0}
+
+
+def _proxy_for(session_id: str) -> str:
+    """Build an Apify residential proxy URL pinned to a session-id (=stable IP)."""
+    if not APIFY_TOKEN or not session_id:
+        return ''
+    user = urllib.parse.quote(f'groups-RESIDENTIAL,session-{session_id}', safe='')
+    pwd  = urllib.parse.quote(APIFY_TOKEN, safe='')
+    return f'http://{user}:{pwd}@proxy.apify.com:8000'
+
+
+def _new_bb_session(session_id: str = '') -> requests.Session:
+    s = requests.Session()
+    s.headers.update(_BB_HEADERS)
+    proxy = _proxy_for(session_id)
+    if proxy:
+        s.proxies = {'http': proxy, 'https': proxy}
+    return s
+
+
+def _wbi_session() -> requests.Session:
+    """Lightweight session used only to fetch wbi keys (any IP works for this)."""
+    s = requests.Session()
+    s.headers.update(_BB_HEADERS)
+    return s
+
+
+def _wbi_keys() -> tuple:
+    if _bb_state['keys'] and (time.time() - _bb_state['keys_ts']) < 1800:
+        return _bb_state['keys']
+    s = _wbi_session()
+    try:
+        r = s.get('https://api.bilibili.com/x/web-interface/nav', timeout=10)
+        wbi_img = (r.json().get('data') or {}).get('wbi_img') or {}
+        img_url = wbi_img.get('img_url') or ''
+        sub_url = wbi_img.get('sub_url') or ''
+        img_key = img_url.rsplit('/', 1)[-1].split('.')[0]
+        sub_key = sub_url.rsplit('/', 1)[-1].split('.')[0]
+        if not img_key or not sub_key:
+            return ('', '')
+        _bb_state['keys'] = (img_key, sub_key)
+        _bb_state['keys_ts'] = time.time()
+        return _bb_state['keys']
+    except Exception:
+        return ('', '')
+
+
+def _mixin_key(img_key: str, sub_key: str) -> str:
+    raw = img_key + sub_key
+    return ''.join(raw[i] for i in _MIXIN_KEY_ENC_TAB if i < len(raw))[:32]
+
+
+def _wbi_sign(params: dict) -> dict:
+    img_key, sub_key = _wbi_keys()
+    if not img_key:
+        return params
+    mk = _mixin_key(img_key, sub_key)
+    p = dict(params)
+    p['wts'] = int(time.time())
+    items = sorted((str(k), str(v)) for k, v in p.items())
+    raw = '&'.join(f'{urllib.parse.quote(k, safe="")}={urllib.parse.quote(v, safe="")}'
+                   for k, v in items)
+    p['w_rid'] = hashlib.md5((raw + mk).encode('utf-8')).hexdigest()
+    return p
+
+
+def _bb_pace():
+    """Sleep just enough to keep ≥_BB_MIN_GAP_SEC between consecutive calls.
+    Only meaningful when proxy is OFF — with proxy each call gets its own IP."""
+    if APIFY_TOKEN:
+        return
+    delta = time.time() - _bb_state['last_call']
+    if delta < _BB_MIN_GAP_SEC:
+        time.sleep(_BB_MIN_GAP_SEC - delta)
+    _bb_state['last_call'] = time.time()
+
+
+def _bb_session_id_for(mid: str) -> str:
+    """Stable per-creator-per-day session id: same IP for warmup + API call,
+    rotates daily to avoid pattern detection."""
+    return f'bili{mid}{datetime.now(timezone.utc).strftime("%Y%m%d")}'
+
+
+def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
+    """Returns (videos, error_code). error_code='' on success or 'rate_limited'/'banned'/'fetch_error'."""
+    if not mid:
+        return [], 'no_mid'
+    s = _new_bb_session(_bb_session_id_for(mid))
+    # Warm up: visit the creator's space page so the API call carries
+    # realistic cookies (buvid3, b_nut, _uuid). Failures here are non-fatal.
+    try:
+        s.get(f'https://space.bilibili.com/{mid}', timeout=15)
+    except Exception:
+        pass
+    _bb_pace()
+    params = {
+        'mid': str(mid), 'ps': limit, 'pn': 1,
+        'order': 'pubdate', 'platform': 'web',
+        'web_location': '1550101',
+    }
+    signed = _wbi_sign(params)
+    headers = {'Referer': f'https://space.bilibili.com/{mid}'}
+    try:
+        r = s.get('https://api.bilibili.com/x/space/wbi/arc/search',
+                  params=signed, headers=headers, timeout=30)
+        j = r.json()
+    except Exception:
+        return [], 'fetch_error'
+    code = j.get('code')
+    if code in (-412, -352):
+        return [], 'banned'
+    if code == -799:
+        return [], 'rate_limited'
+    if code != 0:
+        return [], f'api_error_{code}'
+    vlist = ((j.get('data') or {}).get('list') or {}).get('vlist') or []
+    out = []
+    for v in vlist[:limit]:
+        bvid = v.get('bvid') or ''
+        if not bvid:
+            continue
+        ts = v.get('created') or 0
+        published = (datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+                     if ts else '')
+        pic = v.get('pic') or ''
+        if pic.startswith('//'):
+            pic = 'https:' + pic
+        out.append({
+            'bvid':      bvid,
+            'title':     v.get('title') or '',
+            'url':       f'https://www.bilibili.com/video/{bvid}',
+            'published': published,
+            'thumbnail': pic,
+        })
+    return out, ''
+
+
+# ─────────────────────────────────────────────
+# Compare
+# ─────────────────────────────────────────────
+
+_PUNCT = re.compile(r'[\s\W_]+', re.UNICODE)
+
+
+def _norm(s: str) -> str:
+    return _PUNCT.sub('', (s or '').lower())
+
+
+def _title_match(yt_title: str, bb_titles: list) -> tuple:
+    yn = _norm(yt_title)
+    if not yn:
+        return ('', 0.0)
+    best = ('', 0.0)
+    for bt in bb_titles:
+        bn = _norm(bt)
+        if not bn:
+            continue
+        if yn in bn or bn in yn:
+            return (bt, 1.0)
+        r = SequenceMatcher(None, yn, bn).ratio()
+        if r > best[1]:
+            best = (bt, r)
+    return best
+
+
+def _within(published: str, days: int) -> bool:
+    if not published:
+        return False
+    try:
+        d = datetime.strptime(published, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+    except Exception:
+        return False
+    return d >= datetime.now(timezone.utc) - timedelta(days=days)
+
+
+def _summary(creator: dict) -> dict:
+    return {
+        'name':          creator.get('name'),
+        'handle':        creator.get('handle'),
+        'manager':       creator.get('manager'),
+        'youtube_url':   creator.get('youtube_url'),
+        'bilibili_url':  creator.get('bilibili_url'),
+        'bilibili_mid':  creator.get('bilibili_mid'),
+        'instagram_url': creator.get('instagram_url'),
+        'followers':     creator.get('followers'),
+    }
+
+
+def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict:
+    yt_url = creator.get('youtube_url') or ''
+    bb_mid = creator.get('bilibili_mid') or ''
+    base   = _summary(creator)
+
+    if not yt_url and not bb_mid:
+        return {**base, 'status': 'no_platforms', 'comparable': False}
+    if not yt_url:
+        return {**base, 'status': 'no_youtube', 'comparable': False}
+    if not bb_mid:
+        return {**base, 'status': 'no_bilibili', 'comparable': False}
+
+    yt = _fetch_yt_uploads(yt_url, limit=15)
+    bb, bb_err = _fetch_bb_uploads(bb_mid, limit=30)
+
+    yt_recent = [v for v in yt if _within(v['published'], window_days)]
+    bb_recent = [v for v in bb if _within(v['published'], window_days)]
+    bb_titles = [v['title'] for v in bb]  # match against full BB list, not just window
+
+    # When BB fetch failed (rate-limited/banned), don't pretend everything is
+    # missing — flag the result as partial so the UI can prompt a retry.
+    missing = []
+    if not bb_err:
+        for v in yt_recent:
+            match_title, ratio = _title_match(v['title'], bb_titles)
+            if ratio >= TITLE_MATCH_THRESHOLD:
+                continue
+            missing.append({**v, 'best_bb_match': match_title,
+                            'match_ratio': round(ratio, 2)})
+
+    return {
+        **base,
+        'status':              'ok' if not bb_err else 'bb_unavailable',
+        'comparable':          True,
+        'window_days':         window_days,
+        'youtube_recent':      yt_recent,
+        'bilibili_recent':     bb_recent,
+        'missing_on_bilibili': missing,
+        'youtube_count':       len(yt),
+        'bilibili_count':      len(bb),
+        'bb_error':            bb_err,
+    }

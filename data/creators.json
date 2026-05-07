@@ -1,0 +1,95 @@
+{
+  "managers": ["Sherry", "Henry"],
+  "creators": [
+    {
+      "manager": "Sherry",
+      "name": "CosLife_Station",
+      "handle": "CosLife_Station",
+      "youtube_url": "",
+      "instagram_url": "https://www.instagram.com/coslife.station/",
+      "bilibili_url": "https://space.bilibili.com/3706973277128906/",
+      "bilibili_mid": "3706973277128906",
+      "followers": 27000
+    },
+    {
+      "manager": "Sherry",
+      "name": "玩物壯志 Mantoyspirit",
+      "handle": "@mantoyspirit",
+      "youtube_url": "https://www.youtube.com/channel/UC6-Ik0wvObeESt0ksZpRBjg",
+      "instagram_url": "",
+      "bilibili_url": "https://space.bilibili.com/3706973493136050",
+      "bilibili_mid": "3706973493136050",
+      "followers": 3280
+    },
+    {
+      "manager": "Sherry",
+      "name": "HONO 港仔宅男頻道",
+      "handle": "@kelvinhono",
+      "youtube_url": "https://www.youtube.com/channel/UCPgarScQMWJjuPGN5E54v7A",
+      "instagram_url": "",
+      "bilibili_url": "https://b23.tv/Cgr8S3m",
+      "bilibili_mid": "3706971517618574",
+      "followers": 2660
+    },
+    {
+      "manager": "Sherry",
+      "name": "傾動漫 ChatACG",
+      "handle": "@chatacg",
+      "youtube_url": "https://www.youtube.com/channel/UCdH02KizbSR74FDt3sJnocg",
+      "instagram_url": "",
+      "bilibili_url": "https://b23.tv/L0A7mYu",
+      "bilibili_mid": "3706971702168218",
+      "followers": 17100
+    },
+    {
+      "manager": "Sherry",
+      "name": "香港大學動漫聯盟",
+      "handle": "@香港大学动漫联盟",
+      "youtube_url": "",
+      "instagram_url": "https://www.instagram.com/acahku",
+      "bilibili_url": "https://space.bilibili.com/3706948977428594",
+      "bilibili_mid": "3706948977428594",
+      "followers": 9001
+    },
+    {
+      "manager": "Sherry",
+      "name": "NEWTYPE Production",
+      "handle": "NEWTYPEProductio",
+      "youtube_url": "https://www.youtube.com/@newtypeproduction/videos",
+      "instagram_url": "",
+      "bilibili_url": "https://space.bilibili.com/3546887428770402",
+      "bilibili_mid": "3546887428770402",
+      "followers": 15000
+    },
+    {
+      "manager": "Sherry",
+      "name": "阿綸 ALun",
+      "handle": "@阿綸ALun",
+      "youtube_url": "",
+      "instagram_url": "",
+      "bilibili_url": "https://space.bilibili.com/362771225",
+      "bilibili_mid": "362771225",
+      "followers": 0
+    },
+    {
+      "manager": "Sherry",
+      "name": "夜斗斗大魔王",
+      "handle": "@夜斗斗大魔王",
+      "youtube_url": "",
+      "instagram_url": "",
+      "bilibili_url": "",
+      "bilibili_mid": "",
+      "followers": 0
+    },
+    {
+      "manager": "Henry",
+      "name": "香城映畫",
+      "handle": "@utopia_pictures",
+      "youtube_url": "https://www.youtube.com/@utopia_pictures",
+      "instagram_url": "",
+      "bilibili_url": "https://space.bilibili.com/3706967423978261",
+      "bilibili_mid": "3706967423978261",
+      "followers": 242000
+    }
+  ]
+}
