@@ -178,12 +178,14 @@ _bb_state = {'keys': None, 'keys_ts': 0.0, 'last_call': 0.0}
 def _proxy_for(session_id: str) -> str:
     """Build an Apify proxy URL pinned to a session-id (=stable IP).
     Apify expects the username with a literal comma (groups-X,session-Y);
-    we leave it un-encoded because the proxy parser treats %2C as a different
-    string and rejects auth."""
+    we leave the comma un-encoded because the proxy parser treats %2C as a
+    different string. The password is URL-encoded because Apify passwords can
+    contain @ / : + which break URL parsing if left raw."""
     if not APIFY_PROXY_PASSWORD or not session_id:
         return ''
+    pwd = urllib.parse.quote(APIFY_PROXY_PASSWORD, safe='')
     return (f'http://groups-{APIFY_PROXY_GROUPS},session-{session_id}:'
-            f'{APIFY_PROXY_PASSWORD}@proxy.apify.com:8000')
+            f'{pwd}@proxy.apify.com:8000')
 
 
 def _new_bb_session(session_id: str = '') -> requests.Session:
@@ -198,8 +200,13 @@ def _new_bb_session(session_id: str = '') -> requests.Session:
 def proxy_diagnostic() -> dict:
     """Test whether the configured proxy actually reaches the public internet.
     Returns a dict suitable for /bili/proxy-status."""
+    pwd_fp = ''
+    if APIFY_PROXY_PASSWORD:
+        p = APIFY_PROXY_PASSWORD
+        pwd_fp = f'len={len(p)} starts={p[:2]}… ends=…{p[-2:]}'
     info = {
         'proxy_password_set': bool(APIFY_PROXY_PASSWORD),
+        'proxy_password_fp':  pwd_fp,
         'proxy_groups':       APIFY_PROXY_GROUPS,
         'env_seen': {
             'APIFY_PROXY_PASSWORD': bool(os.environ.get('APIFY_PROXY_PASSWORD')),
