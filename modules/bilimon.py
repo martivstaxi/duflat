@@ -204,13 +204,27 @@ def proxy_diagnostic() -> dict:
     Tests multiple username formats so we can tell whether 407 is caused by
     a wrong password, wrong group syntax, or wrong plan entitlement."""
     pwd_fp = ''
+    pwd_char_check = {}
     if APIFY_PROXY_PASSWORD:
         p = APIFY_PROXY_PASSWORD
         pwd_fp = f'len={len(p)} starts={p[:2]}… ends=…{p[-2:]}'
+        # Detect hidden chars that .strip() doesn't catch.
+        non_alnum = [c for c in p if not c.isalnum()]
+        suspicious = [hex(ord(c)) for c in p
+                      if not (32 < ord(c) < 127)]
+        pwd_char_check = {
+            'all_alphanumeric':       len(non_alnum) == 0,
+            'non_alnum_chars':        ''.join(non_alnum)[:40],
+            'non_printable_codepoints': suspicious[:20],
+            # Raw env value length BEFORE strip — exposes trailing whitespace
+            # that strip() would silently eat.
+            'raw_env_len_pre_strip': len(os.environ.get('APIFY_PROXY_PASSWORD', '')),
+        }
     info = {
-        'proxy_password_set': bool(APIFY_PROXY_PASSWORD),
-        'proxy_password_fp':  pwd_fp,
-        'proxy_groups':       APIFY_PROXY_GROUPS,
+        'proxy_password_set':   bool(APIFY_PROXY_PASSWORD),
+        'proxy_password_fp':    pwd_fp,
+        'proxy_password_check': pwd_char_check,
+        'proxy_groups':         APIFY_PROXY_GROUPS,
         'env_seen': {
             'APIFY_PROXY_PASSWORD': bool(os.environ.get('APIFY_PROXY_PASSWORD')),
             'APIFY_API_TOKEN':      bool(os.environ.get('APIFY_API_TOKEN')),
