@@ -26,14 +26,22 @@ from pathlib import Path
 import requests
 import yt_dlp
 
-# When the Apify API token is set, all Bilibili requests are routed through
-# Apify's residential proxy. A per-creator session-id keeps the same IP across
-# the space-page warmup and the WBI API call (so cookies remain consistent),
-# and rotates across creators and days to avoid pattern detection.
-# Railway already has APIFY_API_TOKEN (used by social_listening); we accept
-# the shorter APIFY_TOKEN as a fallback for any future tooling that uses it.
-APIFY_TOKEN = (os.environ.get('APIFY_API_TOKEN')
-               or os.environ.get('APIFY_TOKEN') or '').strip()
+# When an Apify proxy password is set, all Bilibili requests are routed
+# through Apify's residential proxy. A per-creator session-id keeps the same
+# IP across the space-page warmup and the WBI API call (cookies stay
+# consistent), and rotates across creators and days to avoid pattern
+# detection.
+#
+# Apify uses two different secrets; the proxy needs APIFY_PROXY_PASSWORD,
+# not the actor-API token. We accept either, preferring the proxy-specific
+# one, so existing Railway setups (APIFY_API_TOKEN already populated by the
+# social-listening actor flow) keep working as a fallback.
+APIFY_PROXY_PASSWORD = (
+    os.environ.get('APIFY_PROXY_PASSWORD')
+    or os.environ.get('APIFY_API_TOKEN')
+    or os.environ.get('APIFY_TOKEN')
+    or ''
+).strip()
 
 DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
 WINDOW_DAYS_DEFAULT = 30
@@ -160,12 +168,14 @@ _bb_state = {'keys': None, 'keys_ts': 0.0, 'last_call': 0.0}
 
 
 def _proxy_for(session_id: str) -> str:
-    """Build an Apify residential proxy URL pinned to a session-id (=stable IP)."""
-    if not APIFY_TOKEN or not session_id:
+    """Build an Apify residential proxy URL pinned to a session-id (=stable IP).
+    Apify expects the username with a literal comma (groups-RESIDENTIAL,session-X);
+    we leave it un-encoded because the proxy parser treats %2C as a different
+    string and rejects auth."""
+    if not APIFY_PROXY_PASSWORD or not session_id:
         return ''
-    user = urllib.parse.quote(f'groups-RESIDENTIAL,session-{session_id}', safe='')
-    pwd  = urllib.parse.quote(APIFY_TOKEN, safe='')
-    return f'http://{user}:{pwd}@proxy.apify.com:8000'
+    return (f'http://groups-RESIDENTIAL,session-{session_id}:'
+            f'{APIFY_PROXY_PASSWORD}@proxy.apify.com:8000')
 
 
 def _new_bb_session(session_id: str = '') -> requests.Session:
@@ -175,6 +185,37 @@ def _new_bb_session(session_id: str = '') -> requests.Session:
     if proxy:
         s.proxies = {'http': proxy, 'https': proxy}
     return s
+
+
+def proxy_diagnostic() -> dict:
+    """Test whether the configured proxy actually reaches the public internet.
+    Returns a dict suitable for /bili/proxy-status."""
+    info = {
+        'proxy_password_set': bool(APIFY_PROXY_PASSWORD),
+        'env_seen': {
+            'APIFY_PROXY_PASSWORD': bool(os.environ.get('APIFY_PROXY_PASSWORD')),
+            'APIFY_API_TOKEN':      bool(os.environ.get('APIFY_API_TOKEN')),
+            'APIFY_TOKEN':          bool(os.environ.get('APIFY_TOKEN')),
+        },
+    }
+    if not APIFY_PROXY_PASSWORD:
+        info['mode'] = 'direct'
+        return info
+    info['mode'] = 'proxy'
+    sess_id = f'diag{int(time.time())}'
+    try:
+        s = _new_bb_session(sess_id)
+        r = s.get('https://api.ipify.org?format=json', timeout=20)
+        info['ipify_status']    = r.status_code
+        info['ipify_body']      = r.text[:200]
+        # Hit Bilibili's nav endpoint via proxy too — tells us if BB itself
+        # is reachable from the proxy IP and whether WBI keys parse.
+        r2 = s.get('https://api.bilibili.com/x/web-interface/nav', timeout=20)
+        info['bb_nav_status']   = r2.status_code
+        info['bb_nav_code']     = (r2.json() or {}).get('code')
+    except Exception as e:
+        info['error'] = f'{type(e).__name__}: {e}'
+    return info
 
 
 def _wbi_session() -> requests.Session:
@@ -226,7 +267,7 @@ def _wbi_sign(params: dict) -> dict:
 def _bb_pace():
     """Sleep just enough to keep ≥_BB_MIN_GAP_SEC between consecutive calls.
     Only meaningful when proxy is OFF — with proxy each call gets its own IP."""
-    if APIFY_TOKEN:
+    if APIFY_PROXY_PASSWORD:
         return
     delta = time.time() - _bb_state['last_call']
     if delta < _BB_MIN_GAP_SEC:
@@ -263,8 +304,10 @@ def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
         r = s.get('https://api.bilibili.com/x/space/wbi/arc/search',
                   params=signed, headers=headers, timeout=30)
         j = r.json()
-    except Exception:
-        return [], 'fetch_error'
+    except Exception as e:
+        # Surface the exception class so the UI/log shows ProxyError vs Timeout
+        # vs JSONDecodeError instead of a generic "network error".
+        return [], f'fetch_error_{type(e).__name__}'
     code = j.get('code')
     if code in (-412, -352):
         return [], 'banned'

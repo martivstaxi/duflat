@@ -297,6 +297,7 @@ function appendRows(c, r) {
     }
 
     const bbErr = (r.status === 'bb_unavailable');
+    const errLabel = bbErr ? (r.bb_error || 'unknown') : '';
     const missingIds = new Set((r.missing_on_bilibili || []).map(v => v.video_id));
     let missingCount = 0;
     yt.forEach((v, i) => {
@@ -304,7 +305,7 @@ function appendRows(c, r) {
         if (isMissing) missingCount++;
         let pill;
         if (bbErr) {
-            pill = '<span class="status-pill qm" title="Bilibili check failed">?</span>';
+            pill = `<span class="status-pill qm" title="Bilibili check failed: ${esc(errLabel)}">?</span>`;
         } else if (isMissing) {
             pill = '<span class="status-pill no" title="Not posted on Bilibili">✗</span>';
         } else {

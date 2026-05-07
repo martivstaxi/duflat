@@ -1202,12 +1202,22 @@ def crypto_leaderboard():
 
 @app.route('/bili')
 def bili_page():
-    return send_from_directory('.', 'bili.html')
+    resp = send_from_directory('.', 'bili.html')
+    # Stop Cloudflare/browser from serving a stale UI; the page is small so
+    # always-revalidate is cheap.
+    resp.headers['Cache-Control'] = 'no-cache, max-age=0, must-revalidate'
+    return resp
 
 
 @app.route('/bili/managers', methods=['GET'])
 def bili_managers():
     return jsonify({'managers': bilimon.list_managers()})
+
+
+@app.route('/bili/proxy-status', methods=['GET'])
+def bili_proxy_status():
+    """Diagnostic: confirm the Apify proxy password is reachable + working."""
+    return jsonify(bilimon.proxy_diagnostic())
 
 
 @app.route('/bili/creators', methods=['GET'])
