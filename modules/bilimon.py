@@ -15,7 +15,9 @@ Public API:
 import hashlib
 import json
 import os
+import random
 import re
+import string
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -164,6 +166,12 @@ _BB_HEADERS = {
     'Accept':          'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8',
     'Origin':          'https://space.bilibili.com',
+    'Sec-Ch-Ua':         '"Not A(Brand";v="99", "Google Chrome";v="120", "Chromium";v="120"',
+    'Sec-Ch-Ua-Mobile':  '?0',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Fetch-Dest':    'empty',
+    'Sec-Fetch-Mode':    'cors',
+    'Sec-Fetch-Site':    'same-site',
 }
 
 # Bilibili rate-limits aggressively (-412 / -799) when traffic from one IP
@@ -332,13 +340,64 @@ def _bb_session_id_for(mid: str) -> str:
     return f'bili{mid}{datetime.now(timezone.utc).strftime("%Y%m%d")}'
 
 
+def _gen_uuid_cookie() -> str:
+    """Generate a Bilibili-style _uuid cookie. Format observed in browser:
+    8-4-4-4-12 hex blocks then `infoc`. Bilibili's WAF checks the literal
+    `infoc` suffix and length, not cryptographic correctness."""
+    parts = []
+    for n in (8, 4, 4, 4, 12):
+        parts.append(''.join(random.choice(string.hexdigits[:16]) for _ in range(n)))
+    ms = str(int(time.time() * 1000) % 100000).zfill(5)
+    return f"{'-'.join(parts)}{ms}infoc"
+
+
+def _gen_b_lsid() -> str:
+    """b_lsid = 8 hex chars + '_' + 13-digit hex of unix-ms."""
+    head = ''.join(random.choice(string.hexdigits[:16]).upper() for _ in range(8))
+    tail = format(int(time.time() * 1000), 'X')
+    return f'{head}_{tail}'
+
+
+def _warmup_cookies(s: requests.Session) -> None:
+    """Populate buvid3/buvid4/_uuid/b_nut/b_lsid cookies on the session.
+
+    The space page sets these via JavaScript so a plain GET doesn't surface
+    them as Set-Cookie headers. Bilibili's WAF rejects API calls without
+    buvid3 with code -412. We hit the public fingerprint endpoint to get
+    server-issued b_3/b_4 values, then synthesise the rest the same way the
+    browser JS would. Failures are non-fatal — we still try the API call."""
+    try:
+        r = s.get('https://api.bilibili.com/x/frontend/finger/spi', timeout=15)
+        j = r.json()
+        data = j.get('data') or {}
+        b3 = data.get('b_3') or ''
+        b4 = data.get('b_4') or ''
+        if b3:
+            s.cookies.set('buvid3', b3, domain='.bilibili.com')
+        if b4:
+            s.cookies.set('buvid4', b4, domain='.bilibili.com')
+    except Exception:
+        pass
+    s.cookies.set('b_nut', str(int(time.time())), domain='.bilibili.com')
+    s.cookies.set('_uuid', _gen_uuid_cookie(), domain='.bilibili.com')
+    s.cookies.set('b_lsid', _gen_b_lsid(), domain='.bilibili.com')
+    s.cookies.set('CURRENT_FNVAL', '4048', domain='.bilibili.com')
+    # Visiting the homepage gives the WAF a realistic referer trail.
+    try:
+        s.get('https://www.bilibili.com/', timeout=15)
+    except Exception:
+        pass
+
+
 def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
-    """Returns (videos, error_code). error_code='' on success or 'rate_limited'/'banned'/'fetch_error'."""
+    """Returns (videos, error_code). error_code='' on success or
+    'rate_limited'/'banned_<code>'/'fetch_error_<exc>'/'api_error_<code>'."""
     if not mid:
         return [], 'no_mid'
     s = _new_bb_session(_bb_session_id_for(mid))
-    # Warm up: visit the creator's space page so the API call carries
-    # realistic cookies (buvid3, b_nut, _uuid). Failures here are non-fatal.
+    _warmup_cookies(s)
+    # Then visit the creator's space page so the API call has a matching
+    # Referer fingerprint. Failures here are non-fatal.
     try:
         s.get(f'https://space.bilibili.com/{mid}', timeout=15)
     except Exception:
@@ -361,7 +420,9 @@ def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
         return [], f'fetch_error_{type(e).__name__}'
     code = j.get('code')
     if code in (-412, -352):
-        return [], 'banned'
+        # Include the exact subcode so we can tell -412 (bot block) from -352
+        # (WAF flag) without re-running the diagnostic.
+        return [], f'banned_{code}'
     if code == -799:
         return [], 'rate_limited'
     if code != 0:
