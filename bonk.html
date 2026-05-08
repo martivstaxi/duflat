@@ -121,16 +121,17 @@
   <canvas id="chart"></canvas>
   <div class="scrub-tip" id="scrubTip"><span class="d" id="scrubDate"></span><span id="scrubPrice"></span></div>
   <div class="nav-arrows">
-    <button class="nav-arrow" id="navPrev" aria-label="Önceki gün (geçmişe)">
+    <button class="nav-arrow" id="navPrev" aria-label="Önceki saat (geçmişe)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="nav-arrow" id="navNext" aria-label="Sonraki gün (ileriye)">
+    <button class="nav-arrow" id="navNext" aria-label="Sonraki saat (ileriye)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
 </div>
 
 <div class="tabs" id="tabs">
+  <button class="tab" data-range="1D">1D</button>
   <button class="tab active" data-range="1W">1W</button>
   <button class="tab" data-range="1M">1M</button>
   <button class="tab" data-range="3M">3M</button>
@@ -141,7 +142,8 @@
 <div class="date-jump">
   <label for="dateInput">Tarihe git:</label>
   <input type="date" id="dateInput">
-  <button class="today-btn" id="todayBtn">Bugün</button>
+  <input type="time" id="timeInput" step="3600" style="background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums;width:80px">
+  <button class="today-btn" id="todayBtn">Şimdi</button>
 </div>
 
 <div class="insight" id="insight"></div>
@@ -151,8 +153,8 @@
   <div class="stat-row"><span class="k">İlk işlem günü</span><span class="v" id="firstDay">—</span></div>
   <div class="stat-row"><span class="k">All-Time High</span><span class="v" id="athLabel">—</span></div>
   <div class="stat-row"><span class="k">All-Time Low</span><span class="v" id="atlLabel">—</span></div>
-  <div class="stat-row"><span class="k">Toplam gün</span><span class="v" id="dayCount">—</span></div>
-  <div class="stat-row"><span class="k">24s Hacim</span><span class="v" id="volLabel">—</span></div>
+  <div class="stat-row"><span class="k">Toplam saat</span><span class="v" id="dayCount">—</span></div>
+  <div class="stat-row"><span class="k">Son saat hacmi</span><span class="v" id="volLabel">—</span></div>
 </div>
 
 <div class="compare">
@@ -161,7 +163,7 @@
   <div class="row"><span class="lbl">BONK launch</span><span class="val">2022-12-30</span></div>
   <div class="row"><span class="lbl">BONK ekstra geçmiş</span><span class="val">~17 ay</span></div>
   <div style="margin-top:10px;font-size:12px;line-height:1.55">
-    NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 yaz dipi ile 2024 sonu pump'ı arası dönemine bak. Tab'tan 1W seç → tarihe git: 2023-08-01 → ileri sürüklerken patternı izle.
+    NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 yaz dipi ile 2024 sonu pump'ı arası dönemine bak. Tab'tan 1D seç → tarih+saat: 2023-08-01 00:00 → sağ ok'la saatlik ilerle.
   </div>
 </div>
 
@@ -171,7 +173,7 @@
 </div>
 
 <div class="footer-note">
-  Veri kaynağı: CoinMarketCap · Günlük kapanış (UTC)<br>
+  Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC)<br>
   duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span>
 </div>
 
@@ -194,51 +196,72 @@ const fmtVol = v => {
   return '$' + v.toFixed(0);
 };
 const fmtDate = s => {
-  const [y,m,d] = s.split('-');
+  const ds = s.length >= 10 ? s.slice(0,10) : s;
+  const [y,m,d] = ds.split('-');
   return d + '/' + m + '/' + y;
 };
 const fmtDateShort = s => {
-  const [y,m,d] = s.split('-');
+  const ds = s.length >= 10 ? s.slice(0,10) : s;
+  const [y,m,d] = ds.split('-');
   const mn = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][+m-1];
   return +d + ' ' + mn + ' \'' + y.slice(2);
 };
+// 'YYYY-MM-DDTHH:00' → 'HH:00'
+const fmtHour = t => t.length >= 13 ? t.slice(11,13) + ':00' : '';
+// 'YYYY-MM-DDTHH:00' → '8 May 14:00'
+const fmtDateTimeShort = t => fmtDateShort(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
+// 'YYYY-MM-DDTHH:00' → '08/05/2026 14:00'
+const fmtDateTime = t => fmtDate(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
+// label key: hourly rows have .t, daily-aggregated have .d
+const rowKey = r => r.t || r.d;
+const rowFmt = r => r.t ? fmtDateTime(r.t) : fmtDate(r.d);
+const rowFmtShort = r => r.t ? fmtDateTimeShort(r.t) : fmtDateShort(r.d);
 
-// Map of YYYY-MM-DD → index for quick lookup
+// Map of 'YYYY-MM-DDTHH:00' → index
 let allData = [];
-let dateIdx = new Map();
+let tIdx = new Map();
+// Map of 'YYYY-MM-DD' → first index whose t falls on that date (for date-jump)
+let dateStartIdx = new Map();
 
-// Window state
-const SIZES = {'1W':7,'1M':30,'3M':90,'1Y':365,'ALL':null};
+// Window state — units are HOURS
+const SIZES = {'1D':24,'1W':168,'1M':720,'3M':2160,'1Y':8760,'ALL':null};
 let currentRange = '1W';
-let windowSize = 7;       // days
-let windowOffset = 0;     // days shifted backward from latest. 0 = window ends at last date.
+let windowSize = 168;     // hours
+let windowOffset = 0;     // hours shifted backward from latest. 0 = window ends at last row.
 
 let chartCanvas, chartCtx, chartW, chartH, dpr;
 let chartPoints = [];
 let chartBounds = {};
 
 async function loadData(){
-  const res = await fetch('/data/bonk_daily.json?v=2026-05-08');
+  const res = await fetch('/data/bonk_hourly.json?v=2026-05-08-h');
   allData = await res.json();
-  allData.forEach((r,i)=>dateIdx.set(r.d, i));
+  allData.forEach((r,i)=>{
+    tIdx.set(r.t, i);
+    const d = r.t.slice(0,10);
+    if (!dateStartIdx.has(d)) dateStartIdx.set(d, i);
+  });
 
-  document.getElementById('lastUpdate').textContent = fmtDate(allData[allData.length-1].d);
-  document.getElementById('firstDay').textContent = fmtDate(allData[0].d);
-  document.getElementById('dayCount').textContent = allData.length + ' gün';
+  const last = allData[allData.length-1];
+  const first = allData[0];
+  document.getElementById('lastUpdate').textContent = fmtDateTime(last.t) + ' UTC';
+  document.getElementById('firstDay').textContent = fmtDateTime(first.t) + ' UTC';
+  document.getElementById('dayCount').textContent = allData.length.toLocaleString('tr-TR') + ' saat';
 
   const ath = allData.reduce((a,b)=>b.p>a.p?b:a);
   const atl = allData.reduce((a,b)=>b.p<a.p?b:a);
-  document.getElementById('athLabel').textContent = fmtPrice(ath.p) + ' (' + fmtDate(ath.d) + ')';
-  document.getElementById('atlLabel').textContent = fmtPrice(atl.p) + ' (' + fmtDate(atl.d) + ')';
+  document.getElementById('athLabel').textContent = fmtPrice(ath.p) + ' (' + fmtDateTime(ath.t) + ')';
+  document.getElementById('atlLabel').textContent = fmtPrice(atl.p) + ' (' + fmtDateTime(atl.t) + ')';
 
-  const last = allData[allData.length-1];
   document.getElementById('volLabel').textContent = fmtVol(last.v);
 
-  // date input bounds
+  // date+time inputs
   const di = document.getElementById('dateInput');
-  di.min = allData[0].d;
-  di.max = last.d;
-  di.value = last.d;
+  di.min = first.t.slice(0,10);
+  di.max = last.t.slice(0,10);
+  di.value = last.t.slice(0,10);
+  const ti = document.getElementById('timeInput');
+  ti.value = last.t.slice(11,16);
 
   buildInsight(last, ath, atl);
   setRange(currentRange);
@@ -248,35 +271,37 @@ function buildInsight(last, ath, atl){
   const dropFromAth = ((ath.p - last.p) / ath.p * 100);
   const upFromAtl = ((last.p - atl.p) / atl.p * 100);
   const el = document.getElementById('insight');
-  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. Sol/sağ oklarla pencereyi 1 gün kaydır, basılı tutarsan hızlanır. Tarih seçerek herhangi bir güne atlayabilirsin.`;
+  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. Sol/sağ oklarla pencereyi 1 saat kaydır, basılı tutarsan hızlanır. Tarih + saat seçip herhangi bir saate atlayabilirsin.`;
 }
 
-function aggregateWeekly(data){
-  const byWeek = new Map();
+let _dailyCache = null;
+function aggregateDaily(data){
+  if (_dailyCache && _dailyCache.len === data.length) return _dailyCache.rows;
+  const byDay = new Map();
   for (const r of data){
-    const dt = new Date(r.d + 'T00:00:00Z');
-    const day = dt.getUTCDay() || 7;
-    const monday = new Date(dt); monday.setUTCDate(dt.getUTCDate() - day + 1);
-    const key = monday.toISOString().slice(0,10);
-    const cur = byWeek.get(key);
-    if (!cur || r.d > cur.d) byWeek.set(key, {d:r.d, p:r.p, v:(cur?cur.v:0) + r.v});
-    else cur.v += r.v;
+    const d = r.t.slice(0,10);
+    const cur = byDay.get(d);
+    if (!cur || r.t > cur._t) byDay.set(d, {d, p:r.p, v:(cur?cur.v:0) + (r.v||0), _t:r.t});
+    else cur.v += (r.v||0);
   }
-  return [...byWeek.values()].sort((a,b)=>a.d.localeCompare(b.d));
+  const rows = [...byDay.values()].sort((a,b)=>a.d.localeCompare(b.d));
+  _dailyCache = {len:data.length, rows};
+  return rows;
 }
 
 // Compute current window's series. windowOffset=0 means window ends at allData.length.
 function getWindowSeries(){
   if (currentRange === 'ALL'){
-    return {series: aggregateWeekly(allData), pannable:false, label:'Tüm zamanlar · haftalık'};
+    return {series: aggregateDaily(allData), pannable:false, label:'Tüm zamanlar · günlük'};
   }
   const total = allData.length;
   const end = total - windowOffset;            // exclusive
   const start = Math.max(0, end - windowSize);
   const series = allData.slice(start, end);
-  const startDate = series[0]?.d, endDate = series[series.length-1]?.d;
-  const label = startDate && endDate
-    ? fmtDateShort(startDate) + ' – ' + fmtDateShort(endDate)
+  const startK = series[0] && rowKey(series[0]);
+  const endK = series[series.length-1] && rowKey(series[series.length-1]);
+  const label = startK && endK
+    ? rowFmtShort(series[0]) + ' – ' + rowFmtShort(series[series.length-1])
     : '';
   return {series, pannable:true, label, start, end, total};
 }
@@ -290,11 +315,10 @@ function setRange(r){
 }
 
 function shiftWindow(direction){
-  // direction = +1 (sağ → ileri/yeni) or -1 (sol → geri/eski)
+  // direction = +1 (sağ → ileri/yeni saat) or -1 (sol → geri/eski saat)
   if (currentRange === 'ALL') return;
   const total = allData.length;
   const maxOffset = Math.max(0, total - windowSize);
-  // direction +1 (forward) decreases offset; -1 (backward) increases offset
   const newOffset = Math.max(0, Math.min(maxOffset, windowOffset - direction));
   if (newOffset === windowOffset) return false;
   windowOffset = newOffset;
@@ -302,24 +326,29 @@ function shiftWindow(direction){
   return true;
 }
 
-function jumpToDate(dateStr){
-  // Set window so its LEFT edge = dateStr. windowOffset such that start index = dateIdx
-  const idx = dateIdx.get(dateStr);
+function jumpToTimestamp(tStr){
+  // tStr = 'YYYY-MM-DDTHH:00'. Find exact or nearest.
+  let idx = tIdx.get(tStr);
   if (idx === undefined){
-    // pick nearest
-    const target = new Date(dateStr).getTime();
-    let best = 0, bestDt = Infinity;
-    for (let i=0;i<allData.length;i++){
-      const dt = Math.abs(new Date(allData[i].d).getTime() - target);
-      if (dt < bestDt){ bestDt = dt; best = i; }
+    // try same date, first hour
+    const d = tStr.slice(0,10);
+    if (dateStartIdx.has(d)) idx = dateStartIdx.get(d);
+    else {
+      // nearest by ms
+      const target = new Date(tStr.slice(0,16) + ':00Z').getTime();
+      let best = 0, bestDt = Infinity;
+      for (let i=0;i<allData.length;i++){
+        const dt = Math.abs(new Date(allData[i].t.slice(0,16) + ':00Z').getTime() - target);
+        if (dt < bestDt){ bestDt = dt; best = i; }
+      }
+      idx = best;
     }
-    return jumpToIndex(best);
   }
-  return jumpToIndex(idx);
+  jumpToIndex(idx);
 }
 function jumpToIndex(startIdx){
   if (currentRange === 'ALL') {
-    setRange('1W');
+    setRange('1D');
   }
   const total = allData.length;
   const end = Math.min(total, startIdx + windowSize);
@@ -336,12 +365,14 @@ function redraw(){
   const change = ((last.p - first.p) / first.p * 100);
   document.getElementById('priceLabel').innerHTML = fmtPrice(last.p) + ' <span class="info">i</span>';
   const changeEl = document.getElementById('changeLabel');
-  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' nokta';
+  const unit = w.pannable ? 'saat' : 'gün';
+  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' ' + unit;
   changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
 
-  // Update date input to match window's left edge
-  if (w.pannable){
-    document.getElementById('dateInput').value = first.d;
+  // Update date+time inputs to match window's left edge
+  if (w.pannable && first.t){
+    document.getElementById('dateInput').value = first.t.slice(0,10);
+    document.getElementById('timeInput').value = first.t.slice(11,16);
   }
 
   // Enable/disable arrows
@@ -397,7 +428,7 @@ function drawChart(series){
     return padT + h - ((p - minP) / (maxP - minP)) * h;
   };
 
-  chartPoints = series.map((r,i)=>({x:tx(i), y:ty(r.p), d:r.d, p:r.p}));
+  chartPoints = series.map((r,i)=>({x:tx(i), y:ty(r.p), k:rowKey(r), p:r.p, isHourly:!!r.t}));
 
   const up = series[series.length-1].p >= series[0].p;
   const stroke = up ? '#0ecb81' : '#f6465d';
@@ -453,12 +484,11 @@ function drawChart(series){
               : [0, Math.floor(series.length/2), series.length-1];
   for (const i of ticks){
     let xPos = chartPoints[i].x;
-    // Anchor: leftmost left-aligned, rightmost right-aligned
     let align = 'center';
-    if (i === 0){ align='left'; xPos -= 0; }
-    else if (i === series.length-1){ align='right'; xPos += 0; }
+    if (i === 0){ align='left'; }
+    else if (i === series.length-1){ align='right'; }
     ctx.textAlign = align;
-    ctx.fillText(fmtDateShort(series[i].d), xPos, padT+h+16);
+    ctx.fillText(rowFmtShort(series[i]), xPos, padT+h+16);
   }
 
   chartBounds = {padL, padR, padT, padB, w, h, series, useLog, minP, maxP, stroke};
@@ -489,7 +519,7 @@ function highlightPoint(idx){
   showTip(pt);
 }
 function showTip(pt){
-  document.getElementById('scrubDate').textContent = fmtDate(pt.d);
+  document.getElementById('scrubDate').textContent = pt.isHourly ? fmtDateTime(pt.k) : fmtDate(pt.k);
   document.getElementById('scrubPrice').textContent = fmtPrice(pt.p);
   document.getElementById('scrubTip').classList.add('show');
 }
@@ -543,9 +573,16 @@ function bindEvents(){
   bindNavButton(document.getElementById('navPrev'), -1);
   bindNavButton(document.getElementById('navNext'), +1);
 
-  document.getElementById('dateInput').addEventListener('change', e=>{
-    if (e.target.value) jumpToDate(e.target.value);
-  });
+  const onDateTimeChange = ()=>{
+    const d = document.getElementById('dateInput').value;
+    const tm = document.getElementById('timeInput').value || '00:00';
+    if (d){
+      const hh = tm.slice(0,2);
+      jumpToTimestamp(d + 'T' + hh + ':00');
+    }
+  };
+  document.getElementById('dateInput').addEventListener('change', onDateTimeChange);
+  document.getElementById('timeInput').addEventListener('change', onDateTimeChange);
   document.getElementById('todayBtn').addEventListener('click', ()=>{
     windowOffset = 0;
     redraw();

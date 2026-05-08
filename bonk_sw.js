@@ -1,8 +1,8 @@
-const CACHE = 'bonk-v3';
+const CACHE = 'bonk-v4-hourly';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
-  '/data/bonk_daily.json',
+  '/data/bonk_hourly.json',
   '/static/bonk/icon-192.png',
   '/static/bonk/icon-512.png'
 ];
@@ -28,7 +28,7 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;
 
   // Network-first for the data file so updates show up
-  if (url.pathname === '/data/bonk_daily.json') {
+  if (url.pathname === '/data/bonk_hourly.json' || url.pathname === '/data/bonk_daily.json') {
     e.respondWith(
       fetch(req).then(res => {
         const copy = res.clone();
