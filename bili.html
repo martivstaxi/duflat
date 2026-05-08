@@ -215,6 +215,35 @@ td.status-cell {
 tr:hover .status-pill { transform: scale(1.08); }
 tr.flag td { background: rgba(181,74,53,.025); }
 
+tr.extra-hidden { display: none; }
+tr.more-toggle-row td {
+    padding: 10px 20px;
+    background: var(--hairline);
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+}
+.more-btn {
+    background: none; border: none;
+    color: var(--accent);
+    font-family: inherit; font-size: .74rem; font-weight: 600;
+    letter-spacing: .02em;
+    padding: 4px 12px; border-radius: 980px;
+    cursor: pointer;
+    transition: background .15s var(--ease);
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.more-btn:hover { background: var(--accent-tint); }
+.more-btn .caret {
+    transition: transform .2s var(--ease);
+    font-size: .65rem; line-height: 1;
+}
+.more-btn.expanded .caret { transform: rotate(180deg); }
+.more-btn .miss-hint {
+    color: var(--negative);
+    font-weight: 600;
+    margin-left: 2px;
+}
+
 td.empty-row {
     color: var(--tertiary); font-style: italic; font-size: .85rem;
     text-align: center; padding: 24px 20px;
@@ -288,6 +317,8 @@ const esc = s => (s || '').replace(/[&<>"]/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let pollHandle = null;
+let groupSeq = 0;
+const VIDEOS_VISIBLE = 3;
 
 async function loadManagers() {
     const sel = $('#manager');
@@ -447,16 +478,30 @@ function appendRows(c, r) {
 
     const missingIds = new Set((r.missing_on_bilibili || []).map(v => v.video_id));
     let missingCount = 0;
+    yt.forEach(v => { if (missingIds.has(v.video_id)) missingCount++; });
 
+    const groupId = `g${++groupSeq}`;
+    const hasMore = yt.length > VIDEOS_VISIBLE;
+    // Cell spans every video row + (when collapsed) the toggle row, so the
+    // creator name vertically aligns with the visible rows. Hidden rows
+    // collapse to 0 height so the rowspan still looks right.
+    const rowspanTotal = yt.length + (hasMore ? 1 : 0);
+
+    let missingInHidden = 0;
     yt.forEach((v, i) => {
         const isMissing = missingIds.has(v.video_id);
-        if (isMissing) missingCount++;
+        const isExtra = hasMore && i >= VIDEOS_VISIBLE;
+        if (isExtra && isMissing) missingInHidden++;
         const nameCell = i === 0
-            ? `<td class="creator-cell" rowspan="${yt.length}">${creatorCell}</td>`
+            ? `<td class="creator-cell" rowspan="${rowspanTotal}">${creatorCell}</td>`
             : '';
-        const cls = [i === 0 ? 'creator-start' : '', isMissing ? 'flag' : ''].filter(Boolean).join(' ');
+        const cls = [
+            i === 0 ? 'creator-start' : '',
+            isMissing ? 'flag' : '',
+            isExtra ? 'extra-row extra-hidden' : '',
+        ].filter(Boolean).join(' ');
         tbody.insertAdjacentHTML('beforeend', `
-            <tr class="${cls}">
+            <tr class="${cls}" data-grp="${groupId}">
                 ${nameCell}
                 <td class="title-cell">
                     <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>
@@ -469,7 +514,38 @@ function appendRows(c, r) {
             </tr>
         `);
     });
+
+    if (hasMore) {
+        const hiddenN = yt.length - VIDEOS_VISIBLE;
+        const missHint = missingInHidden
+            ? `<span class="miss-hint">(${missingInHidden} missing)</span>`
+            : '';
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr class="more-toggle-row" data-grp="${groupId}">
+                <td colspan="3">
+                    <button class="more-btn" type="button"
+                            data-grp="${groupId}"
+                            data-hidden="${hiddenN}"
+                            onclick="toggleGroup('${groupId}', this)">
+                        <span class="label">Show ${hiddenN} more</span>
+                        ${missHint}
+                        <span class="caret">▾</span>
+                    </button>
+                </td>
+            </tr>
+        `);
+    }
     return missingCount;
+}
+
+function toggleGroup(groupId, btn) {
+    const rows = document.querySelectorAll(`tr.extra-row[data-grp="${groupId}"]`);
+    const willExpand = !btn.classList.contains('expanded');
+    rows.forEach(r => r.classList.toggle('extra-hidden', !willExpand));
+    btn.classList.toggle('expanded', willExpand);
+    const label = btn.querySelector('.label');
+    const hidden = btn.dataset.hidden;
+    label.textContent = willExpand ? 'Show less' : `Show ${hidden} more`;
 }
 
 function renderCreatorCell(c) {
