@@ -403,10 +403,20 @@ def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
     except Exception:
         pass
     _bb_pace()
+    # The dm_img_* params are Bilibili's 2024 anti-bot fingerprint set,
+    # normally computed by browser JS from canvas/WebGL state. They MUST be
+    # included before WBI signing — the server validates that w_rid was
+    # computed over a body that includes them, and returns -352 otherwise.
+    # Static "looks like a browser" values are accepted; only their presence
+    # in the signature is checked.
     params = {
         'mid': str(mid), 'ps': limit, 'pn': 1,
         'order': 'pubdate', 'platform': 'web',
         'web_location': '1550101',
+        'dm_img_list':      '[]',
+        'dm_img_str':       'V2ViR0wgMS4wIChPcGVuR0wgRVMgMi4wIENocm9taXVtKQ',
+        'dm_cover_img_str': 'V2ViR0wgMS4wIChPcGVuR0wgRVMgMi4wIENocm9taXVtKQ',
+        'dm_img_inter':     '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
     }
     signed = _wbi_sign(params)
     headers = {'Referer': f'https://space.bilibili.com/{mid}'}
