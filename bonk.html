@@ -66,6 +66,8 @@
   .date-jump button.today-btn{color:#848e9c;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #2b3139}
   .date-jump button.overlay-btn{color:#a78bfa;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid #a78bfa;font-weight:600;letter-spacing:.5px}
   .date-jump button.overlay-btn.active{background:#a78bfa;color:#0b0e11}
+  .date-jump button.refresh-btn{color:#a78bfa;font-size:14px;padding:6px 9px;border-radius:6px;border:1px solid rgba(167,139,250,.4);font-weight:600;line-height:1}
+  .date-jump button.refresh-btn:disabled{opacity:.5}
 
   .section{padding:18px;border-bottom:1px solid #1e2329}
   .section h2{font-size:16px;font-weight:600;margin-bottom:14px}
@@ -154,6 +156,7 @@
   <input type="time" id="timeInput" step="3600" style="background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums;width:80px">
   <button class="today-btn" id="todayBtn">Şimdi</button>
   <button class="overlay-btn" id="notToggle" title="Notcoin overlay'i aç/kapat">NOT</button>
+  <button class="refresh-btn" id="notRefresh" title="NOT verisini şimdi güncelle">↻</button>
 </div>
 
 
@@ -253,13 +256,66 @@ const fmtPriceRaw = p => {
   if (p >= 0.00001) return '$' + p.toFixed(6);
   return '$' + p.toExponential(2);
 };
+const NOT_DELTA_KEY = 'not_hourly_delta_v1';
+
 async function loadNotData(){
   if (notData) return;
   const res = await fetch('/data/not_hourly.json?v=2026-05-08-h');
   notData = await res.json();
+  // Merge any localStorage delta from previous client-side refreshes
+  try {
+    const delta = JSON.parse(localStorage.getItem(NOT_DELTA_KEY) || '[]');
+    if (Array.isArray(delta) && delta.length){
+      const seen = new Set(notData.map(r=>r.t));
+      for (const r of delta){
+        if (r && r.t && !seen.has(r.t)){
+          notData.push(r);
+          seen.add(r.t);
+        }
+      }
+      notData.sort((a,b)=>a.t.localeCompare(b.t));
+    }
+  } catch(e){}
   notTIdx = new Map();
   notData.forEach((r,i)=>notTIdx.set(r.t, i));
   if (notTIdx.has(NOT_ANCHOR)) NOT_ANCHOR_PRICE = notData[notTIdx.get(NOT_ANCHOR)].p;
+}
+
+async function refreshNotData(){
+  if (!notData) await loadNotData();
+  const lastT = notData[notData.length-1].t;
+  const ts_start = Math.floor(_tToMs(lastT) / 1000) - 4*3600;
+  const ts_end = Math.floor(Date.now() / 1000);
+  const url = `https://api.coinmarketcap.com/data-api/v3.1/cryptocurrency/historical?id=28850&convertId=2781&timeStart=${ts_start}&timeEnd=${ts_end}&interval=1h`;
+  const res = await fetch(url, {headers: {'Accept': 'application/json'}});
+  if (!res.ok) throw new Error('CMC fetch failed: ' + res.status);
+  const j = await res.json();
+  const quotes = (j && j.data && j.data.quotes) || [];
+  const newRows = [];
+  for (const q of quotes){
+    if (!q.timeOpen) continue;
+    const t = q.timeOpen.slice(0,13) + ':00';
+    const p = q.quote && q.quote.close;
+    if (p == null) continue;
+    if (notTIdx.has(t)) continue;
+    const v = (q.quote && q.quote.volume) || 0;
+    newRows.push({t, p, v});
+  }
+  if (newRows.length === 0) return 0;
+  notData.push(...newRows);
+  notData.sort((a,b)=>a.t.localeCompare(b.t));
+  notTIdx = new Map();
+  notData.forEach((r,i)=>notTIdx.set(r.t, i));
+  notDailyCache = null;
+  // Persist delta in localStorage so next reload still has these hours
+  try {
+    const existing = JSON.parse(localStorage.getItem(NOT_DELTA_KEY) || '[]');
+    const merged = new Map();
+    for (const r of existing) if (r && r.t) merged.set(r.t, r);
+    for (const r of newRows) merged.set(r.t, r);
+    localStorage.setItem(NOT_DELTA_KEY, JSON.stringify([...merged.values()]));
+  } catch(e){}
+  return newRows.length;
 }
 function getNotDaily(){
   if (notDailyCache) return notDailyCache;
@@ -738,6 +794,22 @@ function bindEvents(){
   document.getElementById('todayBtn').addEventListener('click', ()=>{
     windowOffset = 0;
     redraw();
+  });
+  document.getElementById('notRefresh').addEventListener('click', async ()=>{
+    const btn = document.getElementById('notRefresh');
+    const orig = btn.textContent;
+    btn.textContent = '...';
+    btn.disabled = true;
+    try {
+      const added = await refreshNotData();
+      btn.textContent = added > 0 ? '+' + added : '✓';
+      if (overlayActive) redraw();
+    } catch(e){
+      btn.textContent = '✗';
+      console.error('NOT refresh failed:', e);
+    } finally {
+      setTimeout(()=>{ btn.textContent = orig; btn.disabled = false; }, 1800);
+    }
   });
   document.getElementById('notToggle').addEventListener('click', async ()=>{
     const btn = document.getElementById('notToggle');
