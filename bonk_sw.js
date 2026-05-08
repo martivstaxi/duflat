@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v18-fit-button';
+const CACHE = 'bonk-v19-anchor-08trt';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',

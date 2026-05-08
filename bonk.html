@@ -68,8 +68,6 @@
   .date-jump button.overlay-btn.active{background:#a78bfa;color:#0b0e11}
   .date-jump button.refresh-btn{color:#a78bfa;font-size:14px;padding:6px 9px;border-radius:6px;border:1px solid rgba(167,139,250,.4);font-weight:600;line-height:1}
   .date-jump button.refresh-btn:disabled{opacity:.5}
-  .date-jump button.fit-btn{color:#a78bfa;font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid rgba(167,139,250,.4);font-weight:700;letter-spacing:.5px;line-height:1}
-  .date-jump button.fit-btn:disabled{opacity:.5}
 
   .section{padding:18px;border-bottom:1px solid #1e2329}
   .section h2{font-size:16px;font-weight:600;margin-bottom:14px}
@@ -159,7 +157,6 @@
   <button class="today-btn" id="todayBtn">Şimdi</button>
   <button class="overlay-btn" id="notToggle" title="Notcoin overlay'i aç/kapat">NOT</button>
   <button class="refresh-btn" id="notRefresh" title="NOT verisini şimdi güncelle">↻</button>
-  <button class="fit-btn" id="notFit" title="Pencerede BONK ile NOT'u en iyi hizalayan kaymayı bul">FIT</button>
 </div>
 
 
@@ -238,12 +235,12 @@ let currentRange = '1W';
 let windowSize = 168;     // hours
 let windowOffset = 0;     // hours shifted backward from latest. 0 = window ends at last row.
 
-// Anchor pair: BONK 2023-10-23 00:00 ↔ NOT 2026-05-05 03:00
+// Anchor pair (UTC): BONK 2023-10-23 05:00 (= 08:00 TRT) ↔ NOT 2026-05-05 05:00 (= 08:00 TRT)
 // Aynı x'te hizalanır VE her seri kendi anchor fiyatına oranlanır (anchor=1)
 const NOT_COLOR = '#a78bfa';
 const BONK_COLOR_ACCENT = '#f0b90b';
-const BONK_ANCHOR = '2023-10-23T00:00';
-const NOT_ANCHOR  = '2026-05-05T03:00';
+const BONK_ANCHOR = '2023-10-23T05:00';
+const NOT_ANCHOR  = '2026-05-05T05:00';
 let BONK_ANCHOR_PRICE = null;
 let NOT_ANCHOR_PRICE  = null;
 const fmtRatio = r => 'x' + (Math.floor(r * 100) / 100).toFixed(2);
@@ -294,69 +291,6 @@ async function loadNotData(){
   notTIdx = new Map();
   notData.forEach((r,i)=>notTIdx.set(r.t, i));
   if (notTIdx.has(NOT_ANCHOR)) NOT_ANCHOR_PRICE = notData[notTIdx.get(NOT_ANCHOR)].p;
-}
-
-// Pencerede BONK ile NOT log-returns'lerini Pearson korelasyonuyla en iyi
-// hizalayan saatlik kaymayı bulur. ±96 saat aralığında tarar.
-function autoAlignNot(){
-  if (!notData) return null;
-  const w = getWindowSeries();
-  if (!w.pannable || !w.series.length) return null;
-  const bSeries = w.series;
-  if (!bSeries[0].t) return null;
-
-  const bRet = [];
-  for (let i = 1; i < bSeries.length; i++){
-    const r = bSeries[i].p / bSeries[i-1].p;
-    if (r > 0) bRet.push(Math.log(r)); else return null;
-  }
-  if (bRet.length < 12) return null;
-
-  const SEARCH = 96;
-  let bestLag = 0, bestCorr = -Infinity;
-
-  for (let lag = -SEARCH; lag <= SEARCH; lag++){
-    const shiftMs = NOT_OFFSET_MS + lag * 3600 * 1000;
-    const nPrices = [];
-    let valid = true;
-    for (const r of bSeries){
-      const nt = _msToT(_tToMs(r.t) + shiftMs);
-      const idx = notTIdx.get(nt);
-      if (idx === undefined){ valid = false; break; }
-      nPrices.push(notData[idx].p);
-    }
-    if (!valid) continue;
-    const nRet = [];
-    let ok = true;
-    for (let i = 1; i < nPrices.length; i++){
-      const r = nPrices[i] / nPrices[i-1];
-      if (r > 0) nRet.push(Math.log(r)); else { ok = false; break; }
-    }
-    if (!ok) continue;
-    const n = bRet.length;
-    let sumB = 0, sumN = 0;
-    for (let i = 0; i < n; i++){ sumB += bRet[i]; sumN += nRet[i]; }
-    const mB = sumB / n, mN = sumN / n;
-    let num = 0, db = 0, dn = 0;
-    for (let i = 0; i < n; i++){
-      const xb = bRet[i] - mB, xn = nRet[i] - mN;
-      num += xb * xn; db += xb*xb; dn += xn*xn;
-    }
-    if (db === 0 || dn === 0) continue;
-    const corr = num / Math.sqrt(db * dn);
-    if (corr > bestCorr){ bestCorr = corr; bestLag = lag; }
-  }
-
-  if (bestCorr === -Infinity) return null;
-  if (bestLag !== 0){
-    NOT_OFFSET_MS += bestLag * 3600 * 1000;
-    // Yeni shifted anchor için NOT_ANCHOR_PRICE'ı güncelle
-    const newAnchorT = _msToT(_tToMs(BONK_ANCHOR) + NOT_OFFSET_MS);
-    if (notTIdx.has(newAnchorT)){
-      NOT_ANCHOR_PRICE = notData[notTIdx.get(newAnchorT)].p;
-    }
-  }
-  return { lag: bestLag, corr: bestCorr };
 }
 
 async function refreshNotData(){
@@ -438,8 +372,8 @@ async function loadData(){
   ti.value = `${_pad2(lastLocal.h)}:00`;
 
   setRange(currentRange);
-  // Default açılış: 1W penceresi, sağ kenar = 23 Eki 2023 00:00 UTC
-  jumpToEndTimestamp('2023-10-23T00:00');
+  // Default açılış: 1W penceresi, sağ kenar = 23 Eki 2023 08:00 TRT (= 05:00 UTC)
+  jumpToEndTimestamp('2023-10-23T05:00');
 }
 
 let _dailyCache = null;
@@ -879,20 +813,6 @@ function bindEvents(){
   document.getElementById('todayBtn').addEventListener('click', ()=>{
     windowOffset = 0;
     redraw();
-  });
-  document.getElementById('notFit').addEventListener('click', async ()=>{
-    const btn = document.getElementById('notFit');
-    if (!notData){
-      btn.textContent = '...';
-      try { await loadNotData(); } catch(e){ btn.textContent='✗'; setTimeout(()=>btn.textContent='FIT', 1500); return; }
-    }
-    btn.disabled = true;
-    const r = autoAlignNot();
-    if (!r){ btn.textContent = '✗'; }
-    else if (r.lag === 0){ btn.textContent = '✓'; }
-    else { btn.textContent = (r.lag > 0 ? '+' : '') + r.lag + 'h'; }
-    if (overlayActive) redraw();
-    setTimeout(()=>{ btn.textContent = 'FIT'; btn.disabled = false; }, 2400);
   });
   document.getElementById('notRefresh').addEventListener('click', async ()=>{
     const btn = document.getElementById('notRefresh');
