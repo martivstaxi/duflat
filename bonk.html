@@ -60,6 +60,8 @@
   .date-jump input[type=date]{flex:1;background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums}
   .date-jump button.jump-btn{background:#f0b90b;color:#0b0e11;font-weight:600;padding:8px 14px;border-radius:8px;font-size:13px}
   .date-jump button.today-btn{color:#848e9c;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #2b3139}
+  .date-jump button.overlay-btn{color:#a78bfa;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid #a78bfa;font-weight:600;letter-spacing:.5px}
+  .date-jump button.overlay-btn.active{background:#a78bfa;color:#0b0e11}
 
   .section{padding:18px;border-bottom:1px solid #1e2329}
   .section h2{font-size:16px;font-weight:600;margin-bottom:14px}
@@ -144,6 +146,7 @@
   <input type="date" id="dateInput">
   <input type="time" id="timeInput" step="3600" style="background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums;width:80px">
   <button class="today-btn" id="todayBtn">Şimdi</button>
+  <button class="overlay-btn" id="notToggle" title="Notcoin overlay'i aç/kapat">NOT</button>
 </div>
 
 <div class="insight" id="insight"></div>
@@ -231,6 +234,40 @@ const SIZES = {'1D':24,'1W':168,'1M':720,'3M':2160,'1Y':8760,'ALL':null};
 let currentRange = '1W';
 let windowSize = 168;     // hours
 let windowOffset = 0;     // hours shifted backward from latest. 0 = window ends at last row.
+
+// NOT overlay state
+const NOT_COLOR = '#a78bfa';
+let overlayActive = false;
+let notData = null;
+let notTIdx = null;
+let notDailyCache = null;
+const fmtPriceRaw = p => {
+  if (p >= 100) return '$' + p.toFixed(2);
+  if (p >= 1) return '$' + p.toFixed(4);
+  if (p >= 0.001) return '$' + p.toFixed(5);
+  if (p >= 0.00001) return '$' + p.toFixed(6);
+  return '$' + p.toExponential(2);
+};
+async function loadNotData(){
+  if (notData) return;
+  const res = await fetch('/data/not_hourly.json?v=2026-05-08-h');
+  notData = await res.json();
+  notTIdx = new Map();
+  notData.forEach((r,i)=>notTIdx.set(r.t, i));
+}
+function getNotDaily(){
+  if (notDailyCache) return notDailyCache;
+  const byDay = new Map();
+  for (const r of notData){
+    const d = r.t.slice(0,10);
+    const cur = byDay.get(d);
+    if (!cur || r.t > cur._t) byDay.set(d, {d, p:r.p, _t:r.t});
+  }
+  const idx = new Map();
+  for (const [d, row] of byDay) idx.set(d, row.p);
+  notDailyCache = idx;
+  return notDailyCache;
+}
 
 let chartCanvas, chartCtx, chartW, chartH, dpr;
 let chartPoints = [];
@@ -478,6 +515,57 @@ function drawChart(series){
   ctx.lineCap = 'round';
   ctx.stroke();
 
+  // NOT overlay (kendi Y skalasıyla, BONK üstüne mor çizgi)
+  let notOverlay = null;
+  if (overlayActive && notData){
+    const dailyIdx = currentRange === 'ALL' ? getNotDaily() : null;
+    const notPrices = series.map(r => {
+      if (r.t){
+        const i = notTIdx.get(r.t);
+        return i !== undefined ? notData[i].p : null;
+      }
+      return dailyIdx && dailyIdx.has(r.d) ? dailyIdx.get(r.d) : null;
+    });
+    const valid = notPrices.filter(p => p != null);
+    if (valid.length >= 2){
+      const nMin = Math.min(...valid);
+      const nMax = Math.max(...valid);
+      const nUseLog = (nMax / Math.max(nMin, 1e-12)) > 50;
+      const nty = (p) => {
+        if (nUseLog){
+          const lMin = Math.log10(nMin), lMax = Math.log10(nMax);
+          if (lMax === lMin) return padT + h/2;
+          return padT + h - ((Math.log10(p) - lMin) / (lMax - lMin)) * h;
+        }
+        if (nMax === nMin) return padT + h/2;
+        return padT + h - ((p - nMin) / (nMax - nMin)) * h;
+      };
+      ctx.save();
+      ctx.strokeStyle = NOT_COLOR;
+      ctx.lineWidth = 1.6;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      let started = false;
+      for (let i=0;i<chartPoints.length;i++){
+        const np = notPrices[i];
+        if (np == null){
+          if (started){ ctx.stroke(); ctx.beginPath(); started = false; }
+          continue;
+        }
+        const x = chartPoints[i].x;
+        const y = nty(np);
+        if (!started){ ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      }
+      if (started) ctx.stroke();
+      ctx.restore();
+      notOverlay = {nMin, nMax, validCount: valid.length};
+    } else {
+      notOverlay = {empty: true};
+    }
+  }
+
   // Last point dot
   const lastP = chartPoints[chartPoints.length-1];
   ctx.beginPath();
@@ -498,6 +586,20 @@ function drawChart(series){
   ctx.textAlign = 'left';
   ctx.fillText(fmtPrice(maxP), Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
   ctx.fillText(fmtPrice(minP), Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
+
+  // NOT overlay min/max badge (sağ üst köşe, kendi rengi)
+  if (notOverlay && !notOverlay.empty){
+    ctx.fillStyle = NOT_COLOR;
+    ctx.font = '11px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('NOT ' + fmtPriceRaw(notOverlay.nMax), chartW - 4, padT + 12);
+    ctx.fillText(fmtPriceRaw(notOverlay.nMin), chartW - 4, padT + h - 4);
+  } else if (notOverlay && notOverlay.empty){
+    ctx.fillStyle = NOT_COLOR;
+    ctx.font = '11px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('NOT bu aralıkta yok (TGE 2024-05-16)', chartW - 4, padT + 14);
+  }
 
   // X-axis date labels — leftmost, middle, rightmost
   ctx.fillStyle = '#5e6673';
@@ -608,6 +710,20 @@ function bindEvents(){
   document.getElementById('timeInput').addEventListener('change', onDateTimeChange);
   document.getElementById('todayBtn').addEventListener('click', ()=>{
     windowOffset = 0;
+    redraw();
+  });
+  document.getElementById('notToggle').addEventListener('click', async ()=>{
+    const btn = document.getElementById('notToggle');
+    if (!overlayActive){
+      btn.textContent = '...';
+      try { await loadNotData(); } catch(e){ btn.textContent='NOT ✗'; return; }
+      overlayActive = true;
+      btn.textContent = 'NOT';
+      btn.classList.add('active');
+    } else {
+      overlayActive = false;
+      btn.classList.remove('active');
+    }
     redraw();
   });
 

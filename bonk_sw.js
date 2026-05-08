@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v7-default-end-2023-10-23';
+const CACHE = 'bonk-v8-not-overlay';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
@@ -27,8 +27,8 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
 
-  // Network-first for the data file so updates show up
-  if (url.pathname === '/data/bonk_hourly.json' || url.pathname === '/data/bonk_daily.json') {
+  // Network-first for the data files so updates show up
+  if (url.pathname === '/data/bonk_hourly.json' || url.pathname === '/data/bonk_daily.json' || url.pathname === '/data/not_hourly.json') {
     e.respondWith(
       fetch(req).then(res => {
         const copy = res.clone();
