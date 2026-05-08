@@ -12,19 +12,23 @@
 
 const COOLDOWN_MS = 12 * 60 * 60 * 1000;
 
-function corsHeaders(env) {
+function corsHeaders(env, req) {
+  const allowed = (env.ALLOWED_ORIGIN || "").split(",").map(s => s.trim()).filter(Boolean);
+  const origin  = (req && req.headers.get("Origin")) || "";
+  const allow   = allowed.includes(origin) ? origin : (allowed[0] || "*");
   return {
-    "Access-Control-Allow-Origin":  env.ALLOWED_ORIGIN || "*",
+    "Access-Control-Allow-Origin":  allow,
+    "Vary":                         "Origin",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age":       "86400",
   };
 }
 
-function json(body, status, env) {
+function json(body, status, env, req) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders(env) },
+    headers: { "Content-Type": "application/json", ...corsHeaders(env, req) },
   });
 }
 
@@ -58,7 +62,7 @@ async function dispatchWorkflow(env) {
 export default {
   async fetch(req, env) {
     if (req.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders(env) });
+      return new Response(null, { headers: corsHeaders(env, req) });
     }
 
     const { pathname } = new URL(req.url);
@@ -69,7 +73,40 @@ export default {
         last_dispatch:         last || null,
         cooldown_remaining_ms: remaining,
         cooldown_total_ms:     COOLDOWN_MS,
-      }, 200, env);
+      }, 200, env, req);
+    }
+
+    // CORS proxy: /cmc/historical?id=...&convertId=...&timeStart=...&timeEnd=...&interval=1h
+    // Allows the static site to fetch CoinMarketCap data-api directly from the browser.
+    if (req.method === "GET" && pathname === "/cmc/historical") {
+      const u = new URL(req.url);
+      const id = u.searchParams.get("id");
+      const convertId = u.searchParams.get("convertId") || "2781";
+      const timeStart = u.searchParams.get("timeStart");
+      const timeEnd = u.searchParams.get("timeEnd");
+      const interval = u.searchParams.get("interval") || "1h";
+      // Whitelist allowed CMC ids to prevent open proxy abuse
+      const ALLOWED_IDS = new Set(["23095", "28850"]); // BONK, NOT
+      if (!id || !ALLOWED_IDS.has(id) || !timeStart || !timeEnd) {
+        return json({ error: "bad_params" }, 400, env, req);
+      }
+      const cmcUrl = `https://api.coinmarketcap.com/data-api/v3.1/cryptocurrency/historical?id=${id}&convertId=${convertId}&timeStart=${timeStart}&timeEnd=${timeEnd}&interval=${interval}`;
+      try {
+        const r = await fetch(cmcUrl, {
+          headers: { "User-Agent": "duflat-cmc-proxy", "Accept": "application/json" },
+          cf: { cacheTtl: 60, cacheEverything: true },
+        });
+        if (!r.ok) {
+          return json({ error: "cmc_upstream", status: r.status }, 502, env, req);
+        }
+        const body = await r.text();
+        return new Response(body, {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders(env, req) },
+        });
+      } catch (e) {
+        return json({ error: "cmc_fetch_failed", detail: String(e) }, 502, env, req);
+      }
     }
 
     if (req.method === "POST" && pathname === "/dispatch") {
@@ -79,7 +116,7 @@ export default {
           ok: false,
           error: "cooldown",
           cooldown_remaining_ms: remaining,
-        }, 429, env);
+        }, 429, env, req);
       }
 
       const result = await dispatchWorkflow(env);
@@ -89,14 +126,14 @@ export default {
           error: "github_dispatch_failed",
           status: result.status,
           detail: result.detail,
-        }, 502, env);
+        }, 502, env, req);
       }
 
       // Mark cooldown only on successful dispatch
       await env.STATE.put("last_dispatch", String(now));
-      return json({ ok: true, dispatched_at: now }, 200, env);
+      return json({ ok: true, dispatched_at: now }, 200, env, req);
     }
 
-    return json({ error: "not_found", method: req.method, path: pathname }, 404, env);
+    return json({ error: "not_found", method: req.method, path: pathname }, 404, env, req);
   },
 };

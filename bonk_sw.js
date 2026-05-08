@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v15-not-refresh';
+const CACHE = 'bonk-v16-cmc-proxy';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',

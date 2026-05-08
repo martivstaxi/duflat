@@ -286,7 +286,8 @@ async function refreshNotData(){
   const lastT = notData[notData.length-1].t;
   const ts_start = Math.floor(_tToMs(lastT) / 1000) - 4*3600;
   const ts_end = Math.floor(Date.now() / 1000);
-  const url = `https://api.coinmarketcap.com/data-api/v3.1/cryptocurrency/historical?id=28850&convertId=2781&timeStart=${ts_start}&timeEnd=${ts_end}&interval=1h`;
+  // Cloudflare Worker proxy (CMC data-api browser'dan CORS engelli)
+  const url = `https://duflat-dispatcher.djamaldinovic.workers.dev/cmc/historical?id=28850&convertId=2781&timeStart=${ts_start}&timeEnd=${ts_end}&interval=1h`;
   const res = await fetch(url, {headers: {'Accept': 'application/json'}});
   if (!res.ok) throw new Error('CMC fetch failed: ' + res.status);
   const j = await res.json();
