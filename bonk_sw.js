@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v5-display10k';
+const CACHE = 'bonk-v6-default-2023-10-22';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
