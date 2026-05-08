@@ -177,7 +177,7 @@
 
 <div class="footer-note">
   Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC) · Fiyat ×10⁴ ile gösterilir<br>
-  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v10 anchor
+  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v11 ratio
 </div>
 
 <script>
@@ -235,10 +235,20 @@ let currentRange = '1W';
 let windowSize = 168;     // hours
 let windowOffset = 0;     // hours shifted backward from latest. 0 = window ends at last row.
 
-// NOT overlay state — anchor alignment: BONK 2023-10-23 00:00 ↔ NOT 2026-05-05 03:00
+// Anchor pair: BONK 2023-10-23 00:00 ↔ NOT 2026-05-05 03:00
+// Aynı x'te hizalanır VE her seri kendi anchor fiyatına oranlanır (anchor=1)
 const NOT_COLOR = '#a78bfa';
+const BONK_COLOR_ACCENT = '#f0b90b';
 const BONK_ANCHOR = '2023-10-23T00:00';
 const NOT_ANCHOR  = '2026-05-05T03:00';
+let BONK_ANCHOR_PRICE = null;
+let NOT_ANCHOR_PRICE  = null;
+const fmtRatio = r => {
+  if (r >= 100) return r.toFixed(1) + '×';
+  if (r >= 10)  return r.toFixed(2) + '×';
+  if (r >= 1)   return r.toFixed(3) + '×';
+  return r.toFixed(3) + '×';
+};
 const _tToMs = t => new Date(t.slice(0,16) + ':00Z').getTime();
 const NOT_OFFSET_MS = _tToMs(NOT_ANCHOR) - _tToMs(BONK_ANCHOR);
 const _msToT = ms => {
@@ -269,6 +279,7 @@ async function loadNotData(){
   notData = await res.json();
   notTIdx = new Map();
   notData.forEach((r,i)=>notTIdx.set(r.t, i));
+  if (notTIdx.has(NOT_ANCHOR)) NOT_ANCHOR_PRICE = notData[notTIdx.get(NOT_ANCHOR)].p;
 }
 function getNotDaily(){
   if (notDailyCache) return notDailyCache;
@@ -296,6 +307,7 @@ async function loadData(){
     const d = r.t.slice(0,10);
     if (!dateStartIdx.has(d)) dateStartIdx.set(d, i);
   });
+  if (tIdx.has(BONK_ANCHOR)) BONK_ANCHOR_PRICE = allData[tIdx.get(BONK_ANCHOR)].p;
 
   const last = allData[allData.length-1];
   const first = allData[0];
@@ -447,7 +459,11 @@ function redraw(){
   const last = w.series[w.series.length-1];
   const first = w.series[0];
   const change = ((last.p - first.p) / first.p * 100);
-  document.getElementById('priceLabel').innerHTML = fmtPrice(last.p) + ' <span class="info">i</span>';
+  const ratio = BONK_ANCHOR_PRICE ? (last.p / BONK_ANCHOR_PRICE) : null;
+  const priceHtml = ratio
+    ? fmtRatio(ratio) + ' <span class="info" style="font-size:14px;color:#848e9c">' + fmtPrice(last.p) + '</span>'
+    : fmtPrice(last.p);
+  document.getElementById('priceLabel').innerHTML = priceHtml;
   const changeEl = document.getElementById('changeLabel');
   const unit = w.pannable ? 'saat' : 'gün';
   changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' ' + unit;
@@ -497,8 +513,39 @@ function drawChart(series){
   const w = chartW - padL - padR;
   const h = chartH - padT - padB;
 
-  const minP = Math.min(...series.map(r=>r.p));
-  const maxP = Math.max(...series.map(r=>r.p));
+  const bonkMinP = Math.min(...series.map(r=>r.p));
+  const bonkMaxP = Math.max(...series.map(r=>r.p));
+
+  // NOT overlay: BONK-eşdeğer fiyata çevir (np / NOT_anchor * BONK_anchor),
+  // böylece her iki anchor da aynı y'de buluşur ve "1" çizgisi ortak olur.
+  let notPrices = null, notEquiv = null;
+  if (overlayActive && notData && BONK_ANCHOR_PRICE && NOT_ANCHOR_PRICE){
+    const dailyIdx = currentRange === 'ALL' ? getNotDaily() : null;
+    notPrices = series.map(r => {
+      if (r.t){
+        const nt = bonkTtoNotT(r.t);
+        const i = notTIdx.get(nt);
+        return i !== undefined ? notData[i].p : null;
+      }
+      if (r.d){
+        const nd = bonkDtoNotD(r.d);
+        return dailyIdx && dailyIdx.has(nd) ? dailyIdx.get(nd) : null;
+      }
+      return null;
+    });
+    notEquiv = notPrices.map(np => np == null ? null : np / NOT_ANCHOR_PRICE * BONK_ANCHOR_PRICE);
+  }
+
+  // Birleşik Y aralığı: BONK + NOT(eşdeğer)
+  let minP = bonkMinP, maxP = bonkMaxP;
+  if (notEquiv){
+    for (const eq of notEquiv){
+      if (eq != null){
+        if (eq < minP) minP = eq;
+        if (eq > maxP) maxP = eq;
+      }
+    }
+  }
   const useLog = (maxP / Math.max(minP, 1e-12)) > 50;
   const denom = Math.max(1, series.length-1);
   const tx = (i) => padL + (i/denom) * w;
@@ -539,36 +586,11 @@ function drawChart(series){
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // NOT overlay (kendi Y skalasıyla, BONK üstüne mor çizgi)
+  // NOT overlay — BONK'la aynı Y skalasında (notEquiv ile), ortak "1" çizgisi
   let notOverlay = null;
-  if (overlayActive && notData){
-    const dailyIdx = currentRange === 'ALL' ? getNotDaily() : null;
-    const notPrices = series.map(r => {
-      if (r.t){
-        const nt = bonkTtoNotT(r.t);
-        const i = notTIdx.get(nt);
-        return i !== undefined ? notData[i].p : null;
-      }
-      if (r.d){
-        const nd = bonkDtoNotD(r.d);
-        return dailyIdx && dailyIdx.has(nd) ? dailyIdx.get(nd) : null;
-      }
-      return null;
-    });
-    const valid = notPrices.filter(p => p != null);
-    if (valid.length >= 2){
-      const nMin = Math.min(...valid);
-      const nMax = Math.max(...valid);
-      const nUseLog = (nMax / Math.max(nMin, 1e-12)) > 50;
-      const nty = (p) => {
-        if (nUseLog){
-          const lMin = Math.log10(nMin), lMax = Math.log10(nMax);
-          if (lMax === lMin) return padT + h/2;
-          return padT + h - ((Math.log10(p) - lMin) / (lMax - lMin)) * h;
-        }
-        if (nMax === nMin) return padT + h/2;
-        return padT + h - ((p - nMin) / (nMax - nMin)) * h;
-      };
+  if (overlayActive && notData && notEquiv){
+    const validRaw = notPrices.filter(p => p != null);
+    if (validRaw.length >= 2){
       ctx.save();
       ctx.strokeStyle = NOT_COLOR;
       ctx.lineWidth = 1.6;
@@ -577,22 +599,26 @@ function drawChart(series){
       ctx.beginPath();
       let started = false;
       for (let i=0;i<chartPoints.length;i++){
-        const np = notPrices[i];
-        if (np == null){
+        const eq = notEquiv[i];
+        if (eq == null){
           if (started){ ctx.stroke(); ctx.beginPath(); started = false; }
           continue;
         }
         const x = chartPoints[i].x;
-        const y = nty(np);
+        const y = ty(eq);
         if (!started){ ctx.moveTo(x, y); started = true; }
         else ctx.lineTo(x, y);
       }
       if (started) ctx.stroke();
       ctx.restore();
-      notOverlay = {nMin, nMax, validCount: valid.length};
+      const nMinRaw = Math.min(...validRaw);
+      const nMaxRaw = Math.max(...validRaw);
+      notOverlay = {nMinRaw, nMaxRaw, validCount: validRaw.length};
     } else {
       notOverlay = {empty: true};
     }
+  } else if (overlayActive && notData){
+    notOverlay = {empty: true};
   }
 
   // Last point dot
@@ -606,23 +632,46 @@ function drawChart(series){
   ctx.fillStyle = stroke + '33';
   ctx.fill();
 
-  // Min/max price labels
+  // Anchor reference line (yatay sarı kesikli, sağ ucunda "1")
+  if (BONK_ANCHOR_PRICE && BONK_ANCHOR_PRICE >= minP && BONK_ANCHOR_PRICE <= maxP){
+    const yA = ty(BONK_ANCHOR_PRICE);
+    ctx.save();
+    ctx.strokeStyle = BONK_COLOR_ACCENT;
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, yA);
+    ctx.lineTo(padL + w, yA);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = BONK_COLOR_ACCENT;
+    ctx.font = 'bold 12px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('1', padL + w + 4, yA + 4);
+    ctx.restore();
+  }
+
+  // Min/max labels (oran cinsinden, anchor varsa; yoksa fmtPrice)
   const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
   const maxIdx = series.indexOf(series.reduce((a,b)=>b.p>a.p?b:a));
   const maxP_pt = chartPoints[maxIdx], minP_pt = chartPoints[minIdx];
   ctx.font = '11px -apple-system, Inter, sans-serif';
   ctx.fillStyle = '#848e9c';
   ctx.textAlign = 'left';
-  ctx.fillText(fmtPrice(maxP), Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
-  ctx.fillText(fmtPrice(minP), Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
+  const labelMax = BONK_ANCHOR_PRICE ? fmtRatio(bonkMaxP / BONK_ANCHOR_PRICE) : fmtPrice(bonkMaxP);
+  const labelMin = BONK_ANCHOR_PRICE ? fmtRatio(bonkMinP / BONK_ANCHOR_PRICE) : fmtPrice(bonkMinP);
+  ctx.fillText(labelMax, Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
+  ctx.fillText(labelMin, Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
 
-  // NOT overlay min/max badge (sağ üst köşe, kendi rengi)
+  // NOT overlay min/max badge (sağ üst köşe, NOT'un kendi anchor'ına oran)
   if (notOverlay && !notOverlay.empty){
     ctx.fillStyle = NOT_COLOR;
     ctx.font = '11px -apple-system, Inter, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('NOT ' + fmtPriceRaw(notOverlay.nMax), chartW - 4, padT + 12);
-    ctx.fillText(fmtPriceRaw(notOverlay.nMin), chartW - 4, padT + h - 4);
+    const nMaxLabel = NOT_ANCHOR_PRICE ? fmtRatio(notOverlay.nMaxRaw / NOT_ANCHOR_PRICE) : fmtPriceRaw(notOverlay.nMaxRaw);
+    const nMinLabel = NOT_ANCHOR_PRICE ? fmtRatio(notOverlay.nMinRaw / NOT_ANCHOR_PRICE) : fmtPriceRaw(notOverlay.nMinRaw);
+    ctx.fillText('NOT ' + nMaxLabel, chartW - 4, padT + 12);
+    ctx.fillText(nMinLabel, chartW - 4, padT + h - 4);
   } else if (notOverlay && notOverlay.empty){
     ctx.fillStyle = NOT_COLOR;
     ctx.font = '11px -apple-system, Inter, sans-serif';
@@ -674,7 +723,8 @@ function highlightPoint(idx){
 }
 function showTip(pt){
   document.getElementById('scrubDate').textContent = pt.isHourly ? fmtDateTime(pt.k) : fmtDate(pt.k);
-  document.getElementById('scrubPrice').textContent = fmtPrice(pt.p);
+  const ratioPart = BONK_ANCHOR_PRICE ? fmtRatio(pt.p / BONK_ANCHOR_PRICE) + ' · ' : '';
+  document.getElementById('scrubPrice').textContent = ratioPart + fmtPrice(pt.p);
   document.getElementById('scrubTip').classList.add('show');
 }
 function hideTip(){
