@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v9-not-anchor-aligned';
+const CACHE = 'bonk-v10-network-first-html';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
@@ -27,8 +27,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
 
-  // Network-first for the data files so updates show up
-  if (url.pathname === '/data/bonk_hourly.json' || url.pathname === '/data/bonk_daily.json' || url.pathname === '/data/not_hourly.json') {
+  // Network-first for HTML + data files so updates always reach the user
+  const isData = url.pathname === '/data/bonk_hourly.json' || url.pathname === '/data/bonk_daily.json' || url.pathname === '/data/not_hourly.json';
+  const isHtml = url.pathname === '/bonk.html' || url.pathname.endsWith('/bonk.html');
+  if (isData || isHtml) {
     e.respondWith(
       fetch(req).then(res => {
         const copy = res.clone();
