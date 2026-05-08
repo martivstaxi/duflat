@@ -117,6 +117,15 @@ button.primary:hover:not(:disabled) {
 }
 button:disabled { opacity: .4; cursor: not-allowed; }
 
+.schedule-note {
+    text-align: center;
+    color: var(--tertiary);
+    font-size: .72rem;
+    margin: -8px 0 18px;
+    font-weight: 500;
+    letter-spacing: .01em;
+}
+
 #stats {
     text-align: center; color: var(--text-secondary);
     font-size: .85rem; min-height: 20px;
@@ -286,8 +295,9 @@ td.error-row {
             <label for="manager">Manager</label>
             <select id="manager"><option value="">Loading…</option></select>
         </div>
-        <button id="forceRefresh" class="primary" disabled title="Re-run all checks now">Force refresh</button>
     </div>
+
+    <div class="schedule-note">List refreshes daily at 9:00 AM Beijing time</div>
 
     <div id="stats"></div>
     <div id="lastUpdated"></div>
@@ -350,10 +360,8 @@ async function loadCached() {
         $('#tableWrap').style.display = 'none';
         $('#stats').textContent = '';
         $('#lastUpdated').textContent = '';
-        $('#forceRefresh').disabled = true;
         return;
     }
-    $('#forceRefresh').disabled = false;
     $('#rows').innerHTML = '';
     $('#tableWrap').style.display = 'block';
     $('#stats').innerHTML = '<span class="progress-bar"></span>Loading…';
@@ -371,7 +379,7 @@ async function loadCached() {
     if (!creators.length) {
         const lastRun = payload.last_global_run;
         if (!lastRun) {
-            $('#stats').innerHTML = 'No cached data yet — click <strong>Force refresh</strong> to populate the database.';
+            $('#stats').textContent = 'No cached data yet — waiting for tomorrow’s scheduled refresh.';
         } else {
             $('#stats').textContent = 'No creators for this manager.';
         }
@@ -394,7 +402,7 @@ async function loadCached() {
     $('#stats').innerHTML = `${visibleCreators} creators${missingNote}`;
     $('#lastUpdated').textContent = payload.last_global_run
         ? `Last refresh: ${fmtAge(payload.last_global_run)} (${payload.last_global_run})`
-        : 'Never refreshed — Force refresh to populate.';
+        : '';
 }
 
 async function pollRefreshState() {
@@ -406,7 +414,6 @@ async function pollRefreshState() {
                 `<span class="progress-bar"></span>Refreshing ${s.progress}/${s.total}…`;
         } else {
             stopPolling();
-            $('#forceRefresh').disabled = false;
             await loadCached();
         }
     } catch (e) {
@@ -422,35 +429,6 @@ function startPolling() {
 
 function stopPolling() {
     if (pollHandle) { clearInterval(pollHandle); pollHandle = null; }
-}
-
-async function forceRefresh() {
-    const btn = $('#forceRefresh');
-    btn.disabled = true;
-    $('#stats').innerHTML = '<span class="progress-bar"></span>Triggering refresh…';
-    try {
-        const r = await fetch(`${API_BASE}/bili/refresh-now`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ window_days: 15 }),
-        });
-        const j = await r.json();
-        if (j.status === 'cooldown') {
-            $('#stats').textContent =
-                `Cooldown — try again in ${Math.ceil(j.cooldown_left_s / 60)} min.`;
-            btn.disabled = false;
-            return;
-        }
-        if (j.status === 'started' || j.status === 'already_running') {
-            startPolling();
-            return;
-        }
-        $('#stats').textContent = `Refresh error: ${j.error || j.status}`;
-        btn.disabled = false;
-    } catch (e) {
-        $('#stats').textContent = `Refresh failed: ${e.message || e}`;
-        btn.disabled = false;
-    }
 }
 
 function appendRows(c, r) {
@@ -555,8 +533,7 @@ function renderCreatorCell(c) {
     return `${esc(c.name)}<div class="clinks">${links.join('')}</div>`;
 }
 
-$('#manager')     .addEventListener('change', loadCached);
-$('#forceRefresh').addEventListener('click',  forceRefresh);
+$('#manager').addEventListener('change', loadCached);
 
 (async () => {
     await loadManagers();

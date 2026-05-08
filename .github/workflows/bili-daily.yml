@@ -3,8 +3,9 @@ name: Daily Bilibili cross-post refresh
 on:
   workflow_dispatch:
   schedule:
-    # 02:00 UTC = 05:00 Europe/Istanbul (well before the morning UI checks)
-    - cron: '0 2 * * *'
+    # 01:00 UTC = 09:00 Asia/Shanghai (Beijing). Schedule is surfaced to
+    # users in the bili.html schedule note; keep them in sync.
+    - cron: '0 1 * * *'
 
 # One run at a time. Refresh fires off a background thread on Railway,
 # so this workflow returns fast — but if a previous run is still in
