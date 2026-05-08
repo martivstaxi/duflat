@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v17-local-time';
+const CACHE = 'bonk-v18-fit-button';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
