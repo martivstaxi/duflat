@@ -182,6 +182,23 @@ def yt_resolve_debug(channel_url: str) -> dict:
             out['cid'] = info.get('channel_id')
     except Exception as e:
         out['ytdlp_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+    if out.get('cid'):
+        try:
+            rr = requests.get(
+                f'https://www.youtube.com/feeds/videos.xml?channel_id={out["cid"]}',
+                headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=10,
+            )
+            out['rss_status']   = rr.status_code
+            out['rss_len']      = len(rr.text or '')
+            out['rss_head']     = (rr.text or '')[:300]
+            try:
+                root = ET.fromstring(rr.text)
+                entries = root.findall('a:entry', _YT_NS)
+                out['rss_entries'] = len(entries)
+            except Exception as pe:
+                out['rss_parse_error'] = f'{type(pe).__name__}: {str(pe)[:200]}'
+        except Exception as e:
+            out['rss_error'] = f'{type(e).__name__}: {str(e)[:200]}'
     return out
 
 
