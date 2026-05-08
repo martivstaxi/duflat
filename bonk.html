@@ -42,8 +42,14 @@
   .scroll-hint{position:absolute;right:10px;bottom:14px;font-size:10px;color:#5e6673;background:rgba(30,33,38,.7);padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
   .chart-wrap.scrollable .scroll-hint{display:block;animation:fade 2.5s ease-out forwards}
   @keyframes fade{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
-  .chart-info{position:absolute;left:18px;right:18px;top:0;display:flex;justify-content:space-between;pointer-events:none;font-size:12px;color:#848e9c;font-variant-numeric:tabular-nums}
+  .chart-info{position:absolute;left:18px;right:18px;top:0;display:flex;justify-content:space-between;pointer-events:none;font-size:12px;color:#848e9c;font-variant-numeric:tabular-nums;z-index:2}
   .chart-info .hi{color:#b7bdc6}
+
+  .nav-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 4px;pointer-events:none;z-index:3}
+  .nav-arrow{pointer-events:auto;width:38px;height:38px;border-radius:50%;background:rgba(43,49,57,.78);backdrop-filter:blur(6px);color:#eaecef;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.06);transition:transform .08s,background .15s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .nav-arrow:active{transform:scale(.92);background:#f0b90b;color:#0b0e11}
+  .nav-arrow svg{width:18px;height:18px}
+  .nav-arrow[disabled]{opacity:.25;pointer-events:none}
   .scrub-tip{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(30,33,38,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:10px;font-size:12px;color:#eaecef;display:none;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.4)}
   .scrub-tip.show{display:block}
   .scrub-tip .d{color:#848e9c;margin-right:8px}
@@ -114,6 +120,14 @@
   </div>
   <div class="scrub-tip" id="scrubTip"><span class="d" id="scrubDate"></span><span id="scrubPrice"></span></div>
   <div class="scroll-hint">← sürükle →</div>
+  <div class="nav-arrows">
+    <button class="nav-arrow" id="navPrev" aria-label="Önceki gün">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="nav-arrow" id="navNext" aria-label="Sonraki gün">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
 </div>
 
 <div class="tabs" id="tabs">
@@ -186,6 +200,8 @@ let currentRange = 'ALL';
 let chartCanvas, chartCtx, chartW, chartH, dpr;
 let chartPoints = [];      // [{x,y,d,p}]
 let chartBounds = {};      // pricing & layout
+let scrubIdx = -1;         // -1 = no scrub, otherwise index into current series
+let scrubHideTimer = null;
 
 async function loadData(){
   const res = await fetch('/data/bonk_daily.json?v=2026-05-08');
@@ -259,20 +275,19 @@ function setRange(r){
   changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
   changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
 
-  drawChart(series);
+  drawChart(series, undefined, true);
 }
 
 function setupCanvas(){
   chartCanvas = document.getElementById('chart');
   chartCtx = chartCanvas.getContext('2d');
 }
-function resizeCanvas(seriesLen, scrollable){
+function resizeCanvas(seriesLen, scrollable, resetScroll){
   dpr = window.devicePixelRatio || 1;
   const wrap = document.getElementById('chartWrap');
   const scroll = document.getElementById('chartScroll');
   const screenW = wrap.getBoundingClientRect().width;
   if (scrollable){
-    // ~6px per point so ~1226 days → ~7.4k px wide; user pans
     const pxPerPoint = 5.5;
     chartW = Math.max(screenW, seriesLen * pxPerPoint);
     wrap.classList.add('scrollable');
@@ -286,14 +301,13 @@ function resizeCanvas(seriesLen, scrollable){
   chartCanvas.width = chartW * dpr;
   chartCanvas.height = chartH * dpr;
   chartCtx.setTransform(dpr,0,0,dpr,0,0);
-  // Scroll to end so latest is visible
-  if (scrollable) scroll.scrollLeft = chartW;
+  if (scrollable && resetScroll) scroll.scrollLeft = chartW;
 }
 
-function drawChart(series, scrollable){
+function drawChart(series, scrollable, resetScroll){
   if (!chartCtx) return;
   if (scrollable === undefined) scrollable = (currentRange === 'DAYS');
-  resizeCanvas(series.length, scrollable);
+  resizeCanvas(series.length, scrollable, !!resetScroll);
   const ctx = chartCtx;
   ctx.clearRect(0,0,chartW,chartH);
 
@@ -400,17 +414,28 @@ function formatDateShort(s){
 }
 
 // Touch / mouse scrubber
+function endScrubSoon(ms){
+  clearTimeout(scrubHideTimer);
+  scrubHideTimer = setTimeout(()=>{
+    scrubIdx = -1;
+    drawChart(chartBounds.series);
+    document.getElementById('navPrev').removeAttribute('disabled');
+    document.getElementById('navNext').removeAttribute('disabled');
+  }, ms);
+}
+
 function handlePointer(clientX, clientY, fromTouch){
   if (!chartPoints.length) return;
   const rect = chartCanvas.getBoundingClientRect();
   const x = clientX - rect.left;
-  // find nearest by x
   let bestIdx = 0, bestDx = Infinity;
   for (let i=0;i<chartPoints.length;i++){
     const dx = Math.abs(chartPoints[i].x - x);
     if (dx < bestDx){ bestDx = dx; bestIdx = i; }
   }
+  scrubIdx = bestIdx;
   drawScrub(bestIdx);
+  endScrubSoon(3000);
 }
 function drawScrub(idx){
   drawChart(chartBounds.series); // redraw clean
@@ -445,10 +470,59 @@ function hideTip(){
   document.getElementById('scrubTip').classList.remove('show');
 }
 
+function stepScrub(delta){
+  if (!chartBounds.series) return;
+  const len = chartBounds.series.length;
+  if (scrubIdx < 0){
+    scrubIdx = len - 1;  // first activation: show last point, no delta yet
+  } else {
+    scrubIdx = Math.max(0, Math.min(len - 1, scrubIdx + delta));
+  }
+  drawScrub(scrubIdx);
+  // auto-scroll in scrollable view to keep scrubber centered
+  if (chartBounds.scrollable){
+    const scroll = document.getElementById('chartScroll');
+    const pt = chartPoints[scrubIdx];
+    const visW = scroll.clientWidth;
+    const target = pt.x - visW / 2;
+    scroll.scrollLeft = Math.max(0, Math.min(scroll.scrollWidth - visW, target));
+  }
+  document.getElementById('navPrev').toggleAttribute('disabled', scrubIdx <= 0);
+  document.getElementById('navNext').toggleAttribute('disabled', scrubIdx >= len - 1);
+  endScrubSoon(4500);
+}
+
+function bindNavButton(btn, delta){
+  let holdTimer = null, holdInterval = null, intervalMs = 240;
+  const start = (e)=>{
+    e.preventDefault();
+    stepScrub(delta);
+    intervalMs = 240;
+    holdTimer = setTimeout(function tick(){
+      stepScrub(delta);
+      intervalMs = Math.max(35, intervalMs - 22); // accelerate
+      holdInterval = setTimeout(tick, intervalMs);
+    }, 380);
+  };
+  const stop = ()=>{
+    if (holdTimer) clearTimeout(holdTimer);
+    if (holdInterval) clearTimeout(holdInterval);
+    holdTimer = holdInterval = null;
+  };
+  btn.addEventListener('touchstart', start, {passive:false});
+  btn.addEventListener('touchend', stop);
+  btn.addEventListener('touchcancel', stop);
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('mouseup', stop);
+  btn.addEventListener('mouseleave', stop);
+}
+
 function bindEvents(){
   document.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click', ()=>setRange(t.dataset.range));
+    t.addEventListener('click', ()=>{ scrubIdx = -1; setRange(t.dataset.range); });
   });
+  bindNavButton(document.getElementById('navPrev'), -1);
+  bindNavButton(document.getElementById('navNext'), +1);
   let touching = false;
   let touchStartX = 0, touchStartY = 0, scrubMode = false;
   chartCanvas.addEventListener('touchstart', e=>{
@@ -483,7 +557,6 @@ function bindEvents(){
   chartCanvas.addEventListener('touchend', ()=>{
     touching = false;
     scrubMode = false;
-    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1500);
   });
   chartCanvas.addEventListener('mousedown', e=>{
     touching = true; handlePointer(e.clientX, e.clientY, false);
@@ -491,10 +564,7 @@ function bindEvents(){
   chartCanvas.addEventListener('mousemove', e=>{
     if (touching) handlePointer(e.clientX, e.clientY, false);
   });
-  window.addEventListener('mouseup', ()=>{
-    if (!touching) return; touching = false;
-    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1200);
-  });
+  window.addEventListener('mouseup', ()=>{ touching = false; });
   window.addEventListener('resize', ()=>drawChart(chartBounds.series));
   window.addEventListener('orientationchange', ()=>setTimeout(()=>drawChart(chartBounds.series), 200));
 }
