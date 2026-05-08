@@ -156,36 +156,6 @@
   <button class="overlay-btn" id="notToggle" title="Notcoin overlay'i aç/kapat">NOT</button>
 </div>
 
-<div class="insight" id="insight"></div>
-
-<div class="section">
-  <h2>BONK Hakkında</h2>
-  <div class="stat-row"><span class="k">İlk işlem günü</span><span class="v" id="firstDay">—</span></div>
-  <div class="stat-row"><span class="k">All-Time High</span><span class="v" id="athLabel">—</span></div>
-  <div class="stat-row"><span class="k">All-Time Low</span><span class="v" id="atlLabel">—</span></div>
-  <div class="stat-row"><span class="k">Toplam saat</span><span class="v" id="dayCount">—</span></div>
-  <div class="stat-row"><span class="k">Son saat hacmi</span><span class="v" id="volLabel">—</span></div>
-</div>
-
-<div class="compare">
-  <h3>Notcoin (NOT) ile karşılaştırma</h3>
-  <div class="row"><span class="lbl">NOT launch</span><span class="val">2024-05-16</span></div>
-  <div class="row"><span class="lbl">BONK launch</span><span class="val">2022-12-30</span></div>
-  <div class="row"><span class="lbl">BONK ekstra geçmiş</span><span class="val">~17 ay</span></div>
-  <div style="margin-top:10px;font-size:12px;line-height:1.55">
-    NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 yaz dipi ile 2024 sonu pump'ı arası dönemine bak. Tab'tan 1D seç → tarih+saat: 2023-08-01 00:00 → sağ ok'la saatlik ilerle.
-  </div>
-</div>
-
-<div class="bottom-bar">
-  <a class="btn btn-sec" href="https://www.binance.com/tr/trade/BONK_USDT" target="_blank" rel="noopener">Binance</a>
-  <a class="btn btn-pri" href="https://coinmarketcap.com/currencies/bonk1/" target="_blank" rel="noopener">CMC</a>
-</div>
-
-<div class="footer-note">
-  Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC) · Fiyat ×10⁴ ile gösterilir<br>
-  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v13 ts-header
-</div>
 
 <script>
 // Display scale: BONK fiyatı çok küçük (1e-7..1e-4) → ×10⁴ ile gösteririz, %change/orantı aynı kalır
@@ -321,16 +291,6 @@ async function loadData(){
 
   const last = allData[allData.length-1];
   const first = allData[0];
-  document.getElementById('lastUpdate').textContent = fmtDateTime(last.t) + ' UTC';
-  document.getElementById('firstDay').textContent = fmtDateTime(first.t) + ' UTC';
-  document.getElementById('dayCount').textContent = allData.length.toLocaleString('tr-TR') + ' saat';
-
-  const ath = allData.reduce((a,b)=>b.p>a.p?b:a);
-  const atl = allData.reduce((a,b)=>b.p<a.p?b:a);
-  document.getElementById('athLabel').textContent = fmtPrice(ath.p) + ' (' + fmtDateTime(ath.t) + ')';
-  document.getElementById('atlLabel').textContent = fmtPrice(atl.p) + ' (' + fmtDateTime(atl.t) + ')';
-
-  document.getElementById('volLabel').textContent = fmtVol(last.v);
 
   // date+time inputs
   const di = document.getElementById('dateInput');
@@ -340,17 +300,9 @@ async function loadData(){
   const ti = document.getElementById('timeInput');
   ti.value = last.t.slice(11,16);
 
-  buildInsight(last, ath, atl);
   setRange(currentRange);
   // Default açılış: 1W penceresi, sağ kenar = 23 Eki 2023 00:00 UTC
   jumpToEndTimestamp('2023-10-23T00:00');
-}
-
-function buildInsight(last, ath, atl){
-  const dropFromAth = ((ath.p - last.p) / ath.p * 100);
-  const upFromAtl = ((last.p - atl.p) / atl.p * 100);
-  const el = document.getElementById('insight');
-  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. Sol/sağ oklarla pencereyi 1 saat kaydır, basılı tutarsan hızlanır. Tarih + saat seçip herhangi bir saate atlayabilirsin.`;
 }
 
 let _dailyCache = null;
