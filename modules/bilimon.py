@@ -191,18 +191,25 @@ def bb_fetch_debug(mid: str, limit: int = 50) -> dict:
         items = ir.json() or []
     except Exception as e:
         return {'error': f'dataset: {type(e).__name__}', 'status': status}
+    profile = next((it for it in (items or []) if it.get('type') in ('user_profile','profile') or 'archiveCount' in it), None) if isinstance(items, list) else None
+    videos  = [it for it in (items or []) if it.get('bvid')] if isinstance(items, list) else []
     return {
-        'mid':           mid,
-        'limit_asked':   limit,
-        'status':        status,
-        'items_count':   len(items) if isinstance(items, list) else None,
-        'first3_titles': [it.get('title') for it in (items or [])[:3]] if isinstance(items, list) else None,
-        'first3_dates':  [
-            datetime.fromtimestamp(it.get('publishTimestamp', 0), tz=timezone.utc).strftime('%Y-%m-%d')
-            if it.get('publishTimestamp') else None
-            for it in (items or [])[:3]
-        ] if isinstance(items, list) else None,
-        'sample_keys':   list((items[0] or {}).keys())[:30] if (isinstance(items, list) and items) else [],
+        'mid':              mid,
+        'limit_asked':      limit,
+        'status':           status,
+        'items_count':      len(items) if isinstance(items, list) else None,
+        'video_count':      len(videos),
+        'archiveCount':     (profile or {}).get('archiveCount'),
+        'profile_name':     (profile or {}).get('name'),
+        'profile_type':     (profile or {}).get('type'),
+        'all_video_titles': [v.get('title') for v in videos],
+        'all_video_dates':  [
+            datetime.fromtimestamp(v.get('publishTimestamp', 0), tz=timezone.utc).strftime('%Y-%m-%d')
+            if v.get('publishTimestamp') else v.get('publishDate') or None
+            for v in videos
+        ],
+        'sample_keys':      list((items[0] or {}).keys())[:30] if (isinstance(items, list) and items) else [],
+        'video_keys':       list((videos[0] or {}).keys())[:30] if videos else [],
     }
 
 
