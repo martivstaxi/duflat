@@ -173,15 +173,18 @@
 </div>
 
 <div class="footer-note">
-  Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC)<br>
+  Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC) · Fiyat ×10⁴ ile gösterilir<br>
   duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span>
 </div>
 
 <script>
-const fmtPrice = p => {
-  if (p >= 1) return '$' + p.toFixed(4);
-  if (p >= 0.01) return '$' + p.toFixed(5);
-  if (p >= 0.0001) return '$' + p.toFixed(6);
+// Display scale: BONK fiyatı çok küçük (1e-7..1e-4) → ×10⁴ ile gösteririz, %change/orantı aynı kalır
+const DISPLAY_SCALE = 10000;
+const fmtPrice = pRaw => {
+  const p = pRaw * DISPLAY_SCALE;
+  if (p >= 100) return '$' + p.toFixed(2);
+  if (p >= 1)   return '$' + p.toFixed(4);
+  if (p >= 0.0001) return '$' + p.toFixed(4);
   const s = p.toExponential(3);
   const [m, eRaw] = s.split('e');
   const e = parseInt(eRaw);
