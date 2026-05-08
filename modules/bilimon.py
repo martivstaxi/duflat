@@ -183,23 +183,41 @@ def yt_resolve_debug(channel_url: str) -> dict:
     except Exception as e:
         out['ytdlp_error'] = f'{type(e).__name__}: {str(e)[:200]}'
     if out.get('cid'):
-        try:
-            rr = requests.get(
-                f'https://www.youtube.com/feeds/videos.xml?channel_id={out["cid"]}',
-                headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=10,
-            )
-            out['rss_status']   = rr.status_code
-            out['rss_len']      = len(rr.text or '')
-            out['rss_head']     = (rr.text or '')[:300]
+        # Probe both routes so we can see exactly what Railway sees vs what
+        # the proxy sees. If direct returns empty/blocked but proxy returns
+        # a real feed, that's the smoking gun for IP-based rate limiting.
+        for label, proxies in (('direct', {}), ('proxy', _yt_proxies())):
+            if label == 'proxy' and not proxies:
+                continue
             try:
-                root = ET.fromstring(rr.text)
-                entries = root.findall('a:entry', _YT_NS)
-                out['rss_entries'] = len(entries)
-            except Exception as pe:
-                out['rss_parse_error'] = f'{type(pe).__name__}: {str(pe)[:200]}'
-        except Exception as e:
-            out['rss_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+                rr = requests.get(
+                    f'https://www.youtube.com/feeds/videos.xml?channel_id={out["cid"]}',
+                    headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=15,
+                    proxies=proxies,
+                )
+                out[f'rss_{label}_status'] = rr.status_code
+                out[f'rss_{label}_len']    = len(rr.text or '')
+                out[f'rss_{label}_head']   = (rr.text or '')[:200]
+                try:
+                    root = ET.fromstring(rr.text)
+                    entries = root.findall('a:entry', _YT_NS)
+                    out[f'rss_{label}_entries'] = len(entries)
+                except Exception as pe:
+                    out[f'rss_{label}_parse_error'] = f'{type(pe).__name__}: {str(pe)[:200]}'
+            except Exception as e:
+                out[f'rss_{label}_error'] = f'{type(e).__name__}: {str(e)[:200]}'
     return out
+
+
+def _yt_proxies() -> dict:
+    """Route YouTube fetches via Apify proxy when configured. Railway
+    datacenter IPs get throttled/blocked from YouTube's RSS endpoints,
+    but Apify residential pool reaches them fine."""
+    if not APIFY_PROXY_PASSWORD:
+        return {}
+    sess_id = f'yt{datetime.now(timezone.utc).strftime("%Y%m%d%H")}'
+    proxy = _proxy_for(sess_id)
+    return {'http': proxy, 'https': proxy} if proxy else {}
 
 
 def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
@@ -211,7 +229,8 @@ def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
     try:
         r = requests.get(
             f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}',
-            headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=10,
+            headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=15,
+            proxies=_yt_proxies(),
         )
     except Exception:
         return []
