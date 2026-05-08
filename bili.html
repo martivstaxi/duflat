@@ -189,6 +189,13 @@ td.creator-cell .clinks a {
     transition: color .15s var(--ease);
 }
 td.creator-cell .clinks a:hover { color: var(--accent); }
+/* Continuation rows: empty creator cell, no top border so the column
+   reads as a single unified block per creator. */
+td.creator-cell.is-cont {
+    border-top: none;
+    padding-top: 0;
+    padding-bottom: 0;
+}
 
 td.title-cell { width: 56%; }
 td.title-cell a {
@@ -460,27 +467,28 @@ function appendRows(c, r) {
 
     const groupId = `g${++groupSeq}`;
     const hasMore = yt.length > VIDEOS_VISIBLE;
-    // Creator cell only spans the video rows. The toggle (when present) is a
-    // full-width row OUTSIDE the rowspan so column-1 is free for the next
-    // creator's row underneath.
-    const rowspanTotal = yt.length;
 
     let missingInHidden = 0;
     yt.forEach((v, i) => {
         const isMissing = missingIds.has(v.video_id);
+        const isFirst = i === 0;
         const isExtra = hasMore && i >= VIDEOS_VISIBLE;
         if (isExtra && isMissing) missingInHidden++;
-        const nameCell = i === 0
-            ? `<td class="creator-cell" rowspan="${rowspanTotal}">${creatorCell}</td>`
-            : '';
+        // Each row carries its own creator cell (filled on the first row of a
+        // creator group, empty on continuation rows). Avoiding rowspan makes
+        // expand/collapse layout cleanly without browser quirks where rowspan
+        // + display:none rows could leak column 1 into the next creator.
+        const creatorTd = isFirst
+            ? `<td class="creator-cell">${creatorCell}</td>`
+            : `<td class="creator-cell is-cont"></td>`;
         const cls = [
-            i === 0 ? 'creator-start' : '',
+            isFirst ? 'creator-start' : '',
             isMissing ? 'flag' : '',
             isExtra ? 'extra-row extra-hidden' : '',
         ].filter(Boolean).join(' ');
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="${cls}" data-grp="${groupId}">
-                ${nameCell}
+                ${creatorTd}
                 <td class="title-cell">
                     <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>
                 </td>
