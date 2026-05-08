@@ -73,6 +73,11 @@ if _supa_url and _supa_key:
         print('CS reviews Supabase client ready')
     except Exception as e:
         print(f'CS reviews Supabase init failed: {e}')
+    try:
+        bilimon.init_supabase(_supa_url, _supa_key)
+        print('Bilimon Supabase client ready')
+    except Exception as e:
+        print(f'Bilimon Supabase init failed: {e}')
 
 # ─────────────────────────────────────────────
 # MAIN ROUTES
@@ -1282,8 +1287,8 @@ def bili_check():
 @app.route('/bili/cached', methods=['GET'])
 def bili_cached():
     """Read the precomputed cross-post status for one manager. Backed by
-    data/bili_status.json which the daily cron rebuilds — instant load,
-    no actor cost on every page view."""
+    Supabase (bili_creator_status table) which the daily cron rebuilds —
+    instant load, no actor cost on every page view."""
     manager = (request.args.get('manager') or '').strip()
     if not manager:
         return jsonify({'error': 'manager parameter required'}), 400

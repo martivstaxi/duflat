@@ -66,7 +66,6 @@ BB_ACTOR_ID    = 'zhorex~bilibili-scraper'
 BB_ACTOR_LIMIT = 15  # videos per creator — covers ~30 days for most creators
 
 DATA_FILE   = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
-STATUS_FILE = Path(__file__).resolve().parent.parent / 'data' / 'bili_status.json'
 WINDOW_DAYS_DEFAULT = 15
 # Grace period: don't flag a YT video that was uploaded within the last
 # GRACE_DAYS days — the creator may still be planning to cross-post the same
@@ -988,13 +987,34 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
 
 
 # ─────────────────────────────────────────────
-# Persistent status store + background refresh
+# Persistent status store (Supabase) + background refresh
 # ─────────────────────────────────────────────
-# A daily cron rebuilds bili_status.json so the bili.html page can read
-# fresh-ish results without burning the actor on every visit. Frontend
-# loads via /bili/cached (instant), force-refresh via /bili/refresh-now.
+# Status used to live in data/bili_status.json on Railway, but the container
+# filesystem is wiped on every redeploy so the cache lasted only until the
+# next push. Persistent rows in Supabase fix that. Schema in
+# supabase_bili_setup.sql — two tables:
+#   - bili_creator_status: one row per creator with the full check_creator()
+#                          payload as JSONB
+#   - bili_runs:           one row per refresh run; last_global_run is the
+#                          most recent row whose finished_at is non-null
 
-_STATUS_LOCK = threading.Lock()
+_supabase = None
+
+
+def init_supabase(url, key):
+    """Wire up the shared Supabase client (called from app.py at startup)."""
+    global _supabase
+    from supabase import create_client
+    _supabase = create_client(url, key)
+    return _supabase
+
+
+def _db():
+    if not _supabase:
+        raise RuntimeError('bilimon: Supabase not initialized — set SUPABASE_URL/KEY')
+    return _supabase
+
+
 _REFRESH_LOCK = threading.Lock()
 _refresh_state = {
     'running':           False,
@@ -1011,40 +1031,90 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
-def _load_status() -> dict:
-    if not STATUS_FILE.exists():
-        return {'last_global_run': None, 'creators': {}}
+def _save_creator_status(mid: str, payload: dict) -> None:
+    if not _supabase or not mid:
+        return
     try:
-        return json.loads(STATUS_FILE.read_text(encoding='utf-8'))
-    except Exception:
-        return {'last_global_run': None, 'creators': {}}
+        _db().table('bili_creator_status').upsert({
+            'bilibili_mid': str(mid),
+            'manager':      payload.get('manager'),
+            'name':         payload.get('name'),
+            'payload':      payload,
+            'checked_at':   _now_iso(),
+        }, on_conflict='bilibili_mid').execute()
+    except Exception as e:
+        print(f'bilimon: save_creator_status failed: {type(e).__name__}: {e}', flush=True)
 
 
-def _save_status(data: dict) -> None:
-    STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    tmp = STATUS_FILE.with_suffix('.json.tmp')
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
-    tmp.replace(STATUS_FILE)
+def _start_run(total: int) -> int:
+    if not _supabase:
+        return 0
+    try:
+        r = _db().table('bili_runs').insert({
+            'started_at':     _now_iso(),
+            'creators_total': total,
+            'creators_done':  0,
+        }).execute()
+        return (r.data or [{}])[0].get('id') or 0
+    except Exception as e:
+        print(f'bilimon: start_run failed: {type(e).__name__}: {e}', flush=True)
+        return 0
+
+
+def _finish_run(run_id: int, done: int) -> None:
+    if not _supabase or not run_id:
+        return
+    try:
+        _db().table('bili_runs').update({
+            'finished_at':   _now_iso(),
+            'creators_done': done,
+        }).eq('id', run_id).execute()
+    except Exception as e:
+        print(f'bilimon: finish_run failed: {type(e).__name__}: {e}', flush=True)
+
+
+def _last_global_run() -> str:
+    if not _supabase:
+        return ''
+    try:
+        r = (_db().table('bili_runs')
+             .select('finished_at')
+             .not_.is_('finished_at', 'null')
+             .order('finished_at', desc=True)
+             .limit(1).execute())
+        return (r.data or [{}])[0].get('finished_at') or ''
+    except Exception as e:
+        print(f'bilimon: last_global_run failed: {type(e).__name__}: {e}', flush=True)
+        return ''
 
 
 def cached_status_for(manager: str) -> dict:
     """Read pre-computed cross-post status for one manager. Returns the
     same shape as a sequence of /bili/check responses, plus a
     last_global_run timestamp the UI can show."""
-    data = _load_status()
-    creators_idx = data.get('creators') or {}
-    out = []
-    for entry in creators_idx.values():
-        if manager and entry.get('manager') != manager:
-            continue
-        out.append(entry)
-    # Sort: creators with missing videos first, then by name
-    out.sort(key=lambda e: (-(len(e.get('missing_on_bilibili') or [])),
-                             e.get('name') or ''))
+    creators_out: list = []
+    if _supabase:
+        try:
+            q = _db().table('bili_creator_status').select('bilibili_mid, manager, payload')
+            if manager:
+                q = q.eq('manager', manager)
+            rows = q.execute()
+            for row in (rows.data or []):
+                entry = row.get('payload') or {}
+                # Defensive: ensure manager and bilibili_mid are present even
+                # if an older row's payload didn't carry them.
+                entry.setdefault('manager', row.get('manager'))
+                entry.setdefault('bilibili_mid', row.get('bilibili_mid'))
+                creators_out.append(entry)
+        except Exception as e:
+            print(f'bilimon: cached_status_for failed: {type(e).__name__}: {e}', flush=True)
+
+    creators_out.sort(key=lambda e: (-(len(e.get('missing_on_bilibili') or [])),
+                                      e.get('name') or ''))
     return {
-        'last_global_run': data.get('last_global_run'),
+        'last_global_run': _last_global_run() or None,
         'manager':         manager,
-        'creators':        out,
+        'creators':        creators_out,
         'refresh_state':   {k: v for k, v in _refresh_state.items()
                             if k != 'last_manual_at'},
     }
@@ -1062,6 +1132,8 @@ def _do_refresh_all(window_days: int) -> None:
     _refresh_state['started_at']  = _now_iso()
     _refresh_state['finished_at'] = None
 
+    run_id = _start_run(len(creators))
+
     for c in creators:
         try:
             result = check_creator(c, window_days=window_days)
@@ -1074,20 +1146,13 @@ def _do_refresh_all(window_days: int) -> None:
                 'youtube_url': c.get('youtube_url'),
                 'bilibili_url': c.get('bilibili_url'),
             }
-        with _STATUS_LOCK:
-            data = _load_status()
-            data.setdefault('creators', {})
-            data['creators'][str(c.get('bilibili_mid'))] = {
-                **result,
-                'checked_at': _now_iso(),
-            }
-            _save_status(data)
+        _save_creator_status(c.get('bilibili_mid'), {
+            **result,
+            'checked_at': _now_iso(),
+        })
         _refresh_state['progress'] += 1
 
-    with _STATUS_LOCK:
-        data = _load_status()
-        data['last_global_run'] = _now_iso()
-        _save_status(data)
+    _finish_run(run_id, _refresh_state['progress'])
 
 
 def trigger_refresh_all(window_days: int = WINDOW_DAYS_DEFAULT,
