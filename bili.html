@@ -460,10 +460,10 @@ function appendRows(c, r) {
 
     const groupId = `g${++groupSeq}`;
     const hasMore = yt.length > VIDEOS_VISIBLE;
-    // Cell spans every video row + (when collapsed) the toggle row, so the
-    // creator name vertically aligns with the visible rows. Hidden rows
-    // collapse to 0 height so the rowspan still looks right.
-    const rowspanTotal = yt.length + (hasMore ? 1 : 0);
+    // Creator cell only spans the video rows. The toggle (when present) is a
+    // full-width row OUTSIDE the rowspan so column-1 is free for the next
+    // creator's row underneath.
+    const rowspanTotal = yt.length;
 
     let missingInHidden = 0;
     yt.forEach((v, i) => {
@@ -500,7 +500,7 @@ function appendRows(c, r) {
             : '';
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="more-toggle-row" data-grp="${groupId}">
-                <td colspan="3">
+                <td colspan="4">
                     <button class="more-btn" type="button"
                             data-grp="${groupId}"
                             data-hidden="${hiddenN}"
