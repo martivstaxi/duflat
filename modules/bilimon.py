@@ -146,6 +146,45 @@ def _resolve_channel_id(channel_url: str) -> str:
         return ''
 
 
+def yt_resolve_debug(channel_url: str) -> dict:
+    """Diagnostic for /bili/debug-yt — returns each step of the YT resolve
+    so we can pinpoint where Railway is losing the channel_id."""
+    out = {'input': channel_url}
+    m = _RE_CHANNEL_ID.search(channel_url or '')
+    if m:
+        out['from_url_regex'] = m.group(1)
+        out['cid'] = m.group(1)
+        return out
+    try:
+        r = requests.get(channel_url.rstrip('/'),
+                         headers=_YT_HEADERS, cookies=_YT_COOKIES,
+                         timeout=15, allow_redirects=True)
+        out['http_status']     = r.status_code
+        out['final_url']       = r.url
+        out['len_html']        = len(r.text or '')
+        out['has_consent_kw']  = 'consent.youtube' in (r.text or '').lower()
+        out['head_snippet']    = (r.text or '')[:400]
+        m2 = _RE_CID_INPAGE.search(r.text or '')
+        out['from_html_regex'] = m2.group(1) if m2 else None
+        if m2:
+            out['cid'] = m2.group(1)
+            return out
+    except Exception as e:
+        out['http_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+    try:
+        opts = {'skip_download': True, 'quiet': True, 'no_warnings': True,
+                'ignoreerrors': True, 'extract_flat': True, 'playlistend': 1}
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(channel_url.rstrip('/'), download=False) or {}
+        out['ytdlp_channel_id'] = info.get('channel_id')
+        out['ytdlp_keys']       = list(info.keys())[:20]
+        if info.get('channel_id'):
+            out['cid'] = info.get('channel_id')
+    except Exception as e:
+        out['ytdlp_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+    return out
+
+
 def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
     if not channel_url:
         return []

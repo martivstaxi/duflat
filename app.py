@@ -1220,6 +1220,15 @@ def bili_proxy_status():
     return jsonify(bilimon.proxy_diagnostic())
 
 
+@app.route('/bili/debug-yt', methods=['GET'])
+def bili_debug_yt():
+    """Diagnostic: trace YouTube channel_id resolution on Railway."""
+    url = (request.args.get('url') or '').strip()
+    if not url:
+        return jsonify({'error': 'url query param required'}), 400
+    return jsonify(bilimon.yt_resolve_debug(url))
+
+
 @app.route('/bili/creators', methods=['GET'])
 def bili_creators():
     manager = (request.args.get('manager') or '').strip()
