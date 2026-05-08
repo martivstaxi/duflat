@@ -733,15 +733,17 @@ def _verify_with_haiku(missing: list, bb_videos: list, creator_name: str) -> tup
     (translation, retitle, edit). Reduces false positives caused by HK
     creators retitling videos for the CN audience.
 
-    Returns (truly_missing, ai_decisions) where ai_decisions records what
-    Haiku said for each candidate so the UI can surface reasoning later
-    if needed. Falls back to the input `missing` list on any failure —
-    we never want AI flakiness to drop a real signal."""
+    Returns (truly_missing, ai_decisions, ran) where ai_decisions records
+    what Haiku said and `ran` tells us if Haiku actually executed (so the
+    UI can distinguish "Haiku confirmed missing" from "Haiku didn't run
+    because the API key is absent"). Falls back to the input `missing`
+    list on any failure — we never want AI flakiness to drop a real
+    signal."""
     if not missing or not bb_videos:
-        return missing, []
+        return missing, [], False
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
-        return missing, []
+        return missing, [], False
     try:
         import anthropic
         yt_lines = '\n'.join(f'{i}. {v.get("title","")}' for i, v in enumerate(missing))
@@ -771,14 +773,14 @@ def _verify_with_haiku(missing: list, bb_videos: list, creator_name: str) -> tup
         text = msg.content[0].text if msg.content else ''
         m = re.search(r'\{.*\}', text, re.DOTALL)
         if not m:
-            return missing, []
+            return missing, [], True
         data = json.loads(m.group(0))
         truly_idx = [i for i in (data.get('truly_missing') or [])
                      if isinstance(i, int) and 0 <= i < len(missing)]
         truly = [missing[i] for i in truly_idx]
-        return truly, (data.get('matched') or [])
+        return truly, (data.get('matched') or []), True
     except Exception:
-        return missing, []
+        return missing, [], False
 
 
 def _summary(creator: dict) -> dict:
@@ -834,8 +836,9 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
     # a translated/retitled BB version. ANTHROPIC_API_KEY is already used by
     # modules/agency.py, so no new env config needed. Falls open on errors.
     ai_matched: list = []
+    ai_checked: bool = False
     if missing and not bb_err:
-        missing, ai_matched = _verify_with_haiku(
+        missing, ai_matched, ai_checked = _verify_with_haiku(
             missing, bb_match_pool or bb,
             base.get('name') or '',
         )
@@ -849,6 +852,7 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
         'bilibili_recent':     bb_recent,
         'missing_on_bilibili': missing,
         'ai_matched':          ai_matched,
+        'ai_checked':          ai_checked,
         'youtube_count':       len(yt),
         'bilibili_count':      len(bb),
         'bb_error':            bb_err,
