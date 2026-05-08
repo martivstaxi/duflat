@@ -18,6 +18,7 @@
   body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);min-height:100vh;min-height:100dvh}
   a{color:inherit;text-decoration:none}
   button{font-family:inherit;background:none;border:none;color:inherit;cursor:pointer}
+  input{font-family:inherit}
 
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
   .topbar .icons{display:flex;gap:18px;align-items:center}
@@ -34,29 +35,31 @@
   .change.up{color:#0ecb81}
   .change.down{color:#f6465d}
 
-  .chart-wrap{position:relative;margin-top:14px;padding:0 0 8px;width:100%;overflow:hidden}
-  .chart-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .chart-scroll::-webkit-scrollbar{display:none}
+  .chart-wrap{position:relative;margin-top:14px;padding:0 0 4px;width:100%}
   .chart-wrap canvas{display:block;width:100%;height:340px;touch-action:pan-y}
-  .chart-wrap.scrollable canvas{touch-action:pan-x}
-  .scroll-hint{position:absolute;right:10px;bottom:14px;font-size:10px;color:#5e6673;background:rgba(30,33,38,.7);padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
-  .chart-wrap.scrollable .scroll-hint{display:block;animation:fade 2.5s ease-out forwards}
-  @keyframes fade{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+
   .chart-info{position:absolute;left:18px;right:18px;top:0;display:flex;justify-content:space-between;pointer-events:none;font-size:12px;color:#848e9c;font-variant-numeric:tabular-nums;z-index:2}
   .chart-info .hi{color:#b7bdc6}
+
+  .scrub-tip{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(30,33,38,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:10px;font-size:12px;color:#eaecef;display:none;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.4);z-index:2}
+  .scrub-tip.show{display:block}
+  .scrub-tip .d{color:#848e9c;margin-right:8px}
 
   .nav-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 4px;pointer-events:none;z-index:3}
   .nav-arrow{pointer-events:auto;width:38px;height:38px;border-radius:50%;background:rgba(43,49,57,.78);backdrop-filter:blur(6px);color:#eaecef;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.06);transition:transform .08s,background .15s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .nav-arrow:active{transform:scale(.92);background:#f0b90b;color:#0b0e11}
   .nav-arrow svg{width:18px;height:18px}
-  .nav-arrow[disabled]{opacity:.25;pointer-events:none}
-  .scrub-tip{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(30,33,38,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:10px;font-size:12px;color:#eaecef;display:none;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.4)}
-  .scrub-tip.show{display:block}
-  .scrub-tip .d{color:#848e9c;margin-right:8px}
+  .nav-arrow[disabled]{opacity:.22;pointer-events:none}
 
-  .tabs{display:flex;justify-content:space-around;align-items:center;padding:8px 12px 14px;border-bottom:1px solid #1e2329}
+  .tabs{display:flex;justify-content:space-around;align-items:center;padding:8px 12px;border-bottom:1px solid #1e2329}
   .tab{padding:7px 14px;font-size:13px;color:#848e9c;font-weight:500;border-radius:18px;transition:background .15s}
   .tab.active{background:#2b3139;color:#eaecef;font-weight:600}
+
+  .date-jump{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1e2329;font-size:13px}
+  .date-jump label{color:#848e9c}
+  .date-jump input[type=date]{flex:1;background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums}
+  .date-jump button.jump-btn{background:#f0b90b;color:#0b0e11;font-weight:600;padding:8px 14px;border-radius:8px;font-size:13px}
+  .date-jump button.today-btn{color:#848e9c;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #2b3139}
 
   .section{padding:18px;border-bottom:1px solid #1e2329}
   .section h2{font-size:16px;font-weight:600;margin-bottom:14px}
@@ -112,31 +115,33 @@
 
 <div class="chart-wrap" id="chartWrap">
   <div class="chart-info">
-    <span class="hi" id="rangeLabel">Tüm zamanlar</span>
-    <span id="hiLabel">—</span>
+    <span class="hi" id="rangeLabel">—</span>
+    <span id="hiLabel"></span>
   </div>
-  <div class="chart-scroll" id="chartScroll">
-    <canvas id="chart"></canvas>
-  </div>
+  <canvas id="chart"></canvas>
   <div class="scrub-tip" id="scrubTip"><span class="d" id="scrubDate"></span><span id="scrubPrice"></span></div>
-  <div class="scroll-hint">← sürükle →</div>
   <div class="nav-arrows">
-    <button class="nav-arrow" id="navPrev" aria-label="Önceki gün">
+    <button class="nav-arrow" id="navPrev" aria-label="Önceki gün (geçmişe)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="nav-arrow" id="navNext" aria-label="Sonraki gün">
+    <button class="nav-arrow" id="navNext" aria-label="Sonraki gün (ileriye)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
 </div>
 
 <div class="tabs" id="tabs">
-  <button class="tab" data-range="1W">1W</button>
+  <button class="tab active" data-range="1W">1W</button>
   <button class="tab" data-range="1M">1M</button>
   <button class="tab" data-range="3M">3M</button>
   <button class="tab" data-range="1Y">1Y</button>
-  <button class="tab active" data-range="ALL">ALL</button>
-  <button class="tab" data-range="DAYS">D</button>
+  <button class="tab" data-range="ALL">ALL</button>
+</div>
+
+<div class="date-jump">
+  <label for="dateInput">Tarihe git:</label>
+  <input type="date" id="dateInput">
+  <button class="today-btn" id="todayBtn">Bugün</button>
 </div>
 
 <div class="insight" id="insight"></div>
@@ -153,11 +158,10 @@
 <div class="compare">
   <h3>Notcoin (NOT) ile karşılaştırma</h3>
   <div class="row"><span class="lbl">NOT launch</span><span class="val">2024-05-16</span></div>
-  <div class="row"><span class="lbl">NOT geçmişi</span><span class="val">~12 ay (1H/1D/1W/1M/1Y)</span></div>
   <div class="row"><span class="lbl">BONK launch</span><span class="val">2022-12-30</span></div>
-  <div class="row"><span class="lbl">BONK geçmişi</span><span class="val" id="bonkAge">—</span></div>
+  <div class="row"><span class="lbl">BONK ekstra geçmiş</span><span class="val">~17 ay</span></div>
   <div style="margin-top:10px;font-size:12px;line-height:1.55">
-    BONK, NOT'tan ~17 ay önce çıktı. NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 sonu — 2024 başı pump dönemine bak.
+    NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 yaz dipi ile 2024 sonu pump'ı arası dönemine bak. Tab'tan 1W seç → tarihe git: 2023-08-01 → ileri sürüklerken patternı izle.
   </div>
 </div>
 
@@ -176,8 +180,7 @@ const fmtPrice = p => {
   if (p >= 1) return '$' + p.toFixed(4);
   if (p >= 0.01) return '$' + p.toFixed(5);
   if (p >= 0.0001) return '$' + p.toFixed(6);
-  // sub-microcent: show as $0.000_0_xxx with subscript zero count
-  const s = p.toExponential(3); // e.g. "1.087e-7"
+  const s = p.toExponential(3);
   const [m, eRaw] = s.split('e');
   const e = parseInt(eRaw);
   const zeros = -e - 1;
@@ -194,18 +197,31 @@ const fmtDate = s => {
   const [y,m,d] = s.split('-');
   return d + '/' + m + '/' + y;
 };
+const fmtDateShort = s => {
+  const [y,m,d] = s.split('-');
+  const mn = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][+m-1];
+  return +d + ' ' + mn + ' \'' + y.slice(2);
+};
 
+// Map of YYYY-MM-DD → index for quick lookup
 let allData = [];
-let currentRange = 'ALL';
+let dateIdx = new Map();
+
+// Window state
+const SIZES = {'1W':7,'1M':30,'3M':90,'1Y':365,'ALL':null};
+let currentRange = '1W';
+let windowSize = 7;       // days
+let windowOffset = 0;     // days shifted backward from latest. 0 = window ends at last date.
+
 let chartCanvas, chartCtx, chartW, chartH, dpr;
-let chartPoints = [];      // [{x,y,d,p}]
-let chartBounds = {};      // pricing & layout
-let scrubIdx = -1;         // -1 = no scrub, otherwise index into current series
-let scrubHideTimer = null;
+let chartPoints = [];
+let chartBounds = {};
 
 async function loadData(){
   const res = await fetch('/data/bonk_daily.json?v=2026-05-08');
   allData = await res.json();
+  allData.forEach((r,i)=>dateIdx.set(r.d, i));
+
   document.getElementById('lastUpdate').textContent = fmtDate(allData[allData.length-1].d);
   document.getElementById('firstDay').textContent = fmtDate(allData[0].d);
   document.getElementById('dayCount').textContent = allData.length + ' gün';
@@ -218,13 +234,11 @@ async function loadData(){
   const last = allData[allData.length-1];
   document.getElementById('volLabel').textContent = fmtVol(last.v);
 
-  // BONK age
-  const first = new Date(allData[0].d);
-  const lastDate = new Date(last.d);
-  const days = Math.floor((lastDate - first) / 86400000);
-  const years = Math.floor(days / 365);
-  const months = Math.floor((days % 365) / 30);
-  document.getElementById('bonkAge').textContent = `~${years}y ${months}ay (D/W/M/Y/ALL)`;
+  // date input bounds
+  const di = document.getElementById('dateInput');
+  di.min = allData[0].d;
+  di.max = last.d;
+  di.value = last.d;
 
   buildInsight(last, ath, atl);
   setRange(currentRange);
@@ -234,11 +248,10 @@ function buildInsight(last, ath, atl){
   const dropFromAth = ((ath.p - last.p) / ath.p * 100);
   const upFromAtl = ((last.p - atl.p) / atl.p * 100);
   const el = document.getElementById('insight');
-  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. NOT 2024'te ilk 6 ayda ~%80 düştükten sonra dipten yeniden pump'ladı — BONK'un 2023 yaz dipinden 2024 sonu pump'ı benzer döngüydü. Grafiği parmağınla sürükle, tarih ve fiyatı gör.`;
+  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. Sol/sağ oklarla pencereyi 1 gün kaydır, basılı tutarsan hızlanır. Tarih seçerek herhangi bir güne atlayabilirsin.`;
 }
 
 function aggregateWeekly(data){
-  // Group by ISO week (Mon-Sun), use last day's close as weekly close, sum volume
   const byWeek = new Map();
   for (const r of data){
     const dt = new Date(r.d + 'T00:00:00Z');
@@ -246,102 +259,151 @@ function aggregateWeekly(data){
     const monday = new Date(dt); monday.setUTCDate(dt.getUTCDate() - day + 1);
     const key = monday.toISOString().slice(0,10);
     const cur = byWeek.get(key);
-    if (!cur || r.d > cur.d) byWeek.set(key, {d:r.d, p:r.p, v:(cur?cur.v:0) + r.v, weekStart:key});
+    if (!cur || r.d > cur.d) byWeek.set(key, {d:r.d, p:r.p, v:(cur?cur.v:0) + r.v});
     else cur.v += r.v;
   }
   return [...byWeek.values()].sort((a,b)=>a.d.localeCompare(b.d));
 }
 
+// Compute current window's series. windowOffset=0 means window ends at allData.length.
+function getWindowSeries(){
+  if (currentRange === 'ALL'){
+    return {series: aggregateWeekly(allData), pannable:false, label:'Tüm zamanlar · haftalık'};
+  }
+  const total = allData.length;
+  const end = total - windowOffset;            // exclusive
+  const start = Math.max(0, end - windowSize);
+  const series = allData.slice(start, end);
+  const startDate = series[0]?.d, endDate = series[series.length-1]?.d;
+  const label = startDate && endDate
+    ? fmtDateShort(startDate) + ' – ' + fmtDateShort(endDate)
+    : '';
+  return {series, pannable:true, label, start, end, total};
+}
+
 function setRange(r){
   currentRange = r;
+  windowOffset = 0;  // reset to latest
+  windowSize = SIZES[r] || allData.length;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.range===r));
-  let series, label;
-  const last = allData[allData.length-1];
-  switch(r){
-    case '1W': series = allData.slice(-7); label = 'Son 7 gün'; break;
-    case '1M': series = allData.slice(-30); label = 'Son 30 gün'; break;
-    case '3M': series = allData.slice(-90); label = 'Son 3 ay'; break;
-    case '1Y': series = allData.slice(-365); label = 'Son 1 yıl'; break;
-    case 'DAYS': series = allData; label = 'Günlük · ' + allData.length + ' gün'; break;
-    default: series = aggregateWeekly(allData); label = 'Tüm zamanlar · haftalık'; break;
-  }
-  document.getElementById('rangeLabel').textContent = label;
+  redraw();
+}
 
-  // Show change vs first point of selected series
-  const first = series[0];
+function shiftWindow(direction){
+  // direction = +1 (sağ → ileri/yeni) or -1 (sol → geri/eski)
+  if (currentRange === 'ALL') return;
+  const total = allData.length;
+  const maxOffset = Math.max(0, total - windowSize);
+  // direction +1 (forward) decreases offset; -1 (backward) increases offset
+  const newOffset = Math.max(0, Math.min(maxOffset, windowOffset - direction));
+  if (newOffset === windowOffset) return false;
+  windowOffset = newOffset;
+  redraw();
+  return true;
+}
+
+function jumpToDate(dateStr){
+  // Set window so its LEFT edge = dateStr. windowOffset such that start index = dateIdx
+  const idx = dateIdx.get(dateStr);
+  if (idx === undefined){
+    // pick nearest
+    const target = new Date(dateStr).getTime();
+    let best = 0, bestDt = Infinity;
+    for (let i=0;i<allData.length;i++){
+      const dt = Math.abs(new Date(allData[i].d).getTime() - target);
+      if (dt < bestDt){ bestDt = dt; best = i; }
+    }
+    return jumpToIndex(best);
+  }
+  return jumpToIndex(idx);
+}
+function jumpToIndex(startIdx){
+  if (currentRange === 'ALL') {
+    setRange('1W');
+  }
+  const total = allData.length;
+  const end = Math.min(total, startIdx + windowSize);
+  windowOffset = total - end;
+  redraw();
+}
+
+function redraw(){
+  const w = getWindowSeries();
+  document.getElementById('rangeLabel').textContent = w.label;
+
+  const last = w.series[w.series.length-1];
+  const first = w.series[0];
   const change = ((last.p - first.p) / first.p * 100);
   document.getElementById('priceLabel').innerHTML = fmtPrice(last.p) + ' <span class="info">i</span>';
   const changeEl = document.getElementById('changeLabel');
-  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' nokta';
   changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
 
-  drawChart(series, undefined, true);
+  // Update date input to match window's left edge
+  if (w.pannable){
+    document.getElementById('dateInput').value = first.d;
+  }
+
+  // Enable/disable arrows
+  if (w.pannable){
+    const total = allData.length;
+    const maxOffset = Math.max(0, total - windowSize);
+    document.getElementById('navPrev').toggleAttribute('disabled', windowOffset >= maxOffset);
+    document.getElementById('navNext').toggleAttribute('disabled', windowOffset <= 0);
+  } else {
+    document.getElementById('navPrev').setAttribute('disabled','');
+    document.getElementById('navNext').setAttribute('disabled','');
+  }
+
+  drawChart(w.series);
+  hideTip();
 }
 
 function setupCanvas(){
   chartCanvas = document.getElementById('chart');
   chartCtx = chartCanvas.getContext('2d');
 }
-function resizeCanvas(seriesLen, scrollable, resetScroll){
+function resizeCanvas(){
   dpr = window.devicePixelRatio || 1;
-  const wrap = document.getElementById('chartWrap');
-  const scroll = document.getElementById('chartScroll');
-  const screenW = wrap.getBoundingClientRect().width;
-  if (scrollable){
-    const pxPerPoint = 5.5;
-    chartW = Math.max(screenW, seriesLen * pxPerPoint);
-    wrap.classList.add('scrollable');
-  } else {
-    chartW = screenW;
-    wrap.classList.remove('scrollable');
-  }
-  chartH = 340;
-  chartCanvas.style.width = chartW + 'px';
-  chartCanvas.style.height = chartH + 'px';
+  const rect = chartCanvas.getBoundingClientRect();
+  chartW = rect.width; chartH = rect.height;
   chartCanvas.width = chartW * dpr;
   chartCanvas.height = chartH * dpr;
   chartCtx.setTransform(dpr,0,0,dpr,0,0);
-  if (scrollable && resetScroll) scroll.scrollLeft = chartW;
 }
 
-function drawChart(series, scrollable, resetScroll){
-  if (!chartCtx) return;
-  if (scrollable === undefined) scrollable = (currentRange === 'DAYS');
-  resizeCanvas(series.length, scrollable, !!resetScroll);
+function drawChart(series){
+  if (!chartCtx || !series || !series.length) return;
+  resizeCanvas();
   const ctx = chartCtx;
   ctx.clearRect(0,0,chartW,chartH);
 
-  const padL = 18, padR = scrollable ? 24 : 70, padT = 30, padB = 24;
+  const padL = 18, padR = 70, padT = 30, padB = 24;
   const w = chartW - padL - padR;
   const h = chartH - padT - padB;
 
   const minP = Math.min(...series.map(r=>r.p));
   const maxP = Math.max(...series.map(r=>r.p));
-  // log scale for very wide price ranges (BONK went from 1e-7 to 6e-5 = 600x)
-  const useLog = (maxP / minP) > 50;
-  const tx = (i) => padL + (i/(series.length-1)) * w;
+  const useLog = (maxP / Math.max(minP, 1e-12)) > 50;
+  const denom = Math.max(1, series.length-1);
+  const tx = (i) => padL + (i/denom) * w;
   const ty = (p) => {
     if (useLog){
       const lMin = Math.log10(minP), lMax = Math.log10(maxP);
+      if (lMax === lMin) return padT + h/2;
       return padT + h - ((Math.log10(p) - lMin) / (lMax - lMin)) * h;
     }
+    if (maxP === minP) return padT + h/2;
     return padT + h - ((p - minP) / (maxP - minP)) * h;
   };
 
   chartPoints = series.map((r,i)=>({x:tx(i), y:ty(r.p), d:r.d, p:r.p}));
 
-  // Up/down color (period total)
   const up = series[series.length-1].p >= series[0].p;
   const stroke = up ? '#0ecb81' : '#f6465d';
   const fillTop = up ? 'rgba(14,203,129,.18)' : 'rgba(246,70,93,.18)';
   const fillBot = up ? 'rgba(14,203,129,0)' : 'rgba(246,70,93,0)';
 
-  // Min/max labels
-  const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
-  const maxIdx = series.indexOf(series.reduce((a,b)=>b.p>a.p?b:a));
-  const lastIdx = series.length-1;
-
-  // Fill gradient
   const grad = ctx.createLinearGradient(0, padT, 0, padT+h);
   grad.addColorStop(0, fillTop);
   grad.addColorStop(1, fillBot);
@@ -353,7 +415,6 @@ function drawChart(series, scrollable, resetScroll){
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Line
   ctx.beginPath();
   ctx.moveTo(chartPoints[0].x, chartPoints[0].y);
   for (let i=1;i<chartPoints.length;i++) ctx.lineTo(chartPoints[i].x, chartPoints[i].y);
@@ -363,8 +424,8 @@ function drawChart(series, scrollable, resetScroll){
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // Last-point dot
-  const lastP = chartPoints[lastIdx];
+  // Last point dot
+  const lastP = chartPoints[chartPoints.length-1];
   ctx.beginPath();
   ctx.arc(lastP.x, lastP.y, 4, 0, Math.PI*2);
   ctx.fillStyle = stroke;
@@ -374,72 +435,39 @@ function drawChart(series, scrollable, resetScroll){
   ctx.fillStyle = stroke + '33';
   ctx.fill();
 
-  // Min/max price labels on right edge
+  // Min/max price labels
+  const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
+  const maxIdx = series.indexOf(series.reduce((a,b)=>b.p>a.p?b:a));
+  const maxP_pt = chartPoints[maxIdx], minP_pt = chartPoints[minIdx];
   ctx.font = '11px -apple-system, Inter, sans-serif';
   ctx.fillStyle = '#848e9c';
   ctx.textAlign = 'left';
-  const maxP_pt = chartPoints[maxIdx], minP_pt = chartPoints[minIdx];
   ctx.fillText(fmtPrice(maxP), Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
   ctx.fillText(fmtPrice(minP), Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
 
-  // X-axis date labels
+  // X-axis date labels — leftmost, middle, rightmost
   ctx.fillStyle = '#5e6673';
   ctx.textAlign = 'center';
-  let ticks;
-  if (scrollable){
-    // monthly ticks for scrollable view
-    ticks = [];
-    let lastMonth = '';
-    for (let i=0;i<series.length;i++){
-      const m = series[i].d.slice(0,7);
-      if (m !== lastMonth){ ticks.push(i); lastMonth = m; }
-    }
-    ticks = ticks.filter((_,j)=>j%2===0); // every 2nd month so labels don't crowd
-  } else {
-    ticks = [0, Math.floor(series.length/2), series.length-1];
-  }
+  const ticks = series.length === 1 ? [0]
+              : series.length <= 3 ? [0, series.length-1]
+              : [0, Math.floor(series.length/2), series.length-1];
   for (const i of ticks){
-    const txt = formatDateShort(series[i].d);
-    ctx.fillText(txt, chartPoints[i].x, padT+h+16);
+    let xPos = chartPoints[i].x;
+    // Anchor: leftmost left-aligned, rightmost right-aligned
+    let align = 'center';
+    if (i === 0){ align='left'; xPos -= 0; }
+    else if (i === series.length-1){ align='right'; xPos += 0; }
+    ctx.textAlign = align;
+    ctx.fillText(fmtDateShort(series[i].d), xPos, padT+h+16);
   }
 
-  chartBounds = {padL, padR, padT, padB, w, h, series, useLog, minP, maxP, stroke, scrollable};
-  hideTip();
+  chartBounds = {padL, padR, padT, padB, w, h, series, useLog, minP, maxP, stroke};
 }
 
-function formatDateShort(s){
-  const [y,m,d] = s.split('-');
-  const mn = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][+m-1];
-  return d + ' ' + mn + ' \'' + y.slice(2);
-}
-
-// Touch / mouse scrubber
-function endScrubSoon(ms){
-  clearTimeout(scrubHideTimer);
-  scrubHideTimer = setTimeout(()=>{
-    scrubIdx = -1;
-    drawChart(chartBounds.series);
-    document.getElementById('navPrev').removeAttribute('disabled');
-    document.getElementById('navNext').removeAttribute('disabled');
-  }, ms);
-}
-
-function handlePointer(clientX, clientY, fromTouch){
-  if (!chartPoints.length) return;
-  const rect = chartCanvas.getBoundingClientRect();
-  const x = clientX - rect.left;
-  let bestIdx = 0, bestDx = Infinity;
-  for (let i=0;i<chartPoints.length;i++){
-    const dx = Math.abs(chartPoints[i].x - x);
-    if (dx < bestDx){ bestDx = dx; bestIdx = i; }
-  }
-  scrubIdx = bestIdx;
-  drawScrub(bestIdx);
-  endScrubSoon(3000);
-}
-function drawScrub(idx){
-  drawChart(chartBounds.series); // redraw clean
+function highlightPoint(idx){
   const pt = chartPoints[idx];
+  if (!pt) return;
+  drawChart(chartBounds.series);
   const ctx = chartCtx;
   ctx.save();
   ctx.strokeStyle = 'rgba(234,236,239,.4)';
@@ -461,53 +489,42 @@ function drawScrub(idx){
   showTip(pt);
 }
 function showTip(pt){
-  const tip = document.getElementById('scrubTip');
   document.getElementById('scrubDate').textContent = fmtDate(pt.d);
   document.getElementById('scrubPrice').textContent = fmtPrice(pt.p);
-  tip.classList.add('show');
+  document.getElementById('scrubTip').classList.add('show');
 }
 function hideTip(){
   document.getElementById('scrubTip').classList.remove('show');
 }
 
-function stepScrub(delta){
-  if (!chartBounds.series) return;
-  const len = chartBounds.series.length;
-  if (scrubIdx < 0){
-    scrubIdx = len - 1;  // first activation: show last point, no delta yet
-  } else {
-    scrubIdx = Math.max(0, Math.min(len - 1, scrubIdx + delta));
+function handlePointer(clientX){
+  if (!chartPoints.length) return;
+  const rect = chartCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  let bestIdx = 0, bestDx = Infinity;
+  for (let i=0;i<chartPoints.length;i++){
+    const dx = Math.abs(chartPoints[i].x - x);
+    if (dx < bestDx){ bestDx = dx; bestIdx = i; }
   }
-  drawScrub(scrubIdx);
-  // auto-scroll in scrollable view to keep scrubber centered
-  if (chartBounds.scrollable){
-    const scroll = document.getElementById('chartScroll');
-    const pt = chartPoints[scrubIdx];
-    const visW = scroll.clientWidth;
-    const target = pt.x - visW / 2;
-    scroll.scrollLeft = Math.max(0, Math.min(scroll.scrollWidth - visW, target));
-  }
-  document.getElementById('navPrev').toggleAttribute('disabled', scrubIdx <= 0);
-  document.getElementById('navNext').toggleAttribute('disabled', scrubIdx >= len - 1);
-  endScrubSoon(4500);
+  highlightPoint(bestIdx);
 }
 
-function bindNavButton(btn, delta){
+function bindNavButton(btn, direction){
   let holdTimer = null, holdInterval = null, intervalMs = 240;
+  const tick = ()=>{
+    if (!shiftWindow(direction)){ stop(); return; }
+    intervalMs = Math.max(35, intervalMs - 20);
+    holdInterval = setTimeout(tick, intervalMs);
+  };
   const start = (e)=>{
     e.preventDefault();
-    stepScrub(delta);
+    shiftWindow(direction);
     intervalMs = 240;
-    holdTimer = setTimeout(function tick(){
-      stepScrub(delta);
-      intervalMs = Math.max(35, intervalMs - 22); // accelerate
-      holdInterval = setTimeout(tick, intervalMs);
-    }, 380);
+    holdTimer = setTimeout(tick, 380);
   };
   const stop = ()=>{
-    if (holdTimer) clearTimeout(holdTimer);
-    if (holdInterval) clearTimeout(holdInterval);
-    holdTimer = holdInterval = null;
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (holdInterval) { clearTimeout(holdInterval); holdInterval = null; }
   };
   btn.addEventListener('touchstart', start, {passive:false});
   btn.addEventListener('touchend', stop);
@@ -519,61 +536,61 @@ function bindNavButton(btn, delta){
 
 function bindEvents(){
   document.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click', ()=>{ scrubIdx = -1; setRange(t.dataset.range); });
+    t.addEventListener('click', ()=>setRange(t.dataset.range));
   });
+  // Right button = forward in time = direction +1
+  // Left button  = backward in time = direction -1
   bindNavButton(document.getElementById('navPrev'), -1);
   bindNavButton(document.getElementById('navNext'), +1);
+
+  document.getElementById('dateInput').addEventListener('change', e=>{
+    if (e.target.value) jumpToDate(e.target.value);
+  });
+  document.getElementById('todayBtn').addEventListener('click', ()=>{
+    windowOffset = 0;
+    redraw();
+  });
+
+  // Touch on chart for tooltip (no panning interference)
   let touching = false;
-  let touchStartX = 0, touchStartY = 0, scrubMode = false;
   chartCanvas.addEventListener('touchstart', e=>{
     touching = true;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    scrubMode = !chartBounds.scrollable;
-    if (scrubMode){
-      handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
-      e.preventDefault();
-    }
+    handlePointer(e.touches[0].clientX);
+    e.preventDefault();
   }, {passive:false});
   chartCanvas.addEventListener('touchmove', e=>{
     if (!touching) return;
-    if (chartBounds.scrollable){
-      // In scrollable mode, allow native horizontal scroll. Switch to scrub
-      // only if vertical drag dominates (user pulled down/up on the chart).
-      const dx = Math.abs(e.touches[0].clientX - touchStartX);
-      const dy = Math.abs(e.touches[0].clientY - touchStartY);
-      if (!scrubMode && dy > 10 && dy > dx*1.5){
-        scrubMode = true;
-      }
-      if (scrubMode){
-        handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
-        e.preventDefault();
-      }
-    } else {
-      handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
-      e.preventDefault();
-    }
+    handlePointer(e.touches[0].clientX);
+    e.preventDefault();
   }, {passive:false});
-  chartCanvas.addEventListener('touchend', ()=>{
+  const endTouch = ()=>{
     touching = false;
-    scrubMode = false;
+    setTimeout(()=>{ if (!touching){ drawChart(chartBounds.series); hideTip(); } }, 1500);
+  };
+  chartCanvas.addEventListener('touchend', endTouch);
+  chartCanvas.addEventListener('touchcancel', endTouch);
+  chartCanvas.addEventListener('mousedown', e=>{ touching = true; handlePointer(e.clientX); });
+  chartCanvas.addEventListener('mousemove', e=>{ if (touching) handlePointer(e.clientX); });
+  window.addEventListener('mouseup', ()=>{
+    if (!touching) return;
+    touching = false;
+    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1500);
   });
-  chartCanvas.addEventListener('mousedown', e=>{
-    touching = true; handlePointer(e.clientX, e.clientY, false);
+
+  // Keyboard arrow shortcuts
+  window.addEventListener('keydown', e=>{
+    if (e.key === 'ArrowRight'){ shiftWindow(+1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'){ shiftWindow(-1); e.preventDefault(); }
   });
-  chartCanvas.addEventListener('mousemove', e=>{
-    if (touching) handlePointer(e.clientX, e.clientY, false);
-  });
-  window.addEventListener('mouseup', ()=>{ touching = false; });
-  window.addEventListener('resize', ()=>drawChart(chartBounds.series));
-  window.addEventListener('orientationchange', ()=>setTimeout(()=>drawChart(chartBounds.series), 200));
+
+  window.addEventListener('resize', ()=>{ if (chartBounds.series) drawChart(chartBounds.series); });
+  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if (chartBounds.series) drawChart(chartBounds.series); }, 200));
 }
 
 setupCanvas();
 bindEvents();
 loadData();
 
-// Service worker for offline / installability
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('/bonk_sw.js').catch(()=>{});
