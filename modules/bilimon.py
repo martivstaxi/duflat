@@ -727,6 +727,60 @@ def _within(published: str, days: int) -> bool:
     return d >= datetime.now(timezone.utc) - timedelta(days=days)
 
 
+def _verify_with_haiku(missing: list, bb_videos: list, creator_name: str) -> tuple:
+    """Second-pass verification: ask Haiku whether each candidate "missing"
+    YT video is actually cross-posted on Bilibili under a different title
+    (translation, retitle, edit). Reduces false positives caused by HK
+    creators retitling videos for the CN audience.
+
+    Returns (truly_missing, ai_decisions) where ai_decisions records what
+    Haiku said for each candidate so the UI can surface reasoning later
+    if needed. Falls back to the input `missing` list on any failure —
+    we never want AI flakiness to drop a real signal."""
+    if not missing or not bb_videos:
+        return missing, []
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return missing, []
+    try:
+        import anthropic
+        yt_lines = '\n'.join(f'{i}. {v.get("title","")}' for i, v in enumerate(missing))
+        # Show date alongside each BB title — helps Haiku align time-wise
+        # and also catches "BB posted 3 days before YT" cases.
+        bb_lines = '\n'.join(
+            f'- [{v.get("published","")}] {v.get("title","")}' for v in bb_videos
+        )
+        prompt = (
+            f"Creator: {creator_name}\n"
+            f"A cross-post checker flagged the YouTube videos below as missing on Bilibili. "
+            f"Verify each one — Bilibili videos can be retitled/translated (English↔Chinese, "
+            f"Traditional↔Simplified) or lightly edited, but should still be recognisably the "
+            f"same content (similar topic, similar timing, similar format).\n\n"
+            f"YouTube videos (suspected missing):\n{yt_lines}\n\n"
+            f"Bilibili videos (the creator's recent uploads):\n{bb_lines}\n\n"
+            f'Return ONLY a JSON object: {{"truly_missing":[<indexes>], "matched":[{{"yt_index":N,"bb_title":"..."}}]}}\n'
+            f"truly_missing = indexes of YouTube videos with NO plausible Bilibili counterpart.\n"
+            f"matched = YouTube videos that ARE cross-posted (with the BB title that matches)."
+        )
+        client = anthropic.Anthropic(api_key=api_key)
+        msg = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=400,
+            messages=[{'role': 'user', 'content': prompt}],
+        )
+        text = msg.content[0].text if msg.content else ''
+        m = re.search(r'\{.*\}', text, re.DOTALL)
+        if not m:
+            return missing, []
+        data = json.loads(m.group(0))
+        truly_idx = [i for i in (data.get('truly_missing') or [])
+                     if isinstance(i, int) and 0 <= i < len(missing)]
+        truly = [missing[i] for i in truly_idx]
+        return truly, (data.get('matched') or [])
+    except Exception:
+        return missing, []
+
+
 def _summary(creator: dict) -> dict:
     return {
         'name':          creator.get('name'),
@@ -752,12 +806,18 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
     if not bb_mid:
         return {**base, 'status': 'no_bilibili', 'comparable': False}
 
-    yt = _fetch_yt_uploads(yt_url, limit=15)
+    yt = _fetch_yt_uploads(yt_url, limit=30)
     bb, bb_err = _fetch_bb_uploads(bb_mid, limit=30)
 
     yt_recent = [v for v in yt if _within(v['published'], window_days)]
     bb_recent = [v for v in bb if _within(v['published'], window_days)]
-    bb_titles = [v['title'] for v in bb]  # match against full BB list, not just window
+    # Match against BB videos within window + 2-week buffer. Earlier we used
+    # the full BB list which let very old BB content (months back) "match"
+    # a recent YT title at high fuzzy ratio; that was fine for stable
+    # creators but missed cases where the cross-post is genuinely missing.
+    # +14d buffer covers creators who post to BB days/weeks before YT.
+    bb_match_pool = [v for v in bb if _within(v['published'], window_days + 14)]
+    bb_titles = [v['title'] for v in bb_match_pool] or [v['title'] for v in bb]
 
     # When BB fetch failed (rate-limited/banned), don't pretend everything is
     # missing — flag the result as partial so the UI can prompt a retry.
@@ -770,6 +830,16 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
             missing.append({**v, 'best_bb_match': match_title,
                             'match_ratio': round(ratio, 2)})
 
+    # Haiku second pass: drop candidates that are actually cross-posted under
+    # a translated/retitled BB version. ANTHROPIC_API_KEY is already used by
+    # modules/agency.py, so no new env config needed. Falls open on errors.
+    ai_matched: list = []
+    if missing and not bb_err:
+        missing, ai_matched = _verify_with_haiku(
+            missing, bb_match_pool or bb,
+            base.get('name') or '',
+        )
+
     return {
         **base,
         'status':              'ok' if not bb_err else 'bb_unavailable',
@@ -778,6 +848,7 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
         'youtube_recent':      yt_recent,
         'bilibili_recent':     bb_recent,
         'missing_on_bilibili': missing,
+        'ai_matched':          ai_matched,
         'youtube_count':       len(yt),
         'bilibili_count':      len(bb),
         'bb_error':            bb_err,
