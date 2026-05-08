@@ -67,7 +67,13 @@ BB_ACTOR_LIMIT = 15  # videos per creator — covers ~30 days for most creators
 
 DATA_FILE   = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
 STATUS_FILE = Path(__file__).resolve().parent.parent / 'data' / 'bili_status.json'
-WINDOW_DAYS_DEFAULT = 30
+WINDOW_DAYS_DEFAULT = 15
+# Grace period: don't flag a YT video that was uploaded within the last
+# GRACE_DAYS days — the creator may still be planning to cross-post the same
+# day. Without this, a manager opening the dashboard right after a creator's
+# upload would send a "missing on Bilibili" reminder before the cross-post had
+# any reasonable chance to happen.
+GRACE_DAYS = 1
 # How long a manual "force refresh" must wait between invocations. The cron
 # refresh path is unrestricted (token-gated). 15 minutes is a balance — long
 # enough to deter accidental spam-clicks, short enough that a manager who
@@ -831,6 +837,18 @@ def _within(published: str, days: int) -> bool:
     return d >= datetime.now(timezone.utc) - timedelta(days=days)
 
 
+def _too_recent(published: str, days: int) -> bool:
+    """True if the video is so recent (< days days old) that we don't want to
+    surface it yet — gives the creator a grace window to cross-post."""
+    if not days or not published:
+        return False
+    try:
+        d = datetime.strptime(published, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+    except Exception:
+        return False
+    return d > datetime.now(timezone.utc) - timedelta(days=days)
+
+
 def _verify_with_haiku(missing: list, bb_videos: list, creator_name: str) -> tuple:
     """Second-pass verification: ask Haiku whether each candidate "missing"
     YT video is actually cross-posted on Bilibili under a different title
@@ -915,7 +933,13 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
     yt = _fetch_yt_uploads(yt_url, limit=30)
     bb, bb_err = _fetch_bb_uploads(bb_mid, limit=30)
 
-    yt_recent = [v for v in yt if _within(v['published'], window_days)]
+    # Apply window + grace period to YT side: only show videos that are old
+    # enough for the creator to plausibly have cross-posted by now.
+    yt_recent = [
+        v for v in yt
+        if _within(v['published'], window_days)
+        and not _too_recent(v['published'], GRACE_DAYS)
+    ]
     bb_recent = [v for v in bb if _within(v['published'], window_days)]
     # Match against BB videos within window + 2-week buffer. Earlier we used
     # the full BB list which let very old BB content (months back) "match"

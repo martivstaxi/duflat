@@ -28,7 +28,7 @@ jobs:
           curl -fsS -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"window_days":30}' \
+            -d '{"window_days":15}' \
             https://duflat-production.up.railway.app/bili/refresh-all
           echo
           # Refresh runs in a background thread on Railway and may take

@@ -401,7 +401,7 @@ async function forceRefresh() {
         const r = await fetch(`${API_BASE}/bili/refresh-now`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ window_days: 30 }),
+            body: JSON.stringify({ window_days: 15 }),
         });
         const j = await r.json();
         if (j.status === 'cooldown') {
