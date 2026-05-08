@@ -96,17 +96,46 @@ def creators_for(manager: str, youtube_only: bool = False) -> list:
 # then read the public RSS feed which carries <published> for each entry.
 
 _RE_CHANNEL_ID = re.compile(r'/channel/(UC[A-Za-z0-9_-]{22})')
+# Match channelId in the JSON blob YouTube embeds in every channel page.
+# Covers both "channelId":"UC..." (browse pages) and "externalId":"UC..."
+# (microformat). One of the two is always present even after consent redirect.
+_RE_CID_INPAGE = re.compile(r'"(?:channelId|externalId)":"(UC[A-Za-z0-9_-]{22})"')
 _YT_NS = {
     'a':     'http://www.w3.org/2005/Atom',
     'media': 'http://search.yahoo.com/mrss/',
     'yt':    'http://www.youtube.com/xml/schemas/2015',
 }
 
+# Browser-shaped headers + consent cookie, copied from modules/scraper.py's
+# pattern. The CONSENT=YES+ cookie short-circuits YouTube's EU consent wall
+# that Railway datacenter IPs otherwise get redirected into.
+_YT_HEADERS = {
+    'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/120.0.0.0 Safari/537.36'),
+    'Accept':          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
+_YT_COOKIES = {'CONSENT': 'YES+cb', 'SOCS': 'CAI'}
+
 
 def _resolve_channel_id(channel_url: str) -> str:
     m = _RE_CHANNEL_ID.search(channel_url)
     if m:
         return m.group(1)
+    # Direct HTTP scrape — much faster than yt-dlp and avoids the consent
+    # redirect that breaks plain extract_info on Railway. Falls back to
+    # yt-dlp only if the HTML scrape can't find a channelId pattern.
+    try:
+        r = requests.get(channel_url.rstrip('/'),
+                         headers=_YT_HEADERS, cookies=_YT_COOKIES,
+                         timeout=15, allow_redirects=True)
+        if r.status_code == 200 and r.text:
+            m = _RE_CID_INPAGE.search(r.text)
+            if m:
+                return m.group(1)
+    except Exception:
+        pass
     try:
         opts = {'skip_download': True, 'quiet': True, 'no_warnings': True,
                 'ignoreerrors': True, 'extract_flat': True, 'playlistend': 1}
@@ -126,7 +155,7 @@ def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
     try:
         r = requests.get(
             f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}',
-            timeout=10,
+            headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=10,
         )
     except Exception:
         return []
