@@ -52,6 +52,18 @@ APIFY_PROXY_PASSWORD = (
 # set APIFY_PROXY_GROUPS only if a specific group is required.
 APIFY_PROXY_GROUPS = os.environ.get('APIFY_PROXY_GROUPS', '').strip()
 
+# Apify Actor token — used to call zhorex/bilibili-scraper which handles the
+# WAF/IP problem internally. Direct WBI calls fail because Bilibili blocks
+# all non-CN/HK datacenter ASNs (and our $29 Apify plan only ships datacenter
+# proxies), so we offload the fetch to an actor that has working IP rotation.
+APIFY_API_TOKEN = (
+    os.environ.get('APIFY_API_TOKEN')
+    or os.environ.get('APIFY_TOKEN')
+    or ''
+).strip()
+BB_ACTOR_ID    = 'zhorex~bilibili-scraper'
+BB_ACTOR_LIMIT = 15  # videos per creator — covers ~30 days for most creators
+
 DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
 WINDOW_DAYS_DEFAULT = 30
 TITLE_MATCH_THRESHOLD = 0.55  # below this counts as "missing on Bilibili"
@@ -239,6 +251,10 @@ def proxy_diagnostic() -> dict:
         'proxy_password_fp':    pwd_fp,
         'proxy_password_check': pwd_char_check,
         'proxy_groups':         APIFY_PROXY_GROUPS,
+        'actor_token_set':      bool(APIFY_API_TOKEN),
+        'actor_id':             BB_ACTOR_ID,
+        'fetch_route': 'apify_actor' if APIFY_API_TOKEN else (
+                       'apify_proxy_direct_wbi' if APIFY_PROXY_PASSWORD else 'direct_wbi'),
         'env_seen': {
             'APIFY_PROXY_PASSWORD': bool(os.environ.get('APIFY_PROXY_PASSWORD')),
             'APIFY_API_TOKEN':      bool(os.environ.get('APIFY_API_TOKEN')),
@@ -389,11 +405,75 @@ def _warmup_cookies(s: requests.Session) -> None:
         pass
 
 
+# ─────────────────────────────────────────────
+# Apify actor route (preferred — direct WBI is blocked from datacenter IPs)
+# ─────────────────────────────────────────────
+
+# Tiny in-process cache keyed by mid so repeated Refresh clicks within the
+# TTL don't re-bill the actor. Keeps cost down without adding Redis.
+_BB_ACTOR_CACHE_TTL = 300  # seconds
+_bb_actor_cache: dict = {}
+
+
+def _fetch_bb_uploads_via_actor(mid: str, limit: int) -> tuple:
+    cached = _bb_actor_cache.get(str(mid))
+    if cached and (time.time() - cached['ts']) < _BB_ACTOR_CACHE_TTL:
+        return cached['videos'], ''
+
+    url = (f'https://api.apify.com/v2/acts/{BB_ACTOR_ID}'
+           f'/run-sync-get-dataset-items'
+           f'?token={urllib.parse.quote(APIFY_API_TOKEN, safe="")}')
+    body = {
+        'mode':       'user_videos',
+        'userIds':    [str(mid)],
+        'maxResults': limit,
+    }
+    try:
+        r = requests.post(url, json=body, timeout=110)
+    except Exception as e:
+        return [], f'actor_error_{type(e).__name__}'
+    if r.status_code != 200:
+        return [], f'actor_http_{r.status_code}'
+    try:
+        items = r.json() or []
+    except Exception:
+        return [], 'actor_parse_error'
+
+    out = []
+    for v in items:
+        bvid = v.get('bvid') or ''
+        if not bvid:
+            continue
+        ts = v.get('publishTimestamp') or v.get('created') or 0
+        if ts:
+            published = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+        else:
+            pd = v.get('publishDate') or v.get('published') or ''
+            published = pd[:10] if len(pd) >= 10 else ''
+        pic = v.get('thumbnailUrl') or v.get('pic') or ''
+        if pic.startswith('//'):
+            pic = 'https:' + pic
+        out.append({
+            'bvid':      bvid,
+            'title':     v.get('title') or '',
+            'url':       f'https://www.bilibili.com/video/{bvid}',
+            'published': published,
+            'thumbnail': pic,
+        })
+    _bb_actor_cache[str(mid)] = {'ts': time.time(), 'videos': out}
+    return out, ''
+
+
 def _fetch_bb_uploads(mid: str, limit: int = 30) -> tuple:
     """Returns (videos, error_code). error_code='' on success or
     'rate_limited'/'banned_<code>'/'fetch_error_<exc>'/'api_error_<code>'."""
     if not mid:
         return [], 'no_mid'
+    # Prefer the Apify actor when configured — it handles Bilibili's WAF/IP
+    # block internally. Fall back to direct WBI only if the token is missing
+    # (e.g. local dev without Apify credentials).
+    if APIFY_API_TOKEN:
+        return _fetch_bb_uploads_via_actor(mid, min(limit, BB_ACTOR_LIMIT))
     s = _new_bb_session(_bb_session_id_for(mid))
     _warmup_cookies(s)
     # Then visit the creator's space page so the API call has a matching
