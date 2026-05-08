@@ -415,51 +415,97 @@ _BB_ACTOR_CACHE_TTL = 300  # seconds
 _bb_actor_cache: dict = {}
 
 
+def _apify_token_param() -> str:
+    return urllib.parse.quote(APIFY_API_TOKEN, safe='')
+
+
+def _map_actor_item(v: dict) -> dict:
+    bvid = v.get('bvid') or ''
+    if not bvid:
+        return {}
+    ts = v.get('publishTimestamp') or v.get('created') or 0
+    if ts:
+        published = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+    else:
+        pd = v.get('publishDate') or v.get('published') or ''
+        published = pd[:10] if len(pd) >= 10 else ''
+    pic = v.get('thumbnailUrl') or v.get('pic') or ''
+    if pic.startswith('//'):
+        pic = 'https:' + pic
+    return {
+        'bvid':      bvid,
+        'title':     v.get('title') or '',
+        'url':       f'https://www.bilibili.com/video/{bvid}',
+        'published': published,
+        'thumbnail': pic,
+    }
+
+
 def _fetch_bb_uploads_via_actor(mid: str, limit: int) -> tuple:
+    """Start the actor, poll until it finishes (or we run out of budget),
+    then fetch the dataset. Async pattern is mandatory because the actor
+    cold-start regularly exceeds Apify's run-sync wait window — that's what
+    the actor_http_201 errors were."""
     cached = _bb_actor_cache.get(str(mid))
     if cached and (time.time() - cached['ts']) < _BB_ACTOR_CACHE_TTL:
         return cached['videos'], ''
 
-    url = (f'https://api.apify.com/v2/acts/{BB_ACTOR_ID}'
-           f'/run-sync-get-dataset-items'
-           f'?token={urllib.parse.quote(APIFY_API_TOKEN, safe="")}')
+    tok = _apify_token_param()
+
+    # 1. Start the run.
+    start_url = f'https://api.apify.com/v2/acts/{BB_ACTOR_ID}/runs?token={tok}'
     body = {
         'mode':       'user_videos',
         'userIds':    [str(mid)],
         'maxResults': limit,
     }
     try:
-        r = requests.post(url, json=body, timeout=110)
+        r = requests.post(start_url, json=body, timeout=30)
     except Exception as e:
-        return [], f'actor_error_{type(e).__name__}'
-    if r.status_code != 200:
-        return [], f'actor_http_{r.status_code}'
+        return [], f'actor_start_error_{type(e).__name__}'
+    if r.status_code not in (200, 201):
+        return [], f'actor_start_http_{r.status_code}'
     try:
-        items = r.json() or []
+        run = (r.json() or {}).get('data') or {}
     except Exception:
-        return [], 'actor_parse_error'
+        return [], 'actor_start_parse_error'
+    run_id     = run.get('id') or ''
+    dataset_id = run.get('defaultDatasetId') or ''
+    if not run_id or not dataset_id:
+        return [], 'actor_no_run_id'
 
-    out = []
-    for v in items:
-        bvid = v.get('bvid') or ''
-        if not bvid:
-            continue
-        ts = v.get('publishTimestamp') or v.get('created') or 0
-        if ts:
-            published = datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
-        else:
-            pd = v.get('publishDate') or v.get('published') or ''
-            published = pd[:10] if len(pd) >= 10 else ''
-        pic = v.get('thumbnailUrl') or v.get('pic') or ''
-        if pic.startswith('//'):
-            pic = 'https:' + pic
-        out.append({
-            'bvid':      bvid,
-            'title':     v.get('title') or '',
-            'url':       f'https://www.bilibili.com/video/{bvid}',
-            'published': published,
-            'thumbnail': pic,
-        })
+    # 2. Poll. Budget = ~90s so we stay inside gunicorn's 120s request limit
+    # with margin for the dataset fetch + response serialization. 3s gap
+    # keeps Apify request count low (~30 calls per cold creator worst case).
+    status_url = f'https://api.apify.com/v2/actor-runs/{run_id}?token={tok}'
+    deadline = time.time() + 90
+    status = ''
+    while time.time() < deadline:
+        try:
+            sr = requests.get(status_url, timeout=15)
+            status = ((sr.json() or {}).get('data') or {}).get('status') or ''
+        except Exception:
+            status = ''
+        if status in ('SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'):
+            break
+        time.sleep(3)
+    if status != 'SUCCEEDED':
+        # Surface the terminal status so we know whether to retry, look at
+        # the actor's logs, or chase a billing/auth issue.
+        return [], f'actor_status_{status or "timeout"}'
+
+    # 3. Fetch dataset items. `clean=1` strips Apify metadata fields.
+    items_url = (f'https://api.apify.com/v2/datasets/{dataset_id}/items'
+                 f'?token={tok}&clean=1&format=json')
+    try:
+        ir = requests.get(items_url, timeout=30)
+        items = ir.json() or []
+    except Exception as e:
+        return [], f'actor_dataset_error_{type(e).__name__}'
+    if not isinstance(items, list):
+        return [], 'actor_dataset_shape_error'
+
+    out = [m for m in (_map_actor_item(v) for v in items) if m]
     _bb_actor_cache[str(mid)] = {'ts': time.time(), 'videos': out}
     return out, ''
 
