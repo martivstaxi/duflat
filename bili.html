@@ -293,20 +293,24 @@ function appendRows(c, r) {
     }
 
     // Out-of-scope creators (no Bilibili / no YT uploads / no platforms) are
-    // hidden — the page is specifically a "missing on Bilibili" view.
+    // hidden — the page only makes sense for creators present on both.
     if (r.status === 'no_bilibili' || r.status === 'no_platforms') return 0;
     const yt = r.youtube_recent || [];
     if (!yt.length) return 0;
 
+    // Show every recent YT video — green ✓ when cross-posted to Bilibili,
+    // red ✗ when missing. Manager wants the full picture per creator, not
+    // just the misses.
     const missingIds = new Set((r.missing_on_bilibili || []).map(v => v.video_id));
-    const missing = yt.filter(v => missingIds.has(v.video_id));
-    if (!missing.length) return 0;  // fully cross-posted → skip creator
+    let missingCount = 0;
 
-    missing.forEach((v, i) => {
+    yt.forEach((v, i) => {
+        const isMissing = missingIds.has(v.video_id);
+        if (isMissing) missingCount++;
         const nameCell = i === 0
-            ? `<td class="creator-cell" rowspan="${missing.length}">${creatorCell}</td>`
+            ? `<td class="creator-cell" rowspan="${yt.length}">${creatorCell}</td>`
             : '';
-        const cls = [i === 0 ? 'creator-start' : '', 'flag'].filter(Boolean).join(' ');
+        const cls = [i === 0 ? 'creator-start' : '', isMissing ? 'flag' : ''].filter(Boolean).join(' ');
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="${cls}">
                 ${nameCell}
@@ -315,12 +319,13 @@ function appendRows(c, r) {
                 </td>
                 <td class="date-cell">${esc(v.published || '—')}</td>
                 <td class="status-cell">
-                    <span class="status-pill no" title="Not posted on Bilibili">✗</span>
+                    <span class="status-pill ${isMissing ? 'no' : 'yes'}"
+                          title="${isMissing ? 'Not posted on Bilibili' : 'Cross-posted on Bilibili'}">${isMissing ? '✗' : '✓'}</span>
                 </td>
             </tr>
         `);
     });
-    return missing.length;
+    return missingCount;
 }
 
 function renderCreatorCell(c) {
