@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0e11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BONK">
+<meta name="mobile-web-app-capable" content="yes">
+<title>BONK · Duflat</title>
+<link rel="manifest" href="/bonk_manifest.json">
+<link rel="apple-touch-icon" href="/static/bonk/icon-192.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F5A623'/%3E%3Ctext x='50%25' y='58%25' font-family='Inter,sans-serif' font-size='34' font-weight='800' fill='%23000' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:#0b0e11;color:#eaecef;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;overscroll-behavior:none}
+  body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);min-height:100vh;min-height:100dvh}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;background:none;border:none;color:inherit;cursor:pointer}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+  .topbar .icons{display:flex;gap:18px;align-items:center}
+  .icon-btn{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:#b7bdc6}
+  .icon-btn.star{color:#f0b90b}
+
+  .head{padding:6px 18px 4px}
+  .coin-name{font-size:15px;color:#b7bdc6;letter-spacing:.2px}
+  .coin-name strong{color:#eaecef;font-weight:600;margin-right:6px}
+  .price-row{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+  .price{font-size:34px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .price .info{font-size:14px;color:#848e9c;margin-left:6px}
+  .change{font-size:14px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+  .change.up{color:#0ecb81}
+  .change.down{color:#f6465d}
+
+  .chart-wrap{position:relative;margin-top:14px;padding:0 0 8px;width:100%;overflow:hidden}
+  .chart-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chart-scroll::-webkit-scrollbar{display:none}
+  .chart-wrap canvas{display:block;width:100%;height:340px;touch-action:pan-y}
+  .chart-wrap.scrollable canvas{touch-action:pan-x}
+  .scroll-hint{position:absolute;right:10px;bottom:14px;font-size:10px;color:#5e6673;background:rgba(30,33,38,.7);padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
+  .chart-wrap.scrollable .scroll-hint{display:block;animation:fade 2.5s ease-out forwards}
+  @keyframes fade{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+  .chart-info{position:absolute;left:18px;right:18px;top:0;display:flex;justify-content:space-between;pointer-events:none;font-size:12px;color:#848e9c;font-variant-numeric:tabular-nums}
+  .chart-info .hi{color:#b7bdc6}
+  .scrub-tip{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(30,33,38,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:10px;font-size:12px;color:#eaecef;display:none;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+  .scrub-tip.show{display:block}
+  .scrub-tip .d{color:#848e9c;margin-right:8px}
+
+  .tabs{display:flex;justify-content:space-around;align-items:center;padding:8px 12px 14px;border-bottom:1px solid #1e2329}
+  .tab{padding:7px 14px;font-size:13px;color:#848e9c;font-weight:500;border-radius:18px;transition:background .15s}
+  .tab.active{background:#2b3139;color:#eaecef;font-weight:600}
+
+  .section{padding:18px;border-bottom:1px solid #1e2329}
+  .section h2{font-size:16px;font-weight:600;margin-bottom:14px}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:14px}
+  .stat-row .k{color:#848e9c}
+  .stat-row .v{color:#eaecef;font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+
+  .insight{background:linear-gradient(135deg,rgba(240,185,11,.08),rgba(245,166,35,.04));border:1px solid rgba(240,185,11,.18);border-radius:14px;padding:14px 16px;margin:12px 18px;font-size:13px;line-height:1.55;color:#cdd2d8}
+  .insight strong{color:#f0b90b}
+
+  .compare{padding:14px 18px;font-size:13px;color:#848e9c;line-height:1.55}
+  .compare h3{font-size:14px;color:#eaecef;margin-bottom:8px}
+  .compare .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #1e2329}
+  .compare .row:first-of-type{border-top:none}
+  .compare .row .lbl{color:#848e9c}
+  .compare .row .val{color:#eaecef;font-variant-numeric:tabular-nums}
+
+  .bottom-bar{position:sticky;bottom:0;background:#0b0e11;display:flex;gap:12px;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid #1e2329}
+  .btn{flex:1;padding:14px;border-radius:10px;font-size:15px;font-weight:600;text-align:center}
+  .btn-sec{background:#2b3139;color:#eaecef}
+  .btn-pri{background:#f0b90b;color:#0b0e11}
+
+  .footer-note{padding:18px;text-align:center;font-size:11px;color:#5e6673;line-height:1.6}
+
+  @media (min-width:640px){
+    body{max-width:480px;margin:0 auto;border-left:1px solid #1e2329;border-right:1px solid #1e2329;min-height:100vh}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="icon-btn" onclick="history.length>1?history.back():location.href='/'" aria-label="Back">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="icons">
+    <span class="icon-btn" aria-label="Notifications">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </span>
+    <span class="icon-btn star" aria-label="Favorite">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </span>
+  </div>
+</div>
+
+<div class="head">
+  <div class="coin-name"><strong>Bonk</strong>BONK</div>
+  <div class="price-row">
+    <span class="price" id="priceLabel">$0.000000<span class="info">i</span></span>
+  </div>
+  <div class="change" id="changeLabel">—</div>
+</div>
+
+<div class="chart-wrap" id="chartWrap">
+  <div class="chart-info">
+    <span class="hi" id="rangeLabel">Tüm zamanlar</span>
+    <span id="hiLabel">—</span>
+  </div>
+  <div class="chart-scroll" id="chartScroll">
+    <canvas id="chart"></canvas>
+  </div>
+  <div class="scrub-tip" id="scrubTip"><span class="d" id="scrubDate"></span><span id="scrubPrice"></span></div>
+  <div class="scroll-hint">← sürükle →</div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab" data-range="1W">1W</button>
+  <button class="tab" data-range="1M">1M</button>
+  <button class="tab" data-range="3M">3M</button>
+  <button class="tab" data-range="1Y">1Y</button>
+  <button class="tab active" data-range="ALL">ALL</button>
+  <button class="tab" data-range="DAYS">D</button>
+</div>
+
+<div class="insight" id="insight"></div>
+
+<div class="section">
+  <h2>BONK Hakkında</h2>
+  <div class="stat-row"><span class="k">İlk işlem günü</span><span class="v" id="firstDay">—</span></div>
+  <div class="stat-row"><span class="k">All-Time High</span><span class="v" id="athLabel">—</span></div>
+  <div class="stat-row"><span class="k">All-Time Low</span><span class="v" id="atlLabel">—</span></div>
+  <div class="stat-row"><span class="k">Toplam gün</span><span class="v" id="dayCount">—</span></div>
+  <div class="stat-row"><span class="k">24s Hacim</span><span class="v" id="volLabel">—</span></div>
+</div>
+
+<div class="compare">
+  <h3>Notcoin (NOT) ile karşılaştırma</h3>
+  <div class="row"><span class="lbl">NOT launch</span><span class="val">2024-05-16</span></div>
+  <div class="row"><span class="lbl">NOT geçmişi</span><span class="val">~12 ay (1H/1D/1W/1M/1Y)</span></div>
+  <div class="row"><span class="lbl">BONK launch</span><span class="val">2022-12-30</span></div>
+  <div class="row"><span class="lbl">BONK geçmişi</span><span class="val" id="bonkAge">—</span></div>
+  <div style="margin-top:10px;font-size:12px;line-height:1.55">
+    BONK, NOT'tan ~17 ay önce çıktı. NOT'un 2024-2025 döngüsünün benzeri için BONK'un 2023 sonu — 2024 başı pump dönemine bak.
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <a class="btn btn-sec" href="https://www.binance.com/tr/trade/BONK_USDT" target="_blank" rel="noopener">Binance</a>
+  <a class="btn btn-pri" href="https://coinmarketcap.com/currencies/bonk1/" target="_blank" rel="noopener">CMC</a>
+</div>
+
+<div class="footer-note">
+  Veri kaynağı: CoinMarketCap · Günlük kapanış (UTC)<br>
+  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span>
+</div>
+
+<script>
+const fmtPrice = p => {
+  if (p >= 1) return '$' + p.toFixed(4);
+  if (p >= 0.01) return '$' + p.toFixed(5);
+  if (p >= 0.0001) return '$' + p.toFixed(6);
+  // sub-microcent: show as $0.000_0_xxx with subscript zero count
+  const s = p.toExponential(3); // e.g. "1.087e-7"
+  const [m, eRaw] = s.split('e');
+  const e = parseInt(eRaw);
+  const zeros = -e - 1;
+  const sig = m.replace('.', '').replace(/0+$/, '');
+  return '$0.0' + (zeros >= 4 ? '₀' + String(zeros).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join('') : '0'.repeat(zeros)) + sig.slice(0,4);
+};
+const fmtVol = v => {
+  if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(2) + 'K';
+  return '$' + v.toFixed(0);
+};
+const fmtDate = s => {
+  const [y,m,d] = s.split('-');
+  return d + '/' + m + '/' + y;
+};
+
+let allData = [];
+let currentRange = 'ALL';
+let chartCanvas, chartCtx, chartW, chartH, dpr;
+let chartPoints = [];      // [{x,y,d,p}]
+let chartBounds = {};      // pricing & layout
+
+async function loadData(){
+  const res = await fetch('/data/bonk_daily.json?v=2026-05-08');
+  allData = await res.json();
+  document.getElementById('lastUpdate').textContent = fmtDate(allData[allData.length-1].d);
+  document.getElementById('firstDay').textContent = fmtDate(allData[0].d);
+  document.getElementById('dayCount').textContent = allData.length + ' gün';
+
+  const ath = allData.reduce((a,b)=>b.p>a.p?b:a);
+  const atl = allData.reduce((a,b)=>b.p<a.p?b:a);
+  document.getElementById('athLabel').textContent = fmtPrice(ath.p) + ' (' + fmtDate(ath.d) + ')';
+  document.getElementById('atlLabel').textContent = fmtPrice(atl.p) + ' (' + fmtDate(atl.d) + ')';
+
+  const last = allData[allData.length-1];
+  document.getElementById('volLabel').textContent = fmtVol(last.v);
+
+  // BONK age
+  const first = new Date(allData[0].d);
+  const lastDate = new Date(last.d);
+  const days = Math.floor((lastDate - first) / 86400000);
+  const years = Math.floor(days / 365);
+  const months = Math.floor((days % 365) / 30);
+  document.getElementById('bonkAge').textContent = `~${years}y ${months}ay (D/W/M/Y/ALL)`;
+
+  buildInsight(last, ath, atl);
+  setRange(currentRange);
+}
+
+function buildInsight(last, ath, atl){
+  const dropFromAth = ((ath.p - last.p) / ath.p * 100);
+  const upFromAtl = ((last.p - atl.p) / atl.p * 100);
+  const el = document.getElementById('insight');
+  el.innerHTML = `<strong>Şu an:</strong> ATH'den <b>%${dropFromAth.toFixed(1)} aşağıda</b>, ATL'den <b>%${upFromAtl.toFixed(0)} yukarıda</b>. NOT 2024'te ilk 6 ayda ~%80 düştükten sonra dipten yeniden pump'ladı — BONK'un 2023 yaz dipinden 2024 sonu pump'ı benzer döngüydü. Grafiği parmağınla sürükle, tarih ve fiyatı gör.`;
+}
+
+function aggregateWeekly(data){
+  // Group by ISO week (Mon-Sun), use last day's close as weekly close, sum volume
+  const byWeek = new Map();
+  for (const r of data){
+    const dt = new Date(r.d + 'T00:00:00Z');
+    const day = dt.getUTCDay() || 7;
+    const monday = new Date(dt); monday.setUTCDate(dt.getUTCDate() - day + 1);
+    const key = monday.toISOString().slice(0,10);
+    const cur = byWeek.get(key);
+    if (!cur || r.d > cur.d) byWeek.set(key, {d:r.d, p:r.p, v:(cur?cur.v:0) + r.v, weekStart:key});
+    else cur.v += r.v;
+  }
+  return [...byWeek.values()].sort((a,b)=>a.d.localeCompare(b.d));
+}
+
+function setRange(r){
+  currentRange = r;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.range===r));
+  let series, label;
+  const last = allData[allData.length-1];
+  switch(r){
+    case '1W': series = allData.slice(-7); label = 'Son 7 gün'; break;
+    case '1M': series = allData.slice(-30); label = 'Son 30 gün'; break;
+    case '3M': series = allData.slice(-90); label = 'Son 3 ay'; break;
+    case '1Y': series = allData.slice(-365); label = 'Son 1 yıl'; break;
+    case 'DAYS': series = allData; label = 'Günlük · ' + allData.length + ' gün'; break;
+    default: series = aggregateWeekly(allData); label = 'Tüm zamanlar · haftalık'; break;
+  }
+  document.getElementById('rangeLabel').textContent = label;
+
+  // Show change vs first point of selected series
+  const first = series[0];
+  const change = ((last.p - first.p) / first.p * 100);
+  document.getElementById('priceLabel').innerHTML = fmtPrice(last.p) + ' <span class="info">i</span>';
+  const changeEl = document.getElementById('changeLabel');
+  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+  changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+
+  drawChart(series);
+}
+
+function setupCanvas(){
+  chartCanvas = document.getElementById('chart');
+  chartCtx = chartCanvas.getContext('2d');
+}
+function resizeCanvas(seriesLen, scrollable){
+  dpr = window.devicePixelRatio || 1;
+  const wrap = document.getElementById('chartWrap');
+  const scroll = document.getElementById('chartScroll');
+  const screenW = wrap.getBoundingClientRect().width;
+  if (scrollable){
+    // ~6px per point so ~1226 days → ~7.4k px wide; user pans
+    const pxPerPoint = 5.5;
+    chartW = Math.max(screenW, seriesLen * pxPerPoint);
+    wrap.classList.add('scrollable');
+  } else {
+    chartW = screenW;
+    wrap.classList.remove('scrollable');
+  }
+  chartH = 340;
+  chartCanvas.style.width = chartW + 'px';
+  chartCanvas.style.height = chartH + 'px';
+  chartCanvas.width = chartW * dpr;
+  chartCanvas.height = chartH * dpr;
+  chartCtx.setTransform(dpr,0,0,dpr,0,0);
+  // Scroll to end so latest is visible
+  if (scrollable) scroll.scrollLeft = chartW;
+}
+
+function drawChart(series, scrollable){
+  if (!chartCtx) return;
+  if (scrollable === undefined) scrollable = (currentRange === 'DAYS');
+  resizeCanvas(series.length, scrollable);
+  const ctx = chartCtx;
+  ctx.clearRect(0,0,chartW,chartH);
+
+  const padL = 18, padR = scrollable ? 24 : 70, padT = 30, padB = 24;
+  const w = chartW - padL - padR;
+  const h = chartH - padT - padB;
+
+  const minP = Math.min(...series.map(r=>r.p));
+  const maxP = Math.max(...series.map(r=>r.p));
+  // log scale for very wide price ranges (BONK went from 1e-7 to 6e-5 = 600x)
+  const useLog = (maxP / minP) > 50;
+  const tx = (i) => padL + (i/(series.length-1)) * w;
+  const ty = (p) => {
+    if (useLog){
+      const lMin = Math.log10(minP), lMax = Math.log10(maxP);
+      return padT + h - ((Math.log10(p) - lMin) / (lMax - lMin)) * h;
+    }
+    return padT + h - ((p - minP) / (maxP - minP)) * h;
+  };
+
+  chartPoints = series.map((r,i)=>({x:tx(i), y:ty(r.p), d:r.d, p:r.p}));
+
+  // Up/down color (period total)
+  const up = series[series.length-1].p >= series[0].p;
+  const stroke = up ? '#0ecb81' : '#f6465d';
+  const fillTop = up ? 'rgba(14,203,129,.18)' : 'rgba(246,70,93,.18)';
+  const fillBot = up ? 'rgba(14,203,129,0)' : 'rgba(246,70,93,0)';
+
+  // Min/max labels
+  const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
+  const maxIdx = series.indexOf(series.reduce((a,b)=>b.p>a.p?b:a));
+  const lastIdx = series.length-1;
+
+  // Fill gradient
+  const grad = ctx.createLinearGradient(0, padT, 0, padT+h);
+  grad.addColorStop(0, fillTop);
+  grad.addColorStop(1, fillBot);
+  ctx.beginPath();
+  ctx.moveTo(chartPoints[0].x, padT+h);
+  for (const pt of chartPoints) ctx.lineTo(pt.x, pt.y);
+  ctx.lineTo(chartPoints[chartPoints.length-1].x, padT+h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(chartPoints[0].x, chartPoints[0].y);
+  for (let i=1;i<chartPoints.length;i++) ctx.lineTo(chartPoints[i].x, chartPoints[i].y);
+  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = stroke;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Last-point dot
+  const lastP = chartPoints[lastIdx];
+  ctx.beginPath();
+  ctx.arc(lastP.x, lastP.y, 4, 0, Math.PI*2);
+  ctx.fillStyle = stroke;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lastP.x, lastP.y, 8, 0, Math.PI*2);
+  ctx.fillStyle = stroke + '33';
+  ctx.fill();
+
+  // Min/max price labels on right edge
+  ctx.font = '11px -apple-system, Inter, sans-serif';
+  ctx.fillStyle = '#848e9c';
+  ctx.textAlign = 'left';
+  const maxP_pt = chartPoints[maxIdx], minP_pt = chartPoints[minIdx];
+  ctx.fillText(fmtPrice(maxP), Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
+  ctx.fillText(fmtPrice(minP), Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
+
+  // X-axis date labels
+  ctx.fillStyle = '#5e6673';
+  ctx.textAlign = 'center';
+  let ticks;
+  if (scrollable){
+    // monthly ticks for scrollable view
+    ticks = [];
+    let lastMonth = '';
+    for (let i=0;i<series.length;i++){
+      const m = series[i].d.slice(0,7);
+      if (m !== lastMonth){ ticks.push(i); lastMonth = m; }
+    }
+    ticks = ticks.filter((_,j)=>j%2===0); // every 2nd month so labels don't crowd
+  } else {
+    ticks = [0, Math.floor(series.length/2), series.length-1];
+  }
+  for (const i of ticks){
+    const txt = formatDateShort(series[i].d);
+    ctx.fillText(txt, chartPoints[i].x, padT+h+16);
+  }
+
+  chartBounds = {padL, padR, padT, padB, w, h, series, useLog, minP, maxP, stroke, scrollable};
+  hideTip();
+}
+
+function formatDateShort(s){
+  const [y,m,d] = s.split('-');
+  const mn = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][+m-1];
+  return d + ' ' + mn + ' \'' + y.slice(2);
+}
+
+// Touch / mouse scrubber
+function handlePointer(clientX, clientY, fromTouch){
+  if (!chartPoints.length) return;
+  const rect = chartCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  // find nearest by x
+  let bestIdx = 0, bestDx = Infinity;
+  for (let i=0;i<chartPoints.length;i++){
+    const dx = Math.abs(chartPoints[i].x - x);
+    if (dx < bestDx){ bestDx = dx; bestIdx = i; }
+  }
+  drawScrub(bestIdx);
+}
+function drawScrub(idx){
+  drawChart(chartBounds.series); // redraw clean
+  const pt = chartPoints[idx];
+  const ctx = chartCtx;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(234,236,239,.4)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath();
+  ctx.moveTo(pt.x, chartBounds.padT);
+  ctx.lineTo(pt.x, chartBounds.padT+chartBounds.h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(pt.x, pt.y, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#0b0e11';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = chartBounds.stroke;
+  ctx.stroke();
+  ctx.restore();
+  showTip(pt);
+}
+function showTip(pt){
+  const tip = document.getElementById('scrubTip');
+  document.getElementById('scrubDate').textContent = fmtDate(pt.d);
+  document.getElementById('scrubPrice').textContent = fmtPrice(pt.p);
+  tip.classList.add('show');
+}
+function hideTip(){
+  document.getElementById('scrubTip').classList.remove('show');
+}
+
+function bindEvents(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>setRange(t.dataset.range));
+  });
+  let touching = false;
+  let touchStartX = 0, touchStartY = 0, scrubMode = false;
+  chartCanvas.addEventListener('touchstart', e=>{
+    touching = true;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    scrubMode = !chartBounds.scrollable;
+    if (scrubMode){
+      handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
+      e.preventDefault();
+    }
+  }, {passive:false});
+  chartCanvas.addEventListener('touchmove', e=>{
+    if (!touching) return;
+    if (chartBounds.scrollable){
+      // In scrollable mode, allow native horizontal scroll. Switch to scrub
+      // only if vertical drag dominates (user pulled down/up on the chart).
+      const dx = Math.abs(e.touches[0].clientX - touchStartX);
+      const dy = Math.abs(e.touches[0].clientY - touchStartY);
+      if (!scrubMode && dy > 10 && dy > dx*1.5){
+        scrubMode = true;
+      }
+      if (scrubMode){
+        handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
+        e.preventDefault();
+      }
+    } else {
+      handlePointer(e.touches[0].clientX, e.touches[0].clientY, true);
+      e.preventDefault();
+    }
+  }, {passive:false});
+  chartCanvas.addEventListener('touchend', ()=>{
+    touching = false;
+    scrubMode = false;
+    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1500);
+  });
+  chartCanvas.addEventListener('mousedown', e=>{
+    touching = true; handlePointer(e.clientX, e.clientY, false);
+  });
+  chartCanvas.addEventListener('mousemove', e=>{
+    if (touching) handlePointer(e.clientX, e.clientY, false);
+  });
+  window.addEventListener('mouseup', ()=>{
+    if (!touching) return; touching = false;
+    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1200);
+  });
+  window.addEventListener('resize', ()=>drawChart(chartBounds.series));
+  window.addEventListener('orientationchange', ()=>setTimeout(()=>drawChart(chartBounds.series), 200));
+}
+
+setupCanvas();
+bindEvents();
+loadData();
+
+// Service worker for offline / installability
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/bonk_sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

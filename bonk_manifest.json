@@ -1,0 +1,26 @@
+{
+  "name": "BONK · Duflat",
+  "short_name": "BONK",
+  "description": "BONK günlük fiyat geçmişi - 2022'den bugüne",
+  "start_url": "/bonk.html",
+  "scope": "/bonk.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0e11",
+  "theme_color": "#0b0e11",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "/static/bonk/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/bonk/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
