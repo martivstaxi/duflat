@@ -235,8 +235,23 @@ let currentRange = '1W';
 let windowSize = 168;     // hours
 let windowOffset = 0;     // hours shifted backward from latest. 0 = window ends at last row.
 
-// NOT overlay state
+// NOT overlay state — anchor alignment: BONK 2023-10-23 00:00 ↔ NOT 2026-05-05 03:00
 const NOT_COLOR = '#a78bfa';
+const BONK_ANCHOR = '2023-10-23T00:00';
+const NOT_ANCHOR  = '2026-05-05T03:00';
+const _tToMs = t => new Date(t.slice(0,16) + ':00Z').getTime();
+const NOT_OFFSET_MS = _tToMs(NOT_ANCHOR) - _tToMs(BONK_ANCHOR);
+const _msToT = ms => {
+  const d = new Date(ms);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const h = String(d.getUTCHours()).padStart(2,'0');
+  return `${y}-${m}-${dd}T${h}:00`;
+};
+const bonkTtoNotT = bt => _msToT(_tToMs(bt) + NOT_OFFSET_MS);
+const bonkDtoNotD = bd => _msToT(_tToMs(bd + 'T00:00') + NOT_OFFSET_MS).slice(0,10);
+
 let overlayActive = false;
 let notData = null;
 let notTIdx = null;
@@ -418,7 +433,16 @@ function jumpToEndTimestamp(tStr){
 
 function redraw(){
   const w = getWindowSeries();
-  document.getElementById('rangeLabel').textContent = w.label;
+  let rangeText = w.label;
+  if (overlayActive && notData && w.series.length){
+    const f = w.series[0], l = w.series[w.series.length-1];
+    const fT = f.t || (f.d + 'T00:00');
+    const lT = l.t || (l.d + 'T00:00');
+    const nF = bonkTtoNotT(fT);
+    const nL = bonkTtoNotT(lT);
+    rangeText += '  ·  NOT: ' + fmtDateTimeShort(nF) + ' – ' + fmtDateTimeShort(nL);
+  }
+  document.getElementById('rangeLabel').textContent = rangeText;
 
   const last = w.series[w.series.length-1];
   const first = w.series[0];
@@ -521,10 +545,15 @@ function drawChart(series){
     const dailyIdx = currentRange === 'ALL' ? getNotDaily() : null;
     const notPrices = series.map(r => {
       if (r.t){
-        const i = notTIdx.get(r.t);
+        const nt = bonkTtoNotT(r.t);
+        const i = notTIdx.get(nt);
         return i !== undefined ? notData[i].p : null;
       }
-      return dailyIdx && dailyIdx.has(r.d) ? dailyIdx.get(r.d) : null;
+      if (r.d){
+        const nd = bonkDtoNotD(r.d);
+        return dailyIdx && dailyIdx.has(nd) ? dailyIdx.get(nd) : null;
+      }
+      return null;
     });
     const valid = notPrices.filter(p => p != null);
     if (valid.length >= 2){
@@ -598,7 +627,7 @@ function drawChart(series){
     ctx.fillStyle = NOT_COLOR;
     ctx.font = '11px -apple-system, Inter, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('NOT bu aralıkta yok (TGE 2024-05-16)', chartW - 4, padT + 14);
+    ctx.fillText('NOT karşılığı bu pencerede yok', chartW - 4, padT + 14);
   }
 
   // X-axis date labels — leftmost, middle, rightmost

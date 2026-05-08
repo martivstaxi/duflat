@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v8-not-overlay';
+const CACHE = 'bonk-v9-not-anchor-aligned';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',
