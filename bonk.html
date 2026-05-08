@@ -268,8 +268,8 @@ async function loadData(){
 
   buildInsight(last, ath, atl);
   setRange(currentRange);
-  // Default açılış: 1W penceresi, sol kenar = 22 Eki 2023 14:00 UTC
-  jumpToTimestamp('2023-10-22T14:00');
+  // Default açılış: 1W penceresi, sağ kenar = 23 Eki 2023 00:00 UTC
+  jumpToEndTimestamp('2023-10-23T00:00');
 }
 
 function buildInsight(last, ath, atl){
@@ -358,6 +358,24 @@ function jumpToIndex(startIdx){
   const total = allData.length;
   const end = Math.min(total, startIdx + windowSize);
   windowOffset = total - end;
+  redraw();
+}
+function jumpToEndTimestamp(tStr){
+  // tStr right edge of window
+  let idx = tIdx.get(tStr);
+  if (idx === undefined){
+    const target = new Date(tStr.slice(0,16) + ':00Z').getTime();
+    let best = 0, bestDt = Infinity;
+    for (let i=0;i<allData.length;i++){
+      const dt = Math.abs(new Date(allData[i].t.slice(0,16) + ':00Z').getTime() - target);
+      if (dt < bestDt){ bestDt = dt; best = i; }
+    }
+    idx = best;
+  }
+  if (currentRange === 'ALL') setRange('1D');
+  const total = allData.length;
+  const end = Math.min(total, idx + 1);
+  windowOffset = Math.max(0, total - end);
   redraw();
 }
 
