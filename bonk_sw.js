@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v12-ratio-clean';
+const CACHE = 'bonk-v13-ts-header';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',

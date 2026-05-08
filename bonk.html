@@ -26,8 +26,12 @@
   .icon-btn.star{color:#f0b90b}
 
   .head{padding:6px 18px 4px}
-  .coin-name{font-size:15px;color:#b7bdc6;letter-spacing:.2px}
-  .coin-name strong{color:#eaecef;font-weight:600;margin-right:6px}
+  .ts-row{display:flex;flex-direction:column;gap:2px;font-size:13px;font-variant-numeric:tabular-nums}
+  .ts-row .ts-line{display:flex;gap:8px;align-items:baseline}
+  .ts-row .ts-tag{font-size:10px;font-weight:700;letter-spacing:.6px;padding:2px 6px;border-radius:4px}
+  .ts-row .ts-tag.bonk{background:rgba(240,185,11,.16);color:#f0b90b}
+  .ts-row .ts-tag.not{background:rgba(167,139,250,.18);color:#a78bfa}
+  .ts-row .ts-val{color:#eaecef}
   .price-row{display:flex;align-items:baseline;gap:10px;margin-top:6px}
   .price{font-size:34px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
   .price .info{font-size:14px;color:#848e9c;margin-left:6px}
@@ -108,7 +112,10 @@
 </div>
 
 <div class="head">
-  <div class="coin-name"><strong>Bonk</strong>BONK</div>
+  <div class="ts-row">
+    <div class="ts-line"><span class="ts-tag bonk">BONK</span><span class="ts-val" id="bonkTs">—</span></div>
+    <div class="ts-line"><span class="ts-tag not">NOT</span><span class="ts-val" id="notTs">—</span></div>
+  </div>
   <div class="price-row">
     <span class="price" id="priceLabel">$0.000000<span class="info">i</span></span>
   </div>
@@ -177,7 +184,7 @@
 
 <div class="footer-note">
   Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC) · Fiyat ×10⁴ ile gösterilir<br>
-  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v12 ratio
+  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v13 ts-header
 </div>
 
 <script>
@@ -218,6 +225,14 @@ const fmtHour = t => t.length >= 13 ? t.slice(11,13) + ':00' : '';
 const fmtDateTimeShort = t => fmtDateShort(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
 // 'YYYY-MM-DDTHH:00' → '08/05/2026 14:00'
 const fmtDateTime = t => fmtDate(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
+// 'YYYY-MM-DDTHH:00' → '23 Ekim 2023 00:00'
+const fmtDateTimeLong = t => {
+  const ds = t.length >= 10 ? t.slice(0,10) : t;
+  const [y,m,d] = ds.split('-');
+  const mn = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'][+m-1];
+  const hh = t.length >= 13 ? t.slice(11,13) + ':00' : '';
+  return `${+d} ${mn} ${y}` + (hh ? ' ' + hh : '');
+};
 // label key: hourly rows have .t, daily-aggregated have .d
 const rowKey = r => r.t || r.d;
 const rowFmt = r => r.t ? fmtDateTime(r.t) : fmtDate(r.d);
@@ -469,6 +484,11 @@ function redraw(){
     document.getElementById('dateInput').value = first.t.slice(0,10);
     document.getElementById('timeInput').value = first.t.slice(11,16);
   }
+
+  // Top: BONK + NOT timestamps at right edge of window
+  const lastT = last.t || (last.d + 'T00:00');
+  document.getElementById('bonkTs').textContent = fmtDateTimeLong(lastT);
+  document.getElementById('notTs').textContent = fmtDateTimeLong(bonkTtoNotT(lastT));
 
   // Enable/disable arrows
   if (w.pannable){
