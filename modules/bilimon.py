@@ -146,6 +146,36 @@ def _resolve_channel_id(channel_url: str) -> str:
         return ''
 
 
+def bb_space_html_probe(mid: str) -> dict:
+    """Hit space.bilibili.com/{mid}/upload/video through Apify proxy and
+    extract every BVID we can find in the HTML/embedded JSON. Used to
+    cross-check the actor's output when the user reports missing videos."""
+    if not mid:
+        return {'error': 'mid required'}
+    url = f'https://space.bilibili.com/{mid}/upload/video'
+    s = _new_bb_session(_bb_session_id_for(mid))
+    _warmup_cookies(s)
+    out = {'url': url, 'mid': mid}
+    try:
+        r = s.get(url, timeout=20, allow_redirects=True)
+        out['status']    = r.status_code
+        out['final_url'] = r.url
+        out['html_len']  = len(r.text or '')
+        # All bvids embedded in the page (inline JSON, scripts, hrefs)
+        bvids = sorted(set(re.findall(r'BV[0-9A-Za-z]{10}', r.text or '')))
+        out['bvids']       = bvids
+        out['bvids_count'] = len(bvids)
+        # The space page also drops a small JSON blob with archive count
+        am = re.search(r'"archiveCount"\s*:\s*(\d+)', r.text or '')
+        if am:
+            out['archiveCount_in_html'] = int(am.group(1))
+        # First 600 chars for sanity
+        out['head'] = (r.text or '')[:600]
+    except Exception as e:
+        out['error'] = f'{type(e).__name__}: {str(e)[:200]}'
+    return out
+
+
 def bb_fetch_debug(mid: str, limit: int = 50) -> dict:
     """Diagnostic: call the Apify actor fresh (cache-busted) for one mid
     with an arbitrary limit. Lets us tell whether bilibili_count=1 means

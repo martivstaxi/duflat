@@ -1244,6 +1244,16 @@ def bili_debug_bb():
     return jsonify(bilimon.bb_fetch_debug(mid, limit=limit))
 
 
+@app.route('/bili/debug-bb-html', methods=['GET'])
+def bili_debug_bb_html():
+    """Diagnostic: scrape space.bilibili.com/{mid}/upload/video directly
+    via the Apify proxy. Useful when the actor under-reports videos."""
+    mid = (request.args.get('mid') or '').strip()
+    if not mid:
+        return jsonify({'error': 'mid query param required'}), 400
+    return jsonify(bilimon.bb_space_html_probe(mid))
+
+
 @app.route('/bili/creators', methods=['GET'])
 def bili_creators():
     manager = (request.args.get('manager') or '').strip()
