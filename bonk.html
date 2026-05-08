@@ -181,30 +181,42 @@ const fmtVol = v => {
   if (v >= 1e3) return '$' + (v/1e3).toFixed(2) + 'K';
   return '$' + v.toFixed(0);
 };
+// Veride tüm saatler UTC. Display tarayıcının lokal saatine çevrilir.
+const _pad2 = n => String(n).padStart(2,'0');
+const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const MONTHS_TR_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+// 'YYYY-MM-DDTHH:00' (UTC) → {y,m,d,h} (local)
+const _utcToLocalParts = utcT => {
+  const ms = new Date(utcT.slice(0,16) + ':00Z').getTime();
+  const dt = new Date(ms);
+  return { y: dt.getFullYear(), m: dt.getMonth()+1, d: dt.getDate(), h: dt.getHours() };
+};
 const fmtDate = s => {
-  const ds = s.length >= 10 ? s.slice(0,10) : s;
-  const [y,m,d] = ds.split('-');
-  return d + '/' + m + '/' + y;
+  if (s.length <= 10){
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  const p = _utcToLocalParts(s);
+  return `${_pad2(p.d)}/${_pad2(p.m)}/${p.y}`;
 };
 const fmtDateShort = s => {
-  const ds = s.length >= 10 ? s.slice(0,10) : s;
-  const [y,m,d] = ds.split('-');
-  const mn = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][+m-1];
-  return +d + ' ' + mn + ' \'' + y.slice(2);
+  if (s.length <= 10){
+    const [y,m,d] = s.split('-');
+    return `${+d} ${MONTHS_TR_SHORT[+m-1]} '${y.slice(2)}`;
+  }
+  const p = _utcToLocalParts(s);
+  return `${p.d} ${MONTHS_TR_SHORT[p.m-1]} '${String(p.y).slice(2)}`;
 };
-// 'YYYY-MM-DDTHH:00' → 'HH:00'
-const fmtHour = t => t.length >= 13 ? t.slice(11,13) + ':00' : '';
-// 'YYYY-MM-DDTHH:00' → '8 May 14:00'
-const fmtDateTimeShort = t => fmtDateShort(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
-// 'YYYY-MM-DDTHH:00' → '08/05/2026 14:00'
-const fmtDateTime = t => fmtDate(t) + (t.length >= 13 ? ' ' + fmtHour(t) : '');
-// 'YYYY-MM-DDTHH:00' → '23 Ekim 2023 00:00'
-const fmtDateTimeLong = t => {
-  const ds = t.length >= 10 ? t.slice(0,10) : t;
-  const [y,m,d] = ds.split('-');
-  const mn = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'][+m-1];
-  const hh = t.length >= 13 ? t.slice(11,13) + ':00' : '';
-  return `${+d} ${mn} ${y}` + (hh ? ' ' + hh : '');
+const fmtHour = utcT => utcT.length >= 13 ? `${_pad2(_utcToLocalParts(utcT).h)}:00` : '';
+const fmtDateTime = utcT => utcT.length >= 13 ? `${fmtDate(utcT)} ${fmtHour(utcT)}` : fmtDate(utcT);
+const fmtDateTimeShort = utcT => utcT.length >= 13 ? `${fmtDateShort(utcT)} ${fmtHour(utcT)}` : fmtDateShort(utcT);
+const fmtDateTimeLong = utcT => {
+  if (utcT.length <= 10){
+    const [y,m,d] = utcT.split('-');
+    return `${+d} ${MONTHS_TR[+m-1]} ${y}`;
+  }
+  const p = _utcToLocalParts(utcT);
+  return `${p.d} ${MONTHS_TR[p.m-1]} ${p.y} ${_pad2(p.h)}:00`;
 };
 // label key: hourly rows have .t, daily-aggregated have .d
 const rowKey = r => r.t || r.d;
@@ -349,13 +361,15 @@ async function loadData(){
   const last = allData[allData.length-1];
   const first = allData[0];
 
-  // date+time inputs
+  // date+time inputs (lokal saatte göster/al)
   const di = document.getElementById('dateInput');
-  di.min = first.t.slice(0,10);
-  di.max = last.t.slice(0,10);
-  di.value = last.t.slice(0,10);
+  const firstLocal = _utcToLocalParts(first.t);
+  const lastLocal = _utcToLocalParts(last.t);
+  di.min = `${firstLocal.y}-${_pad2(firstLocal.m)}-${_pad2(firstLocal.d)}`;
+  di.max = `${lastLocal.y}-${_pad2(lastLocal.m)}-${_pad2(lastLocal.d)}`;
+  di.value = di.max;
   const ti = document.getElementById('timeInput');
-  ti.value = last.t.slice(11,16);
+  ti.value = `${_pad2(lastLocal.h)}:00`;
 
   setRange(currentRange);
   // Default açılış: 1W penceresi, sağ kenar = 23 Eki 2023 00:00 UTC
@@ -488,10 +502,11 @@ function redraw(){
   changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' ' + unit;
   changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
 
-  // Update date+time inputs to match window's left edge
+  // Update date+time inputs to match window's left edge (lokal)
   if (w.pannable && first.t){
-    document.getElementById('dateInput').value = first.t.slice(0,10);
-    document.getElementById('timeInput').value = first.t.slice(11,16);
+    const lp = _utcToLocalParts(first.t);
+    document.getElementById('dateInput').value = `${lp.y}-${_pad2(lp.m)}-${_pad2(lp.d)}`;
+    document.getElementById('timeInput').value = `${_pad2(lp.h)}:00`;
   }
 
   // Top: BONK + NOT timestamps at right edge of window
@@ -786,8 +801,11 @@ function bindEvents(){
     const d = document.getElementById('dateInput').value;
     const tm = document.getElementById('timeInput').value || '00:00';
     if (d){
-      const hh = tm.slice(0,2);
-      jumpToTimestamp(d + 'T' + hh + ':00');
+      // input lokal saatte; UTC'ye çevirip ara
+      const [y, m, dd] = d.split('-').map(Number);
+      const hh = parseInt(tm.slice(0,2), 10) || 0;
+      const localMs = new Date(y, m-1, dd, hh, 0, 0).getTime();
+      jumpToTimestamp(_msToT(localMs));
     }
   };
   document.getElementById('dateInput').addEventListener('change', onDateTimeChange);
