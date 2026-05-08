@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v11-ratio-anchor';
+const CACHE = 'bonk-v12-ratio-clean';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',

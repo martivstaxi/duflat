@@ -177,7 +177,7 @@
 
 <div class="footer-note">
   Veri kaynağı: CoinMarketCap · Saatlik kapanış (UTC) · Fiyat ×10⁴ ile gösterilir<br>
-  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v11 ratio
+  duflat.com/bonk.html · son güncelleme: <span id="lastUpdate">—</span> · v12 ratio
 </div>
 
 <script>
@@ -243,12 +243,7 @@ const BONK_ANCHOR = '2023-10-23T00:00';
 const NOT_ANCHOR  = '2026-05-05T03:00';
 let BONK_ANCHOR_PRICE = null;
 let NOT_ANCHOR_PRICE  = null;
-const fmtRatio = r => {
-  if (r >= 100) return r.toFixed(1) + '×';
-  if (r >= 10)  return r.toFixed(2) + '×';
-  if (r >= 1)   return r.toFixed(3) + '×';
-  return r.toFixed(3) + '×';
-};
+const fmtRatio = r => 'x' + (Math.floor(r * 100) / 100).toFixed(2);
 const _tToMs = t => new Date(t.slice(0,16) + ':00Z').getTime();
 const NOT_OFFSET_MS = _tToMs(NOT_ANCHOR) - _tToMs(BONK_ANCHOR);
 const _msToT = ms => {
@@ -631,25 +626,6 @@ function drawChart(series){
   ctx.arc(lastP.x, lastP.y, 8, 0, Math.PI*2);
   ctx.fillStyle = stroke + '33';
   ctx.fill();
-
-  // Anchor reference line (yatay sarı kesikli, sağ ucunda "1")
-  if (BONK_ANCHOR_PRICE && BONK_ANCHOR_PRICE >= minP && BONK_ANCHOR_PRICE <= maxP){
-    const yA = ty(BONK_ANCHOR_PRICE);
-    ctx.save();
-    ctx.strokeStyle = BONK_COLOR_ACCENT;
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padL, yA);
-    ctx.lineTo(padL + w, yA);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = BONK_COLOR_ACCENT;
-    ctx.font = 'bold 12px -apple-system, Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('1', padL + w + 4, yA + 4);
-    ctx.restore();
-  }
 
   // Min/max labels (oran cinsinden, anchor varsa; yoksa fmtPrice)
   const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
