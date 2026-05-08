@@ -1229,6 +1229,21 @@ def bili_debug_yt():
     return jsonify(bilimon.yt_resolve_debug(url))
 
 
+@app.route('/bili/debug-bb', methods=['GET'])
+def bili_debug_bb():
+    """Diagnostic: cache-bust + re-run the Apify BB actor with a custom
+    limit. Tells us whether a low bilibili_count is the actor's fault or
+    the creator's actual upload count."""
+    mid = (request.args.get('mid') or '').strip()
+    try:
+        limit = int(request.args.get('limit') or 50)
+    except Exception:
+        limit = 50
+    if not mid:
+        return jsonify({'error': 'mid query param required'}), 400
+    return jsonify(bilimon.bb_fetch_debug(mid, limit=limit))
+
+
 @app.route('/bili/creators', methods=['GET'])
 def bili_creators():
     manager = (request.args.get('manager') or '').strip()

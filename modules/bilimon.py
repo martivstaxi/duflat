@@ -146,6 +146,66 @@ def _resolve_channel_id(channel_url: str) -> str:
         return ''
 
 
+def bb_fetch_debug(mid: str, limit: int = 50) -> dict:
+    """Diagnostic: call the Apify actor fresh (cache-busted) for one mid
+    with an arbitrary limit. Lets us tell whether bilibili_count=1 means
+    "the creator only has 1 video" or "the actor only fetched 1"."""
+    if not mid:
+        return {'error': 'mid required'}
+    _bb_actor_cache.pop(str(mid), None)  # bust cache
+    if not APIFY_API_TOKEN:
+        return {'error': 'APIFY_API_TOKEN not set'}
+    tok = _apify_token_param()
+    start_url = f'https://api.apify.com/v2/acts/{BB_ACTOR_ID}/runs?token={tok}'
+    body = {'mode': 'user_videos', 'userIds': [str(mid)], 'maxResults': limit}
+    try:
+        r = requests.post(start_url, json=body, timeout=30)
+    except Exception as e:
+        return {'error': f'start: {type(e).__name__}: {e}'}
+    if r.status_code not in (200, 201):
+        return {'error': f'start_http_{r.status_code}', 'body': r.text[:400]}
+    try:
+        run = (r.json() or {}).get('data') or {}
+    except Exception:
+        return {'error': 'start_parse'}
+    run_id     = run.get('id') or ''
+    dataset_id = run.get('defaultDatasetId') or ''
+    if not run_id:
+        return {'error': 'no_run_id', 'run_obj': run}
+    status_url = f'https://api.apify.com/v2/actor-runs/{run_id}?token={tok}'
+    deadline = time.time() + 90
+    status = ''
+    while time.time() < deadline:
+        try:
+            sr = requests.get(status_url, timeout=15)
+            status = ((sr.json() or {}).get('data') or {}).get('status') or ''
+        except Exception:
+            status = ''
+        if status in ('SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'):
+            break
+        time.sleep(3)
+    items_url = (f'https://api.apify.com/v2/datasets/{dataset_id}/items'
+                 f'?token={tok}&clean=1&format=json')
+    try:
+        ir = requests.get(items_url, timeout=30)
+        items = ir.json() or []
+    except Exception as e:
+        return {'error': f'dataset: {type(e).__name__}', 'status': status}
+    return {
+        'mid':           mid,
+        'limit_asked':   limit,
+        'status':        status,
+        'items_count':   len(items) if isinstance(items, list) else None,
+        'first3_titles': [it.get('title') for it in (items or [])[:3]] if isinstance(items, list) else None,
+        'first3_dates':  [
+            datetime.fromtimestamp(it.get('publishTimestamp', 0), tz=timezone.utc).strftime('%Y-%m-%d')
+            if it.get('publishTimestamp') else None
+            for it in (items or [])[:3]
+        ] if isinstance(items, list) else None,
+        'sample_keys':   list((items[0] or {}).keys())[:30] if (isinstance(items, list) and items) else [],
+    }
+
+
 def yt_resolve_debug(channel_url: str) -> dict:
     """Diagnostic for /bili/debug-yt — returns each step of the YT resolve
     so we can pinpoint where Railway is losing the channel_id."""
