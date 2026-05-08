@@ -18,6 +18,7 @@ import os
 import random
 import re
 import string
+import threading
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -64,8 +65,14 @@ APIFY_API_TOKEN = (
 BB_ACTOR_ID    = 'zhorex~bilibili-scraper'
 BB_ACTOR_LIMIT = 15  # videos per creator — covers ~30 days for most creators
 
-DATA_FILE = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
+DATA_FILE   = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
+STATUS_FILE = Path(__file__).resolve().parent.parent / 'data' / 'bili_status.json'
 WINDOW_DAYS_DEFAULT = 30
+# How long a manual "force refresh" must wait between invocations. The cron
+# refresh path is unrestricted (token-gated). 15 minutes is a balance — long
+# enough to deter accidental spam-clicks, short enough that a manager who
+# *just* pushed a new BB upload can re-check soon.
+MANUAL_REFRESH_COOLDOWN_SEC = 15 * 60
 TITLE_MATCH_THRESHOLD = 0.55  # below this counts as "missing on Bilibili"
 
 
@@ -954,3 +961,150 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
         'bilibili_count':      len(bb),
         'bb_error':            bb_err,
     }
+
+
+# ─────────────────────────────────────────────
+# Persistent status store + background refresh
+# ─────────────────────────────────────────────
+# A daily cron rebuilds bili_status.json so the bili.html page can read
+# fresh-ish results without burning the actor on every visit. Frontend
+# loads via /bili/cached (instant), force-refresh via /bili/refresh-now.
+
+_STATUS_LOCK = threading.Lock()
+_REFRESH_LOCK = threading.Lock()
+_refresh_state = {
+    'running':           False,
+    'started_at':        None,
+    'finished_at':       None,
+    'progress':          0,
+    'total':             0,
+    'last_error':        None,
+    'last_manual_at':    0.0,  # epoch seconds for cooldown
+}
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+def _load_status() -> dict:
+    if not STATUS_FILE.exists():
+        return {'last_global_run': None, 'creators': {}}
+    try:
+        return json.loads(STATUS_FILE.read_text(encoding='utf-8'))
+    except Exception:
+        return {'last_global_run': None, 'creators': {}}
+
+
+def _save_status(data: dict) -> None:
+    STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    tmp = STATUS_FILE.with_suffix('.json.tmp')
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+    tmp.replace(STATUS_FILE)
+
+
+def cached_status_for(manager: str) -> dict:
+    """Read pre-computed cross-post status for one manager. Returns the
+    same shape as a sequence of /bili/check responses, plus a
+    last_global_run timestamp the UI can show."""
+    data = _load_status()
+    creators_idx = data.get('creators') or {}
+    out = []
+    for entry in creators_idx.values():
+        if manager and entry.get('manager') != manager:
+            continue
+        out.append(entry)
+    # Sort: creators with missing videos first, then by name
+    out.sort(key=lambda e: (-(len(e.get('missing_on_bilibili') or [])),
+                             e.get('name') or ''))
+    return {
+        'last_global_run': data.get('last_global_run'),
+        'manager':         manager,
+        'creators':        out,
+        'refresh_state':   {k: v for k, v in _refresh_state.items()
+                            if k != 'last_manual_at'},
+    }
+
+
+def _do_refresh_all(window_days: int) -> None:
+    """Worker body: iterate every creator with both platforms, run the
+    expensive check, persist after each one. Errors per-creator never
+    abort the whole run — we record what we got."""
+    creators = [c for c in _load().get('creators', [])
+                if c.get('youtube_url') and c.get('bilibili_mid')]
+    _refresh_state['total']       = len(creators)
+    _refresh_state['progress']    = 0
+    _refresh_state['last_error']  = None
+    _refresh_state['started_at']  = _now_iso()
+    _refresh_state['finished_at'] = None
+
+    for c in creators:
+        try:
+            result = check_creator(c, window_days=window_days)
+        except Exception as e:
+            result = {
+                'name':        c.get('name'),
+                'manager':     c.get('manager'),
+                'status':      'check_error',
+                'error':       f'{type(e).__name__}: {str(e)[:200]}',
+                'youtube_url': c.get('youtube_url'),
+                'bilibili_url': c.get('bilibili_url'),
+            }
+        with _STATUS_LOCK:
+            data = _load_status()
+            data.setdefault('creators', {})
+            data['creators'][str(c.get('bilibili_mid'))] = {
+                **result,
+                'checked_at': _now_iso(),
+            }
+            _save_status(data)
+        _refresh_state['progress'] += 1
+
+    with _STATUS_LOCK:
+        data = _load_status()
+        data['last_global_run'] = _now_iso()
+        _save_status(data)
+
+
+def trigger_refresh_all(window_days: int = WINDOW_DAYS_DEFAULT,
+                        manual: bool = False) -> dict:
+    """Kick off a refresh in a background thread. `manual=True` enforces a
+    cooldown so the public-facing /bili/refresh-now endpoint can't be
+    spam-clicked. The cron path passes manual=False."""
+    now = time.time()
+    if manual:
+        gap = now - (_refresh_state.get('last_manual_at') or 0.0)
+        if gap < MANUAL_REFRESH_COOLDOWN_SEC:
+            return {
+                'status':           'cooldown',
+                'cooldown_left_s':  int(MANUAL_REFRESH_COOLDOWN_SEC - gap),
+            }
+
+    if not _REFRESH_LOCK.acquire(blocking=False):
+        return {'status': 'already_running', **{
+            k: v for k, v in _refresh_state.items() if k != 'last_manual_at'
+        }}
+
+    if manual:
+        _refresh_state['last_manual_at'] = now
+
+    def _worker():
+        try:
+            _refresh_state['running'] = True
+            _do_refresh_all(window_days=window_days)
+        except Exception as e:
+            _refresh_state['last_error'] = f'{type(e).__name__}: {str(e)[:200]}'
+        finally:
+            _refresh_state['running']     = False
+            _refresh_state['finished_at'] = _now_iso()
+            _REFRESH_LOCK.release()
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return {'status': 'started', 'window_days': window_days}
+
+
+def get_refresh_state() -> dict:
+    s = {k: v for k, v in _refresh_state.items() if k != 'last_manual_at'}
+    cd_gap = time.time() - (_refresh_state.get('last_manual_at') or 0.0)
+    s['manual_cooldown_left_s'] = max(0, int(MANUAL_REFRESH_COOLDOWN_SEC - cd_gap))
+    return s

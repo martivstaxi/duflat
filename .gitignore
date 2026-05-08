@@ -33,3 +33,8 @@ test_result_local.json
 # Daily run logs and intermediate text dumps
 scripts/*.log
 scripts/overrides_top1000.txt
+data/*.log
+data/transcripts_round1.json
+
+# Bili cross-post monitor — daily cron rebuilds this on Railway
+data/bili_status.json

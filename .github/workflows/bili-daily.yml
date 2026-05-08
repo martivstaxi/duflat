@@ -1,0 +1,36 @@
+name: Daily Bilibili cross-post refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 02:00 UTC = 05:00 Europe/Istanbul (well before the morning UI checks)
+    - cron: '0 2 * * *'
+
+# One run at a time. Refresh fires off a background thread on Railway,
+# so this workflow returns fast — but if a previous run is still in
+# flight we still don't want to double-trigger.
+concurrency:
+  group: bili-daily
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Railway refresh-all
+        env:
+          TOKEN: ${{ secrets.BILI_REFRESH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "BILI_REFRESH_TOKEN secret missing — skipping"
+            exit 0
+          fi
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"window_days":30}' \
+            https://duflat-production.up.railway.app/bili/refresh-all
+          echo
+          # Refresh runs in a background thread on Railway and may take
+          # several minutes; this job returns as soon as the start
+          # response arrives. Progress is observable via /bili/refresh-status.

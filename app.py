@@ -1279,6 +1279,55 @@ def bili_check():
     return jsonify(bilimon.check_creator(creator, window_days=window))
 
 
+@app.route('/bili/cached', methods=['GET'])
+def bili_cached():
+    """Read the precomputed cross-post status for one manager. Backed by
+    data/bili_status.json which the daily cron rebuilds — instant load,
+    no actor cost on every page view."""
+    manager = (request.args.get('manager') or '').strip()
+    if not manager:
+        return jsonify({'error': 'manager parameter required'}), 400
+    return jsonify(bilimon.cached_status_for(manager))
+
+
+@app.route('/bili/refresh-all', methods=['POST'])
+def bili_refresh_all():
+    """Cron entry point. Requires Authorization: Bearer <BILI_REFRESH_TOKEN>.
+    Kicks off a background refresh of every creator and returns immediately
+    so the cron's HTTP client doesn't time out on the long-running work."""
+    expected = (os.environ.get('BILI_REFRESH_TOKEN') or '').strip()
+    if not expected:
+        return jsonify({'error': 'refresh disabled (BILI_REFRESH_TOKEN unset)'}), 503
+    auth = (request.headers.get('Authorization') or '').strip()
+    if not auth.startswith('Bearer '):
+        return jsonify({'error': 'bearer token required'}), 401
+    if auth[7:].strip() != expected:
+        return jsonify({'error': 'invalid token'}), 401
+    body = request.get_json(silent=True) or {}
+    try:
+        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
+    except Exception:
+        window = bilimon.WINDOW_DAYS_DEFAULT
+    return jsonify(bilimon.trigger_refresh_all(window_days=window, manual=False))
+
+
+@app.route('/bili/refresh-now', methods=['POST'])
+def bili_refresh_now():
+    """Manager's force-refresh button. No token, but cooldown-gated so a
+    refresh can fire at most once per MANUAL_REFRESH_COOLDOWN_SEC."""
+    body = request.get_json(silent=True) or {}
+    try:
+        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
+    except Exception:
+        window = bilimon.WINDOW_DAYS_DEFAULT
+    return jsonify(bilimon.trigger_refresh_all(window_days=window, manual=True))
+
+
+@app.route('/bili/refresh-status', methods=['GET'])
+def bili_refresh_status():
+    return jsonify(bilimon.get_refresh_state())
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f'Duflat API starting... http://localhost:{port}')
