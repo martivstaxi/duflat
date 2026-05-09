@@ -1,4 +1,4 @@
-const CACHE = 'shiba-v1-anchor-peak-oct28';
+const CACHE = 'shiba-v2-anchor-sep30';
 const ASSETS = [
   '/shiba.html',
   '/shiba_manifest.json',

@@ -121,6 +121,7 @@
   <button class="tab" data-range="1D">1D</button>
   <button class="tab active" data-range="1W">1W</button>
   <button class="tab" data-range="1M">1M</button>
+  <button class="tab" data-range="3M">3M</button>
   <button class="tab" data-range="ALL">ALL</button>
 </div>
 
@@ -199,17 +200,16 @@ let allData = [];
 let tIdx = new Map();
 let dateStartIdx = new Map();
 
-// SHIB Oct-Nov 2021 data spans ~57 days → tabs 1D/1W/1M/ALL only
-const SIZES = {'1D':24,'1W':168,'1M':720,'ALL':null};
+// SHIB Q4 2021 data spans ~118 days → tabs 1D/1W/1M/3M/ALL
+const SIZES = {'1D':24,'1W':168,'1M':720,'3M':2160,'ALL':null};
 let currentRange = '1W';
 let windowSize = 168;
 let windowOffset = 0;
 
 const NOT_COLOR = '#a78bfa';
 const SHIBA_COLOR_ACCENT = '#ffa409';
-// Anchor pair (UTC): SHIBA 2021-10-28 03:00 (= 06:00 TRT, rally peak) ↔ NOT 2026-05-09 14:00 (= 17:00 TRT)
-// Placeholder — kullanıcı kesişim noktasını iterasyonla belirleyecek.
-const SHIBA_ANCHOR = '2021-10-28T03:00';
+// Anchor pair (UTC): SHIBA 2021-09-29 21:00 (= 30 Eyl 00:00 TRT, başlangıç noktası) ↔ NOT 2026-05-09 14:00 (= 17:00 TRT)
+const SHIBA_ANCHOR = '2021-09-29T21:00';
 const NOT_ANCHOR  = '2026-05-09T14:00';
 let SHIBA_ANCHOR_PRICE = null;
 let NOT_ANCHOR_PRICE  = null;
@@ -316,7 +316,7 @@ let chartPoints = [];
 let chartBounds = {};
 
 async function loadData(){
-  const res = await fetch('/data/shiba_hourly.json?v=2026-05-09');
+  const res = await fetch('/data/shiba_hourly.json?v=2026-05-09b');
   allData = await res.json();
   allData.forEach((r,i)=>{
     tIdx.set(r.t, i);
