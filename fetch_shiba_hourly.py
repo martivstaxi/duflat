@@ -1,6 +1,6 @@
 """Fetch SHIB hourly OHLC from CoinMarketCap data-api in 400-hour chunks.
 
-Range: 2024-02-19 → 2024-09-12 UTC (SHIB 2024 rally penceresi).
+Range: 2021-10-02 → 2021-11-27 UTC (SHIB Oct-Nov 2021 rally penceresi).
 """
 import urllib.request, json, time, datetime as dt, os, sys
 
@@ -8,8 +8,8 @@ CMC_ID = 5994           # SHIB
 CONVERT_ID = 2781       # USD
 OUT = os.path.join(os.path.dirname(__file__), 'data', 'shiba_hourly.json')
 
-START = dt.datetime(2024, 2, 19, 0, 0, tzinfo=dt.timezone.utc)
-END   = dt.datetime(2024, 9, 12, 23, 0, tzinfo=dt.timezone.utc)
+START = dt.datetime(2021, 10, 2, 0, 0, tzinfo=dt.timezone.utc)
+END   = dt.datetime(2021, 11, 27, 23, 0, tzinfo=dt.timezone.utc)
 
 CHUNK_HOURS = 400
 STEP_HOURS = 380
