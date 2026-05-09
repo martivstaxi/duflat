@@ -1,4 +1,4 @@
-const CACHE = 'bonk-v19-anchor-08trt';
+const CACHE = 'bonk-v20-shift-clamp-fix';
 const ASSETS = [
   '/bonk.html',
   '/bonk_manifest.json',

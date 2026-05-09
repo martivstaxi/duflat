@@ -1,4 +1,4 @@
-const CACHE = 'doge-v3-anchor-pair';
+const CACHE = 'doge-v4-shift-clamp-fix';
 const ASSETS = [
   '/doge.html',
   '/doge_manifest.json',

@@ -383,8 +383,10 @@ function setRange(r){
 function shiftWindow(direction){
   if (currentRange === 'ALL') return;
   const total = allData.length;
-  const maxOffset = Math.max(0, total - windowSize);
-  const newOffset = Math.max(0, Math.min(maxOffset, windowOffset - direction));
+  // [0, total-1] aralığında serbest kaydır. Anchor'a hizalı pencere
+  // (windowOffset > total - windowSize) kısalmış kalsa bile saat-saat gezer;
+  // clamp eski-style maxOffset'e çekmez (PEPE_ANCHOR data başında bu yüzden patlıyordu).
+  const newOffset = Math.max(0, Math.min(total - 1, windowOffset - direction));
   if (newOffset === windowOffset) return false;
   windowOffset = newOffset;
   redraw();
@@ -473,8 +475,7 @@ function redraw(){
 
   if (w.pannable){
     const total = allData.length;
-    const maxOffset = Math.max(0, total - windowSize);
-    document.getElementById('navPrev').toggleAttribute('disabled', windowOffset >= maxOffset);
+    document.getElementById('navPrev').toggleAttribute('disabled', windowOffset >= total - 1);
     document.getElementById('navNext').toggleAttribute('disabled', windowOffset <= 0);
   } else {
     document.getElementById('navPrev').setAttribute('disabled','');
