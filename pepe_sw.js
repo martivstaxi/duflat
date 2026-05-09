@@ -1,4 +1,4 @@
-const CACHE = 'pepe-v6-anchor-feb27-21';
+const CACHE = 'pepe-v7-anchor-feb28-09';
 const ASSETS = [
   '/pepe.html',
   '/pepe_manifest.json',
