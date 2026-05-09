@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0e11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PEPE">
+<meta name="mobile-web-app-capable" content="yes">
+<title>PEPE · Duflat</title>
+<link rel="manifest" href="/pepe_manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233fa72f'/%3E%3Ctext x='50%25' y='58%25' font-family='Inter,sans-serif' font-size='34' font-weight='800' fill='%23000' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:#0b0e11;color:#eaecef;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;overscroll-behavior:none}
+  body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);min-height:100vh;min-height:100dvh}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;background:none;border:none;color:inherit;cursor:pointer}
+  input{font-family:inherit}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+  .topbar .icons{display:flex;gap:18px;align-items:center}
+  .icon-btn{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:#b7bdc6}
+  .icon-btn.star{color:#3fa72f}
+
+  .head{padding:6px 18px 4px}
+  .ts-row{display:flex;flex-direction:column;gap:2px;font-size:13px;font-variant-numeric:tabular-nums}
+  .ts-row .ts-line{display:flex;gap:8px;align-items:baseline}
+  .ts-row .ts-tag{font-size:10px;font-weight:700;letter-spacing:.6px;padding:2px 6px;border-radius:4px}
+  .ts-row .ts-tag.pepe{background:rgba(63,167,47,.18);color:#5dbb63}
+  .ts-row .ts-tag.not{background:rgba(167,139,250,.18);color:#a78bfa}
+  .ts-row .ts-val{color:#eaecef}
+  .price-row{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+  .price{font-size:34px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .price .info{font-size:14px;color:#848e9c;margin-left:6px}
+  .change{font-size:14px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+  .change.up{color:#0ecb81}
+  .change.down{color:#f6465d}
+
+  .chart-wrap{position:relative;margin-top:14px;padding:0 0 4px;width:100%}
+  .chart-wrap canvas{display:block;width:100%;height:340px;touch-action:pan-y}
+
+  .chart-info{position:absolute;left:18px;right:18px;top:0;display:flex;justify-content:space-between;pointer-events:none;font-size:12px;color:#848e9c;font-variant-numeric:tabular-nums;z-index:2}
+  .chart-info .hi{color:#b7bdc6}
+
+  .scrub-tip{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(30,33,38,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:10px;font-size:12px;color:#eaecef;display:none;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 4px 18px rgba(0,0,0,.4);z-index:2}
+  .scrub-tip.show{display:block}
+  .scrub-tip .d{color:#848e9c;margin-right:8px}
+
+  .nav-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 4px;pointer-events:none;z-index:3}
+  .nav-arrow{pointer-events:auto;width:38px;height:38px;border-radius:50%;background:rgba(43,49,57,.78);backdrop-filter:blur(6px);color:#eaecef;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.06);transition:transform .08s,background .15s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .nav-arrow:active{transform:scale(.92);background:#3fa72f;color:#0b0e11}
+  .nav-arrow svg{width:18px;height:18px}
+  .nav-arrow[disabled]{opacity:.22;pointer-events:none}
+
+  .tabs{display:flex;justify-content:space-around;align-items:center;padding:8px 12px;border-bottom:1px solid #1e2329}
+  .tab{padding:7px 14px;font-size:13px;color:#848e9c;font-weight:500;border-radius:18px;transition:background .15s}
+  .tab.active{background:#2b3139;color:#eaecef;font-weight:600}
+
+  .date-jump{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #1e2329;font-size:13px}
+  .date-jump label{color:#848e9c}
+  .date-jump input[type=date]{flex:1;background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums}
+  .date-jump button.jump-btn{background:#3fa72f;color:#0b0e11;font-weight:600;padding:8px 14px;border-radius:8px;font-size:13px}
+  .date-jump button.today-btn{color:#848e9c;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #2b3139}
+  .date-jump button.overlay-btn{color:#a78bfa;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid #a78bfa;font-weight:600;letter-spacing:.5px}
+  .date-jump button.overlay-btn.active{background:#a78bfa;color:#0b0e11}
+  .date-jump button.refresh-btn{color:#a78bfa;font-size:14px;padding:6px 9px;border-radius:6px;border:1px solid rgba(167,139,250,.4);font-weight:600;line-height:1}
+  .date-jump button.refresh-btn:disabled{opacity:.5}
+
+  @media (min-width:640px){
+    body{max-width:480px;margin:0 auto;border-left:1px solid #1e2329;border-right:1px solid #1e2329;min-height:100vh}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="icon-btn" onclick="history.length>1?history.back():location.href='/'" aria-label="Back">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="icons">
+    <span class="icon-btn" aria-label="Notifications">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </span>
+    <span class="icon-btn star" aria-label="Favorite">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </span>
+  </div>
+</div>
+
+<div class="head">
+  <div class="ts-row">
+    <div class="ts-line"><span class="ts-tag pepe">PEPE</span><span class="ts-val" id="pepeTs">—</span></div>
+    <div class="ts-line"><span class="ts-tag not">NOT</span><span class="ts-val" id="notTs">—</span></div>
+  </div>
+  <div class="price-row">
+    <span class="price" id="priceLabel">$0.0000<span class="info">i</span></span>
+  </div>
+  <div class="change" id="changeLabel">—</div>
+</div>
+
+<div class="chart-wrap" id="chartWrap">
+  <div class="chart-info">
+    <span class="hi" id="rangeLabel">—</span>
+    <span id="hiLabel"></span>
+  </div>
+  <canvas id="chart"></canvas>
+  <div class="scrub-tip" id="scrubTip"><span class="d" id="scrubDate"></span><span id="scrubPrice"></span></div>
+  <div class="nav-arrows">
+    <button class="nav-arrow" id="navPrev" aria-label="Önceki saat (geçmişe)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="nav-arrow" id="navNext" aria-label="Sonraki saat (ileriye)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab" data-range="1D">1D</button>
+  <button class="tab active" data-range="1W">1W</button>
+  <button class="tab" data-range="1M">1M</button>
+  <button class="tab" data-range="ALL">ALL</button>
+</div>
+
+<div class="date-jump">
+  <label for="dateInput">Tarihe git:</label>
+  <input type="date" id="dateInput">
+  <input type="time" id="timeInput" step="3600" style="background:#1e2329;border:1px solid #2b3139;color:#eaecef;border-radius:8px;padding:8px 10px;font-size:13px;color-scheme:dark;font-variant-numeric:tabular-nums;width:80px">
+  <button class="today-btn" id="todayBtn">Son</button>
+  <button class="overlay-btn" id="notToggle" title="Notcoin overlay'i aç/kapat">NOT</button>
+  <button class="refresh-btn" id="notRefresh" title="NOT verisini şimdi güncelle">↻</button>
+</div>
+
+
+<script>
+// PEPE prices ~$1.1e-6..$1.1e-5 → ×1e6 yields $1.10..$10.70 in the secondary label
+const DISPLAY_SCALE = 1000000;
+const fmtPrice = pRaw => {
+  const p = pRaw * DISPLAY_SCALE;
+  if (p >= 100) return '$' + p.toFixed(2);
+  if (p >= 1)   return '$' + p.toFixed(4);
+  if (p >= 0.0001) return '$' + p.toFixed(4);
+  if (p >= 0.0000001) return '$' + p.toFixed(7);
+  const s = p.toExponential(3);
+  const [m, eRaw] = s.split('e');
+  const e = parseInt(eRaw);
+  const zeros = -e - 1;
+  const sig = m.replace('.', '').replace(/0+$/, '');
+  return '$0.0' + (zeros >= 4 ? '₀' + String(zeros).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join('') : '0'.repeat(zeros)) + sig.slice(0,4);
+};
+const fmtVol = v => {
+  if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(2) + 'K';
+  return '$' + v.toFixed(0);
+};
+const _pad2 = n => String(n).padStart(2,'0');
+const MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const MONTHS_TR_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const _utcToLocalParts = utcT => {
+  const ms = new Date(utcT.slice(0,16) + ':00Z').getTime();
+  const dt = new Date(ms);
+  return { y: dt.getFullYear(), m: dt.getMonth()+1, d: dt.getDate(), h: dt.getHours() };
+};
+const fmtDate = s => {
+  if (s.length <= 10){
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  const p = _utcToLocalParts(s);
+  return `${_pad2(p.d)}/${_pad2(p.m)}/${p.y}`;
+};
+const fmtDateShort = s => {
+  if (s.length <= 10){
+    const [y,m,d] = s.split('-');
+    return `${+d} ${MONTHS_TR_SHORT[+m-1]} '${y.slice(2)}`;
+  }
+  const p = _utcToLocalParts(s);
+  return `${p.d} ${MONTHS_TR_SHORT[p.m-1]} '${String(p.y).slice(2)}`;
+};
+const fmtHour = utcT => utcT.length >= 13 ? `${_pad2(_utcToLocalParts(utcT).h)}:00` : '';
+const fmtDateTime = utcT => utcT.length >= 13 ? `${fmtDate(utcT)} ${fmtHour(utcT)}` : fmtDate(utcT);
+const fmtDateTimeShort = utcT => utcT.length >= 13 ? `${fmtDateShort(utcT)} ${fmtHour(utcT)}` : fmtDateShort(utcT);
+const fmtDateTimeLong = utcT => {
+  if (utcT.length <= 10){
+    const [y,m,d] = utcT.split('-');
+    return `${+d} ${MONTHS_TR[+m-1]} ${y}`;
+  }
+  const p = _utcToLocalParts(utcT);
+  return `${p.d} ${MONTHS_TR[p.m-1]} ${p.y} ${_pad2(p.h)}:00`;
+};
+const rowKey = r => r.t || r.d;
+const rowFmt = r => r.t ? fmtDateTime(r.t) : fmtDate(r.d);
+const rowFmtShort = r => r.t ? fmtDateTimeShort(r.t) : fmtDateShort(r.d);
+
+let allData = [];
+let tIdx = new Map();
+let dateStartIdx = new Map();
+
+// PEPE data only spans ~2 months → tabs 1D/1W/1M/ALL only
+const SIZES = {'1D':24,'1W':168,'1M':720,'ALL':null};
+let currentRange = '1W';
+let windowSize = 168;
+let windowOffset = 0;
+
+// Anchor pair (UTC). Placeholder — kullanıcı ile birlikte "kesişim noktası" belirlenecek.
+const NOT_COLOR = '#a78bfa';
+const PEPE_COLOR_ACCENT = '#3fa72f';
+const PEPE_ANCHOR = '2024-03-12T05:00';   // TODO: intersection point belirlenecek (placeholder: PEPE peak günü)
+const NOT_ANCHOR  = '2026-05-05T05:00';   // bonk + doge ile senkron NOT referansı
+let PEPE_ANCHOR_PRICE = null;
+let NOT_ANCHOR_PRICE  = null;
+const fmtRatio = r => 'x' + (Math.floor(r * 100) / 100).toFixed(2);
+const _tToMs = t => new Date(t.slice(0,16) + ':00Z').getTime();
+let NOT_OFFSET_MS = _tToMs(NOT_ANCHOR) - _tToMs(PEPE_ANCHOR);
+const _msToT = ms => {
+  const d = new Date(ms);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const h = String(d.getUTCHours()).padStart(2,'0');
+  return `${y}-${m}-${dd}T${h}:00`;
+};
+const pepeTtoNotT = pt => _msToT(_tToMs(pt) + NOT_OFFSET_MS);
+const pepeDtoNotD = pd => _msToT(_tToMs(pd + 'T00:00') + NOT_OFFSET_MS).slice(0,10);
+
+let overlayActive = false;
+let notData = null;
+let notTIdx = null;
+let notDailyCache = null;
+const fmtPriceRaw = p => {
+  if (p >= 100) return '$' + p.toFixed(2);
+  if (p >= 1) return '$' + p.toFixed(4);
+  if (p >= 0.001) return '$' + p.toFixed(5);
+  if (p >= 0.00001) return '$' + p.toFixed(6);
+  return '$' + p.toExponential(2);
+};
+const NOT_DELTA_KEY = 'not_hourly_delta_v1';
+
+async function loadNotData(){
+  if (notData) return;
+  const res = await fetch('/data/not_hourly.json?v=2026-05-09-pepe');
+  notData = await res.json();
+  try {
+    const delta = JSON.parse(localStorage.getItem(NOT_DELTA_KEY) || '[]');
+    if (Array.isArray(delta) && delta.length){
+      const seen = new Set(notData.map(r=>r.t));
+      for (const r of delta){
+        if (r && r.t && !seen.has(r.t)){
+          notData.push(r);
+          seen.add(r.t);
+        }
+      }
+      notData.sort((a,b)=>a.t.localeCompare(b.t));
+    }
+  } catch(e){}
+  notTIdx = new Map();
+  notData.forEach((r,i)=>notTIdx.set(r.t, i));
+  if (notTIdx.has(NOT_ANCHOR)) NOT_ANCHOR_PRICE = notData[notTIdx.get(NOT_ANCHOR)].p;
+}
+
+async function refreshNotData(){
+  if (!notData) await loadNotData();
+  const lastT = notData[notData.length-1].t;
+  const ts_start = Math.floor(_tToMs(lastT) / 1000) - 4*3600;
+  const ts_end = Math.floor(Date.now() / 1000);
+  const url = `https://duflat-dispatcher.djamaldinovic.workers.dev/cmc/historical?id=28850&convertId=2781&timeStart=${ts_start}&timeEnd=${ts_end}&interval=1h`;
+  const res = await fetch(url, {headers: {'Accept': 'application/json'}});
+  if (!res.ok) throw new Error('CMC fetch failed: ' + res.status);
+  const j = await res.json();
+  const quotes = (j && j.data && j.data.quotes) || [];
+  const newRows = [];
+  for (const q of quotes){
+    if (!q.timeOpen) continue;
+    const t = q.timeOpen.slice(0,13) + ':00';
+    const p = q.quote && q.quote.close;
+    if (p == null) continue;
+    if (notTIdx.has(t)) continue;
+    const v = (q.quote && q.quote.volume) || 0;
+    newRows.push({t, p, v});
+  }
+  if (newRows.length === 0) return 0;
+  notData.push(...newRows);
+  notData.sort((a,b)=>a.t.localeCompare(b.t));
+  notTIdx = new Map();
+  notData.forEach((r,i)=>notTIdx.set(r.t, i));
+  notDailyCache = null;
+  try {
+    const existing = JSON.parse(localStorage.getItem(NOT_DELTA_KEY) || '[]');
+    const merged = new Map();
+    for (const r of existing) if (r && r.t) merged.set(r.t, r);
+    for (const r of newRows) merged.set(r.t, r);
+    localStorage.setItem(NOT_DELTA_KEY, JSON.stringify([...merged.values()]));
+  } catch(e){}
+  return newRows.length;
+}
+function getNotDaily(){
+  if (notDailyCache) return notDailyCache;
+  const byDay = new Map();
+  for (const r of notData){
+    const d = r.t.slice(0,10);
+    const cur = byDay.get(d);
+    if (!cur || r.t > cur._t) byDay.set(d, {d, p:r.p, _t:r.t});
+  }
+  const idx = new Map();
+  for (const [d, row] of byDay) idx.set(d, row.p);
+  notDailyCache = idx;
+  return notDailyCache;
+}
+
+let chartCanvas, chartCtx, chartW, chartH, dpr;
+let chartPoints = [];
+let chartBounds = {};
+
+async function loadData(){
+  const res = await fetch('/data/pepe_hourly.json?v=2026-05-09');
+  allData = await res.json();
+  allData.forEach((r,i)=>{
+    tIdx.set(r.t, i);
+    const d = r.t.slice(0,10);
+    if (!dateStartIdx.has(d)) dateStartIdx.set(d, i);
+  });
+  if (tIdx.has(PEPE_ANCHOR)) PEPE_ANCHOR_PRICE = allData[tIdx.get(PEPE_ANCHOR)].p;
+
+  const last = allData[allData.length-1];
+  const first = allData[0];
+
+  const di = document.getElementById('dateInput');
+  const firstLocal = _utcToLocalParts(first.t);
+  const lastLocal = _utcToLocalParts(last.t);
+  di.min = `${firstLocal.y}-${_pad2(firstLocal.m)}-${_pad2(firstLocal.d)}`;
+  di.max = `${lastLocal.y}-${_pad2(lastLocal.m)}-${_pad2(lastLocal.d)}`;
+  di.value = di.max;
+  const ti = document.getElementById('timeInput');
+  ti.value = `${_pad2(lastLocal.h)}:00`;
+
+  setRange(currentRange);
+  jumpToEndTimestamp(PEPE_ANCHOR);
+}
+
+let _dailyCache = null;
+function aggregateDaily(data){
+  if (_dailyCache && _dailyCache.len === data.length) return _dailyCache.rows;
+  const byDay = new Map();
+  for (const r of data){
+    const d = r.t.slice(0,10);
+    const cur = byDay.get(d);
+    if (!cur || r.t > cur._t) byDay.set(d, {d, p:r.p, v:(cur?cur.v:0) + (r.v||0), _t:r.t});
+    else cur.v += (r.v||0);
+  }
+  const rows = [...byDay.values()].sort((a,b)=>a.d.localeCompare(b.d));
+  _dailyCache = {len:data.length, rows};
+  return rows;
+}
+
+function getWindowSeries(){
+  if (currentRange === 'ALL'){
+    return {series: aggregateDaily(allData), pannable:false, label:'Tüm zamanlar · günlük'};
+  }
+  const total = allData.length;
+  const end = total - windowOffset;
+  const start = Math.max(0, end - windowSize);
+  const series = allData.slice(start, end);
+  const startK = series[0] && rowKey(series[0]);
+  const endK = series[series.length-1] && rowKey(series[series.length-1]);
+  const label = startK && endK
+    ? rowFmtShort(series[0]) + ' – ' + rowFmtShort(series[series.length-1])
+    : '';
+  return {series, pannable:true, label, start, end, total};
+}
+
+function setRange(r){
+  currentRange = r;
+  windowOffset = 0;
+  windowSize = SIZES[r] || allData.length;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.range===r));
+  redraw();
+}
+
+function shiftWindow(direction){
+  if (currentRange === 'ALL') return;
+  const total = allData.length;
+  const maxOffset = Math.max(0, total - windowSize);
+  const newOffset = Math.max(0, Math.min(maxOffset, windowOffset - direction));
+  if (newOffset === windowOffset) return false;
+  windowOffset = newOffset;
+  redraw();
+  return true;
+}
+
+function jumpToTimestamp(tStr){
+  let idx = tIdx.get(tStr);
+  if (idx === undefined){
+    const d = tStr.slice(0,10);
+    if (dateStartIdx.has(d)) idx = dateStartIdx.get(d);
+    else {
+      const target = new Date(tStr.slice(0,16) + ':00Z').getTime();
+      let best = 0, bestDt = Infinity;
+      for (let i=0;i<allData.length;i++){
+        const dt = Math.abs(new Date(allData[i].t.slice(0,16) + ':00Z').getTime() - target);
+        if (dt < bestDt){ bestDt = dt; best = i; }
+      }
+      idx = best;
+    }
+  }
+  jumpToIndex(idx);
+}
+function jumpToIndex(startIdx){
+  if (currentRange === 'ALL') {
+    setRange('1D');
+  }
+  const total = allData.length;
+  const end = Math.min(total, startIdx + windowSize);
+  windowOffset = total - end;
+  redraw();
+}
+function jumpToEndTimestamp(tStr){
+  let idx = tIdx.get(tStr);
+  if (idx === undefined){
+    const target = new Date(tStr.slice(0,16) + ':00Z').getTime();
+    let best = 0, bestDt = Infinity;
+    for (let i=0;i<allData.length;i++){
+      const dt = Math.abs(new Date(allData[i].t.slice(0,16) + ':00Z').getTime() - target);
+      if (dt < bestDt){ bestDt = dt; best = i; }
+    }
+    idx = best;
+  }
+  if (currentRange === 'ALL') setRange('1D');
+  const total = allData.length;
+  const end = Math.min(total, idx + 1);
+  windowOffset = Math.max(0, total - end);
+  redraw();
+}
+
+function redraw(){
+  const w = getWindowSeries();
+  let rangeText = w.label;
+  if (overlayActive && notData && w.series.length){
+    const f = w.series[0], l = w.series[w.series.length-1];
+    const fT = f.t || (f.d + 'T00:00');
+    const lT = l.t || (l.d + 'T00:00');
+    const nF = pepeTtoNotT(fT);
+    const nL = pepeTtoNotT(lT);
+    rangeText += '  ·  NOT: ' + fmtDateTimeShort(nF) + ' – ' + fmtDateTimeShort(nL);
+  }
+  document.getElementById('rangeLabel').textContent = rangeText;
+
+  const last = w.series[w.series.length-1];
+  const first = w.series[0];
+  const change = ((last.p - first.p) / first.p * 100);
+  const ratio = PEPE_ANCHOR_PRICE ? (last.p / PEPE_ANCHOR_PRICE) : null;
+  const priceHtml = ratio
+    ? fmtRatio(ratio) + ' <span class="info" style="font-size:14px;color:#848e9c">' + fmtPrice(last.p) + '</span>'
+    : fmtPrice(last.p);
+  document.getElementById('priceLabel').innerHTML = priceHtml;
+  const changeEl = document.getElementById('changeLabel');
+  const unit = w.pannable ? 'saat' : 'gün';
+  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + w.series.length + ' ' + unit;
+  changeEl.className = 'change ' + (change >= 0 ? 'up' : 'down');
+
+  if (w.pannable && first.t){
+    const lp = _utcToLocalParts(first.t);
+    document.getElementById('dateInput').value = `${lp.y}-${_pad2(lp.m)}-${_pad2(lp.d)}`;
+    document.getElementById('timeInput').value = `${_pad2(lp.h)}:00`;
+  }
+
+  const lastT = last.t || (last.d + 'T00:00');
+  document.getElementById('pepeTs').textContent = fmtDateTimeLong(lastT);
+  document.getElementById('notTs').textContent = fmtDateTimeLong(pepeTtoNotT(lastT));
+
+  if (w.pannable){
+    const total = allData.length;
+    const maxOffset = Math.max(0, total - windowSize);
+    document.getElementById('navPrev').toggleAttribute('disabled', windowOffset >= maxOffset);
+    document.getElementById('navNext').toggleAttribute('disabled', windowOffset <= 0);
+  } else {
+    document.getElementById('navPrev').setAttribute('disabled','');
+    document.getElementById('navNext').setAttribute('disabled','');
+  }
+
+  drawChart(w.series);
+  hideTip();
+}
+
+function setupCanvas(){
+  chartCanvas = document.getElementById('chart');
+  chartCtx = chartCanvas.getContext('2d');
+}
+function resizeCanvas(){
+  dpr = window.devicePixelRatio || 1;
+  const rect = chartCanvas.getBoundingClientRect();
+  chartW = rect.width; chartH = rect.height;
+  chartCanvas.width = chartW * dpr;
+  chartCanvas.height = chartH * dpr;
+  chartCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function drawChart(series){
+  if (!chartCtx || !series || !series.length) return;
+  resizeCanvas();
+  const ctx = chartCtx;
+  ctx.clearRect(0,0,chartW,chartH);
+
+  const padL = 18, padR = 70, padT = 30, padB = 24;
+  const w = chartW - padL - padR;
+  const h = chartH - padT - padB;
+
+  const pepeMinP = Math.min(...series.map(r=>r.p));
+  const pepeMaxP = Math.max(...series.map(r=>r.p));
+
+  let notPrices = null, notEquiv = null;
+  if (overlayActive && notData && PEPE_ANCHOR_PRICE && NOT_ANCHOR_PRICE){
+    const dailyIdx = currentRange === 'ALL' ? getNotDaily() : null;
+    notPrices = series.map(r => {
+      if (r.t){
+        const nt = pepeTtoNotT(r.t);
+        const i = notTIdx.get(nt);
+        return i !== undefined ? notData[i].p : null;
+      }
+      if (r.d){
+        const nd = pepeDtoNotD(r.d);
+        return dailyIdx && dailyIdx.has(nd) ? dailyIdx.get(nd) : null;
+      }
+      return null;
+    });
+    notEquiv = notPrices.map(np => np == null ? null : np / NOT_ANCHOR_PRICE * PEPE_ANCHOR_PRICE);
+  }
+
+  let minP = pepeMinP, maxP = pepeMaxP;
+  if (notEquiv){
+    for (const eq of notEquiv){
+      if (eq != null){
+        if (eq < minP) minP = eq;
+        if (eq > maxP) maxP = eq;
+      }
+    }
+  }
+  const useLog = (maxP / Math.max(minP, 1e-12)) > 50;
+  const denom = Math.max(1, series.length-1);
+  const tx = (i) => padL + (i/denom) * w;
+  const ty = (p) => {
+    if (useLog){
+      const lMin = Math.log10(minP), lMax = Math.log10(maxP);
+      if (lMax === lMin) return padT + h/2;
+      return padT + h - ((Math.log10(p) - lMin) / (lMax - lMin)) * h;
+    }
+    if (maxP === minP) return padT + h/2;
+    return padT + h - ((p - minP) / (maxP - minP)) * h;
+  };
+
+  chartPoints = series.map((r,i)=>({x:tx(i), y:ty(r.p), k:rowKey(r), p:r.p, isHourly:!!r.t}));
+
+  const up = series[series.length-1].p >= series[0].p;
+  const stroke = up ? '#0ecb81' : '#f6465d';
+  const fillTop = up ? 'rgba(14,203,129,.18)' : 'rgba(246,70,93,.18)';
+  const fillBot = up ? 'rgba(14,203,129,0)' : 'rgba(246,70,93,0)';
+
+  const grad = ctx.createLinearGradient(0, padT, 0, padT+h);
+  grad.addColorStop(0, fillTop);
+  grad.addColorStop(1, fillBot);
+  ctx.beginPath();
+  ctx.moveTo(chartPoints[0].x, padT+h);
+  for (const pt of chartPoints) ctx.lineTo(pt.x, pt.y);
+  ctx.lineTo(chartPoints[chartPoints.length-1].x, padT+h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(chartPoints[0].x, chartPoints[0].y);
+  for (let i=1;i<chartPoints.length;i++) ctx.lineTo(chartPoints[i].x, chartPoints[i].y);
+  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = stroke;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  let notOverlay = null;
+  if (overlayActive && notData && notEquiv){
+    const validRaw = notPrices.filter(p => p != null);
+    if (validRaw.length >= 2){
+      ctx.save();
+      ctx.strokeStyle = NOT_COLOR;
+      ctx.lineWidth = 1.6;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      let started = false;
+      for (let i=0;i<chartPoints.length;i++){
+        const eq = notEquiv[i];
+        if (eq == null){
+          if (started){ ctx.stroke(); ctx.beginPath(); started = false; }
+          continue;
+        }
+        const x = chartPoints[i].x;
+        const y = ty(eq);
+        if (!started){ ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      }
+      if (started) ctx.stroke();
+      ctx.restore();
+      const nMinRaw = Math.min(...validRaw);
+      const nMaxRaw = Math.max(...validRaw);
+      notOverlay = {nMinRaw, nMaxRaw, validCount: validRaw.length};
+    } else {
+      notOverlay = {empty: true};
+    }
+  } else if (overlayActive && notData){
+    notOverlay = {empty: true};
+  }
+
+  const lastP = chartPoints[chartPoints.length-1];
+  ctx.beginPath();
+  ctx.arc(lastP.x, lastP.y, 4, 0, Math.PI*2);
+  ctx.fillStyle = stroke;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lastP.x, lastP.y, 8, 0, Math.PI*2);
+  ctx.fillStyle = stroke + '33';
+  ctx.fill();
+
+  const minIdx = series.indexOf(series.reduce((a,b)=>b.p<a.p?b:a));
+  const maxIdx = series.indexOf(series.reduce((a,b)=>b.p>a.p?b:a));
+  const maxP_pt = chartPoints[maxIdx], minP_pt = chartPoints[minIdx];
+  ctx.font = '11px -apple-system, Inter, sans-serif';
+  ctx.fillStyle = '#848e9c';
+  ctx.textAlign = 'left';
+  const labelMax = PEPE_ANCHOR_PRICE ? fmtRatio(pepeMaxP / PEPE_ANCHOR_PRICE) : fmtPrice(pepeMaxP);
+  const labelMin = PEPE_ANCHOR_PRICE ? fmtRatio(pepeMinP / PEPE_ANCHOR_PRICE) : fmtPrice(pepeMinP);
+  ctx.fillText(labelMax, Math.min(maxP_pt.x+6, chartW-padR+4), Math.max(maxP_pt.y+4, padT+10));
+  ctx.fillText(labelMin, Math.min(minP_pt.x+6, chartW-padR+4), Math.min(minP_pt.y+4, padT+h-2));
+
+  if (notOverlay && !notOverlay.empty){
+    ctx.fillStyle = NOT_COLOR;
+    ctx.font = '11px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'right';
+    const nMaxLabel = NOT_ANCHOR_PRICE ? fmtRatio(notOverlay.nMaxRaw / NOT_ANCHOR_PRICE) : fmtPriceRaw(notOverlay.nMaxRaw);
+    const nMinLabel = NOT_ANCHOR_PRICE ? fmtRatio(notOverlay.nMinRaw / NOT_ANCHOR_PRICE) : fmtPriceRaw(notOverlay.nMinRaw);
+    ctx.fillText('NOT ' + nMaxLabel, chartW - 4, padT + 12);
+    ctx.fillText(nMinLabel, chartW - 4, padT + h - 4);
+  } else if (notOverlay && notOverlay.empty){
+    ctx.fillStyle = NOT_COLOR;
+    ctx.font = '11px -apple-system, Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('NOT karşılığı bu pencerede yok', chartW - 4, padT + 14);
+  }
+
+  ctx.fillStyle = '#5e6673';
+  ctx.textAlign = 'center';
+  const ticks = series.length === 1 ? [0]
+              : series.length <= 3 ? [0, series.length-1]
+              : [0, Math.floor(series.length/2), series.length-1];
+  for (const i of ticks){
+    let xPos = chartPoints[i].x;
+    let align = 'center';
+    if (i === 0){ align='left'; }
+    else if (i === series.length-1){ align='right'; }
+    ctx.textAlign = align;
+    ctx.fillText(rowFmtShort(series[i]), xPos, padT+h+16);
+  }
+
+  chartBounds = {padL, padR, padT, padB, w, h, series, useLog, minP, maxP, stroke};
+}
+
+function highlightPoint(idx){
+  const pt = chartPoints[idx];
+  if (!pt) return;
+  drawChart(chartBounds.series);
+  const ctx = chartCtx;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(234,236,239,.4)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath();
+  ctx.moveTo(pt.x, chartBounds.padT);
+  ctx.lineTo(pt.x, chartBounds.padT+chartBounds.h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(pt.x, pt.y, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#0b0e11';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = chartBounds.stroke;
+  ctx.stroke();
+  ctx.restore();
+  showTip(pt);
+}
+function showTip(pt){
+  document.getElementById('scrubDate').textContent = pt.isHourly ? fmtDateTime(pt.k) : fmtDate(pt.k);
+  const ratioPart = PEPE_ANCHOR_PRICE ? fmtRatio(pt.p / PEPE_ANCHOR_PRICE) + ' · ' : '';
+  document.getElementById('scrubPrice').textContent = ratioPart + fmtPrice(pt.p);
+  document.getElementById('scrubTip').classList.add('show');
+}
+function hideTip(){
+  document.getElementById('scrubTip').classList.remove('show');
+}
+
+function handlePointer(clientX){
+  if (!chartPoints.length) return;
+  const rect = chartCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  let bestIdx = 0, bestDx = Infinity;
+  for (let i=0;i<chartPoints.length;i++){
+    const dx = Math.abs(chartPoints[i].x - x);
+    if (dx < bestDx){ bestDx = dx; bestIdx = i; }
+  }
+  highlightPoint(bestIdx);
+}
+
+function bindNavButton(btn, direction){
+  let holdTimer = null, holdInterval = null, intervalMs = 240;
+  const tick = ()=>{
+    if (!shiftWindow(direction)){ stop(); return; }
+    intervalMs = Math.max(35, intervalMs - 20);
+    holdInterval = setTimeout(tick, intervalMs);
+  };
+  const start = (e)=>{
+    e.preventDefault();
+    shiftWindow(direction);
+    intervalMs = 240;
+    holdTimer = setTimeout(tick, 380);
+  };
+  const stop = ()=>{
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (holdInterval) { clearTimeout(holdInterval); holdInterval = null; }
+  };
+  btn.addEventListener('touchstart', start, {passive:false});
+  btn.addEventListener('touchend', stop);
+  btn.addEventListener('touchcancel', stop);
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('mouseup', stop);
+  btn.addEventListener('mouseleave', stop);
+}
+
+function bindEvents(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>setRange(t.dataset.range));
+  });
+  bindNavButton(document.getElementById('navPrev'), -1);
+  bindNavButton(document.getElementById('navNext'), +1);
+
+  const onDateTimeChange = ()=>{
+    const d = document.getElementById('dateInput').value;
+    const tm = document.getElementById('timeInput').value || '00:00';
+    if (d){
+      const [y, m, dd] = d.split('-').map(Number);
+      const hh = parseInt(tm.slice(0,2), 10) || 0;
+      const localMs = new Date(y, m-1, dd, hh, 0, 0).getTime();
+      jumpToTimestamp(_msToT(localMs));
+    }
+  };
+  document.getElementById('dateInput').addEventListener('change', onDateTimeChange);
+  document.getElementById('timeInput').addEventListener('change', onDateTimeChange);
+  document.getElementById('todayBtn').addEventListener('click', ()=>{
+    windowOffset = 0;
+    redraw();
+  });
+  document.getElementById('notRefresh').addEventListener('click', async ()=>{
+    const btn = document.getElementById('notRefresh');
+    const orig = btn.textContent;
+    btn.textContent = '...';
+    btn.disabled = true;
+    try {
+      const added = await refreshNotData();
+      btn.textContent = added > 0 ? '+' + added : '✓';
+      if (overlayActive) redraw();
+    } catch(e){
+      btn.textContent = '✗';
+      console.error('NOT refresh failed:', e);
+    } finally {
+      setTimeout(()=>{ btn.textContent = orig; btn.disabled = false; }, 1800);
+    }
+  });
+  document.getElementById('notToggle').addEventListener('click', async ()=>{
+    const btn = document.getElementById('notToggle');
+    if (!overlayActive){
+      btn.textContent = '...';
+      try { await loadNotData(); } catch(e){ btn.textContent='NOT ✗'; return; }
+      overlayActive = true;
+      btn.textContent = 'NOT';
+      btn.classList.add('active');
+    } else {
+      overlayActive = false;
+      btn.classList.remove('active');
+    }
+    redraw();
+  });
+
+  let touching = false;
+  chartCanvas.addEventListener('touchstart', e=>{
+    touching = true;
+    handlePointer(e.touches[0].clientX);
+    e.preventDefault();
+  }, {passive:false});
+  chartCanvas.addEventListener('touchmove', e=>{
+    if (!touching) return;
+    handlePointer(e.touches[0].clientX);
+    e.preventDefault();
+  }, {passive:false});
+  const endTouch = ()=>{
+    touching = false;
+    setTimeout(()=>{ if (!touching){ drawChart(chartBounds.series); hideTip(); } }, 1500);
+  };
+  chartCanvas.addEventListener('touchend', endTouch);
+  chartCanvas.addEventListener('touchcancel', endTouch);
+  chartCanvas.addEventListener('mousedown', e=>{ touching = true; handlePointer(e.clientX); });
+  chartCanvas.addEventListener('mousemove', e=>{ if (touching) handlePointer(e.clientX); });
+  window.addEventListener('mouseup', ()=>{
+    if (!touching) return;
+    touching = false;
+    setTimeout(()=>{ drawChart(chartBounds.series); hideTip(); }, 1500);
+  });
+
+  window.addEventListener('keydown', e=>{
+    if (e.key === 'ArrowRight'){ shiftWindow(+1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'){ shiftWindow(-1); e.preventDefault(); }
+  });
+
+  window.addEventListener('resize', ()=>{ if (chartBounds.series) drawChart(chartBounds.series); });
+  window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if (chartBounds.series) drawChart(chartBounds.series); }, 200));
+}
+
+setupCanvas();
+bindEvents();
+loadData();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/pepe_sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
