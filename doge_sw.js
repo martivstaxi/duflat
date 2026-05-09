@@ -1,4 +1,4 @@
-const CACHE = 'doge-v2-anchor-2021-01-20';
+const CACHE = 'doge-v3-anchor-pair';
 const ASSETS = [
   '/doge.html',
   '/doge_manifest.json',
