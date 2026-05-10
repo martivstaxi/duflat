@@ -1,6 +1,7 @@
 """Fetch FLOKI hourly OHLC from CoinMarketCap data-api in 400-hour chunks.
 
-Range: 2023-01-27 → 2023-03-27 UTC (FLOKI Q1 2023 rally penceresi).
+Range: 2023-10-07 → 2025-04-07 UTC (FLOKI 18-month genişletilmiş pencere,
+Kasım 2024 rally dahil).
 """
 import urllib.request, json, time, datetime as dt, os, sys
 
@@ -8,8 +9,8 @@ CMC_ID = 10804          # FLOKI
 CONVERT_ID = 2781       # USD
 OUT = os.path.join(os.path.dirname(__file__), 'data', 'floki_hourly.json')
 
-START = dt.datetime(2023, 1, 27, 0, 0, tzinfo=dt.timezone.utc)
-END   = dt.datetime(2023, 3, 27, 23, 0, tzinfo=dt.timezone.utc)
+START = dt.datetime(2023, 10, 7, 0, 0, tzinfo=dt.timezone.utc)
+END   = dt.datetime(2025, 4, 7, 23, 0, tzinfo=dt.timezone.utc)
 
 CHUNK_HOURS = 400
 STEP_HOURS = 380

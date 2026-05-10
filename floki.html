@@ -121,6 +121,8 @@
   <button class="tab" data-range="1D">1D</button>
   <button class="tab active" data-range="1W">1W</button>
   <button class="tab" data-range="1M">1M</button>
+  <button class="tab" data-range="3M">3M</button>
+  <button class="tab" data-range="1Y">1Y</button>
   <button class="tab" data-range="ALL">ALL</button>
 </div>
 
@@ -199,17 +201,17 @@ let allData = [];
 let tIdx = new Map();
 let dateStartIdx = new Map();
 
-// FLOKI data spans ~2 months → tabs 1D/1W/1M/ALL only
-const SIZES = {'1D':24,'1W':168,'1M':720,'ALL':null};
+// FLOKI data spans ~18 months (2023-10-07 → 2025-04-07) → tabs 1D/1W/1M/3M/1Y/ALL
+const SIZES = {'1D':24,'1W':168,'1M':720,'3M':2160,'1Y':8760,'ALL':null};
 let currentRange = '1W';
 let windowSize = 168;
 let windowOffset = 0;
 
-// Anchor pair (UTC). Placeholder — kullanıcı ile birlikte "kesişim noktası" belirlenecek.
+// Anchor pair (UTC).
 const NOT_COLOR = '#a78bfa';
 const FLOKI_COLOR_ACCENT = '#f5b800';
-// Anchor pair (UTC): FLOKI 2023-01-27 21:00 (= 28 Oca 00:00 TRT) ↔ NOT 2026-05-06 02:00 (= 05:00 TRT)
-const FLOKI_ANCHOR = '2023-01-27T21:00';
+// Anchor pair (UTC): FLOKI 2023-10-26 21:00 (= 27 Eki 00:00 TRT) ↔ NOT 2026-05-06 02:00 (= 05:00 TRT)
+const FLOKI_ANCHOR = '2023-10-26T21:00';
 const NOT_ANCHOR  = '2026-05-06T02:00';
 let FLOKI_ANCHOR_PRICE = null;
 let NOT_ANCHOR_PRICE  = null;
