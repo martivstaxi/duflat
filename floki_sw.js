@@ -1,4 +1,4 @@
-const CACHE = 'floki-v9-window-oct23-apr25-anchor-oct27-00-not-may06-05';
+const CACHE = 'floki-v10-anchor-oct21-19-not-may05-04';
 const ASSETS = [
   '/floki.html',
   '/floki_manifest.json',
