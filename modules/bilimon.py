@@ -103,9 +103,12 @@ def creators_for(manager: str, youtube_only: bool = False) -> list:
 # ─────────────────────────────────────────────
 # YouTube — recent uploads
 # ─────────────────────────────────────────────
-# yt-dlp extract_flat does not surface upload dates for channel listings, so
-# we resolve the channel_id (one yt-dlp call when the URL is a handle) and
-# then read the public RSS feed which carries <published> for each entry.
+# The public RSS feed (youtube.com/feeds/videos.xml?channel_id=…) started
+# returning 404 globally in May 2026 — every channel, every IP, including
+# Anthropic and residential proxies. We now resolve the channel_id via HTML
+# scrape (fast, still works) and fetch the uploads playlist via yt-dlp with
+# full extraction so upload_date is populated. ~1s per video, capped to
+# `limit` videos per channel, runs in the daily background refresh thread.
 
 _RE_CHANNEL_ID = re.compile(r'/channel/(UC[A-Za-z0-9_-]{22})')
 # Match channelId in the JSON blob YouTube embeds in every channel page.
@@ -335,37 +338,44 @@ def _fetch_yt_uploads(channel_url: str, limit: int = 15) -> list:
     cid = _resolve_channel_id(channel_url)
     if not cid:
         return []
+    # Uploads playlist for any channel = "UU" + the rest of the channel_id.
+    # Full extraction (extract_flat=False) is required because flat mode
+    # leaves upload_date=None, and we need dates to apply the window filter.
+    pl_url = f'https://www.youtube.com/playlist?list=UU{cid[2:]}'
     try:
-        r = requests.get(
-            f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}',
-            headers=_YT_HEADERS, cookies=_YT_COOKIES, timeout=15,
-            proxies=_yt_proxies(),
-        )
-    except Exception:
-        return []
-    if r.status_code != 200 or not r.text:
-        return []
-    try:
-        root = ET.fromstring(r.text)
+        opts = {
+            'skip_download':  True,
+            'quiet':          True,
+            'no_warnings':    True,
+            'ignoreerrors':   True,
+            'playlistend':    limit,
+            'extract_flat':   False,
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(pl_url, download=False) or {}
     except Exception:
         return []
     out = []
-    for entry in root.findall('a:entry', _YT_NS)[:limit]:
-        vid = (entry.findtext('yt:videoId', default='', namespaces=_YT_NS) or '').strip()
+    for e in (info.get('entries') or [])[:limit]:
+        if not e:
+            continue
+        vid = e.get('id') or ''
         if not vid:
             continue
-        title = (entry.findtext('a:title', default='', namespaces=_YT_NS) or '').strip()
-        published_iso = (entry.findtext('a:published', default='', namespaces=_YT_NS) or '').strip()
-        published = published_iso[:10] if len(published_iso) >= 10 else ''
+        upload_date = e.get('upload_date') or ''
+        if len(upload_date) >= 8:
+            published = f'{upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:8]}'
+        else:
+            ts = e.get('timestamp') or e.get('release_timestamp') or 0
+            published = (datetime.fromtimestamp(ts, tz=timezone.utc).strftime('%Y-%m-%d')
+                         if ts else '')
         thumb = ''
-        media_group = entry.find('media:group', _YT_NS)
-        if media_group is not None:
-            mt = media_group.find('media:thumbnail', _YT_NS)
-            if mt is not None:
-                thumb = mt.get('url') or ''
+        thumbs = e.get('thumbnails') or []
+        if thumbs:
+            thumb = thumbs[-1].get('url') or ''
         out.append({
             'video_id':  vid,
-            'title':     title,
+            'title':     (e.get('title') or '').strip(),
             'url':       f'https://www.youtube.com/watch?v={vid}',
             'published': published,
             'thumbnail': thumb or f'https://i.ytimg.com/vi/{vid}/mqdefault.jpg',
