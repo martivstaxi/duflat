@@ -89,7 +89,7 @@ select {
     appearance: none; -webkit-appearance: none;
     background: transparent; color: var(--text);
     border: none; outline: none;
-    padding: 9px 32px 9px 10px;
+    padding: 9px 32px 9px 18px;
     font-family: inherit; font-size: .82rem; font-weight: 500;
     cursor: pointer;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'><path d='M1 1L5 5L9 1' stroke='%237a7167' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -181,14 +181,21 @@ td.creator-cell {
     letter-spacing: -.005em;
 }
 td.creator-cell .clinks {
-    margin-top: 6px; display: flex; flex-direction: column; gap: 3px;
+    margin-top: 5px; display: flex; flex-direction: row; gap: 6px;
 }
 td.creator-cell .clinks a {
-    color: var(--muted); font-size: .72rem; font-weight: 500;
+    color: var(--muted); font-size: .62rem; font-weight: 600;
+    letter-spacing: .04em;
     text-decoration: none;
-    transition: color .15s var(--ease);
+    padding: 2px 6px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    transition: all .15s var(--ease);
 }
-td.creator-cell .clinks a:hover { color: var(--accent); }
+td.creator-cell .clinks a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
 /* Continuation rows: empty creator cell, no top border so the column
    reads as a single unified block per creator. */
 td.creator-cell.is-cont {
@@ -197,11 +204,13 @@ td.creator-cell.is-cont {
     padding-bottom: 0;
 }
 
-td.title-cell { width: 56%; }
+td.title-cell { width: 56%; max-width: 0; }
 td.title-cell a {
     color: var(--text); text-decoration: none;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    display: block;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.45;
     transition: color .15s var(--ease);
 }
@@ -276,7 +285,7 @@ td.error-row {
 
     .controls { gap: 8px; padding: 6px 0 18px; }
     .control-group label { padding: 0 2px 0 13px; font-size: .65rem; }
-    select { padding: 8px 28px 8px 8px; font-size: .78rem; min-width: 150px; }
+    select { padding: 8px 28px 8px 14px; font-size: .78rem; min-width: 150px; }
     button { padding: 8px 14px; font-size: .72rem; }
 
     thead th { padding: 11px 14px; font-size: .58rem; }
@@ -292,18 +301,17 @@ td.error-row {
 <body>
 <div class="container">
     <header>
-        <h1>Cross-post Monitor</h1>
-        <p>Pick a manager to see which YouTube videos from their creators haven't been cross-posted to Bilibili.</p>
+        <h1>Bilibili Monitor</h1>
+        <p>Missing cross-posts, by manager.</p>
     </header>
 
     <div class="controls">
         <div class="control-group">
-            <label for="manager">Manager</label>
             <select id="manager"><option value="">Loading…</option></select>
         </div>
     </div>
 
-    <div class="schedule-note">List refreshes daily at 9:00 AM Beijing time</div>
+    <div class="schedule-note">Daily · 09:00 Beijing</div>
 
     <div id="stats"></div>
     <div id="lastUpdated"></div>
@@ -313,9 +321,9 @@ td.error-row {
             <thead>
                 <tr>
                     <th>Creator</th>
-                    <th>YouTube video</th>
+                    <th>Video</th>
                     <th>Date</th>
-                    <th style="text-align:center">Bilibili</th>
+                    <th style="text-align:center">BB</th>
                 </tr>
             </thead>
             <tbody id="rows"></tbody>
@@ -384,13 +392,8 @@ async function loadCached() {
     const creators = payload.creators || [];
     if (!creators.length) {
         const lastRun = payload.last_global_run;
-        if (!lastRun) {
-            $('#stats').textContent = 'No cached data yet — waiting for tomorrow’s scheduled refresh.';
-        } else {
-            $('#stats').textContent = 'No creators for this manager.';
-        }
-        $('#lastUpdated').textContent = lastRun
-            ? `Last refresh: ${fmtAge(lastRun)} (${lastRun})` : '';
+        $('#stats').textContent = lastRun ? 'No creators.' : 'No data yet.';
+        $('#lastUpdated').textContent = lastRun ? `Updated ${fmtAge(lastRun)}` : '';
         return;
     }
 
@@ -402,12 +405,11 @@ async function loadCached() {
         totalMissing += (added || 0);
     }
 
-    const missingNote = totalMissing
-        ? ` — <strong class="bad">${totalMissing} video missing on Bilibili</strong>`
-        : ` — <strong class="good">all caught up</strong>`;
-    $('#stats').innerHTML = `${visibleCreators} creators${missingNote}`;
+    $('#stats').innerHTML = totalMissing
+        ? `<strong class="bad">${totalMissing} missing</strong> · ${visibleCreators} creators`
+        : `<strong class="good">All caught up</strong> · ${visibleCreators} creators`;
     $('#lastUpdated').textContent = payload.last_global_run
-        ? `Last refresh: ${fmtAge(payload.last_global_run)} (${payload.last_global_run})`
+        ? `Updated ${fmtAge(payload.last_global_run)}`
         : '';
 }
 
@@ -417,7 +419,7 @@ async function pollRefreshState() {
         const s = await r.json();
         if (s.running) {
             $('#stats').innerHTML =
-                `<span class="progress-bar"></span>Refreshing ${s.progress}/${s.total}…`;
+                `<span class="progress-bar"></span>${s.progress}/${s.total}`;
         } else {
             stopPolling();
             await loadCached();
@@ -503,7 +505,7 @@ function appendRows(c, r) {
     if (hasMore) {
         const hiddenN = yt.length - VIDEOS_VISIBLE;
         const missHint = missingInHidden
-            ? `<span class="miss-hint">(${missingInHidden} missing)</span>`
+            ? `<span class="miss-hint">+${missingInHidden}✗</span>`
             : '';
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="more-toggle-row" data-grp="${groupId}">
@@ -512,7 +514,7 @@ function appendRows(c, r) {
                             data-grp="${groupId}"
                             data-hidden="${hiddenN}"
                             onclick="toggleGroup('${groupId}', this)">
-                        <span class="label">Show ${hiddenN} more</span>
+                        <span class="label">+${hiddenN} more</span>
                         ${missHint}
                         <span class="caret">▾</span>
                     </button>
@@ -530,13 +532,13 @@ function toggleGroup(groupId, btn) {
     btn.classList.toggle('expanded', willExpand);
     const label = btn.querySelector('.label');
     const hidden = btn.dataset.hidden;
-    label.textContent = willExpand ? 'Show less' : `Show ${hidden} more`;
+    label.textContent = willExpand ? 'Less' : `+${hidden} more`;
 }
 
 function renderCreatorCell(c) {
     const links = [];
-    if (c.youtube_url)  links.push(`<a href="${esc(c.youtube_url)}"  target="_blank" rel="noopener">YouTube ↗</a>`);
-    if (c.bilibili_url) links.push(`<a href="${esc(c.bilibili_url)}" target="_blank" rel="noopener">Bilibili ↗</a>`);
+    if (c.youtube_url)  links.push(`<a href="${esc(c.youtube_url)}"  target="_blank" rel="noopener" title="YouTube">YT</a>`);
+    if (c.bilibili_url) links.push(`<a href="${esc(c.bilibili_url)}" target="_blank" rel="noopener" title="Bilibili">BB</a>`);
     return `${esc(c.name)}<div class="clinks">${links.join('')}</div>`;
 }
 
