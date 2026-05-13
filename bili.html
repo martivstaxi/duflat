@@ -273,7 +273,7 @@ td.error-row {
 <div class="container">
     <header>
         <h1>Bilibili Monitor</h1>
-        <p>Missing cross-posts, by manager.</p>
+        <p>This dashboard helps managers spot YouTube videos that have not been re-uploaded to Bilibili yet. For each managed creator we look at their five most recent YouTube videos and check whether each one also appears on their Bilibili channel. A green ✓ means the video is already on Bilibili; a red ✗ means it is still missing — a reminder to ask the creator to cross-post. Status refreshes once a day at 09:00 Beijing time.</p>
     </header>
 
     <div class="controls">
@@ -310,6 +310,13 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
 const $   = sel => document.querySelector(sel);
 const esc = s => (s || '').replace(/[&<>"]/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TITLE_MAX_CHARS = 60;
+const truncTitle = s => {
+    s = (s || '').trim();
+    return s.length > TITLE_MAX_CHARS
+        ? s.slice(0, TITLE_MAX_CHARS - 1).trimEnd() + '…'
+        : s;
+};
 
 let pollHandle = null;
 
@@ -452,7 +459,8 @@ function appendRows(c, r) {
             <tr class="${cls}">
                 ${creatorTd}
                 <td class="title-cell">
-                    <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title)}</a>
+                    <a href="${esc(v.url)}" target="_blank" rel="noopener"
+                       title="${esc(v.title)}">${esc(truncTitle(v.title))}</a>
                 </td>
                 <td class="date-cell">${esc(v.published || '—')}</td>
                 <td class="status-cell">
