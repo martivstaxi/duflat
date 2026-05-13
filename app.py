@@ -1277,11 +1277,7 @@ def bili_check():
     creator = body.get('creator') or {}
     if not creator:
         return jsonify({'error': 'creator object required'}), 400
-    try:
-        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
-    except Exception:
-        window = bilimon.WINDOW_DAYS_DEFAULT
-    return jsonify(bilimon.check_creator(creator, window_days=window))
+    return jsonify(bilimon.check_creator(creator))
 
 
 @app.route('/bili/cached', methods=['GET'])
@@ -1308,24 +1304,14 @@ def bili_refresh_all():
         return jsonify({'error': 'bearer token required'}), 401
     if auth[7:].strip() != expected:
         return jsonify({'error': 'invalid token'}), 401
-    body = request.get_json(silent=True) or {}
-    try:
-        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
-    except Exception:
-        window = bilimon.WINDOW_DAYS_DEFAULT
-    return jsonify(bilimon.trigger_refresh_all(window_days=window, manual=False))
+    return jsonify(bilimon.trigger_refresh_all(manual=False))
 
 
 @app.route('/bili/refresh-now', methods=['POST'])
 def bili_refresh_now():
     """Manager's force-refresh button. No token, but cooldown-gated so a
     refresh can fire at most once per MANUAL_REFRESH_COOLDOWN_SEC."""
-    body = request.get_json(silent=True) or {}
-    try:
-        window = int(body.get('window_days') or bilimon.WINDOW_DAYS_DEFAULT)
-    except Exception:
-        window = bilimon.WINDOW_DAYS_DEFAULT
-    return jsonify(bilimon.trigger_refresh_all(window_days=window, manual=True))
+    return jsonify(bilimon.trigger_refresh_all(manual=True))
 
 
 @app.route('/bili/refresh-status', methods=['GET'])

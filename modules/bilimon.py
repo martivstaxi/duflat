@@ -1,15 +1,15 @@
 """
 modules/bilimon.py — Bilibili posting monitor
 
-Compares each managed creator's recent YouTube uploads against their recent
-Bilibili uploads. A YouTube upload in the last `window_days` whose title has no
-fuzzy match on Bilibili is flagged so the manager can remind the creator to
-cross-post.
+Compares each managed creator's most-recent YouTube uploads against their
+recent Bilibili uploads. Any of the latest `YT_RECENT_COUNT` YouTube videos
+whose title has no fuzzy match on Bilibili is flagged so the manager can
+remind the creator to cross-post.
 
 Public API:
-    list_managers()                       -> [str]
-    creators_for(manager)                 -> [dict]
-    check_creator(creator, window_days)   -> dict
+    list_managers()             -> [str]
+    creators_for(manager)       -> [dict]
+    check_creator(creator)      -> dict
 """
 
 import hashlib
@@ -66,13 +66,10 @@ BB_ACTOR_ID    = 'zhorex~bilibili-scraper'
 BB_ACTOR_LIMIT = 15  # videos per creator — covers ~30 days for most creators
 
 DATA_FILE   = Path(__file__).resolve().parent.parent / 'data' / 'creators.json'
-WINDOW_DAYS_DEFAULT = 15
-# Grace period: don't flag a YT video that was uploaded within the last
-# GRACE_DAYS days — the creator may still be planning to cross-post the same
-# day. Without this, a manager opening the dashboard right after a creator's
-# upload would send a "missing on Bilibili" reminder before the cross-post had
-# any reasonable chance to happen.
-GRACE_DAYS = 1
+# Only the creator's N most-recent YouTube uploads are inspected. Count-based
+# rather than date-based — gives a stable, predictable surface regardless of
+# how often a creator posts.
+YT_RECENT_COUNT = 5
 # How long a manual "force refresh" must wait between invocations. The cron
 # refresh path is unrestricted (token-gated). 15 minutes is a balance — long
 # enough to deter accidental spam-clicks, short enough that a manager who
@@ -836,28 +833,6 @@ def _title_match(yt_title: str, bb_titles: list) -> tuple:
     return best
 
 
-def _within(published: str, days: int) -> bool:
-    if not published:
-        return False
-    try:
-        d = datetime.strptime(published, '%Y-%m-%d').replace(tzinfo=timezone.utc)
-    except Exception:
-        return False
-    return d >= datetime.now(timezone.utc) - timedelta(days=days)
-
-
-def _too_recent(published: str, days: int) -> bool:
-    """True if the video is so recent (< days days old) that we don't want to
-    surface it yet — gives the creator a grace window to cross-post."""
-    if not days or not published:
-        return False
-    try:
-        d = datetime.strptime(published, '%Y-%m-%d').replace(tzinfo=timezone.utc)
-    except Exception:
-        return False
-    return d > datetime.now(timezone.utc) - timedelta(days=days)
-
-
 def _verify_with_haiku(missing: list, bb_videos: list, creator_name: str) -> tuple:
     """Second-pass verification: ask Haiku whether each candidate "missing"
     YT video is actually cross-posted on Bilibili under a different title
@@ -927,7 +902,7 @@ def _summary(creator: dict) -> dict:
     }
 
 
-def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict:
+def check_creator(creator: dict) -> dict:
     yt_url = creator.get('youtube_url') or ''
     bb_mid = creator.get('bilibili_mid') or ''
     base   = _summary(creator)
@@ -939,24 +914,15 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
     if not bb_mid:
         return {**base, 'status': 'no_bilibili', 'comparable': False}
 
-    yt = _fetch_yt_uploads(yt_url, limit=30)
+    # Only the latest YT_RECENT_COUNT YT videos are checked. BB side still
+    # fetches a wider pool so we can match a freshly-uploaded YT video against
+    # a BB cross-post that happens to live below position N (e.g. when the
+    # creator pushes a flurry of BB-only re-edits in between).
+    yt = _fetch_yt_uploads(yt_url, limit=YT_RECENT_COUNT)
     bb, bb_err = _fetch_bb_uploads(bb_mid, limit=30)
 
-    # Apply window + grace period to YT side: only show videos that are old
-    # enough for the creator to plausibly have cross-posted by now.
-    yt_recent = [
-        v for v in yt
-        if _within(v['published'], window_days)
-        and not _too_recent(v['published'], GRACE_DAYS)
-    ]
-    bb_recent = [v for v in bb if _within(v['published'], window_days)]
-    # Match against BB videos within window + 2-week buffer. Earlier we used
-    # the full BB list which let very old BB content (months back) "match"
-    # a recent YT title at high fuzzy ratio; that was fine for stable
-    # creators but missed cases where the cross-post is genuinely missing.
-    # +14d buffer covers creators who post to BB days/weeks before YT.
-    bb_match_pool = [v for v in bb if _within(v['published'], window_days + 14)]
-    bb_titles = [v['title'] for v in bb_match_pool] or [v['title'] for v in bb]
+    yt_recent = yt[:YT_RECENT_COUNT]
+    bb_titles = [v['title'] for v in bb]
 
     # When BB fetch failed (rate-limited/banned), don't pretend everything is
     # missing — flag the result as partial so the UI can prompt a retry.
@@ -976,17 +942,16 @@ def check_creator(creator: dict, window_days: int = WINDOW_DAYS_DEFAULT) -> dict
     ai_checked: bool = False
     if missing and not bb_err:
         missing, ai_matched, ai_checked = _verify_with_haiku(
-            missing, bb_match_pool or bb,
-            base.get('name') or '',
+            missing, bb, base.get('name') or '',
         )
 
     return {
         **base,
         'status':              'ok' if not bb_err else 'bb_unavailable',
         'comparable':          True,
-        'window_days':         window_days,
+        'yt_recent_count':     YT_RECENT_COUNT,
         'youtube_recent':      yt_recent,
-        'bilibili_recent':     bb_recent,
+        'bilibili_recent':     bb,
         'missing_on_bilibili': missing,
         'ai_matched':          ai_matched,
         'ai_checked':          ai_checked,
@@ -1130,7 +1095,7 @@ def cached_status_for(manager: str) -> dict:
     }
 
 
-def _do_refresh_all(window_days: int) -> None:
+def _do_refresh_all() -> None:
     """Worker body: iterate every creator with both platforms, run the
     expensive check, persist after each one. Errors per-creator never
     abort the whole run — we record what we got."""
@@ -1146,7 +1111,7 @@ def _do_refresh_all(window_days: int) -> None:
 
     for c in creators:
         try:
-            result = check_creator(c, window_days=window_days)
+            result = check_creator(c)
         except Exception as e:
             result = {
                 'name':        c.get('name'),
@@ -1165,8 +1130,7 @@ def _do_refresh_all(window_days: int) -> None:
     _finish_run(run_id, _refresh_state['progress'])
 
 
-def trigger_refresh_all(window_days: int = WINDOW_DAYS_DEFAULT,
-                        manual: bool = False) -> dict:
+def trigger_refresh_all(manual: bool = False) -> dict:
     """Kick off a refresh in a background thread. `manual=True` enforces a
     cooldown so the public-facing /bili/refresh-now endpoint can't be
     spam-clicked. The cron path passes manual=False."""
@@ -1190,7 +1154,7 @@ def trigger_refresh_all(window_days: int = WINDOW_DAYS_DEFAULT,
     def _worker():
         try:
             _refresh_state['running'] = True
-            _do_refresh_all(window_days=window_days)
+            _do_refresh_all()
         except Exception as e:
             _refresh_state['last_error'] = f'{type(e).__name__}: {str(e)[:200]}'
         finally:
@@ -1199,7 +1163,7 @@ def trigger_refresh_all(window_days: int = WINDOW_DAYS_DEFAULT,
             _REFRESH_LOCK.release()
 
     threading.Thread(target=_worker, daemon=True).start()
-    return {'status': 'started', 'window_days': window_days}
+    return {'status': 'started', 'yt_recent_count': YT_RECENT_COUNT}
 
 
 def get_refresh_state() -> dict:
