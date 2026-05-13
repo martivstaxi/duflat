@@ -513,6 +513,20 @@ $('#infoClose').addEventListener('click', () => {
     infoBtn.setAttribute('aria-expanded', 'false');
 });
 
+// Auto-open the info panel for the first 5 page loads so newcomers see
+// what the dashboard does without having to discover the "i" button.
+// Returning visitors get the clean view by default.
+const VISIT_KEY = 'bili_visit_count';
+const VISIT_AUTO_OPEN_LIMIT = 5;
+try {
+    const visits = (parseInt(localStorage.getItem(VISIT_KEY) || '0', 10) || 0) + 1;
+    localStorage.setItem(VISIT_KEY, String(visits));
+    if (visits <= VISIT_AUTO_OPEN_LIMIT) {
+        infoPanel.hidden = false;
+        infoBtn.setAttribute('aria-expanded', 'true');
+    }
+} catch (e) { /* private mode / disabled storage — leave closed */ }
+
 (async () => {
     await loadManagers();
     try {
