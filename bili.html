@@ -61,10 +61,68 @@ header h1 {
     font-size: 2.6rem; font-weight: 700;
     letter-spacing: -.025em; line-height: 1.08;
     color: var(--text);
+    display: inline-flex; align-items: center; gap: 14px;
 }
-header p {
-    margin: 14px auto 0; max-width: 540px;
-    color: var(--muted); font-size: .92rem; line-height: 1.55;
+
+.info-btn {
+    width: 30px; height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic; font-weight: 700;
+    font-size: 1.05rem; line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all .15s var(--ease);
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.info-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-panel {
+    position: relative;
+    margin: 22px auto 0;
+    max-width: 540px;
+    padding: 22px 48px 22px 24px;
+    background: var(--card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+}
+.info-panel[hidden] { display: none; }
+.info-panel p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: .9rem; line-height: 1.6;
+}
+.info-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 28px; height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.35rem; line-height: 1;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background .15s var(--ease), color .15s var(--ease);
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.info-close:hover:not(:disabled) {
+    background: var(--hairline);
+    color: var(--text);
+    transform: none;
+    box-shadow: none;
 }
 
 .controls {
@@ -117,28 +175,13 @@ button.primary:hover:not(:disabled) {
 }
 button:disabled { opacity: .4; cursor: not-allowed; }
 
-.schedule-note {
-    text-align: center;
-    color: var(--tertiary);
-    font-size: .72rem;
-    margin: -8px 0 18px;
-    font-weight: 500;
-    letter-spacing: .01em;
-}
-
 #stats {
     text-align: center; color: var(--text-secondary);
-    font-size: .85rem; min-height: 20px;
-    margin-bottom: 4px;
+    font-size: .85rem;
+    margin: 0 0 18px;
+    min-height: 0;
 }
-#stats strong.bad { color: var(--negative); font-weight: 600; }
-#stats strong.good { color: var(--positive); font-weight: 600; }
-#lastUpdated {
-    text-align: center; color: var(--tertiary);
-    font-size: .72rem; min-height: 16px;
-    margin-bottom: 22px;
-    font-variant-numeric: tabular-nums;
-}
+#stats:empty { margin: 0; }
 #stats .progress-bar {
     display: inline-block; width: 14px; height: 14px;
     border: 2px solid var(--border-subtle);
@@ -272,8 +315,15 @@ td.error-row {
 <body>
 <div class="container">
     <header>
-        <h1>Bilibili Monitor</h1>
-        <p>This dashboard helps managers spot YouTube videos that have not been re-uploaded to Bilibili yet. For each managed creator we look at their five most recent YouTube videos and check whether each one also appears on their Bilibili channel. A green ✓ means the video is already on Bilibili; a red ✗ means it is still missing — a reminder to ask the creator to cross-post. Status refreshes once a day at 09:00 Beijing time.</p>
+        <h1>
+            Bilibili Monitor
+            <button class="info-btn" id="infoBtn" type="button"
+                    aria-label="About this tool" aria-expanded="false">i</button>
+        </h1>
+        <div class="info-panel" id="infoPanel" hidden>
+            <button class="info-close" id="infoClose" type="button" aria-label="Close">×</button>
+            <p>This dashboard helps managers spot YouTube videos that have not been re-uploaded to Bilibili yet. For each managed creator we look at their five most recent YouTube videos and check whether each one also appears on their Bilibili channel. A green ✓ means the video is already on Bilibili; a red ✗ means it is still missing — a reminder to ask the creator to cross-post. Status refreshes once a day at 09:00 Beijing time.</p>
+        </div>
     </header>
 
     <div class="controls">
@@ -282,10 +332,7 @@ td.error-row {
         </div>
     </div>
 
-    <div class="schedule-note">Daily · 09:00 Beijing</div>
-
     <div id="stats"></div>
-    <div id="lastUpdated"></div>
 
     <div class="tbl-wrap" id="tableWrap" style="display:none">
         <table>
@@ -310,7 +357,7 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
 const $   = sel => document.querySelector(sel);
 const esc = s => (s || '').replace(/[&<>"]/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const TITLE_MAX_CHARS = 60;
+const TITLE_MAX_CHARS = 35;
 const truncTitle = s => {
     s = (s || '').trim();
     return s.length > TITLE_MAX_CHARS
@@ -332,24 +379,11 @@ async function loadManagers() {
     }
 }
 
-function fmtAge(iso) {
-    if (!iso) return 'never refreshed';
-    const t = Date.parse(iso);
-    if (!t) return iso;
-    const mins = Math.floor((Date.now() - t) / 60000);
-    if (mins < 1)   return 'just now';
-    if (mins < 60)  return `${mins} min ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24)   return `${hrs} hr ago`;
-    return `${Math.floor(hrs / 24)} d ago`;
-}
-
 async function loadCached() {
     const manager = $('#manager').value;
     if (!manager) {
         $('#tableWrap').style.display = 'none';
         $('#stats').textContent = '';
-        $('#lastUpdated').textContent = '';
         return;
     }
     $('#rows').innerHTML = '';
@@ -361,32 +395,18 @@ async function loadCached() {
         const r = await fetch(`${API_BASE}/bili/cached?manager=${encodeURIComponent(manager)}`);
         payload = await r.json();
     } catch (e) {
-        $('#stats').textContent = 'Failed to load cached status';
+        $('#stats').textContent = 'Failed to load.';
         return;
     }
 
     const creators = payload.creators || [];
     if (!creators.length) {
-        const lastRun = payload.last_global_run;
-        $('#stats').textContent = lastRun ? 'No creators.' : 'No data yet.';
-        $('#lastUpdated').textContent = lastRun ? `Updated ${fmtAge(lastRun)}` : '';
+        $('#stats').textContent = payload.last_global_run ? 'No creators.' : 'No data yet.';
         return;
     }
 
-    let totalMissing = 0;
-    let visibleCreators = 0;
-    for (const result of creators) {
-        const added = appendRows(result, result);
-        if (added !== null) visibleCreators++;
-        totalMissing += (added || 0);
-    }
-
-    $('#stats').innerHTML = totalMissing
-        ? `<strong class="bad">${totalMissing} missing</strong> · ${visibleCreators} creators`
-        : `<strong class="good">All caught up</strong> · ${visibleCreators} creators`;
-    $('#lastUpdated').textContent = payload.last_global_run
-        ? `Updated ${fmtAge(payload.last_global_run)}`
-        : '';
+    for (const result of creators) appendRows(result, result);
+    $('#stats').textContent = '';
 }
 
 async function pollRefreshState() {
@@ -394,8 +414,7 @@ async function pollRefreshState() {
         const r = await fetch(`${API_BASE}/bili/refresh-status`);
         const s = await r.json();
         if (s.running) {
-            $('#stats').innerHTML =
-                `<span class="progress-bar"></span>${s.progress}/${s.total}`;
+            $('#stats').innerHTML = '<span class="progress-bar"></span>Refreshing…';
         } else {
             stopPolling();
             await loadCached();
@@ -481,6 +500,18 @@ function renderCreatorCell(c) {
 }
 
 $('#manager').addEventListener('change', loadCached);
+
+const infoBtn = $('#infoBtn');
+const infoPanel = $('#infoPanel');
+infoBtn.addEventListener('click', () => {
+    const open = !infoPanel.hidden;
+    infoPanel.hidden = open;
+    infoBtn.setAttribute('aria-expanded', String(!open));
+});
+$('#infoClose').addEventListener('click', () => {
+    infoPanel.hidden = true;
+    infoBtn.setAttribute('aria-expanded', 'false');
+});
 
 (async () => {
     await loadManagers();
